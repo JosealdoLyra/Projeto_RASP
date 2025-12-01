@@ -1,17 +1,25 @@
--- ============================================
+-- =====================================================================
 -- TABELA PRINCIPAL DO SISTEMA RASP
--- Armazena todas as informações centrais do registro
--- ============================================
+-- Armazena todas as informações centrais do registro de qualidade,
+-- integrando fornecedores, impactos, SPPS, dados do problema, flags de
+-- segurança, breaking point e responsáveis envolvidos no processo.
+--
+-- Esta é a tabela "coração" do sistema RASP.
+-- =====================================================================
 
 create table rasp (
-    id_rasp serial primary key,
+    id_rasp serial primary key,   -- Identificador único do registro RASP
 
+    -- ===============================================================
     -- Identificação do RASP
-    numero_rasp varchar(20) not null unique,    -- Ex.: 0001/25
-    data_criacao date not null default current_date,
-    hora_criacao time not null default current_time,
+    -- ===============================================================
+    numero_rasp varchar(20) not null unique,  -- Ex.: 0001/25 (valor único)
+    data_criacao date not null default current_date,   -- Data do registro
+    hora_criacao time not null default current_time,   -- Hora do registro
 
-    -- Ligações com tabelas auxiliares
+    -- ===============================================================
+    -- Ligações com tabelas auxiliares (domínios)
+    -- ===============================================================
     id_fornecedor_rasp int not null references fornecedor_rasp,
     id_modelo_veiculo_rasp int references modelo_veiculo_rasp,
     id_setor_rasp int references setor_rasp,
@@ -31,12 +39,16 @@ create table rasp (
     id_gm_aliado_rasp int references gm_aliado_rasp,
     id_perfil_rasp int references perfil_rasp,
 
+    -- ===============================================================
     -- Informações do problema
-    spps_numero varchar(30),
-    procedencia varchar(20),                                 -- 'Em análise', 'Concluído', etc.
-    descricao_problema text not null,
+    -- ===============================================================
+    spps_numero varchar(30),     -- Nº do SPPS vinculado (opcional)
+    procedencia varchar(20),     -- Ex.: 'Em análise', 'Concluído'
+    descricao_problema text not null, -- Descrição completa da ocorrência
 
+    -- ===============================================================
     -- Flags de qualidade e segurança
+    -- ===============================================================
     iniciativa_fornecedor boolean default false,
     supplier_alert boolean default false,
     reversao boolean default false,
@@ -44,13 +56,17 @@ create table rasp (
     emitiu_prr boolean default false,
     aprovado_lg boolean default false,
 
-    -- Breaking Point (se aplicável)
-    bp_texto text,
-    bp_serie varchar(17),
-    bp_datahora timestamp,
+    -- ===============================================================
+    -- Breaking Point (caso aplicável)
+    -- ===============================================================
+    bp_texto text,               -- Texto descritivo do breaking point
+    bp_serie varchar(17),        -- Série associada (17 caracteres)
+    bp_datahora timestamp,       -- Data e hora do BP
 
+    -- ===============================================================
     -- Usuários envolvidos no processo
-    id_analista int references usuarios,
-    id_aprovador_ft int references usuarios,
-    id_aprovador_lg int references usuarios
+    -- ===============================================================
+    id_analista int references usuarios,      -- Criador / responsável
+    id_aprovador_ft int references usuarios,  -- Aprovador FT
+    id_aprovador_lg int references usuarios   -- Aprovador LG
 );
