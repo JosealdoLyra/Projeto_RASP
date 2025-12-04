@@ -20,7 +20,7 @@ create table rasp_pn (
     quantidade_checada int,
     quantidade_rejeitada int,
 
-    -- Flag de contenção (controle operacional)
+    -- Flag de contenção
     em_contencao boolean default false,
 
     -- Informações do fornecedor (opcional)
@@ -29,5 +29,6 @@ create table rasp_pn (
     -- Ordem de exibição no front-end
     ordem_exibicao smallint not null
 );
+
 
 
