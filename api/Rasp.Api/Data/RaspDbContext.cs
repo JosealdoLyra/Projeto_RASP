@@ -11,6 +11,7 @@ namespace Rasp.Api.Data
         }
 
         public DbSet<StatusRasp> StatusRasp => Set<StatusRasp>();
+        public DbSet<PnRasp> PnRasp => Set<PnRasp>();
         public DbSet<FornecedorRasp> FornecedorRasp => Set<FornecedorRasp>();
         public DbSet<PerfilRasp> PerfilRasp => Set<PerfilRasp>();
         public DbSet<Usuario> Usuarios => Set<Usuario>();
@@ -96,9 +97,6 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.Ativo)
                     .HasColumnName("ativo");
-
-                entity.Property(e => e.Senha)
-                    .HasColumnName("senha");
             });
 
             modelBuilder.Entity<RaspEntity>(entity =>
@@ -127,6 +125,22 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.IdStatusRasp)
                     .HasColumnName("id_status_rasp");
+            });
+
+            modelBuilder.Entity<PnRasp>(entity =>
+            {
+                entity.ToTable("pn_rasp");
+
+                entity.HasKey(e => e.IdPn);
+
+                entity.Property(e => e.IdPn)
+                    .HasColumnName("id_pn");
+
+                entity.Property(e => e.CodigoPn)
+                    .HasColumnName("codigo_pn");
+
+                entity.Property(e => e.NomePeca)
+                    .HasColumnName("nome_peca");
             });
 
             modelBuilder.Entity<RaspPnEntity>(entity =>
