@@ -40,6 +40,7 @@ app.MapGet("/status-rasp/{id:int}", async (int id, RaspDbContext db) =>
         ? Results.NotFound("Status não encontrado.")
         : Results.Ok(item);
 });
+
 // GET /pn-rasp
 app.MapGet("/pn-rasp", async (RaspDbContext db) =>
 {
@@ -50,6 +51,22 @@ app.MapGet("/pn-rasp", async (RaspDbContext db) =>
     return Results.Ok(itens);
 })
 .WithName("ListarPnRasp");
+
+// GET /pn-rasp/codigo/{codigoPn}
+app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext db) =>
+{
+    var codigoLimpo = (codigoPn ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(codigoLimpo))
+        return Results.BadRequest("CodigoPn é obrigatório.");
+
+    var item = await db.PnRasp
+        .FirstOrDefaultAsync(p => p.CodigoPn == codigoLimpo);
+
+    return item is null
+        ? Results.NotFound("PN não encontrado para o código informado.")
+        : Results.Ok(item);
+});
 
 // POST /pn-rasp
 app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
@@ -84,22 +101,6 @@ app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
 })
 .WithName("CriarPnRasp");
 
-// GET /pn-rasp/codigo/{codigoPn}
-app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext db) =>
-{
-    var codigoLimpo = (codigoPn ?? string.Empty).Trim();
-
-    if (string.IsNullOrWhiteSpace(codigoLimpo))
-        return Results.BadRequest("CodigoPn é obrigatório.");
-
-    var item = await db.PnRasp
-        .FirstOrDefaultAsync(p => p.CodigoPn == codigoLimpo);
-
-    return item is null
-        ? Results.NotFound("PN não encontrado para o código informado.")
-        : Results.Ok(item);
-});
-
 // GET /fornecedor-rasp
 app.MapGet("/fornecedor-rasp", async (RaspDbContext db) =>
 {
@@ -110,6 +111,32 @@ app.MapGet("/fornecedor-rasp", async (RaspDbContext db) =>
     return Results.Ok(itens);
 })
 .WithName("ListarFornecedorRasp");
+
+// GET /fornecedor-rasp/duns/{duns}
+app.MapGet("/fornecedor-rasp/duns/{duns}", async (string duns, RaspDbContext db) =>
+{
+    var dunsLimpo = (duns ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(dunsLimpo))
+        return Results.BadRequest("Duns é obrigatório.");
+
+    var item = await db.FornecedorRasp
+        .FirstOrDefaultAsync(f => f.Duns == dunsLimpo);
+
+    return item is null
+        ? Results.NotFound("Fornecedor não encontrado para o DUNS informado.")
+        : Results.Ok(item);
+});
+
+// GET /fornecedor-rasp/{id}
+app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.FornecedorRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Fornecedor não encontrado.")
+        : Results.Ok(item);
+});
 
 // POST /fornecedor-rasp
 app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbContext db) =>
@@ -156,32 +183,6 @@ app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbCon
     return Results.Created($"/fornecedor-rasp/{item.IdFornecedor}", item);
 })
 .WithName("CriarFornecedorRasp");
-
-// GET /fornecedor-rasp/duns/{duns}
-app.MapGet("/fornecedor-rasp/duns/{duns}", async (string duns, RaspDbContext db) =>
-{
-    var dunsLimpo = (duns ?? string.Empty).Trim();
-
-    if (string.IsNullOrWhiteSpace(dunsLimpo))
-        return Results.BadRequest("Duns é obrigatório.");
-
-    var item = await db.FornecedorRasp
-        .FirstOrDefaultAsync(f => f.Duns == dunsLimpo);
-
-    return item is null
-        ? Results.NotFound("Fornecedor não encontrado para o DUNS informado.")
-        : Results.Ok(item);
-});
-
-// GET /fornecedor-rasp/{id}
-app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
-{
-    var item = await db.FornecedorRasp.FindAsync(id);
-
-    return item is null
-        ? Results.NotFound("Fornecedor não encontrado.")
-        : Results.Ok(item);
-});
 
 // GET /perfil-rasp
 app.MapGet("/perfil-rasp", async (RaspDbContext db) =>
@@ -321,8 +322,6 @@ app.MapGet("/rasp-pn", async (RaspDbContext db) =>
 })
 .WithName("ListarRaspPn");
 
-
-
 // GET /rasp-pn/{id}
 app.MapGet("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
 {
@@ -432,16 +431,6 @@ public record CriarRaspPnRequest(
     short OrdemExibicao
 );
 
-public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-public record CriarPnRaspRequest(
-    string CodigoPn,
-    string NomePeca
-);
-
 public record CriarFornecedorRaspRequest(
     string Duns,
     string Nome,
@@ -449,3 +438,13 @@ public record CriarFornecedorRaspRequest(
     bool Ativo,
     int IdPais
 );
+
+public record CriarPnRaspRequest(
+    string CodigoPn,
+    string NomePeca
+);
+
+public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+{
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
