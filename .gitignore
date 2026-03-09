@@ -1,0 +1,17 @@
+# Build .NET
+bin/
+obj/
+
+# Arquivos de usuário / VS Code
+.vs/
+.vscode/
+
+# Configurações locais de desenvolvimento
+appsettings.Development.json
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+
+# Projeto de teste antigo
+database/TesteApi/
