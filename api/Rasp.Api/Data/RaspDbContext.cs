@@ -308,6 +308,8 @@ namespace Rasp.Api.Data
                 entity.Property(e => e.OrdemExibicao)
                     .HasColumnName("ordem_exibicao");
             });
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

@@ -1,5 +1,6 @@
-using Npgsql;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Rasp.Api.Data;
 using Rasp.Api.Models;
 
@@ -39,7 +40,8 @@ app.MapGet("/status-rasp/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("Status não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterStatusRaspPorId");
 
 // GET /pn-rasp
 app.MapGet("/pn-rasp", async (RaspDbContext db) =>
@@ -52,6 +54,17 @@ app.MapGet("/pn-rasp", async (RaspDbContext db) =>
 })
 .WithName("ListarPnRasp");
 
+// GET /pn-rasp/{id}
+app.MapGet("/pn-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.PnRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("PN não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterPnRaspPorId");
+
 // GET /pn-rasp/codigo/{codigoPn}
 app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext db) =>
 {
@@ -60,13 +73,20 @@ app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext d
     if (string.IsNullOrWhiteSpace(codigoLimpo))
         return Results.BadRequest("CodigoPn é obrigatório.");
 
+    if (codigoLimpo.Length != 8)
+        return Results.BadRequest("CodigoPn deve ter exatamente 8 caracteres.");
+
+    if (!codigoLimpo.All(char.IsDigit))
+        return Results.BadRequest("CodigoPn deve conter somente números.");
+
     var item = await db.PnRasp
         .FirstOrDefaultAsync(p => p.CodigoPn == codigoLimpo);
 
     return item is null
         ? Results.NotFound("PN não encontrado para o código informado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterPnRaspPorCodigo");
 
 // POST /pn-rasp
 app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
@@ -77,6 +97,9 @@ app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
 
     if (codigoPn.Length != 8)
         return Results.BadRequest("CodigoPn deve ter exatamente 8 caracteres.");
+
+    if (!codigoPn.All(char.IsDigit))
+        return Results.BadRequest("CodigoPn deve conter somente números.");
 
     var nomePeca = (req.NomePeca ?? string.Empty).Trim();
     if (string.IsNullOrWhiteSpace(nomePeca))
@@ -120,13 +143,20 @@ app.MapGet("/fornecedor-rasp/duns/{duns}", async (string duns, RaspDbContext db)
     if (string.IsNullOrWhiteSpace(dunsLimpo))
         return Results.BadRequest("Duns é obrigatório.");
 
+    if (dunsLimpo.Length != 9)
+        return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
+
+    if (!dunsLimpo.All(char.IsDigit))
+        return Results.BadRequest("Duns deve conter somente números.");
+
     var item = await db.FornecedorRasp
         .FirstOrDefaultAsync(f => f.Duns == dunsLimpo);
 
     return item is null
         ? Results.NotFound("Fornecedor não encontrado para o DUNS informado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterFornecedorRaspPorDuns");
 
 // GET /fornecedor-rasp/{id}
 app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
@@ -136,7 +166,8 @@ app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("Fornecedor não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterFornecedorRaspPorId");
 
 // POST /fornecedor-rasp
 app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbContext db) =>
@@ -145,14 +176,17 @@ app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbCon
     if (string.IsNullOrWhiteSpace(duns))
         return Results.BadRequest("Duns é obrigatório.");
 
-    if (duns.Length != 8)
-        return Results.BadRequest("Duns deve ter exatamente 8 caracteres.");
+    if (duns.Length != 9)
+        return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
+
+    if (!duns.All(char.IsDigit))
+        return Results.BadRequest("Duns deve conter somente números.");
 
     var nome = (req.Nome ?? string.Empty).Trim();
     if (string.IsNullOrWhiteSpace(nome))
         return Results.BadRequest("Nome é obrigatório.");
 
-    var tipoFornecedor = (req.TipoFornecedor ?? string.Empty).Trim().ToUpper();
+    var tipoFornecedor = (req.TipoFornecedor ?? string.Empty).Trim().ToUpperInvariant();
     if (string.IsNullOrWhiteSpace(tipoFornecedor))
         return Results.BadRequest("TipoFornecedor é obrigatório.");
 
@@ -203,7 +237,8 @@ app.MapGet("/perfil-rasp/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("Perfil não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterPerfilRaspPorId");
 
 // GET /usuarios
 app.MapGet("/usuarios", async (RaspDbContext db) =>
@@ -224,12 +259,13 @@ app.MapGet("/usuarios/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("Usuário não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterUsuarioPorId");
 
 // GET /rasp
 app.MapGet("/rasp", async (RaspDbContext db) =>
 {
-    var itens = await db.Set<RaspEntity>()
+    var itens = await db.Rasp
         .OrderByDescending(r => r.IdRasp)
         .ToListAsync();
 
@@ -245,7 +281,8 @@ app.MapGet("/rasp/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("RASP não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterRaspPorId");
 
 // POST /rasp -> cria um RASP (rascunho)
 app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfiguration config) =>
@@ -253,7 +290,8 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     if (req.IdFornecedorRasp <= 0)
         return Results.BadRequest("IdFornecedorRasp inválido.");
 
-    if (string.IsNullOrWhiteSpace(req.DescricaoProblema))
+    var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
+    if (string.IsNullOrWhiteSpace(descricaoProblema))
         return Results.BadRequest("DescricaoProblema é obrigatória.");
 
     var fornecedorExiste = await db.FornecedorRasp
@@ -271,19 +309,19 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     await using var tx = await conn.BeginTransactionAsync();
 
-    var insertSql = @"
+    var insertSql = """
         INSERT INTO rasp
             (numero_rasp, data_criacao, hora_criacao, id_fornecedor_rasp, descricao_problema, id_status_rasp, is_rascunho, percentual_completude)
         VALUES
             ('TEMP', CURRENT_DATE, CURRENT_TIME, @id_fornecedor, @descricao, 1, true, 0)
         RETURNING id_rasp;
-    ";
+        """;
 
     int idRasp;
     await using (var cmd = new NpgsqlCommand(insertSql, conn, tx))
     {
         cmd.Parameters.AddWithValue("id_fornecedor", req.IdFornecedorRasp);
-        cmd.Parameters.AddWithValue("descricao", req.DescricaoProblema.Trim());
+        cmd.Parameters.AddWithValue("descricao", descricaoProblema);
         idRasp = (int)(await cmd.ExecuteScalarAsync() ?? 0);
     }
 
@@ -293,11 +331,11 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         return Results.Problem("Falha ao gerar id_rasp.");
     }
 
-    var updateSql = @"
+    var updateSql = """
         UPDATE rasp
         SET numero_rasp = LPAD(@id::text, 4, '0') || '/' || to_char(CURRENT_DATE, 'YY')
         WHERE id_rasp = @id;
-    ";
+        """;
 
     await using (var cmd2 = new NpgsqlCommand(updateSql, conn, tx))
     {
@@ -314,7 +352,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 // GET /rasp-pn
 app.MapGet("/rasp-pn", async (RaspDbContext db) =>
 {
-    var itens = await db.Set<RaspPnEntity>()
+    var itens = await db.RaspPn
         .OrderByDescending(rp => rp.IdRaspPn)
         .ToListAsync();
 
@@ -330,7 +368,8 @@ app.MapGet("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
     return item is null
         ? Results.NotFound("RASP PN não encontrado.")
         : Results.Ok(item);
-});
+})
+.WithName("ObterRaspPnPorId");
 
 // POST /rasp-pn
 app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
@@ -338,7 +377,9 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     if (req.IdRasp <= 0)
         return Results.BadRequest("IdRasp inválido.");
 
-    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == req.IdRasp);
+    var raspExiste = await db.Rasp
+        .AnyAsync(r => r.IdRasp == req.IdRasp);
+
     if (!raspExiste)
         return Results.BadRequest("RASP informado não existe.");
 
@@ -349,6 +390,15 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     if (pn.Length != 8)
         return Results.BadRequest("Pn deve ter exatamente 8 caracteres.");
 
+    if (!pn.All(char.IsDigit))
+        return Results.BadRequest("Pn deve conter somente números.");
+
+    var pnExiste = await db.PnRasp
+        .AnyAsync(p => p.CodigoPn == pn);
+
+    if (!pnExiste)
+        return Results.BadRequest("PN informado não existe no cadastro.");
+
     var duns = (req.Duns ?? string.Empty).Trim();
     if (string.IsNullOrWhiteSpace(duns))
         return Results.BadRequest("Duns é obrigatório.");
@@ -356,11 +406,26 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     if (duns.Length != 9)
         return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
 
+    if (!duns.All(char.IsDigit))
+        return Results.BadRequest("Duns deve conter somente números.");
+
+    var dunsExiste = await db.FornecedorRasp
+        .AnyAsync(f => f.Duns == duns);
+
+    if (!dunsExiste)
+        return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+
     if (req.QuantidadeSuspeita < 0 || req.QuantidadeChecada < 0 || req.QuantidadeRejeitada < 0)
         return Results.BadRequest("Quantidades não podem ser negativas.");
 
     if (req.OrdemExibicao <= 0)
         return Results.BadRequest("OrdemExibicao deve ser maior que zero.");
+
+    var raspPnJaExiste = await db.RaspPn
+        .AnyAsync(rp => rp.IdRasp == req.IdRasp && rp.Pn == pn);
+
+    if (raspPnJaExiste)
+        return Results.BadRequest("Este PN já está vinculado a este RASP.");
 
     var item = new RaspPnEntity
     {
@@ -381,26 +446,7 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 })
 .WithName("CriarRaspPn");
 
-// Endpoint exemplo
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast(
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
+// GET /debug-model
 app.MapGet("/debug-model", (RaspDbContext db) =>
 {
     var entidades = db.Model.GetEntityTypes()
@@ -443,8 +489,3 @@ public record CriarPnRaspRequest(
     string CodigoPn,
     string NomePeca
 );
-
-public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
