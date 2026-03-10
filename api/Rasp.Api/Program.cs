@@ -6,22 +6,33 @@ using Rasp.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Swagger (OpenAPI + UI)
+// -----------------------------------------------------------------------------
+// Configuração de serviços da aplicação
+// -----------------------------------------------------------------------------
+
+// Swagger / OpenAPI para documentação e testes dos endpoints
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Registro do DbContext com PostgreSQL
 builder.Services.AddDbContext<RaspDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
+// Swagger habilitado no ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// -----------------------------------------------------------------------------
+// STATUS RASP
+// -----------------------------------------------------------------------------
+
 // GET /status-rasp
+// Lista todos os status do fluxo do RASP em ordem lógica de processo.
 app.MapGet("/status-rasp", async (RaspDbContext db) =>
 {
     var itens = await db.StatusRasp
@@ -33,6 +44,7 @@ app.MapGet("/status-rasp", async (RaspDbContext db) =>
 .WithName("ListarStatusRasp");
 
 // GET /status-rasp/{id}
+// Retorna um status específico pelo id.
 app.MapGet("/status-rasp/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.StatusRasp.FindAsync(id);
@@ -43,7 +55,12 @@ app.MapGet("/status-rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterStatusRaspPorId");
 
+// -----------------------------------------------------------------------------
+// PN RASP
+// -----------------------------------------------------------------------------
+
 // GET /pn-rasp
+// Lista todos os PNs cadastrados no cadastro mestre.
 app.MapGet("/pn-rasp", async (RaspDbContext db) =>
 {
     var itens = await db.PnRasp
@@ -55,6 +72,7 @@ app.MapGet("/pn-rasp", async (RaspDbContext db) =>
 .WithName("ListarPnRasp");
 
 // GET /pn-rasp/{id}
+// Retorna um PN específico pelo id.
 app.MapGet("/pn-rasp/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.PnRasp.FindAsync(id);
@@ -66,6 +84,10 @@ app.MapGet("/pn-rasp/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterPnRaspPorId");
 
 // GET /pn-rasp/codigo/{codigoPn}
+// Busca um PN pelo código, validando:
+// - obrigatório
+// - exatamente 8 caracteres
+// - somente números
 app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext db) =>
 {
     var codigoLimpo = (codigoPn ?? string.Empty).Trim();
@@ -89,6 +111,13 @@ app.MapGet("/pn-rasp/codigo/{codigoPn}", async (string codigoPn, RaspDbContext d
 .WithName("ObterPnRaspPorCodigo");
 
 // POST /pn-rasp
+// Cadastra um novo PN no cadastro mestre.
+//
+// Regras:
+// - PN obrigatório
+// - PN com 8 dígitos numéricos
+// - Nome da peça obrigatório
+// - Não permitir duplicidade de código
 app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
 {
     var codigoPn = (req.CodigoPn ?? string.Empty).Trim();
@@ -124,7 +153,12 @@ app.MapPost("/pn-rasp", async (CriarPnRaspRequest req, RaspDbContext db) =>
 })
 .WithName("CriarPnRasp");
 
+// -----------------------------------------------------------------------------
+// FORNECEDOR RASP
+// -----------------------------------------------------------------------------
+
 // GET /fornecedor-rasp
+// Lista todos os fornecedores cadastrados.
 app.MapGet("/fornecedor-rasp", async (RaspDbContext db) =>
 {
     var itens = await db.FornecedorRasp
@@ -136,6 +170,10 @@ app.MapGet("/fornecedor-rasp", async (RaspDbContext db) =>
 .WithName("ListarFornecedorRasp");
 
 // GET /fornecedor-rasp/duns/{duns}
+// Busca fornecedor pelo DUNS, validando:
+// - obrigatório
+// - exatamente 9 caracteres
+// - somente números
 app.MapGet("/fornecedor-rasp/duns/{duns}", async (string duns, RaspDbContext db) =>
 {
     var dunsLimpo = (duns ?? string.Empty).Trim();
@@ -159,6 +197,7 @@ app.MapGet("/fornecedor-rasp/duns/{duns}", async (string duns, RaspDbContext db)
 .WithName("ObterFornecedorRaspPorDuns");
 
 // GET /fornecedor-rasp/{id}
+// Retorna um fornecedor pelo id.
 app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.FornecedorRasp.FindAsync(id);
@@ -170,6 +209,14 @@ app.MapGet("/fornecedor-rasp/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterFornecedorRaspPorId");
 
 // POST /fornecedor-rasp
+// Cadastra um fornecedor.
+//
+// Regras:
+// - DUNS obrigatório, com 9 dígitos numéricos
+// - Nome obrigatório
+// - TipoFornecedor deve ser LOCAL ou IMPORTADO
+// - IdPais válido
+// - Não permitir DUNS duplicado
 app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbContext db) =>
 {
     var duns = (req.Duns ?? string.Empty).Trim();
@@ -218,7 +265,12 @@ app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbCon
 })
 .WithName("CriarFornecedorRasp");
 
+// -----------------------------------------------------------------------------
+// PERFIL RASP
+// -----------------------------------------------------------------------------
+
 // GET /perfil-rasp
+// Lista os perfis do sistema (ADMIN, ANALISTA, FT, LG, etc.).
 app.MapGet("/perfil-rasp", async (RaspDbContext db) =>
 {
     var itens = await db.PerfilRasp
@@ -230,6 +282,7 @@ app.MapGet("/perfil-rasp", async (RaspDbContext db) =>
 .WithName("ListarPerfilRasp");
 
 // GET /perfil-rasp/{id}
+// Retorna um perfil específico pelo id.
 app.MapGet("/perfil-rasp/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.PerfilRasp.FindAsync(id);
@@ -240,7 +293,12 @@ app.MapGet("/perfil-rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterPerfilRaspPorId");
 
+// -----------------------------------------------------------------------------
+// USUÁRIOS
+// -----------------------------------------------------------------------------
+
 // GET /usuarios
+// Lista usuários cadastrados no sistema.
 app.MapGet("/usuarios", async (RaspDbContext db) =>
 {
     var itens = await db.Usuarios
@@ -252,6 +310,7 @@ app.MapGet("/usuarios", async (RaspDbContext db) =>
 .WithName("ListarUsuarios");
 
 // GET /usuarios/{id}
+// Retorna um usuário específico pelo id.
 app.MapGet("/usuarios/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.Usuarios.FindAsync(id);
@@ -262,7 +321,12 @@ app.MapGet("/usuarios/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterUsuarioPorId");
 
+// -----------------------------------------------------------------------------
+// RASP
+// -----------------------------------------------------------------------------
+
 // GET /rasp
+// Lista os RASPs cadastrados, do mais recente para o mais antigo.
 app.MapGet("/rasp", async (RaspDbContext db) =>
 {
     var itens = await db.Rasp
@@ -274,6 +338,7 @@ app.MapGet("/rasp", async (RaspDbContext db) =>
 .WithName("ListarRasp");
 
 // GET /rasp/{id}
+// Retorna um RASP específico pelo id.
 app.MapGet("/rasp/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.Rasp.FindAsync(id);
@@ -284,11 +349,26 @@ app.MapGet("/rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterRaspPorId");
 
-// POST /rasp -> cria um RASP (rascunho)
+// POST /rasp
+// Cria um novo RASP em rascunho.
+//
+// Regras:
+// - fornecedor deve existir
+// - usuário criador deve existir e estar ativo
+// - descrição do problema obrigatória
+//
+// Efeito esperado:
+// - cria o RASP com status 1 (Em análise)
+// - marca como rascunho
+// - grava o autor em id_analista_mt
+// - gera numero_rasp no formato 000X/YY
 app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfiguration config) =>
 {
     if (req.IdFornecedorRasp <= 0)
         return Results.BadRequest("IdFornecedorRasp inválido.");
+
+    if (req.IdUsuarioCriador <= 0)
+        return Results.BadRequest("IdUsuarioCriador inválido.");
 
     var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
     if (string.IsNullOrWhiteSpace(descricaoProblema))
@@ -299,6 +379,15 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     if (!fornecedorExiste)
         return Results.BadRequest("Fornecedor informado não existe.");
+
+    var usuarioCriador = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioCriador);
+
+    if (usuarioCriador is null)
+        return Results.BadRequest("Usuário criador não existe.");
+
+    if (!usuarioCriador.Ativo)
+        return Results.BadRequest("Usuário criador está inativo.");
 
     var connStr = config.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connStr))
@@ -311,9 +400,9 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     var insertSql = """
         INSERT INTO rasp
-            (numero_rasp, data_criacao, hora_criacao, id_fornecedor_rasp, descricao_problema, id_status_rasp, is_rascunho, percentual_completude)
+            (numero_rasp, data_criacao, hora_criacao, id_fornecedor_rasp, descricao_problema, id_status_rasp, is_rascunho, percentual_completude, id_analista_mt)
         VALUES
-            ('TEMP', CURRENT_DATE, CURRENT_TIME, @id_fornecedor, @descricao, 1, true, 0)
+            ('TEMP', CURRENT_DATE, CURRENT_TIME, @id_fornecedor, @descricao, 1, true, 0, @id_usuario_criador)
         RETURNING id_rasp;
         """;
 
@@ -322,6 +411,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     {
         cmd.Parameters.AddWithValue("id_fornecedor", req.IdFornecedorRasp);
         cmd.Parameters.AddWithValue("descricao", descricaoProblema);
+        cmd.Parameters.AddWithValue("id_usuario_criador", req.IdUsuarioCriador);
         idRasp = (int)(await cmd.ExecuteScalarAsync() ?? 0);
     }
 
@@ -349,7 +439,169 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 })
 .WithName("CriarRasp");
 
+// PUT /rasp/{id}
+// Atualiza o conteúdo principal do RASP enquanto ele ainda estiver em análise.
+//
+// Regras:
+// - somente RASP em status 1 pode ser editado
+// - usuário executor precisa existir e estar ativo
+// - ADMIN pode editar
+// - ANALISTA só pode editar se for o autor do RASP
+// - outro analista apenas visualiza, não edita
+app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbContext db) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 1)
+        return Results.BadRequest("Edição permitida somente para RASP em análise.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    // Perfil 1 = ADMIN
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+    {
+        if (!item.IdAnalistaMt.HasValue)
+            return Results.BadRequest("RASP sem autor definido. Edição não permitida.");
+
+        if (item.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+            return Results.BadRequest("Somente o autor do RASP ou o ADMIN pode editar este registro.");
+    }
+
+    var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
+    if (string.IsNullOrWhiteSpace(descricaoProblema))
+        return Results.BadRequest("DescricaoProblema é obrigatória.");
+
+    item.DescricaoProblema = descricaoProblema;
+    item.Procedencia = string.IsNullOrWhiteSpace(req.Procedencia) ? null : req.Procedencia.Trim();
+    item.ObservacaoGeral = string.IsNullOrWhiteSpace(req.ObservacaoGeral) ? null : req.ObservacaoGeral.Trim();
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(item);
+})
+.WithName("AtualizarRasp");
+
+// POST /rasp/{id}/enviar-ft
+// Ação de negócio para envio do RASP à etapa FT.
+//
+// Regras:
+// - o RASP precisa existir
+// - o RASP precisa estar em "Em análise" (status 1)
+// - o executor precisa existir e estar ativo
+// - somente o autor do RASP ou o ADMIN pode enviar
+// - o RASP ainda precisa estar como rascunho
+//
+// Efeito esperado:
+// - is_rascunho = false
+// - id_status_rasp = 2 (Em avaliação FT)
+//
+// Observação:
+// o banco já possui regra própria de proteção para avanço de status.
+// Então, mesmo que a API permita a tentativa, o banco ainda pode barrar
+// se o registro estiver incompleto.
+app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, EnviarRaspFtRequest req, RaspDbContext db, IConfiguration config) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 1)
+        return Results.BadRequest("Somente RASP em análise pode ser enviado para FT.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    // Perfil 1 = ADMIN
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+    {
+        if (!item.IdAnalistaMt.HasValue)
+            return Results.BadRequest("RASP sem autor definido. Envio não permitido.");
+
+        if (item.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+            return Results.BadRequest("Somente o autor do RASP ou o ADMIN pode enviar este registro para FT.");
+    }
+
+    if (!item.IsRascunho)
+        return Results.BadRequest("Este RASP já foi enviado e não está mais como rascunho.");
+
+    var connStr = config.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+
+    await using var conn = new NpgsqlConnection(connStr);
+    await conn.OpenAsync();
+
+    await using var tx = await conn.BeginTransactionAsync();
+
+    try
+    {
+        var updateSql = """
+            UPDATE rasp
+            SET is_rascunho = false,
+                id_status_rasp = 2
+            WHERE id_rasp = @id;
+            """;
+
+        await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        await tx.CommitAsync();
+
+        // Recarrega o estado atualizado do registro para devolver ao usuário.
+        db.Entry(item).State = EntityState.Detached;
+
+        var atualizado = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+        return Results.Ok(atualizado);
+    }
+    catch (PostgresException ex)
+    {
+        // Se o banco bloquear a transição por regra interna,
+        // devolvemos a mensagem do PostgreSQL para facilitar o diagnóstico.
+        await tx.RollbackAsync();
+        return Results.BadRequest(ex.MessageText);
+    }
+})
+.WithName("EnviarRaspParaFt");
+
+// -----------------------------------------------------------------------------
+// RASP_PN
+// -----------------------------------------------------------------------------
+
 // GET /rasp-pn
+// Lista vínculos entre RASP e PN.
 app.MapGet("/rasp-pn", async (RaspDbContext db) =>
 {
     var itens = await db.RaspPn
@@ -361,6 +613,7 @@ app.MapGet("/rasp-pn", async (RaspDbContext db) =>
 .WithName("ListarRaspPn");
 
 // GET /rasp-pn/{id}
+// Retorna um vínculo específico pelo id.
 app.MapGet("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
 {
     var item = await db.RaspPn.FindAsync(id);
@@ -372,6 +625,15 @@ app.MapGet("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterRaspPnPorId");
 
 // POST /rasp-pn
+// Vincula um PN a um RASP.
+//
+// Regras:
+// - RASP deve existir
+// - PN deve existir no cadastro mestre
+// - DUNS deve existir no cadastro de fornecedor
+// - quantidades não podem ser negativas
+// - ordem de exibição maior que zero
+// - não permitir duplicidade do mesmo PN no mesmo RASP
 app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 {
     if (req.IdRasp <= 0)
@@ -446,7 +708,13 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 })
 .WithName("CriarRaspPn");
 
+// -----------------------------------------------------------------------------
+// DEBUG
+// -----------------------------------------------------------------------------
+
 // GET /debug-model
+// Endpoint de apoio para conferência do mapeamento do EF Core.
+// Útil em desenvolvimento para validar entidades e nomes de tabela.
 app.MapGet("/debug-model", (RaspDbContext db) =>
 {
     var entidades = db.Model.GetEntityTypes()
@@ -464,8 +732,32 @@ app.MapGet("/debug-model", (RaspDbContext db) =>
 
 app.Run();
 
-public record CriarRaspRequest(int IdFornecedorRasp, string DescricaoProblema);
+// -----------------------------------------------------------------------------
+// REQUESTS / RECORDS
+// -----------------------------------------------------------------------------
 
+// Criação inicial do RASP em rascunho, já gravando o autor.
+public record CriarRaspRequest(
+    int IdFornecedorRasp,
+    string DescricaoProblema,
+    int IdUsuarioCriador
+);
+
+// Atualização do conteúdo principal do RASP em análise.
+public record AtualizarRaspRequest(
+    int IdUsuarioExecutor,
+    string DescricaoProblema,
+    string? Procedencia,
+    string? ObservacaoGeral
+);
+
+// Envio do RASP para FT.
+// Informa quem está executando a ação para validação de autoria / ADMIN.
+public record EnviarRaspFtRequest(
+    int IdUsuarioExecutor
+);
+
+// Vínculo de um PN com um RASP.
 public record CriarRaspPnRequest(
     int IdRasp,
     string Pn,
@@ -477,6 +769,7 @@ public record CriarRaspPnRequest(
     short OrdemExibicao
 );
 
+// Cadastro de fornecedor.
 public record CriarFornecedorRaspRequest(
     string Duns,
     string Nome,
@@ -485,6 +778,7 @@ public record CriarFornecedorRaspRequest(
     int IdPais
 );
 
+// Cadastro de PN no mestre.
 public record CriarPnRaspRequest(
     string CodigoPn,
     string NomePeca

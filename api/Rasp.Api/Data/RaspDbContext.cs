@@ -10,6 +10,11 @@ namespace Rasp.Api.Data
         {
         }
 
+        // ---------------------------------------------------------------------
+        // DbSets
+        // ---------------------------------------------------------------------
+        // Cada DbSet representa uma tabela principal usada pela API.
+
         public DbSet<StatusRasp> StatusRasp => Set<StatusRasp>();
         public DbSet<PnRasp> PnRasp => Set<PnRasp>();
         public DbSet<FornecedorRasp> FornecedorRasp => Set<FornecedorRasp>();
@@ -20,6 +25,11 @@ namespace Rasp.Api.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // -----------------------------------------------------------------
+            // STATUS RASP
+            // -----------------------------------------------------------------
+            // Tabela de domínio do fluxo do RASP.
+            // Ex.: Em análise, Em avaliação FT, Em avaliação LG, etc.
             modelBuilder.Entity<StatusRasp>(entity =>
             {
                 entity.ToTable("status_rasp");
@@ -36,6 +46,36 @@ namespace Rasp.Api.Data
                     .HasColumnName("ordem_fluxo");
             });
 
+            // -----------------------------------------------------------------
+            // PN RASP
+            // -----------------------------------------------------------------
+            // Cadastro mestre de PNs.
+            // Regras de negócio do código PN são tratadas na API:
+            // - 8 dígitos
+            // - somente números
+            modelBuilder.Entity<PnRasp>(entity =>
+            {
+                entity.ToTable("pn_rasp");
+
+                entity.HasKey(e => e.IdPn);
+
+                entity.Property(e => e.IdPn)
+                    .HasColumnName("id_pn");
+
+                entity.Property(e => e.CodigoPn)
+                    .HasColumnName("codigo_pn");
+
+                entity.Property(e => e.NomePeca)
+                    .HasColumnName("nome_peca");
+            });
+
+            // -----------------------------------------------------------------
+            // FORNECEDOR RASP
+            // -----------------------------------------------------------------
+            // Cadastro de fornecedores usados no processo RASP.
+            // Regras de DUNS são tratadas na API:
+            // - 9 dígitos
+            // - somente números
             modelBuilder.Entity<FornecedorRasp>(entity =>
             {
                 entity.ToTable("fornecedor_rasp");
@@ -61,6 +101,11 @@ namespace Rasp.Api.Data
                     .HasColumnName("id_pais");
             });
 
+            // -----------------------------------------------------------------
+            // PERFIL RASP
+            // -----------------------------------------------------------------
+            // Perfis do sistema.
+            // Ex.: ADMIN, ANALISTA, FT, LG.
             modelBuilder.Entity<PerfilRasp>(entity =>
             {
                 entity.ToTable("perfil_rasp");
@@ -74,6 +119,11 @@ namespace Rasp.Api.Data
                     .HasColumnName("nome");
             });
 
+            // -----------------------------------------------------------------
+            // USUÁRIOS
+            // -----------------------------------------------------------------
+            // Usuários do sistema com vínculo ao perfil.
+            // O campo id_perfil é importante para as regras de permissão da API.
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.ToTable("usuarios");
@@ -97,8 +147,21 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.Ativo)
                     .HasColumnName("ativo");
+
+                entity.Property(e => e.IdPerfil)
+                    .HasColumnName("id_perfil");
             });
 
+            // -----------------------------------------------------------------
+            // RASP
+            // -----------------------------------------------------------------
+            // Tabela principal do processo.
+            //
+            // Observações importantes:
+            // - id_analista_mt guarda a autoria do RASP
+            // - id_status_rasp controla a fase do fluxo
+            // - is_rascunho indica se o RASP ainda está em construção
+            // - percentual_completude será importante para validar envio de fase
             modelBuilder.Entity<RaspEntity>(entity =>
             {
                 entity.ToTable("rasp");
@@ -259,22 +322,17 @@ namespace Rasp.Api.Data
                     .HasColumnName("id_indice_operacional_rasp");
             });
 
-            modelBuilder.Entity<PnRasp>(entity =>
-            {
-                entity.ToTable("pn_rasp");
-
-                entity.HasKey(e => e.IdPn);
-
-                entity.Property(e => e.IdPn)
-                    .HasColumnName("id_pn");
-
-                entity.Property(e => e.CodigoPn)
-                    .HasColumnName("codigo_pn");
-
-                entity.Property(e => e.NomePeca)
-                    .HasColumnName("nome_peca");
-            });
-
+            // -----------------------------------------------------------------
+            // RASP_PN
+            // -----------------------------------------------------------------
+            // Tabela de vínculo entre o RASP e os PNs envolvidos.
+            //
+            // Regras principais tratadas pela API:
+            // - RASP deve existir
+            // - PN deve existir
+            // - DUNS deve existir
+            // - quantidades não negativas
+            // - não repetir o mesmo PN no mesmo RASP
             modelBuilder.Entity<RaspPnEntity>(entity =>
             {
                 entity.ToTable("rasp_pn");
