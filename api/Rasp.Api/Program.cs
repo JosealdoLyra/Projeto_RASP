@@ -535,6 +535,16 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     item.BreakpointCodigo = string.IsNullOrWhiteSpace(req.BreakpointCodigo) ? null : req.BreakpointCodigo.Trim();
     item.BreakpointDatahora = req.BreakpointDatahora;
 
+
+    // Atualização do bloco de responsáveis e fechamento
+    item.IdAnalista = req.IdAnalista;
+    item.IdAprovadorFt = req.IdAprovadorFt;
+    item.IdAprovadorLg = req.IdAprovadorLg;
+    item.AnoRasp = req.AnoRasp;
+    item.DataFechamento = req.DataFechamento;
+    item.IdPerfilRasp = req.IdPerfilRasp;
+    item.IdIndiceOperacionalRasp = req.IdIndiceOperacionalRasp;
+    
     try
     {
         await db.SaveChangesAsync();
@@ -1058,8 +1068,8 @@ public record CriarRaspRequest(
 );
 
 // Atualização do conteúdo principal do RASP em análise.
-// Nesta etapa, além dos blocos já existentes, também permitimos atualizar
-// o bloco de BP / Breakpoint.
+// Nesta etapa, além dos blocos já existentes, também permitimos atualizar:
+// - bloco de responsáveis e fechamento
 public record AtualizarRaspRequest(
     int IdUsuarioExecutor,
     string DescricaoProblema,
@@ -1095,7 +1105,14 @@ public record AtualizarRaspRequest(
     DateTime? BpDatahora,
     string? BreakpointTexto,
     string? BreakpointCodigo,
-    DateTime? BreakpointDatahora
+    DateTime? BreakpointDatahora,
+    int? IdAnalista,
+    int? IdAprovadorFt,
+    int? IdAprovadorLg,
+    short? AnoRasp,
+    DateOnly? DataFechamento,
+    int? IdPerfilRasp,
+    int? IdIndiceOperacionalRasp
 );
 
 // Request padrão para ações de transição do fluxo do RASP.
