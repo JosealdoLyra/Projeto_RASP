@@ -453,6 +453,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 // - primeiro bloco de campos estruturais do formulário
 // - bloco de impactos do processo
 // - bloco de classificações e vínculos operacionais
+// - bloco de flags / indicadores booleanos do processo
 app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbContext db) =>
 {
     var item = await db.Rasp.FindAsync(id);
@@ -517,13 +518,43 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     item.IdContaCrSubcontaRasp = req.IdContaCrSubcontaRasp;
     item.IdGmAliadoRasp = req.IdGmAliadoRasp;
 
-    await db.SaveChangesAsync();
+    // Atualização do bloco de flags / indicadores booleanos
+    item.IniciativaFornecedor = req.IniciativaFornecedor;
+    item.SupplierAlert = req.SupplierAlert;
+    item.Reversao = req.Reversao;
+    item.Safety = req.Safety;
+    item.EmitiuPrr = req.EmitiuPrr;
+    item.AprovadoLg = req.AprovadoLg;
+    item.IsSupplierAlert = req.IsSupplierAlert;
+    item.IsSafety = req.IsSafety;
+    item.IsReversao = req.IsReversao;
+    item.GeraPrr = req.GeraPrr;
 
-    return Results.Ok(item);
+    try
+    {
+        await db.SaveChangesAsync();
+        return Results.Ok(item);
+    }
+    catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+    {
+        if (pgEx.SqlState == "23503")
+        {
+            return Results.BadRequest(
+                $"Um dos IDs informados não existe em tabela auxiliar. Constraint: {pgEx.ConstraintName}");
+        }
+
+        if (pgEx.SqlState == "23505")
+        {
+            return Results.BadRequest(
+                $"Violação de unicidade no banco. Constraint: {pgEx.ConstraintName}");
+        }
+
+        return Results.BadRequest(
+            $"Erro de banco ao salvar o RASP. Constraint: {pgEx.ConstraintName}");
+    }
 })
 .WithName("AtualizarRasp");
 
-// POST /rasp/{id}/enviar-ft
 // POST /rasp/{id}/enviar-ft
 // Transição do fluxo: Em análise (MT) -> Em avaliação FT.
 //
@@ -1026,6 +1057,7 @@ public record CriarRaspRequest(
 // - primeiro bloco de campos estruturais do formulário do MT
 // - bloco de impactos do processo
 // - bloco de classificações e vínculos operacionais
+// - bloco de flags / indicadores booleanos do processo
 public record AtualizarRaspRequest(
     int IdUsuarioExecutor,
     string DescricaoProblema,
@@ -1045,7 +1077,17 @@ public record AtualizarRaspRequest(
     int? IdEmpresaSelecaoRasp,
     int? IdContaCrRasp,
     int? IdContaCrSubcontaRasp,
-    int? IdGmAliadoRasp
+    int? IdGmAliadoRasp,
+    bool? IniciativaFornecedor,
+    bool? SupplierAlert,
+    bool? Reversao,
+    bool? Safety,
+    bool? EmitiuPrr,
+    bool? AprovadoLg,
+    bool? IsSupplierAlert,
+    bool? IsSafety,
+    bool? IsReversao,
+    bool? GeraPrr
 );
 
 // Request padrão para ações de transição do fluxo do RASP.
