@@ -544,7 +544,7 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     item.DataFechamento = req.DataFechamento;
     item.IdPerfilRasp = req.IdPerfilRasp;
     item.IdIndiceOperacionalRasp = req.IdIndiceOperacionalRasp;
-    
+
     try
     {
         await db.SaveChangesAsync();
@@ -622,9 +622,7 @@ app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, AcaoFluxoRaspRequest req,
             return Results.BadRequest("Somente o autor do RASP ou o ADMIN pode enviar este registro para FT.");
     }
 
-    if (!item.IsRascunho)
-        return Results.BadRequest("Este RASP já foi enviado e não está mais como rascunho.");
-
+    
     var connStr = config.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connStr))
         return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
@@ -752,6 +750,101 @@ app.MapPost("/rasp/{id:int}/enviar-lg", async (int id, AcaoFluxoRaspRequest req,
     }
 })
 .WithName("EnviarRaspParaLg");
+
+
+// POST /rasp/{id}/aprovar-lg
+// Transição do fluxo: Em avaliação LG -> Concluído.
+//
+// Regras:
+// - o RASP precisa existir
+// - o RASP precisa estar em status 3
+// - o executor precisa existir e estar ativo
+// - LG pode executar
+// - ADMIN também pode executar como exceção
+//
+// Efeito esperado:
+// - id_status_rasp = 4
+// - is_rascunho = false
+// - aprovado_lg = true
+// - id_aprovador_lg = usuário executor
+// - data_fechamento = data atual
+app.MapPost("/rasp/{id:int}/aprovar-lg", async (int id, AcaoFluxoRaspRequest req, RaspDbContext db, IConfiguration config) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 3)
+        return Results.BadRequest("Somente RASP em avaliação LG pode ser aprovado nesta etapa.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isLg = usuarioExecutor.IdPerfil == 4;
+
+    if (!isAdmin && !isLg)
+        return Results.BadRequest("Somente LG ou ADMIN pode aprovar este registro.");
+
+    if (item.IsRascunho)
+        return Results.BadRequest("RASP em avaliação LG não pode estar como rascunho.");
+
+    var connStr = config.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+
+    await using var conn = new NpgsqlConnection(connStr);
+    await conn.OpenAsync();
+
+    await using var tx = await conn.BeginTransactionAsync();
+
+    try
+    {
+        var updateSql = """
+            UPDATE rasp
+            SET is_rascunho = false,
+                id_status_rasp = 4,
+                aprovado_lg = true,
+                id_aprovador_lg = @id_usuario_executor,
+                data_fechamento = CURRENT_DATE
+            WHERE id_rasp = @id;
+            """;
+
+        await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            cmd.Parameters.AddWithValue("id_usuario_executor", req.IdUsuarioExecutor);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        await tx.CommitAsync();
+
+        db.Entry(item).State = EntityState.Detached;
+
+        var atualizado = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+        return Results.Ok(atualizado);
+    }
+    catch (PostgresException ex)
+    {
+        await tx.RollbackAsync();
+        return Results.BadRequest(ex.MessageText);
+    }
+})
+.WithName("AprovarRaspNoLg");
+
 
 // POST /rasp/{id}/retornar-ft
 // Transição administrativa: Em avaliação LG -> Em avaliação FT.
@@ -919,6 +1012,89 @@ app.MapPost("/rasp/{id:int}/retornar-analise", async (int id, AcaoFluxoRaspReque
     }
 })
 .WithName("RetornarRaspParaAnalise");
+
+// POST /rasp/{id}/registrar-spps
+// Registra ou vincula o número do SPPS ao RASP.
+//
+// Regras:
+// - o RASP precisa existir
+// - o executor precisa existir e estar ativo
+// - somente FT ou ADMIN pode executar
+// - SppsNumero é obrigatório
+//
+// Observações:
+// - este endpoint não representa etapa do fluxo do RASP
+// - o SPPS é apenas um vínculo / referência de controle
+// - FT registra somente se o campo ainda estiver vazio
+// - ADMIN pode registrar ou corrigir, se necessário
+app.MapPost("/rasp/{id:int}/registrar-spps", async (int id, RegistrarSppsRequest req, RaspDbContext db) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isFt = usuarioExecutor.IdPerfil == 3;
+
+    if (!isAdmin && !isFt)
+        return Results.BadRequest("Somente FT ou ADMIN pode registrar SPPS.");
+
+    var sppsNumero = (req.SppsNumero ?? string.Empty).Trim();
+
+if (string.IsNullOrWhiteSpace(sppsNumero))
+    return Results.BadRequest("SppsNumero é obrigatório.");
+
+if (sppsNumero.Length != 6)
+    return Results.BadRequest("SppsNumero deve ter exatamente 6 dígitos.");
+
+if (!sppsNumero.All(char.IsDigit))
+    return Results.BadRequest("SppsNumero deve conter somente números.");
+
+    // FT não pode sobrescrever um SPPS já registrado.
+    if (!isAdmin && !string.IsNullOrWhiteSpace(item.SppsNumero))
+        return Results.BadRequest("Este RASP já possui SPPS registrado.");
+
+    item.SppsNumero = sppsNumero;
+    item.IdSppsClassificacaoRasp = req.IdSppsClassificacaoRasp;
+    item.IdSppsStatusRasp = req.IdSppsStatusRasp;
+
+    try
+    {
+        await db.SaveChangesAsync();
+        return Results.Ok(item);
+    }
+    catch (DbUpdateException ex) when (ex.InnerException is PostgresException pgEx)
+    {
+        if (pgEx.SqlState == "23503")
+        {
+            return Results.BadRequest(
+                $"Um dos IDs informados não existe em tabela auxiliar. Constraint: {pgEx.ConstraintName}");
+        }
+
+        if (pgEx.SqlState == "23505")
+        {
+            return Results.BadRequest(
+                $"Violação de unicidade no banco. Constraint: {pgEx.ConstraintName}");
+        }
+
+        return Results.BadRequest(
+            $"Erro de banco ao registrar SPPS. Constraint: {pgEx.ConstraintName}");
+    }
+})
+.WithName("RegistrarSppsNoRasp");
 
 // -----------------------------------------------------------------------------
 // RASP_PN
@@ -1146,4 +1322,14 @@ public record CriarFornecedorRaspRequest(
 public record CriarPnRaspRequest(
     string CodigoPn,
     string NomePeca
+);
+
+// Registro posterior do SPPS dentro do RASP.
+// Este campo é apenas uma referência de controle e não faz parte
+// do fluxo obrigatório de aprovação do RASP.
+public record RegistrarSppsRequest(
+    int IdUsuarioExecutor,
+    string SppsNumero,
+    int? IdSppsClassificacaoRasp,
+    int? IdSppsStatusRasp
 );
