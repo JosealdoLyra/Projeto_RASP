@@ -448,6 +448,11 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 // - ADMIN pode editar
 // - ANALISTA só pode editar se for o autor do RASP
 // - outro analista apenas visualiza, não edita
+//
+// Nesta etapa, além do texto principal, também atualizamos:
+// - primeiro bloco de campos estruturais do formulário
+// - bloco de impactos do processo
+// - bloco de classificações e vínculos operacionais
 app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbContext db) =>
 {
     var item = await db.Rasp.FindAsync(id);
@@ -486,9 +491,31 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     if (string.IsNullOrWhiteSpace(descricaoProblema))
         return Results.BadRequest("DescricaoProblema é obrigatória.");
 
+    // Atualização do conteúdo textual principal
     item.DescricaoProblema = descricaoProblema;
     item.Procedencia = string.IsNullOrWhiteSpace(req.Procedencia) ? null : req.Procedencia.Trim();
     item.ObservacaoGeral = string.IsNullOrWhiteSpace(req.ObservacaoGeral) ? null : req.ObservacaoGeral.Trim();
+
+    // Atualização do primeiro bloco de campos estruturais do formulário
+    item.IdModeloVeiculoRasp = req.IdModeloVeiculoRasp;
+    item.IdSetorRasp = req.IdSetorRasp;
+    item.IdTurnoRasp = req.IdTurnoRasp;
+    item.IdOrigemFabricacaoRasp = req.IdOrigemFabricacaoRasp;
+    item.IdPilotoRasp = req.IdPilotoRasp;
+
+    // Atualização do bloco de impactos do processo
+    item.IdImpactoClienteRasp = req.IdImpactoClienteRasp;
+    item.IdImpactoQualidadeRasp = req.IdImpactoQualidadeRasp;
+    item.IdMaiorImpactoRasp = req.IdMaiorImpactoRasp;
+    item.IdMajorRasp = req.IdMajorRasp;
+
+    // Atualização do bloco de classificações e vínculos operacionais
+    item.IdSppsClassificacaoRasp = req.IdSppsClassificacaoRasp;
+    item.IdSppsStatusRasp = req.IdSppsStatusRasp;
+    item.IdEmpresaSelecaoRasp = req.IdEmpresaSelecaoRasp;
+    item.IdContaCrRasp = req.IdContaCrRasp;
+    item.IdContaCrSubcontaRasp = req.IdContaCrSubcontaRasp;
+    item.IdGmAliadoRasp = req.IdGmAliadoRasp;
 
     await db.SaveChangesAsync();
 
@@ -497,24 +524,21 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
 .WithName("AtualizarRasp");
 
 // POST /rasp/{id}/enviar-ft
-// Ação de negócio para envio do RASP à etapa FT.
+// POST /rasp/{id}/enviar-ft
+// Transição do fluxo: Em análise (MT) -> Em avaliação FT.
 //
 // Regras:
 // - o RASP precisa existir
-// - o RASP precisa estar em "Em análise" (status 1)
+// - o RASP precisa estar em status 1
 // - o executor precisa existir e estar ativo
-// - somente o autor do RASP ou o ADMIN pode enviar
-// - o RASP ainda precisa estar como rascunho
+// - ADMIN pode executar
+// - não ADMIN só pode executar se for o autor do RASP
+// - o documento ainda precisa estar como rascunho
 //
 // Efeito esperado:
+// - id_status_rasp = 2
 // - is_rascunho = false
-// - id_status_rasp = 2 (Em avaliação FT)
-//
-// Observação:
-// o banco já possui regra própria de proteção para avanço de status.
-// Então, mesmo que a API permita a tentativa, o banco ainda pode barrar
-// se o registro estiver incompleto.
-app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, EnviarRaspFtRequest req, RaspDbContext db, IConfiguration config) =>
+app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, AcaoFluxoRaspRequest req, RaspDbContext db, IConfiguration config) =>
 {
     var item = await db.Rasp.FindAsync(id);
 
@@ -536,7 +560,11 @@ app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, EnviarRaspFtRequest req, 
     if (!usuarioExecutor.Ativo)
         return Results.BadRequest("Usuário executor está inativo.");
 
-    // Perfil 1 = ADMIN
+    // Perfis atuais da tabela perfil_rasp:
+    // 1 = ADMIN
+    // 2 = ANALISTA
+    // 3 = FT
+    // 4 = LG
     var isAdmin = usuarioExecutor.IdPerfil == 1;
 
     if (!isAdmin)
@@ -577,7 +605,6 @@ app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, EnviarRaspFtRequest req, 
 
         await tx.CommitAsync();
 
-        // Recarrega o estado atualizado do registro para devolver ao usuário.
         db.Entry(item).State = EntityState.Detached;
 
         var atualizado = await db.Rasp
@@ -588,13 +615,264 @@ app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, EnviarRaspFtRequest req, 
     }
     catch (PostgresException ex)
     {
-        // Se o banco bloquear a transição por regra interna,
-        // devolvemos a mensagem do PostgreSQL para facilitar o diagnóstico.
         await tx.RollbackAsync();
         return Results.BadRequest(ex.MessageText);
     }
 })
 .WithName("EnviarRaspParaFt");
+
+// POST /rasp/{id}/enviar-lg
+// Transição do fluxo: Em avaliação FT -> Em avaliação LG.
+//
+// Regras:
+// - o RASP precisa existir
+// - o RASP precisa estar em status 2
+// - o executor precisa existir e estar ativo
+// - ADMIN pode executar
+// - no fluxo normal, FT também pode executar
+//
+// Efeito esperado:
+// - id_status_rasp = 3
+// - is_rascunho permanece false
+app.MapPost("/rasp/{id:int}/enviar-lg", async (int id, AcaoFluxoRaspRequest req, RaspDbContext db, IConfiguration config) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 2)
+        return Results.BadRequest("Somente RASP em avaliação FT pode ser enviado para LG.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isFt = usuarioExecutor.IdPerfil == 3;
+
+    if (!isAdmin && !isFt)
+        return Results.BadRequest("Somente FT ou ADMIN pode enviar este registro para LG.");
+
+    if (item.IsRascunho)
+        return Results.BadRequest("RASP em avaliação não pode estar como rascunho.");
+
+    var connStr = config.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+
+    await using var conn = new NpgsqlConnection(connStr);
+    await conn.OpenAsync();
+
+    await using var tx = await conn.BeginTransactionAsync();
+
+    try
+    {
+        var updateSql = """
+            UPDATE rasp
+            SET is_rascunho = false,
+                id_status_rasp = 3
+            WHERE id_rasp = @id;
+            """;
+
+        await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        await tx.CommitAsync();
+
+        db.Entry(item).State = EntityState.Detached;
+
+        var atualizado = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+        return Results.Ok(atualizado);
+    }
+    catch (PostgresException ex)
+    {
+        await tx.RollbackAsync();
+        return Results.BadRequest(ex.MessageText);
+    }
+})
+.WithName("EnviarRaspParaLg");
+
+// POST /rasp/{id}/retornar-ft
+// Transição administrativa: Em avaliação LG -> Em avaliação FT.
+//
+// Regras:
+// - o RASP precisa existir
+// - o RASP precisa estar em status 3
+// - o executor precisa existir e estar ativo
+// - somente ADMIN pode executar
+//
+// Efeito esperado:
+// - id_status_rasp = 2
+// - is_rascunho permanece false
+app.MapPost("/rasp/{id:int}/retornar-ft", async (int id, AcaoFluxoRaspRequest req, RaspDbContext db, IConfiguration config) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 3)
+        return Results.BadRequest("Somente RASP em avaliação LG pode retornar para FT.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+        return Results.BadRequest("Somente ADMIN pode retornar este registro para FT.");
+
+    var connStr = config.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+
+    await using var conn = new NpgsqlConnection(connStr);
+    await conn.OpenAsync();
+
+    await using var tx = await conn.BeginTransactionAsync();
+
+    try
+    {
+        var updateSql = """
+            UPDATE rasp
+            SET is_rascunho = false,
+                id_status_rasp = 2
+            WHERE id_rasp = @id;
+            """;
+
+        await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        await tx.CommitAsync();
+
+        db.Entry(item).State = EntityState.Detached;
+
+        var atualizado = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+        return Results.Ok(atualizado);
+    }
+    catch (PostgresException ex)
+    {
+        await tx.RollbackAsync();
+        return Results.BadRequest(ex.MessageText);
+    }
+})
+.WithName("RetornarRaspParaFt");
+
+// POST /rasp/{id}/retornar-analise
+// Transição administrativa:
+// - Em avaliação FT -> Em análise
+// - Em avaliação LG -> Em análise
+//
+// Regras:
+// - o RASP precisa existir
+// - o RASP precisa estar em status 2 ou 3
+// - o executor precisa existir e estar ativo
+// - somente ADMIN pode executar
+//
+// Efeito esperado:
+// - id_status_rasp = 1
+// - is_rascunho = false
+//
+// Observação:
+// o documento volta para análise, mas não volta a ser rascunho.
+app.MapPost("/rasp/{id:int}/retornar-analise", async (int id, AcaoFluxoRaspRequest req, RaspDbContext db, IConfiguration config) =>
+{
+    var item = await db.Rasp.FindAsync(id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 2 && item.IdStatusRasp != 3)
+        return Results.BadRequest("Somente RASP em avaliação FT ou LG pode retornar para análise.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+        return Results.BadRequest("Somente ADMIN pode retornar este registro para análise.");
+
+    var connStr = config.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+
+    await using var conn = new NpgsqlConnection(connStr);
+    await conn.OpenAsync();
+
+    await using var tx = await conn.BeginTransactionAsync();
+
+    try
+    {
+        var updateSql = """
+            UPDATE rasp
+            SET is_rascunho = false,
+                id_status_rasp = 1
+            WHERE id_rasp = @id;
+            """;
+
+        await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("id", id);
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        await tx.CommitAsync();
+
+        db.Entry(item).State = EntityState.Detached;
+
+        var atualizado = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+        return Results.Ok(atualizado);
+    }
+    catch (PostgresException ex)
+    {
+        await tx.RollbackAsync();
+        return Results.BadRequest(ex.MessageText);
+    }
+})
+.WithName("RetornarRaspParaAnalise");
 
 // -----------------------------------------------------------------------------
 // RASP_PN
@@ -744,16 +1022,35 @@ public record CriarRaspRequest(
 );
 
 // Atualização do conteúdo principal do RASP em análise.
+// Nesta etapa, além do texto base, também permitimos atualizar:
+// - primeiro bloco de campos estruturais do formulário do MT
+// - bloco de impactos do processo
+// - bloco de classificações e vínculos operacionais
 public record AtualizarRaspRequest(
     int IdUsuarioExecutor,
     string DescricaoProblema,
     string? Procedencia,
-    string? ObservacaoGeral
+    string? ObservacaoGeral,
+    int? IdModeloVeiculoRasp,
+    int? IdSetorRasp,
+    int? IdTurnoRasp,
+    int? IdOrigemFabricacaoRasp,
+    int? IdPilotoRasp,
+    int? IdImpactoClienteRasp,
+    int? IdImpactoQualidadeRasp,
+    int? IdMaiorImpactoRasp,
+    int? IdMajorRasp,
+    int? IdSppsClassificacaoRasp,
+    int? IdSppsStatusRasp,
+    int? IdEmpresaSelecaoRasp,
+    int? IdContaCrRasp,
+    int? IdContaCrSubcontaRasp,
+    int? IdGmAliadoRasp
 );
 
-// Envio do RASP para FT.
-// Informa quem está executando a ação para validação de autoria / ADMIN.
-public record EnviarRaspFtRequest(
+// Request padrão para ações de transição do fluxo do RASP.
+// Informa quem está executando a ação para a API validar perfil e permissão.
+public record AcaoFluxoRaspRequest(
     int IdUsuarioExecutor
 );
 
