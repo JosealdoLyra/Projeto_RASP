@@ -294,6 +294,130 @@ app.MapGet("/perfil-rasp/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterPerfilRaspPorId");
 
 // -----------------------------------------------------------------------------
+// DOMÍNIOS AUXILIARES DO RASP
+// -----------------------------------------------------------------------------
+
+// GET /modelo-veiculo-rasp
+// Lista os modelos de veículo cadastrados para uso no RASP.
+app.MapGet("/modelo-veiculo-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ModeloVeiculoRasp
+        .OrderBy(m => m.OrdemExibicao)
+        .ThenBy(m => m.NomeModelo)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarModeloVeiculoRasp");
+
+// GET /modelo-veiculo-rasp/{id}
+app.MapGet("/modelo-veiculo-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ModeloVeiculoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Modelo de veículo não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterModeloVeiculoRaspPorId");
+
+// GET /setor-rasp
+// Lista os setores cadastrados para uso no RASP.
+app.MapGet("/setor-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.SetorRasp
+        .OrderBy(s => s.OrdemExibicao)
+        .ThenBy(s => s.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarSetorRasp");
+
+// GET /setor-rasp/{id}
+app.MapGet("/setor-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.SetorRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Setor não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterSetorRaspPorId");
+
+// GET /turno-rasp
+// Lista os turnos cadastrados para uso no RASP.
+app.MapGet("/turno-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.TurnoRasp
+        .OrderBy(t => t.OrdemExibicao)
+        .ThenBy(t => t.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarTurnoRasp");
+
+// GET /turno-rasp/{id}
+app.MapGet("/turno-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.TurnoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Turno não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterTurnoRaspPorId");
+
+// GET /origem-fabricacao-rasp
+// Lista as origens de fabricação cadastradas para uso no RASP.
+app.MapGet("/origem-fabricacao-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.OrigemFabricacaoRasp
+        .OrderBy(o => o.OrdemExibicao)
+        .ThenBy(o => o.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarOrigemFabricacaoRasp");
+
+// GET /origem-fabricacao-rasp/{id}
+app.MapGet("/origem-fabricacao-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.OrigemFabricacaoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Origem de fabricação não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterOrigemFabricacaoRaspPorId");
+
+// GET /piloto-rasp
+// Lista os pilotos cadastrados para uso no RASP.
+app.MapGet("/piloto-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.PilotoRasp
+        .OrderBy(p => p.OrdemExibicao)
+        .ThenBy(p => p.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarPilotoRasp");
+
+// GET /piloto-rasp/{id}
+app.MapGet("/piloto-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.PilotoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Piloto não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterPilotoRaspPorId");
+
+// -----------------------------------------------------------------------------
 // USUÁRIOS
 // -----------------------------------------------------------------------------
 

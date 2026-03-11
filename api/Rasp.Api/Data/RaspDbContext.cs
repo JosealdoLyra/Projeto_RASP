@@ -22,6 +22,11 @@ namespace Rasp.Api.Data
         public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<RaspEntity> Rasp => Set<RaspEntity>();
         public DbSet<RaspPnEntity> RaspPn => Set<RaspPnEntity>();
+        public DbSet<ModeloVeiculoRasp> ModeloVeiculoRasp => Set<ModeloVeiculoRasp>();
+        public DbSet<SetorRasp> SetorRasp => Set<SetorRasp>();
+        public DbSet<TurnoRasp> TurnoRasp => Set<TurnoRasp>();
+        public DbSet<OrigemFabricacaoRasp> OrigemFabricacaoRasp => Set<OrigemFabricacaoRasp>();
+        public DbSet<PilotoRasp> PilotoRasp => Set<PilotoRasp>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -107,17 +112,100 @@ namespace Rasp.Api.Data
             // Perfis do sistema.
             // Ex.: ADMIN, ANALISTA, FT, LG.
             modelBuilder.Entity<PerfilRasp>(entity =>
-            {
-                entity.ToTable("perfil_rasp");
+{
+    entity.ToTable("perfil_rasp");
 
-                entity.HasKey(e => e.IdPerfil);
+    entity.HasKey(e => e.IdPerfil);
 
-                entity.Property(e => e.IdPerfil)
-                    .HasColumnName("id_perfil");
+    entity.Property(e => e.IdPerfil)
+        .HasColumnName("id_perfil");
 
-                entity.Property(e => e.Nome)
-                    .HasColumnName("nome");
-            });
+    entity.Property(e => e.Nome)
+        .HasColumnName("nome");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+});
+
+            modelBuilder.Entity<ModeloVeiculoRasp>(entity =>
+{
+             entity.ToTable("modelo_veiculo_rasp");
+
+             entity.HasKey(e => e.IdModeloVeiculoRasp);
+
+             entity.Property(e => e.IdModeloVeiculoRasp)
+            .HasColumnName("id_modelo_veiculo_rasp");
+
+    entity.Property(e => e.NomeModelo)
+        .HasColumnName("nome_modelo");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
+
+modelBuilder.Entity<SetorRasp>(entity =>
+{
+    entity.ToTable("setor_rasp");
+
+    entity.HasKey(e => e.IdSetorRasp);
+
+    entity.Property(e => e.IdSetorRasp)
+        .HasColumnName("id_setor_rasp");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
+
+modelBuilder.Entity<TurnoRasp>(entity =>
+{
+    entity.ToTable("turno_rasp");
+
+    entity.HasKey(e => e.IdTurnoRasp);
+
+    entity.Property(e => e.IdTurnoRasp)
+        .HasColumnName("id_turno_rasp");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
+
+modelBuilder.Entity<OrigemFabricacaoRasp>(entity =>
+{
+    entity.ToTable("origem_fabricacao_rasp");
+
+    entity.HasKey(e => e.IdOrigemFabricacaoRasp);
+
+    entity.Property(e => e.IdOrigemFabricacaoRasp)
+        .HasColumnName("id_origem_fabricacao_rasp");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
+
+modelBuilder.Entity<PilotoRasp>(entity =>
+{
+    entity.ToTable("piloto_rasp");
+
+    entity.HasKey(e => e.IdPilotoRasp);
+
+    entity.Property(e => e.IdPilotoRasp)
+        .HasColumnName("id_piloto_rasp");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
 
             // -----------------------------------------------------------------
             // USUÁRIOS
