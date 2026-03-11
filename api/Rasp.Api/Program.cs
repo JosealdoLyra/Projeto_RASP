@@ -449,11 +449,8 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 // - ANALISTA só pode editar se for o autor do RASP
 // - outro analista apenas visualiza, não edita
 //
-// Nesta etapa, além do texto principal, também atualizamos:
-// - primeiro bloco de campos estruturais do formulário
-// - bloco de impactos do processo
-// - bloco de classificações e vínculos operacionais
-// - bloco de flags / indicadores booleanos do processo
+// Nesta etapa, além dos blocos anteriores, também atualizamos:
+// - bloco de BP / Breakpoint
 app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbContext db) =>
 {
     var item = await db.Rasp.FindAsync(id);
@@ -529,6 +526,14 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     item.IsSafety = req.IsSafety;
     item.IsReversao = req.IsReversao;
     item.GeraPrr = req.GeraPrr;
+
+    // Atualização do bloco de BP / Breakpoint
+    item.BpTexto = string.IsNullOrWhiteSpace(req.BpTexto) ? null : req.BpTexto.Trim();
+    item.BpSerie = string.IsNullOrWhiteSpace(req.BpSerie) ? null : req.BpSerie.Trim();
+    item.BpDatahora = req.BpDatahora;
+    item.BreakpointTexto = string.IsNullOrWhiteSpace(req.BreakpointTexto) ? null : req.BreakpointTexto.Trim();
+    item.BreakpointCodigo = string.IsNullOrWhiteSpace(req.BreakpointCodigo) ? null : req.BreakpointCodigo.Trim();
+    item.BreakpointDatahora = req.BreakpointDatahora;
 
     try
     {
@@ -1053,11 +1058,8 @@ public record CriarRaspRequest(
 );
 
 // Atualização do conteúdo principal do RASP em análise.
-// Nesta etapa, além do texto base, também permitimos atualizar:
-// - primeiro bloco de campos estruturais do formulário do MT
-// - bloco de impactos do processo
-// - bloco de classificações e vínculos operacionais
-// - bloco de flags / indicadores booleanos do processo
+// Nesta etapa, além dos blocos já existentes, também permitimos atualizar
+// o bloco de BP / Breakpoint.
 public record AtualizarRaspRequest(
     int IdUsuarioExecutor,
     string DescricaoProblema,
@@ -1087,7 +1089,13 @@ public record AtualizarRaspRequest(
     bool? IsSupplierAlert,
     bool? IsSafety,
     bool? IsReversao,
-    bool? GeraPrr
+    bool? GeraPrr,
+    string? BpTexto,
+    string? BpSerie,
+    DateTime? BpDatahora,
+    string? BreakpointTexto,
+    string? BreakpointCodigo,
+    DateTime? BreakpointDatahora
 );
 
 // Request padrão para ações de transição do fluxo do RASP.
