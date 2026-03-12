@@ -417,6 +417,257 @@ app.MapGet("/piloto-rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterPilotoRaspPorId");
 
+// GET /impacto-cliente-rasp
+app.MapGet("/impacto-cliente-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ImpactoClienteRasp
+        .OrderBy(i => i.OrdemExibicao)
+        .ThenBy(i => i.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarImpactoClienteRasp");
+
+// GET /impacto-cliente-rasp/{id}
+app.MapGet("/impacto-cliente-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ImpactoClienteRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Impacto cliente não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterImpactoClienteRaspPorId");
+
+// GET /impacto-qualidade-rasp
+app.MapGet("/impacto-qualidade-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ImpactoQualidadeRasp
+        .OrderBy(i => i.OrdemExibicao)
+        .ThenBy(i => i.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarImpactoQualidadeRasp");
+
+// GET /impacto-qualidade-rasp/{id}
+app.MapGet("/impacto-qualidade-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ImpactoQualidadeRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Impacto qualidade não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterImpactoQualidadeRaspPorId");
+
+// GET /maior-impacto-rasp
+app.MapGet("/maior-impacto-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.MaiorImpactoRasp
+        .OrderBy(i => i.OrdemExibicao)
+        .ThenBy(i => i.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarMaiorImpactoRasp");
+
+// GET /maior-impacto-rasp/{id}
+app.MapGet("/maior-impacto-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.MaiorImpactoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Maior impacto não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterMaiorImpactoRaspPorId");
+
+// GET /major-rasp
+app.MapGet("/major-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.MajorRasp
+        .OrderBy(i => i.OrdemExibicao)
+        .ThenBy(i => i.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarMajorRasp");
+
+// GET /major-rasp/{id}
+app.MapGet("/major-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.MajorRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Major não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterMajorRaspPorId");
+
+// GET /empresa-selecao-rasp
+app.MapGet("/empresa-selecao-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.EmpresaSelecaoRasp
+        .OrderBy(e => e.NomeEmpresa)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarEmpresaSelecaoRasp");
+
+// GET /empresa-selecao-rasp/{id}
+app.MapGet("/empresa-selecao-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.EmpresaSelecaoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Empresa de seleção não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterEmpresaSelecaoRaspPorId");
+
+// GET /conta-cr-rasp
+app.MapGet("/conta-cr-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ContaCrRasp
+        .OrderBy(c => c.Codigo)
+        .ThenBy(c => c.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarContaCrRasp");
+
+// GET /conta-cr-rasp/{id}
+app.MapGet("/conta-cr-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ContaCrRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Conta CR não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterContaCrRaspPorId");
+
+// GET /conta-cr-subconta-rasp
+app.MapGet("/conta-cr-subconta-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ContaCrSubcontaRasp
+        .OrderBy(c => c.CodigoSubconta)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarContaCrSubcontaRasp");
+
+// GET /conta-cr-subconta-rasp/{id}
+app.MapGet("/conta-cr-subconta-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ContaCrSubcontaRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Subconta CR não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterContaCrSubcontaRaspPorId");
+
+// GET /gm-aliado-rasp
+app.MapGet("/gm-aliado-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.GmAliadoRasp
+        .OrderBy(g => g.OrdemExibicao)
+        .ThenBy(g => g.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarGmAliadoRasp");
+
+// GET /gm-aliado-rasp/{id}
+app.MapGet("/gm-aliado-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.GmAliadoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("GM aliado não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterGmAliadoRaspPorId");
+
+// GET /spps-classificacao-rasp
+app.MapGet("/spps-classificacao-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.SppsClassificacaoRasp
+        .OrderBy(s => s.OrdemExibicao)
+        .ThenBy(s => s.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarSppsClassificacaoRasp");
+
+// GET /spps-classificacao-rasp/{id}
+app.MapGet("/spps-classificacao-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.SppsClassificacaoRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Classificação SPPS não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterSppsClassificacaoRaspPorId");
+
+// GET /spps-status-rasp
+app.MapGet("/spps-status-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.SppsStatusRasp
+        .OrderBy(s => s.OrdemExibicao)
+        .ThenBy(s => s.NomeStatus)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarSppsStatusRasp");
+
+// GET /spps-status-rasp/{id}
+app.MapGet("/spps-status-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.SppsStatusRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Status SPPS não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterSppsStatusRaspPorId");
+
+// GET /indice-operacional-rasp
+app.MapGet("/indice-operacional-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.IndiceOperacionalRasp
+        .OrderBy(i => i.CodigoOpcao)
+        .ThenBy(i => i.Descricao)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarIndiceOperacionalRasp");
+
+// GET /indice-operacional-rasp/{id}
+app.MapGet("/indice-operacional-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.IndiceOperacionalRasp.FindAsync(id);
+
+    return item is null
+        ? Results.NotFound("Índice operacional não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterIndiceOperacionalRaspPorId");
+
 // -----------------------------------------------------------------------------
 // USUÁRIOS
 // -----------------------------------------------------------------------------
