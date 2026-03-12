@@ -910,7 +910,6 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
     item.BreakpointCodigo = string.IsNullOrWhiteSpace(req.BreakpointCodigo) ? null : req.BreakpointCodigo.Trim();
     item.BreakpointDatahora = req.BreakpointDatahora;
 
-
     // Atualização do bloco de responsáveis e fechamento
     item.IdAnalista = req.IdAnalista;
     item.IdAprovadorFt = req.IdAprovadorFt;
@@ -997,7 +996,6 @@ app.MapPost("/rasp/{id:int}/enviar-ft", async (int id, AcaoFluxoRaspRequest req,
             return Results.BadRequest("Somente o autor do RASP ou o ADMIN pode enviar este registro para FT.");
     }
 
-    
     var connStr = config.GetConnectionString("DefaultConnection");
     if (string.IsNullOrWhiteSpace(connStr))
         return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
@@ -1126,7 +1124,6 @@ app.MapPost("/rasp/{id:int}/enviar-lg", async (int id, AcaoFluxoRaspRequest req,
 })
 .WithName("EnviarRaspParaLg");
 
-
 // POST /rasp/{id}/aprovar-lg
 // Transição do fluxo: Em avaliação LG -> Concluído.
 //
@@ -1219,7 +1216,6 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (int id, AcaoFluxoRaspRequest req
     }
 })
 .WithName("AprovarRaspNoLg");
-
 
 // POST /rasp/{id}/retornar-ft
 // Transição administrativa: Em avaliação LG -> Em avaliação FT.
@@ -1429,14 +1425,14 @@ app.MapPost("/rasp/{id:int}/registrar-spps", async (int id, RegistrarSppsRequest
 
     var sppsNumero = (req.SppsNumero ?? string.Empty).Trim();
 
-if (string.IsNullOrWhiteSpace(sppsNumero))
-    return Results.BadRequest("SppsNumero é obrigatório.");
+    if (string.IsNullOrWhiteSpace(sppsNumero))
+        return Results.BadRequest("SppsNumero é obrigatório.");
 
-if (sppsNumero.Length != 6)
-    return Results.BadRequest("SppsNumero deve ter exatamente 6 dígitos.");
+    if (sppsNumero.Length != 6)
+        return Results.BadRequest("SppsNumero deve ter exatamente 6 dígitos.");
 
-if (!sppsNumero.All(char.IsDigit))
-    return Results.BadRequest("SppsNumero deve conter somente números.");
+    if (!sppsNumero.All(char.IsDigit))
+        return Results.BadRequest("SppsNumero deve conter somente números.");
 
     // FT não pode sobrescrever um SPPS já registrado.
     if (!isAdmin && !string.IsNullOrWhiteSpace(item.SppsNumero))
@@ -1583,6 +1579,550 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 })
 .WithName("CriarRaspPn");
 
+// PUT /rasp/{id}/rascunho
+// Atualiza um RASP ainda em rascunho sem perder os dados já salvos.
+//
+// Regras desta versão:
+// - só atualiza se o RASP existir
+// - só atualiza se ainda estiver em rascunho
+// - só atualiza se estiver no status 1 (Em análise)
+// - campos enviados como null não são alterados
+// - campos string enviados como "" limpam o valor
+// - campos FK opcionais enviados como 0 limpam o valor
+app.MapPut("/rasp/{id:int}/rascunho", async (
+    int id,
+    AtualizarRaspRascunhoRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    var rasp = await db.Rasp.FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (!rasp.IsRascunho)
+        return Results.BadRequest("Este RASP não está mais em rascunho.");
+
+    if (rasp.IdStatusRasp != 1)
+        return Results.BadRequest("Somente RASP em análise pode ser atualizado por esta rota.");
+
+    bool alterou = false;
+
+    // -----------------------------------------------------------------
+    // Fornecedor (obrigatório no registro, mas opcional no update)
+    // -----------------------------------------------------------------
+    if (req.IdFornecedorRasp.HasValue)
+    {
+        if (req.IdFornecedorRasp.Value <= 0)
+            return Results.BadRequest("IdFornecedorRasp inválido.");
+
+        var fornecedorExiste = await db.FornecedorRasp
+            .AnyAsync(f => f.IdFornecedor == req.IdFornecedorRasp.Value);
+
+        if (!fornecedorExiste)
+            return Results.BadRequest("Fornecedor informado não existe.");
+
+        rasp.IdFornecedorRasp = req.IdFornecedorRasp.Value;
+        alterou = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Descrição principal
+    // -----------------------------------------------------------------
+    if (req.DescricaoProblema is not null)
+    {
+        var descricao = req.DescricaoProblema.Trim();
+
+        if (string.IsNullOrWhiteSpace(descricao))
+            return Results.BadRequest("DescricaoProblema não pode ficar vazia.");
+
+        rasp.DescricaoProblema = descricao;
+        alterou = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Domínios / FKs opcionais
+    // null = não altera
+    // 0    = limpa
+    // >0   = valida e grava
+    // -----------------------------------------------------------------
+
+    if (req.IdModeloVeiculoRasp.HasValue)
+    {
+        if (req.IdModeloVeiculoRasp.Value == 0)
+        {
+            rasp.IdModeloVeiculoRasp = null;
+        }
+        else
+        {
+            var existe = await db.ModeloVeiculoRasp
+                .AnyAsync(x => x.IdModeloVeiculoRasp == req.IdModeloVeiculoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdModeloVeiculoRasp não existe.");
+
+            rasp.IdModeloVeiculoRasp = req.IdModeloVeiculoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdSetorRasp.HasValue)
+    {
+        if (req.IdSetorRasp.Value == 0)
+        {
+            rasp.IdSetorRasp = null;
+        }
+        else
+        {
+            var existe = await db.SetorRasp
+                .AnyAsync(x => x.IdSetorRasp == req.IdSetorRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdSetorRasp não existe.");
+
+            rasp.IdSetorRasp = req.IdSetorRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdTurnoRasp.HasValue)
+    {
+        if (req.IdTurnoRasp.Value == 0)
+        {
+            rasp.IdTurnoRasp = null;
+        }
+        else
+        {
+            var existe = await db.TurnoRasp
+                .AnyAsync(x => x.IdTurnoRasp == req.IdTurnoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdTurnoRasp não existe.");
+
+            rasp.IdTurnoRasp = req.IdTurnoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdOrigemFabricacaoRasp.HasValue)
+    {
+        if (req.IdOrigemFabricacaoRasp.Value == 0)
+        {
+            rasp.IdOrigemFabricacaoRasp = null;
+        }
+        else
+        {
+            var existe = await db.OrigemFabricacaoRasp
+                .AnyAsync(x => x.IdOrigemFabricacaoRasp == req.IdOrigemFabricacaoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdOrigemFabricacaoRasp não existe.");
+
+            rasp.IdOrigemFabricacaoRasp = req.IdOrigemFabricacaoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdPilotoRasp.HasValue)
+    {
+        if (req.IdPilotoRasp.Value == 0)
+        {
+            rasp.IdPilotoRasp = null;
+        }
+        else
+        {
+            var existe = await db.PilotoRasp
+                .AnyAsync(x => x.IdPilotoRasp == req.IdPilotoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdPilotoRasp não existe.");
+
+            rasp.IdPilotoRasp = req.IdPilotoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdImpactoClienteRasp.HasValue)
+    {
+        if (req.IdImpactoClienteRasp.Value == 0)
+        {
+            rasp.IdImpactoClienteRasp = null;
+        }
+        else
+        {
+            var existe = await db.ImpactoClienteRasp
+                .FindAsync(req.IdImpactoClienteRasp.Value);
+
+            if (existe is null)
+                return Results.BadRequest("IdImpactoClienteRasp não existe.");
+
+            rasp.IdImpactoClienteRasp = req.IdImpactoClienteRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdImpactoQualidadeRasp.HasValue)
+    {
+        if (req.IdImpactoQualidadeRasp.Value == 0)
+        {
+            rasp.IdImpactoQualidadeRasp = null;
+        }
+        else
+        {
+            var existe = await db.ImpactoQualidadeRasp
+                .AnyAsync(x => x.IdImpactoQualidadeRasp == req.IdImpactoQualidadeRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdImpactoQualidadeRasp não existe.");
+
+            rasp.IdImpactoQualidadeRasp = req.IdImpactoQualidadeRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdMaiorImpactoRasp.HasValue)
+    {
+        if (req.IdMaiorImpactoRasp.Value == 0)
+        {
+            rasp.IdMaiorImpactoRasp = null;
+        }
+        else
+        {
+            var existe = await db.MaiorImpactoRasp
+                .AnyAsync(x => x.IdMaiorImpactoRasp == req.IdMaiorImpactoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdMaiorImpactoRasp não existe.");
+
+            rasp.IdMaiorImpactoRasp = req.IdMaiorImpactoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdMajorRasp.HasValue)
+    {
+        if (req.IdMajorRasp.Value == 0)
+        {
+            rasp.IdMajorRasp = null;
+        }
+        else
+        {
+            var existe = await db.MajorRasp
+                .AnyAsync(x => x.IdMajorRasp == req.IdMajorRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdMajorRasp não existe.");
+
+            rasp.IdMajorRasp = req.IdMajorRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdSppsClassificacaoRasp.HasValue)
+    {
+        if (req.IdSppsClassificacaoRasp.Value == 0)
+        {
+            rasp.IdSppsClassificacaoRasp = null;
+        }
+        else
+        {
+            var existe = await db.SppsClassificacaoRasp
+                .AnyAsync(x => x.IdSppsClassificacaoRasp == req.IdSppsClassificacaoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdSppsClassificacaoRasp não existe.");
+
+            rasp.IdSppsClassificacaoRasp = req.IdSppsClassificacaoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdSppsStatusRasp.HasValue)
+    {
+        if (req.IdSppsStatusRasp.Value == 0)
+        {
+            rasp.IdSppsStatusRasp = null;
+        }
+        else
+        {
+            var existe = await db.SppsStatusRasp
+                .AnyAsync(x => x.IdSppsStatusRasp == req.IdSppsStatusRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdSppsStatusRasp não existe.");
+
+            rasp.IdSppsStatusRasp = req.IdSppsStatusRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdEmpresaSelecaoRasp.HasValue)
+    {
+        if (req.IdEmpresaSelecaoRasp.Value == 0)
+        {
+            rasp.IdEmpresaSelecaoRasp = null;
+        }
+        else
+        {
+            var existe = await db.EmpresaSelecaoRasp
+                .FindAsync(req.IdEmpresaSelecaoRasp.Value);
+
+            if (existe is null)
+                return Results.BadRequest("IdEmpresaSelecaoRasp não existe.");
+
+            rasp.IdEmpresaSelecaoRasp = req.IdEmpresaSelecaoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdContaCrRasp.HasValue)
+    {
+        if (req.IdContaCrRasp.Value == 0)
+        {
+            rasp.IdContaCrRasp = null;
+        }
+        else
+        {
+            var existe = await db.ContaCrRasp
+                .FindAsync(req.IdContaCrRasp.Value);
+
+            if (existe is null)
+                return Results.BadRequest("IdContaCrRasp não existe.");
+
+            rasp.IdContaCrRasp = req.IdContaCrRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdContaCrSubcontaRasp.HasValue)
+    {
+        if (req.IdContaCrSubcontaRasp.Value == 0)
+        {
+            rasp.IdContaCrSubcontaRasp = null;
+        }
+        else
+        {
+            var existe = await db.ContaCrSubcontaRasp
+                .FindAsync(req.IdContaCrSubcontaRasp.Value);
+
+            if (existe is null)
+                return Results.BadRequest("IdContaCrSubcontaRasp não existe.");
+
+            rasp.IdContaCrSubcontaRasp = req.IdContaCrSubcontaRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdGmAliadoRasp.HasValue)
+    {
+        if (req.IdGmAliadoRasp.Value == 0)
+        {
+            rasp.IdGmAliadoRasp = null;
+        }
+        else
+        {
+            var existe = await db.GmAliadoRasp
+                .AnyAsync(x => x.IdGmAliadoRasp == req.IdGmAliadoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdGmAliadoRasp não existe.");
+
+            rasp.IdGmAliadoRasp = req.IdGmAliadoRasp.Value;
+        }
+        alterou = true;
+    }
+
+    if (req.IdIndiceOperacionalRasp.HasValue)
+    {
+        if (req.IdIndiceOperacionalRasp.Value == 0)
+        {
+            rasp.IdIndiceOperacionalRasp = null;
+        }
+        else
+        {
+            var existe = await db.IndiceOperacionalRasp
+                .AnyAsync(x => x.IdIndiceOperacionalRasp == req.IdIndiceOperacionalRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdIndiceOperacionalRasp não existe.");
+
+            rasp.IdIndiceOperacionalRasp = req.IdIndiceOperacionalRasp.Value;
+        }
+        alterou = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Campos string opcionais
+    // null = não altera
+    // ""   = limpa
+    // -----------------------------------------------------------------
+
+    if (req.SppsNumero is not null)
+    {
+        var valor = req.SppsNumero.Trim();
+
+        if (string.IsNullOrWhiteSpace(valor))
+        {
+            rasp.SppsNumero = null;
+        }
+        else
+        {
+            if (valor.Length != 6 || !valor.All(char.IsDigit))
+                return Results.BadRequest("SppsNumero deve conter exatamente 6 dígitos numéricos.");
+
+            rasp.SppsNumero = valor;
+        }
+        alterou = true;
+    }
+
+    if (req.Procedencia is not null)
+    {
+        var valor = req.Procedencia.Trim();
+        rasp.Procedencia = string.IsNullOrWhiteSpace(valor) ? null : valor;
+        alterou = true;
+    }
+
+    if (req.BpTexto is not null)
+    {
+        var valor = req.BpTexto.Trim();
+        rasp.BpTexto = string.IsNullOrWhiteSpace(valor) ? null : valor;
+        alterou = true;
+    }
+
+    if (req.BpSerie is not null)
+    {
+        var valor = req.BpSerie.Trim();
+
+        if (string.IsNullOrWhiteSpace(valor))
+        {
+            rasp.BpSerie = null;
+        }
+        else
+        {
+            if (valor.Length != 17)
+                return Results.BadRequest("BpSerie deve ter exatamente 17 caracteres.");
+
+            rasp.BpSerie = valor;
+        }
+        alterou = true;
+    }
+
+    if (req.BreakpointTexto is not null)
+    {
+        var valor = req.BreakpointTexto.Trim();
+        rasp.BreakpointTexto = string.IsNullOrWhiteSpace(valor) ? null : valor;
+        alterou = true;
+    }
+
+    if (req.BreakpointCodigo is not null)
+    {
+        var valor = req.BreakpointCodigo.Trim();
+        rasp.BreakpointCodigo = string.IsNullOrWhiteSpace(valor) ? null : valor;
+        alterou = true;
+    }
+
+    if (req.ObservacaoGeral is not null)
+    {
+        var valor = req.ObservacaoGeral.Trim();
+        rasp.ObservacaoGeral = string.IsNullOrWhiteSpace(valor) ? null : valor;
+        alterou = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Datas opcionais
+    // -----------------------------------------------------------------
+
+    if (req.BpDatahora.HasValue)
+    {
+        rasp.BpDatahora = req.BpDatahora.Value;
+        alterou = true;
+    }
+
+    if (req.BreakpointDatahora.HasValue)
+    {
+        rasp.BreakpointDatahora = req.BreakpointDatahora.Value;
+        alterou = true;
+    }
+
+    // -----------------------------------------------------------------
+    // Flags opcionais
+    // -----------------------------------------------------------------
+
+    if (req.IniciativaFornecedor.HasValue)
+    {
+        rasp.IniciativaFornecedor = req.IniciativaFornecedor.Value;
+        alterou = true;
+    }
+
+    if (req.SupplierAlert.HasValue)
+    {
+        rasp.SupplierAlert = req.SupplierAlert.Value;
+        alterou = true;
+    }
+
+    if (req.Reversao.HasValue)
+    {
+        rasp.Reversao = req.Reversao.Value;
+        alterou = true;
+    }
+
+    if (req.Safety.HasValue)
+    {
+        rasp.Safety = req.Safety.Value;
+        alterou = true;
+    }
+
+    if (req.EmitiuPrr.HasValue)
+    {
+        rasp.EmitiuPrr = req.EmitiuPrr.Value;
+        alterou = true;
+    }
+
+    if (req.AprovadoLg.HasValue)
+    {
+        rasp.AprovadoLg = req.AprovadoLg.Value;
+        alterou = true;
+    }
+
+    if (req.IsSupplierAlert.HasValue)
+    {
+        rasp.IsSupplierAlert = req.IsSupplierAlert.Value;
+        alterou = true;
+    }
+
+    if (req.IsSafety.HasValue)
+    {
+        rasp.IsSafety = req.IsSafety.Value;
+        alterou = true;
+    }
+
+    if (req.IsReversao.HasValue)
+    {
+        rasp.IsReversao = req.IsReversao.Value;
+        alterou = true;
+    }
+
+    if (req.GeraPrr.HasValue)
+    {
+        rasp.GeraPrr = req.GeraPrr.Value;
+        alterou = true;
+    }
+
+    if (!alterou)
+        return Results.BadRequest("Nenhum campo válido foi informado para atualização.");
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        id_rasp = rasp.IdRasp,
+        atualizado = true
+    });
+})
+.WithName("AtualizarRaspRascunho");
+
 // -----------------------------------------------------------------------------
 // DEBUG
 // -----------------------------------------------------------------------------
@@ -1604,8 +2144,6 @@ app.MapGet("/debug-model", (RaspDbContext db) =>
     return Results.Ok(entidades);
 })
 .WithName("DebugModel");
-
-
 
 app.Run();
 
