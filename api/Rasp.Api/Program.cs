@@ -1696,6 +1696,46 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     if (rasp.IdStatusRasp != 1)
         return Results.BadRequest("Somente RASP em análise pode ser atualizado por esta rota.");
 
+    if (req.IdUsuarioExecutor <= 0)
+    return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+var usuarioExecutorRascunho = await db.Usuarios
+    .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+if (usuarioExecutorRascunho is null)
+    return Results.BadRequest("Usuário executor não encontrado.");
+
+var isAdminRascunho = usuarioExecutorRascunho.IdPerfil == 1;
+
+if (!isAdminRascunho)
+{
+    if (!rasp.IdAnalistaMt.HasValue)
+        return Results.BadRequest("Este RASP não possui autor MT vinculado.");
+
+    if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+}
+
+        if (req.IdUsuarioExecutor <= 0)
+    return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+var usuarioExecutor = await db.Usuarios
+    .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+if (usuarioExecutor is null)
+    return Results.BadRequest("Usuário executor não encontrado.");
+
+var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+if (!isAdmin)
+{
+    if (!rasp.IdAnalistaMt.HasValue)
+        return Results.BadRequest("Este RASP não possui autor MT vinculado.");
+
+    if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+}
+
     bool alterou = false;
 
     // -----------------------------------------------------------------

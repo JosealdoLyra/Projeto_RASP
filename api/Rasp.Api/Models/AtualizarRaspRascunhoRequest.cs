@@ -2,6 +2,10 @@ namespace Rasp.Api.Models
 {
     public class AtualizarRaspRascunhoRequest
     {
+        // Usuário que está executando a alteração.
+        // Será usado para validar autoria e exceção de ADMIN.
+        public int IdUsuarioExecutor { get; set; }
+
         // null = não altera
         // > 0 = atualiza
         public int? IdFornecedorRasp { get; set; }
