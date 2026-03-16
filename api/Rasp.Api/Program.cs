@@ -26,7 +26,93 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+// -----------------------------------------------------------------------------
+// RASP ANOTACAO
+// -----------------------------------------------------------------------------
+// GET /rasp-anotacao
+app.MapGet("/rasp-anotacao", async (RaspDbContext db) =>
+{
+    var itens = await db.RaspAnotacao
+        .OrderBy(a => a.IdRaspAnotacao)
+        .ToListAsync();
 
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspAnotacao");
+
+// GET /rasp-anotacao/{id}
+app.MapGet("/rasp-anotacao/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.RaspAnotacao
+        .FirstOrDefaultAsync(a => a.IdRaspAnotacao == id);
+
+    return item is null
+        ? Results.NotFound($"Anotação com id {id} não encontrada.")
+        : Results.Ok(item);
+})
+.WithName("ObterRaspAnotacaoPorId");
+
+// GET /rasp/{id}/anotacoes
+app.MapGet("/rasp/{id:int}/anotacoes", async (int id, RaspDbContext db) =>
+{
+    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == id);
+    if (!raspExiste)
+        return Results.NotFound($"RASP com id {id} não encontrado.");
+
+    var itens = await db.RaspAnotacao
+        .Where(a => a.IdRasp == id)
+        .OrderBy(a => a.DataHora)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarAnotacoesPorRasp");
+
+// POST /rasp-anotacao
+app.MapPost("/rasp-anotacao", async (CriarRaspAnotacaoRequest req, RaspDbContext db) =>
+{
+    if (req.IdRasp <= 0)
+        return Results.BadRequest("IdRasp é obrigatório.");
+
+    if (req.IdUsuario <= 0)
+        return Results.BadRequest("IdUsuario é obrigatório.");
+
+    if (req.IdPerfilRasp <= 0)
+        return Results.BadRequest("IdPerfilRasp é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.TextoAnotacao))
+        return Results.BadRequest("TextoAnotacao é obrigatório.");
+
+    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == req.IdRasp);
+    if (!raspExiste)
+        return Results.BadRequest($"RASP com id {req.IdRasp} não encontrado.");
+
+    var usuarioExiste = await db.Usuarios.AnyAsync(u => u.IdUsuario == req.IdUsuario);
+    if (!usuarioExiste)
+        return Results.BadRequest($"Usuário com id {req.IdUsuario} não encontrado.");
+
+    var perfilExiste = await db.PerfilRasp.AnyAsync(p => p.IdPerfil == req.IdPerfilRasp);
+    if (!perfilExiste)
+        return Results.BadRequest($"Perfil com id {req.IdPerfilRasp} não encontrado.");
+
+    var anotacao = new RaspAnotacao
+    {
+        IdRasp = req.IdRasp,
+        IdUsuario = req.IdUsuario,
+        IdPerfilRasp = req.IdPerfilRasp,
+        DataHora = DateTime.UtcNow,
+        TipoAnotacao = string.IsNullOrWhiteSpace(req.TipoAnotacao)
+            ? "Complemento"
+            : req.TipoAnotacao.Trim(),
+        TextoAnotacao = req.TextoAnotacao.Trim()
+    };
+
+    db.RaspAnotacao.Add(anotacao);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/rasp-anotacao/{anotacao.IdRaspAnotacao}", anotacao);
+})
+.WithName("CriarRaspAnotacao");
 // -----------------------------------------------------------------------------
 // STATUS RASP
 // -----------------------------------------------------------------------------
