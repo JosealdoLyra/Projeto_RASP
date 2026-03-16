@@ -56,6 +56,28 @@ app.MapGet("/status-rasp/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterStatusRaspPorId");
 
 // -----------------------------------------------------------------------------
+// Conta CR RASP
+// -----------------------------------------------------------------------------
+// GET /conta-cr-rasp
+app.MapGet("/conta-cr-rasp", async (RaspDbContext db) =>
+{
+    var itens = await db.ContaCrRasp
+        .ToListAsync();
+
+    return Results.Ok(itens);
+});
+
+// GET /conta-cr-rasp/{id}
+app.MapGet("/conta-cr-rasp/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.ContaCrRasp.FindAsync(id);
+
+    return item is not null
+        ? Results.Ok(item)
+        : Results.NotFound("Conta CR RASP não encontrada.");
+});
+
+// -----------------------------------------------------------------------------
 // PN RASP
 // -----------------------------------------------------------------------------
 
@@ -531,28 +553,8 @@ app.MapGet("/empresa-selecao-rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterEmpresaSelecaoRaspPorId");
 
-// GET /conta-cr-rasp
-app.MapGet("/conta-cr-rasp", async (RaspDbContext db) =>
-{
-    var itens = await db.ContaCrRasp
-        .OrderBy(c => c.Codigo)
-        .ThenBy(c => c.Descricao)
-        .ToListAsync();
 
-    return Results.Ok(itens);
-})
-.WithName("ListarContaCrRasp");
 
-// GET /conta-cr-rasp/{id}
-app.MapGet("/conta-cr-rasp/{id:int}", async (int id, RaspDbContext db) =>
-{
-    var item = await db.ContaCrRasp.FindAsync(id);
-
-    return item is null
-        ? Results.NotFound("Conta CR não encontrada.")
-        : Results.Ok(item);
-})
-.WithName("ObterContaCrRaspPorId");
 
 // GET /conta-cr-subconta-rasp
 app.MapGet("/conta-cr-subconta-rasp", async (RaspDbContext db) =>
