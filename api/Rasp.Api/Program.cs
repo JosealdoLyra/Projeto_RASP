@@ -113,6 +113,63 @@ app.MapPost("/rasp-anotacao", async (CriarRaspAnotacaoRequest req, RaspDbContext
     return Results.Created($"/rasp-anotacao/{anotacao.IdRaspAnotacao}", anotacao);
 })
 .WithName("CriarRaspAnotacao");
+
+// PUT /rasp-anotacao/{id}
+// Atualiza o conteúdo de uma anotação já existente.
+//
+// Regras:
+// - a anotação precisa existir
+// - TextoAnotacao é obrigatório
+// - TipoAnotacao pode vir nulo/vazio e assume "Complemento"
+// - não altera IdRasp, IdUsuario, IdPerfilRasp nem DataHora
+app.MapPut("/rasp-anotacao/{id:int}", async (int id, AtualizarRaspAnotacaoRequest req, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id da anotação inválido.");
+
+    var item = await db.RaspAnotacao
+        .FirstOrDefaultAsync(a => a.IdRaspAnotacao == id);
+
+    if (item is null)
+        return Results.NotFound($"Anotação com id {id} não encontrada.");
+
+    if (string.IsNullOrWhiteSpace(req.TextoAnotacao))
+        return Results.BadRequest("TextoAnotacao é obrigatório.");
+
+    item.TipoAnotacao = string.IsNullOrWhiteSpace(req.TipoAnotacao)
+        ? "Complemento"
+        : req.TipoAnotacao.Trim();
+
+    item.TextoAnotacao = req.TextoAnotacao.Trim();
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(item);
+})
+.WithName("AtualizarRaspAnotacao");
+
+// DELETE /rasp-anotacao/{id}
+// Remove uma anotação do RASP.
+//
+// Regras:
+// - a anotação precisa existir
+app.MapDelete("/rasp-anotacao/{id:int}", async (int id, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id da anotação inválido.");
+
+    var item = await db.RaspAnotacao
+        .FirstOrDefaultAsync(a => a.IdRaspAnotacao == id);
+
+    if (item is null)
+        return Results.NotFound($"Anotação com id {id} não encontrada.");
+
+    db.RaspAnotacao.Remove(item);
+    await db.SaveChangesAsync();
+
+    return Results.Ok($"Anotação com id {id} removida com sucesso.");
+})
+.WithName("ExcluirRaspAnotacao");
 // -----------------------------------------------------------------------------
 // STATUS RASP
 // -----------------------------------------------------------------------------
@@ -1385,6 +1442,86 @@ app.MapPost("/rasp/{id:int}/retornar-ft", async (int id, AcaoFluxoRaspRequest re
     }
 })
 .WithName("RetornarRaspParaFt");
+// PUT /rasp/{id}/trocar-lg
+// Troca administrativamente o aprovador LG responsável pelo RASP.
+//
+// Regras:
+// - o RASP precisa existir
+// - o usuário executor precisa existir e estar ativo
+// - somente ADMIN pode executar
+// - o novo LG precisa existir, estar ativo e ter perfil LG
+// - por segurança, nesta versão não permitimos troca em RASP concluído
+// - esta rota altera apenas o campo IdAprovadorLg
+app.MapPut("/rasp/{id:int}/trocar-lg", async (
+    int id,
+    TrocarLgRaspRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (req.IdNovoAprovadorLg <= 0)
+        return Results.BadRequest("IdNovoAprovadorLg inválido.");
+
+    var item = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    // Perfil 1 = ADMIN
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+        return Results.BadRequest("Somente ADMIN pode trocar o aprovador LG do RASP.");
+
+    if (item.IdStatusRasp == 4)
+        return Results.BadRequest("RASP concluído não pode ter o aprovador LG trocado por esta rota.");
+
+    var novoLg = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdNovoAprovadorLg);
+
+    if (novoLg is null)
+        return Results.BadRequest("Novo aprovador LG não existe.");
+
+    if (!novoLg.Ativo)
+        return Results.BadRequest("Novo aprovador LG está inativo.");
+
+    // Perfil 4 = LG
+    if (novoLg.IdPerfil != 4)
+        return Results.BadRequest("O novo responsável deve possuir perfil LG.");
+
+    if (item.IdAprovadorLg.HasValue && item.IdAprovadorLg.Value == req.IdNovoAprovadorLg)
+        return Results.BadRequest("Este RASP já está vinculado a esse aprovador LG.");
+
+    var idLgAnterior = item.IdAprovadorLg;
+
+    item.IdAprovadorLg = req.IdNovoAprovadorLg;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        idRasp = item.IdRasp,
+        numeroRasp = item.NumeroRasp,
+        idLgAnterior,
+        idNovoAprovadorLg = item.IdAprovadorLg,
+        alteradoPor = usuarioExecutor.IdUsuario
+    });
+})
+.WithName("TrocarAprovadorLgRasp");
 
 // POST /rasp/{id}/retornar-analise
 // Transição administrativa:
@@ -1583,6 +1720,607 @@ app.MapGet("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterRaspPnPorId");
 
+// GET /rasp/{id}/pns
+// Lista todos os PNs vinculados a um RASP específico.
+//
+// Regras:
+// - o RASP precisa existir
+app.MapGet("/rasp/{id:int}/pns", async (int id, RaspDbContext db) =>
+{
+    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == id);
+    if (!raspExiste)
+        return Results.NotFound($"RASP com id {id} não encontrado.");
+
+    var itens = await db.RaspPn
+        .Where(rp => rp.IdRasp == id)
+        .OrderBy(rp => rp.OrdemExibicao)
+        .ThenBy(rp => rp.IdRaspPn)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarPnsPorRasp");
+
+// GET /rasp/{id}/detalhe
+// Retorna o RASP com seus blocos relacionados principais.
+//
+// Estrutura:
+// - rasp
+// - pns
+// - arquivos
+// - anotacoes
+app.MapGet("/rasp/{id:int}/detalhe", async (int id, RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound($"RASP com id {id} não encontrado.");
+
+    var pns = await db.RaspPn
+        .AsNoTracking()
+        .Where(rp => rp.IdRasp == id)
+        .OrderBy(rp => rp.OrdemExibicao)
+        .ThenBy(rp => rp.IdRaspPn)
+        .ToListAsync();
+
+    var arquivos = await db.RaspArquivo
+        .AsNoTracking()
+        .Where(a => a.IdRasp == id)
+        .OrderBy(a => a.IdArquivoRasp)
+        .ToListAsync();
+
+    var anotacoes = await db.RaspAnotacao
+        .AsNoTracking()
+        .Where(a => a.IdRasp == id)
+        .OrderBy(a => a.DataHora)
+        .ToListAsync();
+
+    return Results.Ok(new
+    {
+        rasp,
+        pns,
+        arquivos,
+        anotacoes
+    });
+})
+.WithName("ObterRaspDetalhe");
+
+// GET /rasp/numero/{numeroRasp}
+// Busca um RASP pelo número no formato 000X/YY.
+//
+// Regras:
+// - numeroRasp é obrigatório
+app.MapGet("/rasp/numero/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
+{
+    var numeroLimpo = System.Net.WebUtility.UrlDecode((numeroRasp ?? string.Empty).Trim());
+
+    if (string.IsNullOrWhiteSpace(numeroLimpo))
+        return Results.BadRequest("NumeroRasp é obrigatório.");
+
+    var item = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+
+    return item is null
+        ? Results.NotFound("RASP não encontrado para o número informado.")
+        : Results.Ok(item);
+})
+.WithName("ObterRaspPorNumero");
+
+// GET /rasp/resumo
+// Lista os RASPs em formato resumido para uso operacional.
+//
+// Estrutura:
+// - idRasp
+// - numeroRasp
+// - dataCriacao
+// - idStatusRasp
+// - idFornecedorRasp
+// - descricaoProblema
+// - isRascunho
+app.MapGet("/rasp/resumo", async (RaspDbContext db) =>
+{
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .OrderByDescending(r => r.IdRasp)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspResumo");
+
+// GET /rasp/status/{idStatus}
+// Lista os RASPs filtrados por status.
+//
+// Estrutura resumida:
+// - idRasp
+// - numeroRasp
+// - dataCriacao
+// - idStatusRasp
+// - idFornecedorRasp
+// - descricaoProblema
+// - isRascunho
+app.MapGet("/rasp/status/{idStatus:int}", async (int idStatus, RaspDbContext db) =>
+{
+    if (idStatus <= 0)
+        return Results.BadRequest("IdStatus inválido.");
+
+    var statusExiste = await db.StatusRasp
+        .AnyAsync(s => s.IdStatusRasp == idStatus);
+
+    if (!statusExiste)
+        return Results.NotFound($"Status com id {idStatus} não encontrado.");
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdStatusRasp == idStatus)
+        .OrderByDescending(r => r.IdRasp)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspPorStatus");
+
+// GET /rasp/fornecedor/{idFornecedor}
+// Lista os RASPs de um fornecedor específico em formato resumido.
+app.MapGet("/rasp/fornecedor/{idFornecedor:int}", async (int idFornecedor, RaspDbContext db) =>
+{
+    if (idFornecedor <= 0)
+        return Results.BadRequest("IdFornecedor inválido.");
+
+    var fornecedorExiste = await db.FornecedorRasp
+        .AnyAsync(f => f.IdFornecedor == idFornecedor);
+
+    if (!fornecedorExiste)
+        return Results.NotFound($"Fornecedor com id {idFornecedor} não encontrado.");
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdFornecedorRasp == idFornecedor)
+        .OrderByDescending(r => r.IdRasp)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspPorFornecedor");
+
+// GET /rasp/rascunhos
+// Lista todos os RASPs que ainda estão em rascunho.
+app.MapGet("/rasp/rascunhos", async (RaspDbContext db) =>
+{
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IsRascunho)
+        .OrderByDescending(r => r.IdRasp)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRascunhosRasp");
+
+// PUT /rasp/{id}/trocar-ft
+// Troca administrativamente o aprovador FT responsável pelo RASP.
+//
+// Regras:
+// - o RASP precisa existir
+// - o usuário executor precisa existir e estar ativo
+// - somente ADMIN pode executar
+// - o novo FT precisa existir, estar ativo e ter perfil FT
+// - por segurança, nesta versão não permitimos troca em RASP concluído
+// - esta rota altera apenas o campo IdAprovadorFt
+app.MapPut("/rasp/{id:int}/trocar-ft", async (
+    int id,
+    TrocarFtRaspRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (req.IdNovoAprovadorFt <= 0)
+        return Results.BadRequest("IdNovoAprovadorFt inválido.");
+
+    var item = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    // Perfil 1 = ADMIN
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+        return Results.BadRequest("Somente ADMIN pode trocar o aprovador FT do RASP.");
+
+    if (item.IdStatusRasp == 4)
+        return Results.BadRequest("RASP concluído não pode ter o aprovador FT trocado por esta rota.");
+
+    var novoFt = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdNovoAprovadorFt);
+
+    if (novoFt is null)
+        return Results.BadRequest("Novo aprovador FT não existe.");
+
+    if (!novoFt.Ativo)
+        return Results.BadRequest("Novo aprovador FT está inativo.");
+
+    // Perfil 3 = FT
+    if (novoFt.IdPerfil != 3)
+        return Results.BadRequest("O novo responsável deve possuir perfil FT.");
+
+    if (item.IdAprovadorFt.HasValue && item.IdAprovadorFt.Value == req.IdNovoAprovadorFt)
+        return Results.BadRequest("Este RASP já está vinculado a esse aprovador FT.");
+
+    var idFtAnterior = item.IdAprovadorFt;
+
+    item.IdAprovadorFt = req.IdNovoAprovadorFt;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        idRasp = item.IdRasp,
+        numeroRasp = item.NumeroRasp,
+        idFtAnterior,
+        idNovoAprovadorFt = item.IdAprovadorFt,
+        alteradoPor = usuarioExecutor.IdUsuario
+    });
+})
+.WithName("TrocarAprovadorFtRasp");
+
+// GET /rasp/concluidos
+// Lista todos os RASPs concluídos.
+//
+// Regra atual do fluxo:
+// - status 4 = concluído
+app.MapGet("/rasp/concluidos", async (RaspDbContext db) =>
+{
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdStatusRasp == 4)
+        .OrderByDescending(r => r.IdRasp)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspConcluidos");
+
+// -----------------------------------------------------------------------------
+// DASHBOARD / INDICADORES OPERACIONAIS
+// -----------------------------------------------------------------------------
+//
+// Observação importante:
+// - os dias calculados abaixo representam o tempo total em aberto desde a
+//   data de criação do RASP
+// - não representam tempo por fase/status
+// - para tempo por fase, o ideal é criar histórico de transições
+// -----------------------------------------------------------------------------
+
+// GET /rasp/contadores
+// Retorna os contadores principais do painel operacional.
+app.MapGet("/rasp/contadores", async (RaspDbContext db) =>
+{
+    var total = await db.Rasp.CountAsync();
+    var emAberto = await db.Rasp.CountAsync(r => r.IdStatusRasp != 4);
+    var rascunhos = await db.Rasp.CountAsync(r => r.IsRascunho);
+    var emAnalise = await db.Rasp.CountAsync(r => r.IdStatusRasp == 1);
+    var emAvaliacaoFt = await db.Rasp.CountAsync(r => r.IdStatusRasp == 2);
+    var emAvaliacaoLg = await db.Rasp.CountAsync(r => r.IdStatusRasp == 3);
+    var concluidos = await db.Rasp.CountAsync(r => r.IdStatusRasp == 4);
+
+    return Results.Ok(new
+    {
+        total,
+        emAberto,
+        rascunhos,
+        emAnalise,
+        emAvaliacaoFt,
+        emAvaliacaoLg,
+        concluidos
+    });
+})
+.WithName("ObterContadoresRasp");
+
+// GET /rasp/aging
+// Lista os RASPs em aberto com dias totais desde a criação.
+app.MapGet("/rasp/aging", async (RaspDbContext db) =>
+{
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdStatusRasp != 4)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.IdAnalistaMt,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    var resultado = itens
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.IdAnalistaMt,
+            r.DescricaoProblema,
+            r.IsRascunho,
+            diasEmAbertoTotal = hoje.DayNumber - r.DataCriacao.DayNumber
+        })
+        .OrderByDescending(r => r.diasEmAbertoTotal)
+        .ThenBy(r => r.IdRasp)
+        .ToList();
+
+    return Results.Ok(resultado);
+})
+.WithName("ListarAgingRasp");
+
+// GET /rasp/analista/{idUsuario}/backlog
+// Retorna o backlog em aberto do analista MT com dias totais em aberto.
+app.MapGet("/rasp/analista/{idUsuario:int}/backlog", async (int idUsuario, RaspDbContext db) =>
+{
+    if (idUsuario <= 0)
+        return Results.BadRequest("IdUsuario inválido.");
+
+    var usuario = await db.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+
+    if (usuario is null)
+        return Results.NotFound($"Usuário com id {idUsuario} não encontrado.");
+
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdAnalistaMt == idUsuario && r.IdStatusRasp != 4)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho
+        })
+        .ToListAsync();
+
+    var resultado = itens
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.IdFornecedorRasp,
+            r.DescricaoProblema,
+            r.IsRascunho,
+            diasEmAbertoTotal = hoje.DayNumber - r.DataCriacao.DayNumber
+        })
+        .OrderByDescending(r => r.diasEmAbertoTotal)
+        .ThenBy(r => r.IdRasp)
+        .ToList();
+
+    return Results.Ok(new
+    {
+        idUsuario = usuario.IdUsuario,
+        nomeUsuario = usuario.Nome,
+        totalItens = resultado.Count,
+        itens = resultado
+    });
+})
+.WithName("ObterBacklogAnalistaRasp");
+
+// GET /rasp/fornecedor/{idFornecedor}/backlog
+// Retorna o backlog em aberto do fornecedor com dias totais em aberto.
+app.MapGet("/rasp/fornecedor/{idFornecedor:int}/backlog", async (int idFornecedor, RaspDbContext db) =>
+{
+    if (idFornecedor <= 0)
+        return Results.BadRequest("IdFornecedor inválido.");
+
+    var fornecedor = await db.FornecedorRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(f => f.IdFornecedor == idFornecedor);
+
+    if (fornecedor is null)
+        return Results.NotFound($"Fornecedor com id {idFornecedor} não encontrado.");
+
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdFornecedorRasp == idFornecedor && r.IdStatusRasp != 4)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.DescricaoProblema,
+            r.IsRascunho,
+            r.IdAnalistaMt
+        })
+        .ToListAsync();
+
+    var resultado = itens
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.IdStatusRasp,
+            r.DescricaoProblema,
+            r.IsRascunho,
+            r.IdAnalistaMt,
+            diasEmAbertoTotal = hoje.DayNumber - r.DataCriacao.DayNumber
+        })
+        .OrderByDescending(r => r.diasEmAbertoTotal)
+        .ThenBy(r => r.IdRasp)
+        .ToList();
+
+    return Results.Ok(new
+    {
+        idFornecedor = fornecedor.IdFornecedor,
+        nomeFornecedor = fornecedor.Nome,
+        totalItens = resultado.Count,
+        itens = resultado
+    });
+})
+.WithName("ObterBacklogFornecedorRasp");
+
+// PUT /rasp/{id}/trocar-analista
+// Troca administrativamente o analista MT responsável pelo RASP.
+//
+// Regras:
+// - o RASP precisa existir
+// - o usuário executor precisa existir e estar ativo
+// - somente ADMIN pode executar
+// - o novo analista precisa existir, estar ativo e ter perfil ANALISTA
+// - por segurança, nesta versão não permitimos troca em RASP concluído
+app.MapPut("/rasp/{id:int}/trocar-analista", async (
+    int id,
+    TrocarAnalistaRaspRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (req.IdNovoAnalistaMt <= 0)
+        return Results.BadRequest("IdNovoAnalistaMt inválido.");
+
+    var item = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (item is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    // Perfil 1 = ADMIN
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+        return Results.BadRequest("Somente ADMIN pode trocar o analista MT do RASP.");
+
+    if (item.IdStatusRasp == 4)
+        return Results.BadRequest("RASP concluído não pode ter o analista MT trocado por esta rota.");
+
+    var novoAnalista = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdNovoAnalistaMt);
+
+    if (novoAnalista is null)
+        return Results.BadRequest("Novo analista não existe.");
+
+    if (!novoAnalista.Ativo)
+        return Results.BadRequest("Novo analista está inativo.");
+
+    // Perfil 2 = ANALISTA
+    if (novoAnalista.IdPerfil != 2)
+        return Results.BadRequest("O novo responsável deve possuir perfil ANALISTA.");
+
+    if (item.IdAnalistaMt.HasValue && item.IdAnalistaMt.Value == req.IdNovoAnalistaMt)
+        return Results.BadRequest("Este RASP já está vinculado a esse analista.");
+
+    var idAnalistaAnterior = item.IdAnalistaMt;
+
+    item.IdAnalistaMt = req.IdNovoAnalistaMt;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        idRasp = item.IdRasp,
+        numeroRasp = item.NumeroRasp,
+        idAnalistaAnterior,
+        idNovoAnalistaMt = item.IdAnalistaMt,
+        alteradoPor = usuarioExecutor.IdUsuario
+    });
+})
+.WithName("TrocarAnalistaMtRasp");
+
 // POST /rasp-pn
 // Vincula um PN a um RASP.
 //
@@ -1666,6 +2404,84 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     return Results.Created($"/rasp-pn/{item.IdRaspPn}", item);
 })
 .WithName("CriarRaspPn");
+
+// PUT /rasp-pn/{id}
+// Atualiza um vínculo já existente entre RASP e PN.
+//
+// Regras:
+// - o vínculo precisa existir
+// - DUNS precisa existir no cadastro de fornecedor
+// - quantidades não podem ser negativas
+// - ordem de exibição maior que zero
+// - não altera IdRasp nem Pn
+app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do vínculo RASP PN inválido.");
+
+    var item = await db.RaspPn
+        .FirstOrDefaultAsync(rp => rp.IdRaspPn == id);
+
+    if (item is null)
+        return Results.NotFound("RASP PN não encontrado.");
+
+    var duns = (req.Duns ?? string.Empty).Trim();
+    if (string.IsNullOrWhiteSpace(duns))
+        return Results.BadRequest("Duns é obrigatório.");
+
+    if (duns.Length != 9)
+        return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
+
+    if (!duns.All(char.IsDigit))
+        return Results.BadRequest("Duns deve conter somente números.");
+
+    var dunsExiste = await db.FornecedorRasp
+        .AnyAsync(f => f.Duns == duns);
+
+    if (!dunsExiste)
+        return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+
+    if (req.QuantidadeSuspeita < 0 || req.QuantidadeChecada < 0 || req.QuantidadeRejeitada < 0)
+        return Results.BadRequest("Quantidades não podem ser negativas.");
+
+    if (req.OrdemExibicao <= 0)
+        return Results.BadRequest("OrdemExibicao deve ser maior que zero.");
+
+    item.QuantidadeSuspeita = req.QuantidadeSuspeita;
+    item.QuantidadeChecada = req.QuantidadeChecada;
+    item.QuantidadeRejeitada = req.QuantidadeRejeitada;
+    item.EmContencao = req.EmContencao;
+    item.Duns = duns;
+    item.OrdemExibicao = req.OrdemExibicao;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(item);
+})
+.WithName("AtualizarRaspPn");
+
+// DELETE /rasp-pn/{id}
+// Remove um vínculo entre RASP e PN.
+//
+// Regras:
+// - o vínculo precisa existir
+app.MapDelete("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do vínculo RASP PN inválido.");
+
+    var item = await db.RaspPn
+        .FirstOrDefaultAsync(rp => rp.IdRaspPn == id);
+
+    if (item is null)
+        return Results.NotFound("RASP PN não encontrado.");
+
+    db.RaspPn.Remove(item);
+    await db.SaveChangesAsync();
+
+    return Results.Ok($"RASP PN com id {id} removido com sucesso.");
+})
+.WithName("ExcluirRaspPn");
 
 // -----------------------------------------------------------------------------
 // RASP ARQUIVO
@@ -2506,4 +3322,30 @@ public record AtualizarRaspArquivoRequest(
     string TipoArquivo,
     string? Descricao,
     string CaminhoArquivo
+);
+public record AtualizarRaspAnotacaoRequest(
+    string? TipoAnotacao,
+    string TextoAnotacao
+);
+
+public record AtualizarRaspPnRequest(
+    int QuantidadeSuspeita,
+    int QuantidadeChecada,
+    int QuantidadeRejeitada,
+    bool EmContencao,
+    string Duns,
+    short OrdemExibicao
+);
+public record TrocarAnalistaRaspRequest(
+    int IdUsuarioExecutor,
+    int IdNovoAnalistaMt
+);
+
+public record TrocarFtRaspRequest(
+    int IdUsuarioExecutor,
+    int IdNovoAprovadorFt
+);
+public record TrocarLgRaspRequest(
+    int IdUsuarioExecutor,
+    int IdNovoAprovadorLg
 );
