@@ -1749,6 +1749,66 @@ app.MapPost("/rasp-arquivo", async (CriarRaspArquivoRequest req, RaspDbContext d
 })
 .WithName("CriarRaspArquivo");
 
+// PUT /rasp-arquivo/{id}
+// Atualiza os metadados de um arquivo já vinculado ao RASP.
+//
+// Regras:
+// - o arquivo precisa existir
+// - TipoArquivo é obrigatório
+// - CaminhoArquivo é obrigatório
+// - Descricao pode ser nula
+app.MapPut("/rasp-arquivo/{id:int}", async (int id, AtualizarRaspArquivoRequest req, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do arquivo inválido.");
+
+    var item = await db.RaspArquivo
+        .FirstOrDefaultAsync(a => a.IdArquivoRasp == id);
+
+    if (item is null)
+        return Results.NotFound($"Arquivo do RASP com id {id} não encontrado.");
+
+    if (string.IsNullOrWhiteSpace(req.TipoArquivo))
+        return Results.BadRequest("TipoArquivo é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.CaminhoArquivo))
+        return Results.BadRequest("CaminhoArquivo é obrigatório.");
+
+    item.TipoArquivo = req.TipoArquivo.Trim();
+    item.Descricao = string.IsNullOrWhiteSpace(req.Descricao) ? null : req.Descricao.Trim();
+    item.CaminhoArquivo = req.CaminhoArquivo.Trim();
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(item);
+})
+.WithName("AtualizarRaspArquivo");
+
+// DELETE /rasp-arquivo/{id}
+// Remove o registro do arquivo vinculado ao RASP.
+//
+// Regras:
+// - o arquivo precisa existir
+// - esta versão remove apenas o registro no banco
+// - não remove arquivo físico de pasta/servidor
+app.MapDelete("/rasp-arquivo/{id:int}", async (int id, RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do arquivo inválido.");
+
+    var item = await db.RaspArquivo
+        .FirstOrDefaultAsync(a => a.IdArquivoRasp == id);
+
+    if (item is null)
+        return Results.NotFound($"Arquivo do RASP com id {id} não encontrado.");
+
+    db.RaspArquivo.Remove(item);
+    await db.SaveChangesAsync();
+
+    return Results.Ok($"Arquivo do RASP com id {id} removido com sucesso.");
+})
+.WithName("ExcluirRaspArquivo");
+
 // PUT /rasp/{id}/rascunho
 // Atualiza um RASP ainda em rascunho sem perder os dados já salvos.
 //
@@ -2440,4 +2500,10 @@ public record RegistrarSppsRequest(
     string SppsNumero,
     int? IdSppsClassificacaoRasp,
     int? IdSppsStatusRasp
+);
+
+public record AtualizarRaspArquivoRequest(
+    string TipoArquivo,
+    string? Descricao,
+    string CaminhoArquivo
 );
