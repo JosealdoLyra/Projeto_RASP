@@ -945,7 +945,7 @@ app.MapPut("/rasp/{id:int}", async (int id, AtualizarRaspRequest req, RaspDbCont
             return Results.BadRequest("RASP sem autor definido. Edição não permitida.");
 
         if (item.IdAnalistaMt.Value != req.IdUsuarioExecutor)
-            return Results.BadRequest("Somente o autor do RASP ou o ADMIN pode editar este registro.");
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
     }
 
     var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
@@ -1667,6 +1667,88 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 })
 .WithName("CriarRaspPn");
 
+// -----------------------------------------------------------------------------
+// RASP ARQUIVO
+// -----------------------------------------------------------------------------
+// GET /rasp-arquivo
+app.MapGet("/rasp-arquivo", async (RaspDbContext db) =>
+{
+    var itens = await db.RaspArquivo
+        .OrderBy(a => a.IdArquivoRasp)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspArquivo");
+
+// GET /rasp-arquivo/{id}
+app.MapGet("/rasp-arquivo/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.RaspArquivo
+        .FirstOrDefaultAsync(a => a.IdArquivoRasp == id);
+
+    return item is null
+        ? Results.NotFound($"Arquivo do RASP com id {id} não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterRaspArquivoPorId");
+
+// GET /rasp/{id}/arquivos
+app.MapGet("/rasp/{id:int}/arquivos", async (int id, RaspDbContext db) =>
+{
+    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == id);
+    if (!raspExiste)
+        return Results.NotFound($"RASP com id {id} não encontrado.");
+
+    var itens = await db.RaspArquivo
+        .Where(a => a.IdRasp == id)
+        .OrderBy(a => a.IdArquivoRasp)
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarArquivosPorRasp");
+
+// POST /rasp-arquivo
+app.MapPost("/rasp-arquivo", async (CriarRaspArquivoRequest req, RaspDbContext db) =>
+{
+    if (req.IdRasp <= 0)
+        return Results.BadRequest("IdRasp é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.TipoArquivo))
+        return Results.BadRequest("TipoArquivo é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.CaminhoArquivo))
+        return Results.BadRequest("CaminhoArquivo é obrigatório.");
+
+    if (req.IdUsuarioUpload <= 0)
+        return Results.BadRequest("IdUsuarioUpload é obrigatório.");
+
+    var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == req.IdRasp);
+    if (!raspExiste)
+        return Results.BadRequest($"RASP com id {req.IdRasp} não encontrado.");
+
+    var usuarioExiste = await db.Usuarios.AnyAsync(u => u.IdUsuario == req.IdUsuarioUpload);
+    if (!usuarioExiste)
+        return Results.BadRequest($"Usuário com id {req.IdUsuarioUpload} não encontrado.");
+
+    var item = new RaspArquivo
+    {
+        IdRasp = req.IdRasp,
+        TipoArquivo = req.TipoArquivo.Trim(),
+        Descricao = string.IsNullOrWhiteSpace(req.Descricao) ? null : req.Descricao.Trim(),
+        CaminhoArquivo = req.CaminhoArquivo.Trim(),
+        DataUpload = DateOnly.FromDateTime(DateTime.Today),
+        IdUsuarioUpload = req.IdUsuarioUpload
+    };
+
+    db.RaspArquivo.Add(item);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/rasp-arquivo/{item.IdArquivoRasp}", item);
+})
+.WithName("CriarRaspArquivo");
+
 // PUT /rasp/{id}/rascunho
 // Atualiza um RASP ainda em rascunho sem perder os dados já salvos.
 //
@@ -1674,6 +1756,9 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 // - só atualiza se o RASP existir
 // - só atualiza se ainda estiver em rascunho
 // - só atualiza se estiver no status 1 (Em análise)
+// - valida o usuário executor
+// - ADMIN pode atualizar
+// - não ADMIN só pode atualizar se for o autor MT do RASP
 // - campos enviados como null não são alterados
 // - campos string enviados como "" limpam o valor
 // - campos FK opcionais enviados como 0 limpam o valor
@@ -1697,44 +1782,24 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
         return Results.BadRequest("Somente RASP em análise pode ser atualizado por esta rota.");
 
     if (req.IdUsuarioExecutor <= 0)
-    return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
 
-var usuarioExecutorRascunho = await db.Usuarios
-    .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+    var usuarioExecutorRascunho = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
 
-if (usuarioExecutorRascunho is null)
-    return Results.BadRequest("Usuário executor não encontrado.");
+    if (usuarioExecutorRascunho is null)
+        return Results.BadRequest("Usuário executor não encontrado.");
 
-var isAdminRascunho = usuarioExecutorRascunho.IdPerfil == 1;
+    var isAdminRascunho = usuarioExecutorRascunho.IdPerfil == 1;
 
-if (!isAdminRascunho)
-{
-    if (!rasp.IdAnalistaMt.HasValue)
-        return Results.BadRequest("Este RASP não possui autor MT vinculado.");
+    if (!isAdminRascunho)
+    {
+        if (!rasp.IdAnalistaMt.HasValue)
+            return Results.BadRequest("Este RASP não possui autor MT vinculado.");
 
-    if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
-        return Results.StatusCode(StatusCodes.Status403Forbidden);
-}
-
-        if (req.IdUsuarioExecutor <= 0)
-    return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
-
-var usuarioExecutor = await db.Usuarios
-    .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
-
-if (usuarioExecutor is null)
-    return Results.BadRequest("Usuário executor não encontrado.");
-
-var isAdmin = usuarioExecutor.IdPerfil == 1;
-
-if (!isAdmin)
-{
-    if (!rasp.IdAnalistaMt.HasValue)
-        return Results.BadRequest("Este RASP não possui autor MT vinculado.");
-
-    if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
-        return Results.StatusCode(StatusCodes.Status403Forbidden);
-}
+        if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
 
     bool alterou = false;
 

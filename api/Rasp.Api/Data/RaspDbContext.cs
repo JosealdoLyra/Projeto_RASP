@@ -20,6 +20,7 @@ namespace Rasp.Api.Data
         public DbSet<FornecedorRasp> FornecedorRasp => Set<FornecedorRasp>();
         public DbSet<PerfilRasp> PerfilRasp => Set<PerfilRasp>();
         public DbSet<Usuario> Usuarios => Set<Usuario>();
+        public DbSet<RaspArquivo> RaspArquivo => Set<RaspArquivo>();
         public DbSet<RaspEntity> Rasp => Set<RaspEntity>();
         public DbSet<RaspPnEntity> RaspPn => Set<RaspPnEntity>();
         public DbSet<RaspAnotacao> RaspAnotacao => Set<RaspAnotacao>();
@@ -59,6 +60,34 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.OrdemFluxo)
                     .HasColumnName("ordem_fluxo");
+                
+                modelBuilder.Entity<RaspArquivo>(entity =>
+{
+    entity.ToTable("rasp_arquivo");
+
+    entity.HasKey(e => e.IdArquivoRasp);
+
+    entity.Property(e => e.IdArquivoRasp)
+        .HasColumnName("id_arquivo_rasp");
+
+    entity.Property(e => e.IdRasp)
+        .HasColumnName("id_rasp");
+
+    entity.Property(e => e.TipoArquivo)
+        .HasColumnName("tipo_arquivo");
+
+    entity.Property(e => e.Descricao)
+        .HasColumnName("descricao");
+
+    entity.Property(e => e.CaminhoArquivo)
+        .HasColumnName("caminho_arquivo");
+
+    entity.Property(e => e.DataUpload)
+        .HasColumnName("data_upload");
+
+    entity.Property(e => e.IdUsuarioUpload)
+        .HasColumnName("id_usuario_upload");
+});
             });
 
             // -----------------------------------------------------------------
