@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       CONFIGURAÇÕES BÁSICAS DA PÁGINA
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Título exibido na aba do navegador -->
+  <title>RASP - Abertura</title>
+
+  <!-- Arquivo de estilo -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- =========================================================
+       ESTRUTURA PRINCIPAL DA APLICAÇÃO
+       ========================================================= -->
+  <div class="app">
+
+    <!-- =======================================================
+         MENU LATERAL
+         ======================================================= -->
+    <aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>RASP</h1>
+    <p class="sidebar-subtitle">
+  <span class="sidebar-line"><span class="sigla-letra">R</span>elatório de</span>
+  <span class="sidebar-line"><span class="sigla-letra">A</span>nálise e</span>
+  <span class="sidebar-line"><span class="sigla-letra">S</span>olução de</span>
+  <span class="sidebar-line"><span class="sigla-letra">P</span>roblemas</span>
+</p>
+
+<div class="sidebar-badge">SAC - S10 SJC</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#" class="active">Novo RASP</a></li>
+      <li><a href="#">Consulta</a></li>
+      <li><a href="#">Cadastros</a></li>
+    </ul>
+  </nav>
+</aside>
+
+    <!-- =======================================================
+         CONTEÚDO PRINCIPAL
+         ======================================================= -->
+    <main class="main-content">
+
+      <!-- =====================================================
+           TOPO DA PÁGINA
+           ===================================================== -->
+      <header class="topbar">
+        <div>
+          <h2>Abertura do RASP</h2>
+          <p>Cadastro inicial para nascimento do RASP em rascunho.</p>
+        </div>
+
+        <button type="button" class="ghost-btn">Salvar rascunho</button>
+      </header>
+
+      <!-- =====================================================
+           ÁREA CENTRAL COM O FORMULÁRIO
+           ===================================================== -->
+      <section class="content">
+        <form id="raspForm" class="rasp-form">
+
+          <!-- =================================================
+               SEÇÃO 1 - OCORRÊNCIA
+               ================================================= -->
+          <section class="form-section">
+            <h3>1. Ocorrência</h3>
+
+            <div class="grid grid-2">
+              <div class="form-group full">
+                <label for="resumo">Resumo da ocorrência *</label>
+                <input
+                  type="text"
+                  id="resumo"
+                  name="resumo"
+                  placeholder="Ex.: Desvio dimensional com dificuldade de centralização"
+                />
+              </div>
+
+              <div class="form-group full">
+                <label for="descricaoInicial">Descrição inicial *</label>
+                <textarea
+                  id="descricaoInicial"
+                  name="descricaoInicial"
+                  rows="4"
+                  placeholder="Descreva objetivamente a ocorrência."
+                ></textarea>
+              </div>
+            </div>
+          </section>
+
+                   <!-- =================================================
+               SEÇÃO 2 - DADOS BÁSICOS DO RASP
+               REGRA:
+               - DUNS é a chave principal de identificação
+               - Fornecedor e Tipo do fornecedor vêm da tabela fornecedor_rasp
+               ================================================= -->
+          <section class="form-section">
+            <h3>2. Dados básicos do RASP</h3>
+
+            <div class="grid grid-3">
+              <div class="form-group">
+                <label for="duns">DUNS *</label>
+                <input
+                  type="text"
+                  id="duns"
+                  name="duns"
+                  maxlength="9"
+                  placeholder="Digite 9 dígitos"
+                />
+              </div>
+
+              <div class="form-group system-field">
+                <label for="fornecedor">Nome do fornecedor</label>
+                <input
+                  type="text"
+                  id="fornecedor"
+                  name="fornecedor"
+                  readonly
+                  placeholder="Preenchido automaticamente pelo DUNS"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="tipoFornecedor">Tipo do fornecedor</label>
+                <input
+                  type="text"
+                  id="tipoFornecedor"
+                  name="tipoFornecedor"
+                  readonly
+                  placeholder="LOCAL ou IMPORTADO"
+                />
+              </div>
+
+              <div class="form-group system-field">
+                <label for="analista">Analista *</label>
+                <input type="text" id="analista" name="analista" readonly />
+              </div>
+
+              <div class="form-group system-field">
+                <label for="statusInicial">Status inicial</label>
+                <input
+                  type="text"
+                  id="statusInicial"
+                  name="statusInicial"
+                  value="Rascunho"
+                  readonly
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="setor">Setor *</label>
+                <select id="setor" name="setor">
+                  <option value="">Selecione</option>
+                  <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
+                  <option value="montagem">Montagem</option>
+                  <option value="funilaria">Funilaria</option>
+                  <option value="pintura">Pintura</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="origem">Origem *</label>
+                <select id="origem" name="origem">
+                  <option value="">Selecione</option>
+                  <option value="dr">DR</option>
+                  <option value="drloss">DRLoss</option>
+                  <option value="gca5">GCA 5</option>
+                  <option value="gca10">GCA 10</option>
+                  <option value="gca20">GCA 20</option>
+                  <option value="gca50">GCA 50</option>
+                  <option value="linha">Linha</option>
+                  <option value="selecao">Seleção</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- STATUS DA CONSULTA DE DUNS -->
+            <div id="dunsStatus" class="duns-status duns-status-neutral">
+              Informe um DUNS válido para localizar o fornecedor.
+            </div>
+          </section> 
+
+          <!-- =================================================
+               SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
+               ================================================= -->
+          <section class="form-section">
+            <h3>3. Classificação inicial</h3>
+
+            <div class="grid grid-3">
+              <div class="form-group">
+                <label for="maiorImpacto">Maior impacto *</label>
+                <select id="maiorImpacto" name="maiorImpacto">
+                  <option value="">Selecione</option>
+                  <option value="peca-nao-instalada">
+                    Peça não instalada em submontagem / veículo / motor / transmissão
+                  </option>
+                  <option value="downtime">Downtime</option>
+                  <option value="stockout">Stockout</option>
+                  <option value="plant-disruption">Plant disruption</option>
+                  <option value="na">N/A</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="impactoQualidade">Impacto qualidade *</label>
+                <select id="impactoQualidade" name="impactoQualidade">
+                  <option value="">Selecione</option>
+                  <option value="tempo-processamento">Tempo de processamento</option>
+                  <option value="dimensional">Dimensional</option>
+                  <option value="aparencia">Aparência</option>
+                  <option value="funcional">Funcional</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="impactoCliente">Impacto cliente *</label>
+                <select id="impactoCliente" name="impactoCliente">
+                  <option value="">Selecione</option>
+                  <option value="line-accumulation">Line Accumulation</option>
+                  <option value="supplier-initiated">Supplier Initiated</option>
+                  <option value="single-occurrence">Single Occurrence</option>
+                  <option value="multiple-occurrence">Multiple Occurrence</option>
+                  <option value="repeat-occurrence">Repeat Occurrence</option>
+                  <option value="program-management">Program Management</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- =================================================
+               SEÇÃO 4 - PNs ENVOLVIDOS NO ATENDIMENTO INICIAL
+               ================================================= -->
+          <section class="form-section">
+            <h3>4. PN(s) envolvidos no atendimento inicial</h3>
+
+            <p class="section-note">
+              Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
+              O campo Data/Lote inicial é obrigatório para o PN principal.
+            </p>
+
+            <!-- AÇÕES DA TABELA DE PNs -->
+            <div class="pn-header-line">
+              <div class="pn-header-actions">
+                <button type="button" id="addPnRow" class="secondary-btn">
+                  + Adicionar PN
+                </button>
+
+                <button type="button" id="toggleMassPanel" class="secondary-btn">
+                  Colar vários PNs
+                </button>
+              </div>
+            </div>
+
+            <!-- PAINEL PARA IMPORTAÇÃO EM MASSA -->
+            <div id="massPanel" class="mass-panel">
+              <label for="pnsLoteTextarea">Cole 1 PN por linha</label>
+
+              <textarea
+                id="pnsLoteTextarea"
+                rows="6"
+                placeholder="Exemplo:
+12345678
+87654321
+11223344"
+              ></textarea>
+
+              <div class="mass-panel-actions">
+                <button type="button" id="importMassPns" class="primary-btn">
+                  Importar PNs
+                </button>
+              </div>
+
+              <p class="small-text">
+                Os PNs importados entrarão com quantidades zeradas e sem Data/Lote inicial.
+              </p>
+            </div>
+
+            <!-- TABELA DE PNs -->
+            <div class="table-wrapper">
+              <table class="pn-table">
+                <thead>
+                  <tr>
+                    <th class="center-cell">Principal</th>
+                    <th>PN *</th>
+                    <th>Data/Lote inicial *</th>
+                    <th>Qtd suspeita inicial</th>
+                    <th>Qtd checada inicial</th>
+                    <th>Qtd rejeitada inicial</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+
+                <tbody id="pnTableBody">
+                  <tr class="pn-row">
+                    <td class="center-cell">
+                      <input
+                        type="radio"
+                        name="pnPrincipal"
+                        class="pn-principal"
+                        checked
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="text"
+                        class="pn-input"
+                        placeholder="8 dígitos"
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="text"
+                        class="data-lote-inicial"
+                        placeholder="Ex.: 12/03/2026 ou lote ABC123"
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        class="qtd-suspeita"
+                        min="0"
+                        value="0"
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        class="qtd-checada"
+                        min="0"
+                        value="0"
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="number"
+                        class="qtd-rejeitada"
+                        min="0"
+                        value="0"
+                      />
+                    </td>
+
+                    <td>
+                      <button type="button" class="danger-btn remove-row">
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- =================================================
+               AÇÕES FINAIS DO FORMULÁRIO
+               ================================================= -->
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Criar RASP</button>
+            <button type="button" id="btnLimpar" class="secondary-btn">Limpar</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- Arquivo JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>

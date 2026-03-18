@@ -1,0 +1,499 @@
+/* ============================================================
+   RESET BÁSICO
+   ============================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* ============================================================
+   ESTILO GERAL DA PÁGINA
+   ============================================================ */
+body {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   MENU LATERAL
+   ============================================================ */
+.sidebar {
+  width: 270px;
+  background: linear-gradient(180deg, #14213d 0%, #172b4d 100%);
+  color: #ffffff;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand {
+  padding: 6px 10px 22px 10px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.sidebar h1 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.sidebar-subtitle {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 14px;
+  max-width: 190px;
+}
+
+.sidebar-line {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.sigla-letra {
+  display: inline-block;
+  color: #60a5fa !important;
+  font-weight: 800 !important;
+  font-size: 17px !important;
+  margin-right: 1px;
+  text-shadow: 0 0 10px rgba(96, 165, 250, 0.18);
+}
+
+
+.sidebar-badge {
+  display: inline-block;
+  width: fit-content;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-nav li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-nav a,
+.sidebar-nav a:visited {
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  font-size: 16px;
+  display: block;
+  white-space: nowrap;
+  line-height: 1.3;
+  padding: 12px 14px;
+  border-radius: 10px;
+  transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.sidebar-nav a.active,
+.sidebar-nav a.active:visited {
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
+}
+
+/* ============================================================
+   ÁREA PRINCIPAL
+   ============================================================ */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   TOPO DA PÁGINA
+   ============================================================ */
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.topbar h2 {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.topbar p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* ============================================================
+   CONTEÚDO
+   ============================================================ */
+.content {
+  padding: 30px;
+}
+
+.rasp-form {
+  max-width: 1400px;
+}
+
+/* ============================================================
+   CARTÕES / SEÇÕES DO FORMULÁRIO
+   ============================================================ */
+.form-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.form-section h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.section-note {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   GRID DOS CAMPOS
+   ============================================================ */
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* ============================================================
+   CAMPOS DO FORMULÁRIO
+   ============================================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full {
+  grid-column: 1 / -1;
+}
+
+.form-group label {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+input[readonly] {
+  background: #eef2f7;
+  color: #334155;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   TABELA DE PNs
+   ============================================================ */
+.pn-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.pn-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.pn-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1100px;
+}
+
+.pn-table th,
+.pn-table td {
+  border: 1px solid #e5e7eb;
+  padding: 14px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.pn-table th {
+  background: #f9fafb;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pn-table input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 11px 12px;
+  font-size: 14px;
+}
+
+/* ============================================================
+   CAMPO CENTRALIZADO
+   ============================================================ */
+.center-cell {
+  text-align: center !important;
+}
+
+.pn-principal {
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   PAINEL DE IMPORTAÇÃO EM MASSA
+   ============================================================ */
+.mass-panel {
+  display: none;
+  background: #f9fafb;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mass-panel.show {
+  display: block;
+}
+
+.mass-panel label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.mass-panel textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  background: #ffffff;
+}
+
+.mass-panel textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.mass-panel-actions {
+  margin-top: 12px;
+}
+
+.small-text {
+  color: #6b7280;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.primary-btn,
+.secondary-btn,
+.danger-btn,
+.ghost-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.primary-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.secondary-btn {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.danger-btn {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ghost-btn {
+  background: #ffffff;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover,
+.danger-btn:hover,
+.ghost-btn:hover {
+  opacity: 0.92;
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   STATUS DA CONSULTA DE DUNS
+   ============================================================ */
+.duns-status {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.duns-status-neutral {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.duns-status-success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.duns-status-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+/* ============================================================
+   CAMPOS PREENCHIDOS PELO SISTEMA
+   ============================================================ */
+.system-field label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.system-field label::after {
+  content: "Sistema";
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  letter-spacing: 0.2px;
+}
+
+.system-field input[readonly] {
+  background: #eef2f7;
+  color: #334155;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
