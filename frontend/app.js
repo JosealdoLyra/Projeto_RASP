@@ -1,5 +1,101 @@
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
+  // SEÇÃO 2 - DADOS BÁSICOS DO RASP
+  // DUNS / FORNECEDOR / TIPO
+  // ==========================================================
+  const dunsInput = document.getElementById("duns");
+  const nomeFornecedorInput = document.getElementById("nomeFornecedor");
+  const tipoFornecedorInput = document.getElementById("tipoFornecedor");
+  const analistaInput = document.getElementById("analista");
+  const statusInicialInput = document.getElementById("statusInicial");
+  const dunsStatus = document.getElementById("dunsStatus");
+
+  // Base temporária para simular consulta de fornecedor
+  const fornecedoresMock = [
+    {
+      duns: "123456789",
+      nome: "ABC Auto Parts",
+      tipo: "LOCAL"
+    },
+    {
+      duns: "987654321",
+      nome: "Global Components",
+      tipo: "IMPORTADO"
+    },
+    {
+      duns: "456789123",
+      nome: "Metalúrgica Prime",
+      tipo: "LOCAL"
+    }
+  ];
+
+  function limparDadosFornecedor() {
+    nomeFornecedorInput.value = "";
+    tipoFornecedorInput.value = "";
+  }
+
+  function atualizarStatusDuns(texto, classeAdicional) {
+    dunsStatus.textContent = texto;
+    dunsStatus.className = `duns-status ${classeAdicional}`;
+  }
+
+  function buscarFornecedorPorDuns(duns) {
+    return fornecedoresMock.find((fornecedor) => fornecedor.duns === duns);
+  }
+
+  function preencherFornecedor(fornecedor) {
+    nomeFornecedorInput.value = fornecedor.nome;
+    tipoFornecedorInput.value = fornecedor.tipo;
+  }
+
+  function inicializarCamposFixos() {
+    analistaInput.value = "Analista logado";
+    statusInicialInput.value = "Em análise";
+  }
+
+  dunsInput.addEventListener("input", () => {
+    dunsInput.value = dunsInput.value.replace(/\D/g, "").slice(0, 9);
+
+    const dunsDigitado = dunsInput.value;
+
+    if (dunsDigitado.length === 0) {
+      limparDadosFornecedor();
+      atualizarStatusDuns(
+        "Informe um DUNS válido para localizar o fornecedor.",
+        "duns-status-neutral"
+      );
+      return;
+    }
+
+    if (dunsDigitado.length < 9) {
+      limparDadosFornecedor();
+      atualizarStatusDuns(
+        "O DUNS deve conter 9 dígitos numéricos.",
+        "duns-status-neutral"
+      );
+      return;
+    }
+
+    const fornecedorEncontrado = buscarFornecedorPorDuns(dunsDigitado);
+
+    if (fornecedorEncontrado) {
+      preencherFornecedor(fornecedorEncontrado);
+      atualizarStatusDuns(
+        "Fornecedor localizado com sucesso.",
+        "duns-status-success"
+      );
+    } else {
+      limparDadosFornecedor();
+      atualizarStatusDuns(
+        "DUNS não encontrado na base de fornecedores.",
+        "duns-status-error"
+      );
+    }
+  });
+
+  inicializarCamposFixos();
+
+  // ==========================================================
   // REFERÊNCIAS PRINCIPAIS DO DOM
   // ==========================================================
   const form = document.getElementById("raspForm");
