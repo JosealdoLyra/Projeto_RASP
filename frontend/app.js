@@ -1,8 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
-  // SEÇÃO 2 - DADOS BÁSICOS DO RASP
-  // DUNS / FORNECEDOR / TIPO
+  // REFERÊNCIAS PRINCIPAIS DO DOM
   // ==========================================================
+  const form = document.getElementById("raspForm");
+
+  // Seção 2 - Dados básicos do RASP
   const dunsInput = document.getElementById("duns");
   const nomeFornecedorInput = document.getElementById("nomeFornecedor");
   const tipoFornecedorInput = document.getElementById("tipoFornecedor");
@@ -10,122 +12,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusInicialInput = document.getElementById("statusInicial");
   const dunsStatus = document.getElementById("dunsStatus");
 
-  // Base temporária para simular consulta de fornecedor
-  const fornecedoresMock = [
-    {
-      duns: "123456789",
-      nome: "ABC Auto Parts",
-      tipo: "LOCAL"
-    },
-    {
-      duns: "987654321",
-      nome: "Global Components",
-      tipo: "IMPORTADO"
-    },
-    {
-      duns: "456789123",
-      nome: "Metalúrgica Prime",
-      tipo: "LOCAL"
-    }
-  ];
-
-  function limparDadosFornecedor() {
-    nomeFornecedorInput.value = "";
-    tipoFornecedorInput.value = "";
-  }
-
-  function atualizarStatusDuns(texto, classeAdicional) {
-    dunsStatus.textContent = texto;
-    dunsStatus.className = `duns-status ${classeAdicional}`;
-  }
-
-  function buscarFornecedorPorDuns(duns) {
-    return fornecedoresMock.find((fornecedor) => fornecedor.duns === duns);
-  }
-
-  function preencherFornecedor(fornecedor) {
-    nomeFornecedorInput.value = fornecedor.nome;
-    tipoFornecedorInput.value = fornecedor.tipo;
-  }
-
-  function inicializarCamposFixos() {
-    analistaInput.value = "Analista logado";
-    statusInicialInput.value = "Em análise";
-  }
-
-  dunsInput.addEventListener("input", () => {
-    dunsInput.value = dunsInput.value.replace(/\D/g, "").slice(0, 9);
-
-    const dunsDigitado = dunsInput.value;
-
-    if (dunsDigitado.length === 0) {
-      limparDadosFornecedor();
-      atualizarStatusDuns(
-        "Informe um DUNS válido para localizar o fornecedor.",
-        "duns-status-neutral"
-      );
-      return;
-    }
-
-    if (dunsDigitado.length < 9) {
-      limparDadosFornecedor();
-      atualizarStatusDuns(
-        "O DUNS deve conter 9 dígitos numéricos.",
-        "duns-status-neutral"
-      );
-      return;
-    }
-
-    const fornecedorEncontrado = buscarFornecedorPorDuns(dunsDigitado);
-
-    if (fornecedorEncontrado) {
-      preencherFornecedor(fornecedorEncontrado);
-      atualizarStatusDuns(
-        "Fornecedor localizado com sucesso.",
-        "duns-status-success"
-      );
-    } else {
-      limparDadosFornecedor();
-      atualizarStatusDuns(
-        "DUNS não encontrado na base de fornecedores.",
-        "duns-status-error"
-      );
-    }
-  });
-
-  inicializarCamposFixos();
-
-  // ==========================================================
-  // REFERÊNCIAS PRINCIPAIS DO DOM
-  // ==========================================================
-  const form = document.getElementById("raspForm");
-  const dunsInput = document.getElementById("duns");
-  const fornecedorInput = document.getElementById("fornecedor");
-  const tipoFornecedorInput = document.getElementById("tipoFornecedor");
-  const dunsStatus = document.getElementById("dunsStatus");
-
-  const analistaInput = document.getElementById("analista");
+  
+  // Seção 4 - PN
   const addPnRowBtn = document.getElementById("addPnRow");
   const pnTableBody = document.getElementById("pnTableBody");
   const btnLimpar = document.getElementById("btnLimpar");
-
   const toggleMassPanelBtn = document.getElementById("toggleMassPanel");
   const massPanel = document.getElementById("massPanel");
   const importMassPnsBtn = document.getElementById("importMassPns");
   const pnsLoteTextarea = document.getElementById("pnsLoteTextarea");
+  const pnStatus = document.getElementById("pnStatus");
 
   // ==========================================================
   // SIMULAÇÃO DE USUÁRIO LOGADO
-  // NO FUTURO VIRÁ DA AUTENTICAÇÃO REAL
   // ==========================================================
   const usuarioLogado = "Usuário Logado";
-  analistaInput.value = usuarioLogado;
 
   // ==========================================================
   // BASE TEMPORÁRIA DE FORNECEDORES
-  // OBSERVAÇÃO:
-  // - Nesta fase estamos simulando a busca por DUNS no front
-  // - Depois vamos trocar para busca real na API
   // ==========================================================
   const fornecedoresBase = [
     { duns: "000104992", nome: "Alcom - USA", tipoFornecedor: "IMPORTADO" },
@@ -147,10 +51,18 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   // ==========================================================
-  // UTILITÁRIOS DE FORMATAÇÃO E VALIDAÇÃO
+  // INICIALIZAÇÃO
+  // ==========================================================
+  function inicializarCamposFixos() {
+    analistaInput.value = usuarioLogado;
+    statusInicialInput.value = "Em análise";
+  }
+
+  // ==========================================================
+  // UTILITÁRIOS
   // ==========================================================
   function normalizarNumero(valor) {
-    return valor.replace(/\D/g, "").trim();
+    return String(valor || "").replace(/\D/g, "").trim();
   }
 
   function validarPn(pn) {
@@ -170,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function limparFornecedorDerivado() {
-    fornecedorInput.value = "";
+    nomeFornecedorInput.value = "";
     tipoFornecedorInput.value = "";
   }
 
@@ -191,8 +103,25 @@ document.addEventListener("DOMContentLoaded", () => {
     dunsStatus.classList.add("duns-status-neutral");
   }
 
+  function definirStatusPn(mensagem, tipo) {
+    pnStatus.textContent = mensagem;
+    pnStatus.className = "pn-status";
+
+    if (tipo === "success") {
+      pnStatus.classList.add("pn-status-success");
+      return;
+    }
+
+    if (tipo === "error") {
+      pnStatus.classList.add("pn-status-error");
+      return;
+    }
+
+    pnStatus.classList.add("pn-status-neutral");
+  }
+
   // ==========================================================
-  // REGRAS DE CONSULTA DE DUNS
+  // PROCESSAMENTO DO DUNS
   // ==========================================================
   function processarDuns() {
     const duns = normalizarNumero(dunsInput.value);
@@ -210,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!validarDunsFormato(duns)) {
       definirStatusDuns(
-        "O valor informado não parece ser um DUNS válido. Ele deve conter exatamente 9 dígitos numéricos.",
+        "O DUNS deve conter exatamente 9 dígitos numéricos.",
         "error"
       );
       return { ok: false, motivo: "formato" };
@@ -234,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return { ok: false, motivo: "nao_encontrado" };
     }
 
-    fornecedorInput.value = fornecedor.nome;
+    nomeFornecedorInput.value = fornecedor.nome;
     tipoFornecedorInput.value = fornecedor.tipoFornecedor;
 
     definirStatusDuns(
@@ -253,10 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // EVENTOS DO CAMPO DUNS
   // ==========================================================
   dunsInput.addEventListener("input", () => {
-    const valorNormalizado = normalizarNumero(dunsInput.value);
+    const valorNormalizado = normalizarNumero(dunsInput.value).slice(0, 9);
     dunsInput.value = valorNormalizado;
 
-    // Só tenta localizar automaticamente quando completar 9 dígitos
     if (valorNormalizado.length === 9) {
       processarDuns();
       return;
@@ -325,7 +253,6 @@ document.addEventListener("DOMContentLoaded", () => {
           ${principal ? "checked" : ""}
         />
       </td>
-
       <td>
         <input
           type="text"
@@ -334,7 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
           value="${pn}"
         />
       </td>
-
       <td>
         <input
           type="text"
@@ -343,34 +269,33 @@ document.addEventListener("DOMContentLoaded", () => {
           value="${dataLoteInicial}"
         />
       </td>
-
       <td>
         <input
           type="number"
           class="qtd-suspeita"
           min="0"
+          step="1"
           value="${qtdSuspeita}"
         />
       </td>
-
       <td>
         <input
           type="number"
           class="qtd-checada"
           min="0"
+          step="1"
           value="${qtdChecada}"
         />
       </td>
-
       <td>
         <input
           type="number"
           class="qtd-rejeitada"
           min="0"
+          step="1"
           value="${qtdRejeitada}"
         />
       </td>
-
       <td>
         <button type="button" class="danger-btn remove-row">Remover</button>
       </td>
@@ -380,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================
-  // COLETA TODOS OS PNs DIGITADOS NA TELA
+  // COLETA TODOS OS PNs DIGITADOS
   // ==========================================================
   function coletarPns() {
     const rows = obterRowsPn();
@@ -412,14 +337,159 @@ document.addEventListener("DOMContentLoaded", () => {
   function limparTabelaPn() {
     pnTableBody.innerHTML = "";
     pnTableBody.appendChild(criarLinhaPn({ principal: true }));
+    aplicarValidacoesPnEmTela();
   }
 
   // ==========================================================
-  // EVENTO: ADICIONAR UMA NOVA LINHA DE PN
+  // ESTILO DE ERRO VISUAL NOS CAMPOS
+  // ==========================================================
+  function destacarErroCampo(input, comErro) {
+    if (comErro) {
+      input.style.borderColor = "#b02a37";
+      input.style.backgroundColor = "#fff5f5";
+    } else {
+      input.style.borderColor = "";
+      input.style.backgroundColor = "";
+    }
+  }
+
+  // ==========================================================
+  // VALIDAÇÕES EM TEMPO REAL DOS PNs
+  // ==========================================================
+  function normalizarInputsPnDaLinha(linha) {
+    const pnInput = linha.querySelector(".pn-input");
+    const qtdSuspeitaInput = linha.querySelector(".qtd-suspeita");
+    const qtdChecadaInput = linha.querySelector(".qtd-checada");
+    const qtdRejeitadaInput = linha.querySelector(".qtd-rejeitada");
+
+    pnInput.value = normalizarNumero(pnInput.value).slice(0, 8);
+
+    [qtdSuspeitaInput, qtdChecadaInput, qtdRejeitadaInput].forEach((input) => {
+      const valorNormalizado = normalizarNumero(input.value);
+      input.value = valorNormalizado === "" ? "0" : valorNormalizado;
+    });
+  }
+
+  function validarDuplicidadePnEmTela() {
+    const rows = obterRowsPn();
+    const mapa = new Map();
+
+    rows.forEach((row) => {
+      const pnInput = row.querySelector(".pn-input");
+      const pn = normalizarNumero(pnInput.value);
+
+      destacarErroCampo(pnInput, false);
+
+      if (!pn) return;
+
+      if (!mapa.has(pn)) {
+        mapa.set(pn, []);
+      }
+
+      mapa.get(pn).push(pnInput);
+    });
+
+    mapa.forEach((inputs) => {
+      if (inputs.length > 1) {
+        inputs.forEach((input) => destacarErroCampo(input, true));
+      }
+    });
+  }
+
+  function validarPnPrincipalEmTela() {
+    const rows = obterRowsPn();
+
+    rows.forEach((row) => {
+      const radioPrincipal = row.querySelector(".pn-principal");
+      const dataLoteInput = row.querySelector(".data-lote-inicial");
+
+      if (radioPrincipal.checked && !dataLoteInput.value.trim()) {
+        destacarErroCampo(dataLoteInput, true);
+      } else {
+        destacarErroCampo(dataLoteInput, false);
+      }
+    });
+  }
+
+  function aplicarValidacoesPnEmTela() {
+    const rows = obterRowsPn();
+
+    rows.forEach((row) => {
+      normalizarInputsPnDaLinha(row);
+    });
+
+    validarDuplicidadePnEmTela();
+    validarPnPrincipalEmTela();
+
+    const pns = coletarPns();
+
+    if (pns.length === 0) {
+      definirStatusPn(
+        "Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.",
+        "neutral"
+      );
+      return;
+    }
+
+    const pnsUnicos = new Set();
+    let temDuplicado = false;
+    let principalSemLote = false;
+    let temPnInvalido = false;
+
+    pns.forEach((item) => {
+      if (!validarPn(item.pn)) {
+        temPnInvalido = true;
+      }
+
+      if (pnsUnicos.has(item.pn)) {
+        temDuplicado = true;
+      } else {
+        pnsUnicos.add(item.pn);
+      }
+
+      if (item.principal && !item.dataLoteInicial) {
+        principalSemLote = true;
+      }
+    });
+
+    if (temDuplicado) {
+      definirStatusPn(
+        "Existem PNs duplicados na tabela. Cada PN deve aparecer apenas uma vez.",
+        "error"
+      );
+      return;
+    }
+
+    if (temPnInvalido) {
+      definirStatusPn(
+        "Existe PN incompleto ou inválido. Cada PN deve conter 8 dígitos numéricos.",
+        "error"
+      );
+      return;
+    }
+
+    if (principalSemLote) {
+      definirStatusPn(
+        "O PN principal precisa ter a Data/Lote inicial preenchida.",
+        "error"
+      );
+      return;
+    }
+
+    definirStatusPn(
+      "PN(s) preenchido(s) corretamente.",
+      "success"
+    );
+  }
+
+
+  // ==========================================================
+  // EVENTO: ADICIONAR LINHA DE PN
   // ==========================================================
   addPnRowBtn.addEventListener("click", () => {
     pnTableBody.appendChild(criarLinhaPn());
     garantirPnPrincipal();
+    aplicarValidacoesPnEmTela();
   });
 
   // ==========================================================
@@ -443,10 +513,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (eraPrincipal) {
       garantirPnPrincipal();
     }
+
+    aplicarValidacoesPnEmTela();
   });
 
   // ==========================================================
-  // EVENTO: ABRIR / FECHAR PAINEL DE IMPORTAÇÃO EM MASSA
+  // EVENTOS EM TEMPO REAL DA TABELA DE PN
+  // ==========================================================
+  pnTableBody.addEventListener("input", (event) => {
+    const linha = event.target.closest(".pn-row");
+    if (!linha) return;
+
+    normalizarInputsPnDaLinha(linha);
+    aplicarValidacoesPnEmTela();
+  });
+
+  pnTableBody.addEventListener("change", (event) => {
+    if (
+      event.target.classList.contains("pn-principal") ||
+      event.target.classList.contains("data-lote-inicial") ||
+      event.target.classList.contains("qtd-suspeita") ||
+      event.target.classList.contains("qtd-checada") ||
+      event.target.classList.contains("qtd-rejeitada")
+    ) {
+      aplicarValidacoesPnEmTela();
+    }
+  });
+
+  // ==========================================================
+  // EVENTO: ABRIR / FECHAR IMPORTAÇÃO EM MASSA
   // ==========================================================
   toggleMassPanelBtn.addEventListener("click", () => {
     massPanel.classList.toggle("show");
@@ -500,6 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     garantirPnPrincipal();
+    aplicarValidacoesPnEmTela();
 
     let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
 
@@ -521,32 +617,31 @@ document.addEventListener("DOMContentLoaded", () => {
   btnLimpar.addEventListener("click", () => {
     form.reset();
     analistaInput.value = usuarioLogado;
-    document.getElementById("statusInicial").value = "Rascunho";
+    statusInicialInput.value = "Em análise";
 
     limparFornecedorDerivado();
+
     definirStatusDuns(
       "Informe um DUNS válido para localizar o fornecedor.",
       "neutral"
     );
 
-    limparTabelaPn();
+    definirStatusPn(
+      "Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote Inicial.",
+      "neutral"
+    );
 
+    limparTabelaPn();
     massPanel.classList.remove("show");
     pnsLoteTextarea.value = "";
   });
 
-    // ==========================================================
-  // EVENTO: SUBMISSÃO DO FORMULÁRIO
-  // REGRA:
-  // 1) VALIDAR DUNS PRIMEIRO
-  // 2) SOMENTE SE O DUNS ESTIVER OK, VALIDAR O RESTANTE
+  // ==========================================================
+  // EVENTO: SUBMISSÃO
   // ==========================================================
   form.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    // --------------------------------------------------------
-    // ETAPA 1 - PROCESSA E VALIDA O DUNS PRIMEIRO
-    // --------------------------------------------------------
     const resultadoDuns = processarDuns();
     const duns = normalizarNumero(dunsInput.value);
     const errosDuns = [];
@@ -569,41 +664,25 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // --------------------------------------------------------
-    // ETAPA 2 - COLETA DOS DADOS GERAIS
-    // --------------------------------------------------------
     const resumo = document.getElementById("resumo").value.trim();
     const descricaoInicial = document.getElementById("descricaoInicial").value.trim();
-    const fornecedor = fornecedorInput.value.trim();
+    const fornecedor = nomeFornecedorInput.value.trim();
     const tipoFornecedor = tipoFornecedorInput.value.trim();
-    const analista = document.getElementById("analista").value.trim();
-    const statusInicial = document.getElementById("statusInicial").value.trim();
+    const analista = analistaInput.value.trim();
+    const statusInicial = statusInicialInput.value.trim();
     const setor = document.getElementById("setor").value;
     const origem = document.getElementById("origem").value;
     const maiorImpacto = document.getElementById("maiorImpacto").value;
     const impactoQualidade = document.getElementById("impactoQualidade").value;
     const impactoCliente = document.getElementById("impactoCliente").value;
 
-    // --------------------------------------------------------
-    // ETAPA 3 - COLETA DOS PNs
-    // --------------------------------------------------------
     const pns = coletarPns();
     const erros = [];
 
-    // --------------------------------------------------------
-    // ETAPA 4 - VALIDAÇÕES DO RESTANTE DO FORMULÁRIO
-    // --------------------------------------------------------
     if (!resumo) erros.push("Preencha o Resumo da ocorrência.");
     if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
-
-    if (!fornecedor) {
-      erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
-    }
-
-    if (!tipoFornecedor) {
-      erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
-    }
-
+    if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
+    if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
     if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
     if (!setor) erros.push("Selecione o Setor.");
     if (!origem) erros.push("Selecione a Origem.");
@@ -611,9 +690,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
     if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
 
-    // --------------------------------------------------------
-    // ETAPA 5 - VALIDAÇÕES DOS PNs
-    // --------------------------------------------------------
     if (pns.length === 0) {
       erros.push("Informe pelo menos 1 PN.");
     } else {
@@ -646,26 +722,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      if (qtdPrincipais === 0) {
-        erros.push("Marque 1 PN principal.");
-      }
-
-      if (qtdPrincipais > 1) {
-        erros.push("Apenas 1 PN pode ser principal.");
-      }
+      if (qtdPrincipais === 0) erros.push("Marque 1 PN principal.");
+      if (qtdPrincipais > 1) erros.push("Apenas 1 PN pode ser principal.");
     }
 
-    // --------------------------------------------------------
-    // ETAPA 6 - SE EXISTIREM ERROS, EXIBE E INTERROMPE
-    // --------------------------------------------------------
     if (erros.length > 0) {
       alert(erros.join("\n"));
+      aplicarValidacoesPnEmTela();
       return;
     }
 
-    // --------------------------------------------------------
-    // ETAPA 7 - PAYLOAD ESTRUTURADO
-    // --------------------------------------------------------
     const payload = {
       rasp: {
         resumo,
@@ -687,7 +753,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Payload estruturado do RASP:");
     console.log(payload);
-
     alert("Estrutura inicial do RASP validada com sucesso! (simulação front-end)");
   });
+
+  inicializarCamposFixos();
+  aplicarValidacoesPnEmTela();
 });

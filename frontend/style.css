@@ -535,3 +535,65 @@ input[readonly] {
   background: #dbeafe;
   color: #1e3a8a;
 }
+
+/* =========================================================
+   STATUS DO DUNS (mensagens abaixo do campo)
+   ========================================================= */
+
+.duns-status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Neutro */
+.duns-status-neutral {
+  background-color: #eef1f5;
+  color: #495057;
+  border: 1px solid #cfd6de;
+}
+
+/* Sucesso */
+.duns-status-success {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  border: 1px solid #b7e1c1;
+}
+
+/* Erro */
+.duns-status-error {
+  background-color: #fdecea;
+  color: #b02a37;
+  border: 1px solid #f5c2c7;
+}
+
+/* =========================================================
+   STATUS DA TABELA DE PN
+   ========================================================= */
+.pn-status {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.pn-status-neutral {
+  background-color: #eef1f5;
+  color: #495057;
+  border: 1px solid #cfd6de;
+}
+
+.pn-status-success {
+  background-color: #e6f4ea;
+  color: #1e7e34;
+  border: 1px solid #b7e1c1;
+}
+
+.pn-status-error {
+  background-color: #fdecea;
+  color: #b02a37;
+  border: 1px solid #f5c2c7;
+}
