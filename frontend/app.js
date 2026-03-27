@@ -1004,6 +1004,45 @@ document.addEventListener("DOMContentLoaded", () => {
     pnsLoteTextarea.value = "";
   });
 
+  async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
+  // Criamos um array de promessas (todas as requisições iniciam juntas)
+  const promises = pns.map(async (item, i) => {
+    const payloadPn = {
+      idRasp: idRasp,
+      pn: item.pn,
+      quantidadeSuspeita: item.qtdSuspeitaInicial,
+      quantidadeChecada: item.qtdChecadaInicial,
+      quantidadeRejeitada: item.qtdRejeitadaInicial,
+      emContencao: false,
+      duns: dunsFornecedor,
+      ordemExibicao: i + 1
+    };
+
+    const response = await fetch("http://localhost:5050/rasp-pn", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payloadPn)
+    });
+
+    if (!response.ok) {
+      const mensagemErro = await response.text();
+      // Correção do parêntese aqui:
+      console.error("Erro API PN:", mensagemErro); 
+      throw new Error(`Erro ao salvar PN ${item.pn}. Detalhe: ${mensagemErro}`);
+    }
+
+    return response.json();
+  });
+
+  // Aguarda todas as requisições terminarem
+  return await Promise.all(promises);
+}
+    
+  
+
+
   // ==========================================================
   // EVENTO: SUBMISSÃO
   // ==========================================================
@@ -1113,28 +1152,43 @@ document.addEventListener("DOMContentLoaded", () => {
       idUsuarioCriador: 1
     };
 
-    fetch("http://localhost:5050/rasp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Erro ao criar RASP");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("RASP criado:", data);
-        alert("RASP criado com sucesso!");
-      })
-      .catch((error) => {
-        console.error(error);
-        alert("Erro ao enviar RASP para API.");
+    try {
+      // ------------------------------------------------------
+      // 1. Cria o RASP
+      // ------------------------------------------------------
+      const responseRasp = await fetch("http://localhost:5050/rasp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
-  });
+
+      if (!responseRasp.ok) {
+        const mensagemErro = await responseRasp.text();
+        throw new Error(`Erro ao criar RASP. Detalhe: ${mensagemErro}`);
+      }
+
+      const dataRasp = await responseRasp.json();
+      const idRaspCriado = dataRasp.id_rasp ?? dataRasp.idRasp;
+
+      if (!idRaspCriado) {
+        throw new Error("A API criou o RASP, mas não retornou o id_rasp.");
+      }
+
+      // ------------------------------------------------------
+      // 2. Salva os PNs vinculados ao RASP
+      // ------------------------------------------------------
+      console.log("PNS ENVIADOS:", pns);
+      await salvarPnsDoRasp(idRaspCriado, pns, duns);
+
+      console.log("RASP criado com sucesso:", dataRasp);
+      alert(`RASP criado com sucesso! ID: ${idRaspCriado}`);
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Erro ao enviar RASP para API.");
+    }
+});
 
   // ==========================================================
   // INICIALIZAÇÃO FINAL DA TELA
