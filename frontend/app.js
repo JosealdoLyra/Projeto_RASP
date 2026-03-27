@@ -4,7 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   const form = document.getElementById("raspForm");
 
+  // ----------------------------------------------------------
   // Seção 2 - Dados básicos do RASP
+  // ----------------------------------------------------------
   const dunsInput = document.getElementById("duns");
   const nomeFornecedorInput = document.getElementById("nomeFornecedor");
   const tipoFornecedorInput = document.getElementById("tipoFornecedor");
@@ -12,8 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusInicialInput = document.getElementById("statusInicial");
   const dunsStatus = document.getElementById("dunsStatus");
 
-  
+  // ----------------------------------------------------------
   // Seção 4 - PN
+  // ----------------------------------------------------------
   const addPnRowBtn = document.getElementById("addPnRow");
   const pnTableBody = document.getElementById("pnTableBody");
   const btnLimpar = document.getElementById("btnLimpar");
@@ -23,13 +26,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnsLoteTextarea = document.getElementById("pnsLoteTextarea");
   const pnStatus = document.getElementById("pnStatus");
 
+  // ----------------------------------------------------------
+  // Modal de cadastro de PN
+  // ----------------------------------------------------------
+  const modalPn = document.getElementById("modalPn");
+  const modalPnCodigo = document.getElementById("modalPnCodigo");
+  const modalPnDescricao = document.getElementById("modalPnDescricao");
+  const salvarPnBtn = document.getElementById("salvarPn");
+  const cancelarPnBtn = document.getElementById("cancelarPn");
+
+  // ----------------------------------------------------------
+  // Modal de cadastro de fornecedor
+  // ----------------------------------------------------------
+  const modalFornecedor = document.getElementById("modalFornecedor");
+  const modalFornecedorDuns = document.getElementById("modalFornecedorDuns");
+  const modalFornecedorNome = document.getElementById("modalFornecedorNome");
+  const modalFornecedorTipo = document.getElementById("modalFornecedorTipo");
+  const salvarFornecedorBtn = document.getElementById("salvarFornecedor");
+  const cancelarFornecedorBtn = document.getElementById("cancelarFornecedor");
+
   // ==========================================================
-  // SIMULAÇÃO DE USUÁRIO LOGADO
+  // ESTADO DA TELA
   // ==========================================================
   const usuarioLogado = "Usuário Logado";
+  let fornecedorAtual = null;
+  let linhaPnAtual = null;
 
   // ==========================================================
   // BASE TEMPORÁRIA DE FORNECEDORES
+  // OBSERVAÇÃO:
+  // Mantida apenas como apoio/histórico local.
+  // O fluxo oficial atual usa a API.
   // ==========================================================
   const fornecedoresBase = [
     { duns: "000104992", nome: "Alcom - USA", tipoFornecedor: "IMPORTADO" },
@@ -51,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   // ==========================================================
-  // INICIALIZAÇÃO
+  // INICIALIZAÇÃO DA TELA
   // ==========================================================
   function inicializarCamposFixos() {
     analistaInput.value = usuarioLogado;
@@ -62,7 +89,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // UTILITÁRIOS
   // ==========================================================
   function normalizarNumero(valor) {
-    return String(valor || "").replace(/\D/g, "").trim();
+    return String(valor || "")
+      .replace(/\D/g, "")
+      .trim();
   }
 
   function validarPn(pn) {
@@ -81,9 +110,211 @@ document.addEventListener("DOMContentLoaded", () => {
     return fornecedoresBase.find((item) => item.duns === duns) || null;
   }
 
+  // ==========================================================
+  // MODAL - PN
+  // ==========================================================
+  function abrirModalPn(pn, linha) {
+    linhaPnAtual = linha;
+    modalPnCodigo.value = pn;
+    modalPnDescricao.value = "";
+    modalPn.classList.remove("hidden");
+  }
+
+  function fecharModalPn() {
+    modalPn.classList.add("hidden");
+  }
+
+  // ==========================================================
+  // MODAL - FORNECEDOR
+  // ==========================================================
+  function abrirModalFornecedor(duns) {
+    modalFornecedorDuns.value = duns;
+    modalFornecedorNome.value = "";
+    modalFornecedorTipo.value = "";
+    modalFornecedor.classList.remove("hidden");
+  }
+
+  function fecharModalFornecedor() {
+    modalFornecedor.classList.add("hidden");
+  }
+
+  // ==========================================================
+  // EVENTOS DOS MODAIS
+  // ==========================================================
+  cancelarPnBtn.addEventListener("click", () => {
+    fecharModalPn();
+  });
+
+  cancelarFornecedorBtn.addEventListener("click", () => {
+    fecharModalFornecedor();
+  });
+
+  // ==========================================================
+  // API - FORNECEDOR
+  // ==========================================================
+  async function buscarFornecedorNaApi(duns) {
+    const url = `http://localhost:5050/fornecedor-rasp/duns/${duns}`;
+
+    try {
+      const response = await fetch(url);
+
+      if (response.status === 404) {
+        return { ok: false, motivo: "nao_encontrado" };
+      }
+
+      if (!response.ok) {
+        return { ok: false, motivo: "erro_api" };
+      }
+
+      const fornecedor = await response.json();
+
+      return {
+        ok: true,
+        fornecedor
+      };
+    } catch (error) {
+      console.error("Erro ao consultar fornecedor na API:", error);
+      return { ok: false, motivo: "falha_conexao" };
+    }
+  }
+
+  // ==========================================================
+  // API - PN
+  // ==========================================================
+  async function buscarPnNaApi(pn) {
+    const url = `http://localhost:5050/pn-rasp/codigo/${pn}`;
+
+    try {
+      const response = await fetch(url);
+
+      if (response.status === 404) {
+        return { ok: false, motivo: "nao_encontrado" };
+      }
+
+      if (!response.ok) {
+        return { ok: false, motivo: "erro_api" };
+      }
+
+      const pnData = await response.json();
+
+      return {
+        ok: true,
+        pn: pnData
+      };
+    } catch (error) {
+      console.error("Erro ao consultar PN na API:", error);
+      return { ok: false, motivo: "falha_conexao" };
+    }
+  }
+
+  // ==========================================================
+  // SALVAR PN VIA MODAL
+  // ==========================================================
+  salvarPnBtn.addEventListener("click", async () => {
+    const pn = modalPnCodigo.value;
+    const descricao = modalPnDescricao.value.trim();
+
+    if (!descricao) {
+      alert("Informe a descrição do PN.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5050/pn-rasp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          codigoPn: pn,
+          nomePeca: descricao
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao cadastrar PN");
+      }
+
+      const novoPn = await response.json();
+
+      linhaPnAtual.querySelector(".pn-id").value = novoPn.idPn ?? novoPn.id_pn ?? "";
+      linhaPnAtual.querySelector(".pn-descricao").value =
+        novoPn.nomePeca ?? novoPn.nome_peca ?? "";
+
+      fecharModalPn();
+      aplicarValidacoesPnEmTela();
+
+      alert("PN cadastrado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao cadastrar PN.");
+    }
+  });
+
+  // ==========================================================
+  // SALVAR FORNECEDOR VIA MODAL
+  // ==========================================================
+  salvarFornecedorBtn.addEventListener("click", async () => {
+    const duns = modalFornecedorDuns.value.trim();
+    const nome = modalFornecedorNome.value.trim();
+    const tipoFornecedor = modalFornecedorTipo.value.trim();
+    
+
+    if (!nome) {
+      alert("Informe o nome do fornecedor.");
+      return;
+    }
+
+    if (!tipoFornecedor) {
+      alert("Selecione o tipo do fornecedor.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5050/fornecedor-rasp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          duns,
+          nome,
+          tipoFornecedor,
+          ativo: true,
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao cadastrar fornecedor");
+      }
+
+      const novoFornecedor = await response.json();
+
+      fornecedorAtual = novoFornecedor;
+      nomeFornecedorInput.value = novoFornecedor.nome ?? "";
+      tipoFornecedorInput.value = novoFornecedor.tipoFornecedor ?? "";
+
+      definirStatusDuns(
+        `Fornecedor localizado com sucesso: ${nomeFornecedorInput.value} (${tipoFornecedorInput.value}).`,
+        "success"
+      );
+
+      fecharModalFornecedor();
+
+      alert("Fornecedor cadastrado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao cadastrar fornecedor.");
+    }
+  });
+
+  // ==========================================================
+  // LIMPEZA / STATUS - FORNECEDOR
+  // ==========================================================
   function limparFornecedorDerivado() {
     nomeFornecedorInput.value = "";
     tipoFornecedorInput.value = "";
+    fornecedorAtual = null;
   }
 
   function definirStatusDuns(mensagem, tipo) {
@@ -103,6 +334,9 @@ document.addEventListener("DOMContentLoaded", () => {
     dunsStatus.classList.add("duns-status-neutral");
   }
 
+  // ==========================================================
+  // LIMPEZA / STATUS - PN
+  // ==========================================================
   function definirStatusPn(mensagem, tipo) {
     pnStatus.textContent = mensagem;
     pnStatus.className = "pn-status";
@@ -123,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // PROCESSAMENTO DO DUNS
   // ==========================================================
-  function processarDuns() {
+  async function processarDuns() {
     const duns = normalizarNumero(dunsInput.value);
     dunsInput.value = duns;
 
@@ -153,21 +387,41 @@ document.addEventListener("DOMContentLoaded", () => {
       return { ok: false, motivo: "sequencia" };
     }
 
-    const fornecedor = obterFornecedorPorDuns(duns);
+    const resultadoApi = await buscarFornecedorNaApi(duns);
 
-    if (!fornecedor) {
+    if (!resultadoApi.ok) {
+      if (resultadoApi.motivo === "nao_encontrado") {
+        definirStatusDuns(
+          "DUNS não encontrado no cadastro. Complete o cadastro para continuar.",
+          "error"
+        );
+        abrirModalFornecedor(duns);
+        return { ok: false, motivo: "nao_encontrado" };
+      }
+
+      if (resultadoApi.motivo === "falha_conexao") {
+        definirStatusDuns(
+          "Não foi possível conectar à API no momento.",
+          "error"
+        );
+        return { ok: false, motivo: "falha_conexao" };
+      }
+
       definirStatusDuns(
-        "DUNS não encontrado. No fluxo final, o sistema deverá oferecer a opção de cadastrar o fornecedor sem perder os dados já preenchidos.",
+        "Erro ao consultar fornecedor na API.",
         "error"
       );
-      return { ok: false, motivo: "nao_encontrado" };
+      return { ok: false, motivo: "erro_api" };
     }
 
-    nomeFornecedorInput.value = fornecedor.nome;
-    tipoFornecedorInput.value = fornecedor.tipoFornecedor;
+    const fornecedor = resultadoApi.fornecedor;
+    fornecedorAtual = fornecedor;
+
+    nomeFornecedorInput.value = fornecedor.nomeFornecedor ?? fornecedor.nome ?? "";
+    tipoFornecedorInput.value = fornecedor.tipoFornecedor ?? fornecedor.tipo ?? "";
 
     definirStatusDuns(
-      `Fornecedor localizado com sucesso: ${fornecedor.nome} (${fornecedor.tipoFornecedor}).`,
+      `Fornecedor localizado com sucesso: ${nomeFornecedorInput.value} (${tipoFornecedorInput.value}).`,
       "success"
     );
 
@@ -181,12 +435,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // EVENTOS DO CAMPO DUNS
   // ==========================================================
-  dunsInput.addEventListener("input", () => {
+  dunsInput.addEventListener("input", async () => {
     const valorNormalizado = normalizarNumero(dunsInput.value).slice(0, 9);
     dunsInput.value = valorNormalizado;
 
     if (valorNormalizado.length === 9) {
-      processarDuns();
+      await processarDuns();
       return;
     }
 
@@ -205,22 +459,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  dunsInput.addEventListener("blur", () => {
-    processarDuns();
+  dunsInput.addEventListener("blur", async () => {
+    await processarDuns();
   });
 
   // ==========================================================
-  // OBTÉM TODAS AS LINHAS DE PN DA TABELA
+  // TABELA DE PNs - UTILITÁRIOS
   // ==========================================================
   function obterRowsPn() {
     return [...document.querySelectorAll(".pn-row")];
   }
 
-  // ==========================================================
-  // GARANTE QUE SEMPRE EXISTA UM PN PRINCIPAL
-  // ==========================================================
   function garantirPnPrincipal() {
     const rows = obterRowsPn();
+
     const algumMarcado = rows.some((row) =>
       row.querySelector(".pn-principal").checked
     );
@@ -253,6 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ${principal ? "checked" : ""}
         />
       </td>
+
       <td>
         <input
           type="text"
@@ -260,7 +513,23 @@ document.addEventListener("DOMContentLoaded", () => {
           placeholder="8 dígitos"
           value="${pn}"
         />
+        <input
+          type="hidden"
+          class="pn-id"
+          value=""
+        />
       </td>
+
+      <td>
+        <input
+          type="text"
+          class="pn-descricao system-field"
+          value=""
+          placeholder="Descrição do PN"
+          readonly
+        />
+      </td>
+
       <td>
         <input
           type="text"
@@ -269,35 +538,46 @@ document.addEventListener("DOMContentLoaded", () => {
           value="${dataLoteInicial}"
         />
       </td>
+
       <td>
         <input
           type="number"
-          class="qtd-suspeita"
+          class="qtd-suspeita qtd-compacta"
           min="0"
           step="1"
           value="${qtdSuspeita}"
         />
       </td>
+
       <td>
         <input
           type="number"
-          class="qtd-checada"
+          class="qtd-checada qtd-compacta"
           min="0"
           step="1"
           value="${qtdChecada}"
         />
       </td>
+
       <td>
         <input
           type="number"
-          class="qtd-rejeitada"
+          class="qtd-rejeitada qtd-compacta"
           min="0"
           step="1"
           value="${qtdRejeitada}"
         />
       </td>
-      <td>
-        <button type="button" class="danger-btn remove-row">Remover</button>
+
+      <td class="center-cell">
+        <button
+          type="button"
+          class="remove-row icon-btn"
+          title="Remover linha"
+          aria-label="Remover linha"
+        >
+          ×
+        </button>
       </td>
     `;
 
@@ -305,7 +585,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================
-  // COLETA TODOS OS PNs DIGITADOS
+  // REMOÇÃO LOCAL DE LINHA DE PN
+  // REGRA:
+  // Permitida apenas antes do registro oficial
+  // ==========================================================
+  pnTableBody.addEventListener("click", (event) => {
+    if (!event.target.classList.contains("remove-row")) return;
+
+    const rows = obterRowsPn();
+
+    if (rows.length === 1) {
+      alert("O RASP precisa ter pelo menos 1 PN.");
+      return;
+    }
+
+    const linha = event.target.closest("tr");
+    const eraPrincipal = linha.querySelector(".pn-principal").checked;
+
+    linha.remove();
+
+    if (eraPrincipal) {
+      garantirPnPrincipal();
+    }
+
+    aplicarValidacoesPnEmTela();
+  });
+
+  // ==========================================================
+  // COLETA TODOS OS PNs DIGITADOS NA TABELA
   // ==========================================================
   function coletarPns() {
     const rows = obterRowsPn();
@@ -314,6 +621,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .map((row) => {
         const principal = row.querySelector(".pn-principal").checked;
         const pn = normalizarNumero(row.querySelector(".pn-input").value);
+        const idPn = row.querySelector(".pn-id")?.value
+          ? Number(row.querySelector(".pn-id").value)
+          : null;
         const dataLoteInicial = row.querySelector(".data-lote-inicial").value.trim();
         const qtdSuspeitaInicial = Number(row.querySelector(".qtd-suspeita").value || 0);
         const qtdChecadaInicial = Number(row.querySelector(".qtd-checada").value || 0);
@@ -322,6 +632,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return {
           principal,
           pn,
+          idPn,
           dataLoteInicial,
           qtdSuspeitaInicial,
           qtdChecadaInicial,
@@ -329,6 +640,64 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       })
       .filter((item) => item.pn !== "");
+  }
+
+  // ==========================================================
+  // LIMPEZA DOS CAMPOS DERIVADOS DO PN NA LINHA
+  // ==========================================================
+  function limparPnDerivadoDaLinha(linha) {
+    const pnIdInput = linha.querySelector(".pn-id");
+    const pnDescricaoInput = linha.querySelector(".pn-descricao");
+
+    if (pnIdInput) {
+      pnIdInput.value = "";
+    }
+
+    if (pnDescricaoInput) {
+      pnDescricaoInput.value = "";
+    }
+  }
+
+  // ==========================================================
+  // PROCESSA O PN DE UMA LINHA
+  // ==========================================================
+  async function processarPnDaLinha(linha) {
+    const pnInput = linha.querySelector(".pn-input");
+    const pnIdInput = linha.querySelector(".pn-id");
+    const pnDescricaoInput = linha.querySelector(".pn-descricao");
+
+    const pn = normalizarNumero(pnInput.value).slice(0, 8);
+    pnInput.value = pn;
+
+    limparPnDerivadoDaLinha(linha);
+
+    if (!pn) {
+      return { ok: false, motivo: "vazio" };
+    }
+
+    if (!validarPn(pn)) {
+      return { ok: false, motivo: "formato" };
+    }
+
+    const resultadoApi = await buscarPnNaApi(pn);
+
+    if (!resultadoApi.ok) {
+      if (resultadoApi.motivo === "nao_encontrado") {
+        abrirModalPn(pn, linha);
+      }
+      return resultadoApi;
+    }
+
+    const pnData = resultadoApi.pn;
+
+    pnIdInput.value = pnData.idPn ?? pnData.id_pn ?? "";
+    pnDescricaoInput.value = pnData.nomePeca ?? pnData.nome_peca ?? pnData.descricao ?? "";
+
+    return {
+      ok: true,
+      motivo: "encontrado",
+      pn: pnData
+    };
   }
 
   // ==========================================================
@@ -354,7 +723,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================
-  // VALIDAÇÕES EM TEMPO REAL DOS PNs
+  // NORMALIZA INPUTS DA LINHA DE PN
   // ==========================================================
   function normalizarInputsPnDaLinha(linha) {
     const pnInput = linha.querySelector(".pn-input");
@@ -370,6 +739,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ==========================================================
+  // VALIDA DUPLICIDADE DE PN NA TELA
+  // ==========================================================
   function validarDuplicidadePnEmTela() {
     const rows = obterRowsPn();
     const mapa = new Map();
@@ -396,6 +768,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ==========================================================
+  // VALIDA LOTE OBRIGATÓRIO DO PN PRINCIPAL
+  // ==========================================================
   function validarPnPrincipalEmTela() {
     const rows = obterRowsPn();
 
@@ -411,6 +786,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ==========================================================
+  // VALIDAÇÕES GERAIS DA TABELA DE PN
+  // ==========================================================
   function aplicarValidacoesPnEmTela() {
     const rows = obterRowsPn();
 
@@ -441,6 +819,10 @@ document.addEventListener("DOMContentLoaded", () => {
         temPnInvalido = true;
       }
 
+      if (item.pn && !item.idPn) {
+        temPnInvalido = true;
+      }
+
       if (pnsUnicos.has(item.pn)) {
         temDuplicado = true;
       } else {
@@ -462,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (temPnInvalido) {
       definirStatusPn(
-        "Existe PN incompleto ou inválido. Cada PN deve conter 8 dígitos numéricos.",
+        "Existe PN inválido ou não cadastrado. Cada PN deve conter 8 dígitos numéricos e existir no cadastro mestre.",
         "error"
       );
       return;
@@ -482,9 +864,8 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-
   // ==========================================================
-  // EVENTO: ADICIONAR LINHA DE PN
+  // EVENTO: ADICIONAR NOVA LINHA DE PN
   // ==========================================================
   addPnRowBtn.addEventListener("click", () => {
     pnTableBody.appendChild(criarLinhaPn());
@@ -493,38 +874,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================================
-  // EVENTO: REMOVER LINHA DE PN
-  // ==========================================================
-  pnTableBody.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("remove-row")) return;
-
-    const rows = obterRowsPn();
-
-    if (rows.length === 1) {
-      alert("O RASP precisa ter pelo menos 1 PN.");
-      return;
-    }
-
-    const linha = event.target.closest("tr");
-    const eraPrincipal = linha.querySelector(".pn-principal").checked;
-
-    linha.remove();
-
-    if (eraPrincipal) {
-      garantirPnPrincipal();
-    }
-
-    aplicarValidacoesPnEmTela();
-  });
-
-  // ==========================================================
   // EVENTOS EM TEMPO REAL DA TABELA DE PN
   // ==========================================================
-  pnTableBody.addEventListener("input", (event) => {
+  pnTableBody.addEventListener("input", async (event) => {
     const linha = event.target.closest(".pn-row");
     if (!linha) return;
 
     normalizarInputsPnDaLinha(linha);
+
+    if (event.target.classList.contains("pn-input")) {
+      const pnNormalizado = normalizarNumero(event.target.value).slice(0, 8);
+      event.target.value = pnNormalizado;
+
+      if (pnNormalizado.length === 8) {
+        await processarPnDaLinha(linha);
+      } else {
+        limparPnDerivadoDaLinha(linha);
+      }
+    }
+
     aplicarValidacoesPnEmTela();
   });
 
@@ -639,10 +1007,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // EVENTO: SUBMISSÃO
   // ==========================================================
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const resultadoDuns = processarDuns();
+    const resultadoDuns = await processarDuns();
     const duns = normalizarNumero(dunsInput.value);
     const errosDuns = [];
 
@@ -683,6 +1051,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
     if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
     if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
+    if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
     if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
     if (!setor) erros.push("Selecione o Setor.");
     if (!origem) erros.push("Selecione a Origem.");
@@ -701,6 +1070,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!validarPn(item.pn)) {
           erros.push(`O PN da linha ${index + 1} deve conter 8 dígitos numéricos.`);
+        }
+
+        if (item.pn && !item.idPn) {
+          erros.push(`O PN da linha ${index + 1} não está cadastrado no sistema.`);
         }
 
         if (pnsUnicos.has(item.pn)) {
@@ -733,29 +1106,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const payload = {
-      rasp: {
-        resumo,
-        descricaoInicial,
-        fornecedor,
-        duns,
-        tipoFornecedor,
-        analista,
-        statusInicial,
-        setor,
-        origem,
-        maiorImpacto,
-        impactoQualidade,
-        impactoCliente
-      },
-      pnsAtendimentoInicial: pns,
-      contencoes: []
+      idFornecedorRasp:
+        fornecedorAtual?.idFornecedor ??
+        fornecedorAtual?.idFornecedorRasp,
+      descricaoProblema: descricaoInicial,
+      idUsuarioCriador: 1
     };
 
-    console.log("Payload estruturado do RASP:");
-    console.log(payload);
-    alert("Estrutura inicial do RASP validada com sucesso! (simulação front-end)");
+    fetch("http://localhost:5050/rasp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao criar RASP");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("RASP criado:", data);
+        alert("RASP criado com sucesso!");
+      })
+      .catch((error) => {
+        console.error(error);
+        alert("Erro ao enviar RASP para API.");
+      });
   });
 
+  // ==========================================================
+  // INICIALIZAÇÃO FINAL DA TELA
+  // ==========================================================
   inicializarCamposFixos();
   aplicarValidacoesPnEmTela();
 });

@@ -597,3 +597,147 @@ input[readonly] {
   color: #b02a37;
   border: 1px solid #f5c2c7;
 }
+
+/* =========================================================
+   REFINO VISUAL DA TABELA DE PN
+   ========================================================= */
+
+.pn-table-refinada {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.pn-table-refinada th,
+.pn-table-refinada td {
+  vertical-align: middle;
+}
+
+.pn-table-refinada thead th {
+  white-space: nowrap;
+}
+
+.th-principal {
+  width: 90px;
+}
+
+.th-pn {
+  width: 150px;
+}
+
+.th-descricao {
+  min-width: 260px;
+}
+
+.th-lote {
+  width: 200px;
+}
+
+.th-qtd {
+  width: 120px;
+}
+
+.pn-table-refinada .pn-input,
+.pn-table-refinada .pn-descricao,
+.pn-table-refinada .data-lote-inicial,
+.pn-table-refinada .qtd-compacta {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pn-table-refinada .pn-descricao {
+  background: #f7f9fc;
+  color: #4b5563;
+}
+
+.pn-table-refinada .qtd-compacta {
+  max-width: 110px;
+  text-align: center;
+}
+
+.warning-note {
+  margin-top: 0.5rem;
+  color: #8a5a00;
+  background: #fff8e8;
+  border: 1px solid #f1d89b;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+}
+
+.th-remover {
+  width: 56px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #b42318;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #fff5f5;
+  border-color: #f1b5b5;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-overlay.hidden {
+  display: none;
+}
+
+.modal-card {
+  background: #fff;
+  border-radius: 12px;
+  width: 360px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.modal-icon {
+  font-size: 20px;
+}
+
+.modal-text {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+@keyframes fadeIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+

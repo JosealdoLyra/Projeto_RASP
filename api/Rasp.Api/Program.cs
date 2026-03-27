@@ -6,6 +6,21 @@ using Rasp.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirFront", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://127.0.0.1:5500",
+                "http://localhost:5500"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+
 // -----------------------------------------------------------------------------
 // Configuração de serviços da aplicação
 // -----------------------------------------------------------------------------
@@ -19,6 +34,7 @@ builder.Services.AddDbContext<RaspDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+app.UseCors("PermitirFront");
 
 // Swagger habilitado no ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
@@ -405,9 +421,6 @@ app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbCon
     if (tipoFornecedor != "LOCAL" && tipoFornecedor != "IMPORTADO")
         return Results.BadRequest("TipoFornecedor deve ser LOCAL ou IMPORTADO.");
 
-    if (req.IdPais <= 0)
-        return Results.BadRequest("IdPais inválido.");
-
     var dunsJaExiste = await db.FornecedorRasp
         .AnyAsync(f => f.Duns == duns);
 
@@ -419,8 +432,8 @@ app.MapPost("/fornecedor-rasp", async (CriarFornecedorRaspRequest req, RaspDbCon
         Duns = duns,
         Nome = nome,
         TipoFornecedor = tipoFornecedor,
-        Ativo = req.Ativo,
-        IdPais = req.IdPais
+        Ativo = req.Ativo
+        
     };
 
     db.FornecedorRasp.Add(item);
@@ -3298,8 +3311,7 @@ public record CriarFornecedorRaspRequest(
     string Duns,
     string Nome,
     string TipoFornecedor,
-    bool Ativo,
-    int IdPais
+    bool Ativo
 );
 
 // Cadastro de PN no mestre.

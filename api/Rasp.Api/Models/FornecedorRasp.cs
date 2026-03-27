@@ -6,7 +6,7 @@ namespace Rasp.Api.Models
     // - DUNS deve ter 9 dígitos numéricos
     // - Nome é obrigatório
     // - TipoFornecedor deve ser LOCAL ou IMPORTADO
-    // - IdPais deve ser válido
+    // - IdPais é opcional no momento pode se null
     public class FornecedorRasp
     {
         // Identificador interno do fornecedor
@@ -25,6 +25,6 @@ namespace Rasp.Api.Models
         public bool Ativo { get; set; }
 
         // País vinculado ao fornecedor
-        public int IdPais { get; set; }
+        public int? IdPais { get; set; }
     }
 }

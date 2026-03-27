@@ -13,6 +13,7 @@
   <!-- Arquivo de estilo -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <!-- =========================================================
        ESTRUTURA PRINCIPAL DA APLICAÇÃO
@@ -23,27 +24,36 @@
          MENU LATERAL
          ======================================================= -->
     <aside class="sidebar">
-  <div class="sidebar-brand">
-    <h1>RASP</h1>
-    <p class="sidebar-subtitle">
-  <span class="sidebar-line"><span class="sigla-letra">R</span>elatório de</span>
-  <span class="sidebar-line"><span class="sigla-letra">A</span>nálise e</span>
-  <span class="sidebar-line"><span class="sigla-letra">S</span>olução de</span>
-  <span class="sidebar-line"><span class="sigla-letra">P</span>roblemas</span>
-</p>
+      <div class="sidebar-brand">
+        <h1>RASP</h1>
 
-<div class="sidebar-badge">SAC - S10 SJC</div>
-  </div>
+        <p class="sidebar-subtitle">
+          <span class="sidebar-line">
+            <span class="sigla-letra">R</span>elatório de
+          </span>
+          <span class="sidebar-line">
+            <span class="sigla-letra">A</span>nálise e
+          </span>
+          <span class="sidebar-line">
+            <span class="sigla-letra">S</span>olução de
+          </span>
+          <span class="sidebar-line">
+            <span class="sigla-letra">P</span>roblemas
+          </span>
+        </p>
 
-  <nav class="sidebar-nav">
-    <ul>
-      <li><a href="#">Dashboard</a></li>
-      <li><a href="#" class="active">Novo RASP</a></li>
-      <li><a href="#">Consulta</a></li>
-      <li><a href="#">Cadastros</a></li>
-    </ul>
-  </nav>
-</aside>
+        <div class="sidebar-badge">SAC - S10 SJC</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#" class="active">Novo RASP</a></li>
+          <li><a href="#">Consulta</a></li>
+          <li><a href="#">Cadastros</a></li>
+        </ul>
+      </nav>
+    </aside>
 
     <!-- =======================================================
          CONTEÚDO PRINCIPAL
@@ -97,108 +107,108 @@
             </div>
           </section>
 
-                  <!-- =================================================
-     SEÇÃO 2 - DADOS BÁSICOS DO RASP
-     REGRA:
-     - DUNS é a chave principal de identificação
-     - Fornecedor e Tipo do fornecedor vêm da tabela fornecedor_rasp
-     ================================================= -->
-<section class="form-section">
-  <h3>2. Dados básicos do RASP</h3>
+          <!-- =================================================
+               SEÇÃO 2 - DADOS BÁSICOS DO RASP
+               REGRA:
+               - DUNS é a chave principal de identificação
+               - Fornecedor e Tipo do fornecedor vêm da tabela fornecedor_rasp
+               ================================================= -->
+          <section class="form-section">
+            <h3>2. Dados básicos do RASP</h3>
 
-  <div class="grid grid-3">
-    <div class="form-group">
-      <label for="duns">DUNS *</label>
-      <input
-        type="text"
-        id="duns"
-        name="duns"
-        maxlength="9"
-        placeholder="Digite 9 dígitos"
-      />
-    </div>
+            <div class="grid grid-3">
+              <div class="form-group">
+                <label for="duns">DUNS *</label>
+                <input
+                  type="text"
+                  id="duns"
+                  name="duns"
+                  maxlength="9"
+                  placeholder="Digite 9 dígitos"
+                />
+              </div>
 
-    <div class="form-group">
-      <label for="nomeFornecedor">Nome do fornecedor</label>
-      <input
-        type="text"
-        id="nomeFornecedor"
-        name="nomeFornecedor"
-        class="system-field"
-        readonly
-        placeholder="Preenchido automaticamente pelo DUNS"
-      />
-    </div>
+              <div class="form-group">
+                <label for="nomeFornecedor">Nome do fornecedor</label>
+                <input
+                  type="text"
+                  id="nomeFornecedor"
+                  name="nomeFornecedor"
+                  class="system-field"
+                  readonly
+                  placeholder="Preenchido automaticamente pelo DUNS"
+                />
+              </div>
 
-    <div class="form-group">
-      <label for="tipoFornecedor">Tipo do fornecedor</label>
-      <input
-        type="text"
-        id="tipoFornecedor"
-        name="tipoFornecedor"
-        class="system-field"
-        readonly
-        placeholder="LOCAL ou IMPORTADO"
-      />
-    </div>
+              <div class="form-group">
+                <label for="tipoFornecedor">Tipo do fornecedor</label>
+                <input
+                  type="text"
+                  id="tipoFornecedor"
+                  name="tipoFornecedor"
+                  class="system-field"
+                  readonly
+                  placeholder="LOCAL ou IMPORTADO"
+                />
+              </div>
 
-    <div class="form-group">
-      <label for="analista">Analista *</label>
-      <input
-        type="text"
-        id="analista"
-        name="analista"
-        class="system-field"
-        readonly
-      />
-    </div>
+              <div class="form-group">
+                <label for="analista">Analista *</label>
+                <input
+                  type="text"
+                  id="analista"
+                  name="analista"
+                  class="system-field"
+                  readonly
+                />
+              </div>
 
-    <div class="form-group">
-      <label for="statusInicial">Status inicial</label>
-      <input
-        type="text"
-        id="statusInicial"
-        name="statusInicial"
-        class="system-field"
-        value="Em análise"
-        readonly
-      />
-    </div>
+              <div class="form-group">
+                <label for="statusInicial">Status inicial</label>
+                <input
+                  type="text"
+                  id="statusInicial"
+                  name="statusInicial"
+                  class="system-field"
+                  value="Em análise"
+                  readonly
+                />
+              </div>
 
-    <div class="form-group">
-      <label for="setor">Setor *</label>
-      <select id="setor" name="setor">
-        <option value="">Selecione</option>
-        <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
-        <option value="montagem">Montagem</option>
-        <option value="funilaria">Funilaria</option>
-        <option value="pintura">Pintura</option>
-        <option value="outro">Outro</option>
-      </select>
-    </div>
+              <div class="form-group">
+                <label for="setor">Setor *</label>
+                <select id="setor" name="setor">
+                  <option value="">Selecione</option>
+                  <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
+                  <option value="montagem">Montagem</option>
+                  <option value="funilaria">Funilaria</option>
+                  <option value="pintura">Pintura</option>
+                  <option value="outro">Outro</option>
+                </select>
+              </div>
 
-    <div class="form-group">
-      <label for="origem">Origem *</label>
-      <select id="origem" name="origem">
-        <option value="">Selecione</option>
-        <option value="dr">DR</option>
-        <option value="drloss">DRLoss</option>
-        <option value="gca5">GCA 5</option>
-        <option value="gca10">GCA 10</option>
-        <option value="gca20">GCA 20</option>
-        <option value="gca50">GCA 50</option>
-        <option value="linha">Linha</option>
-        <option value="selecao">Seleção</option>
-        <option value="outros">Outros</option>
-      </select>
-    </div>
-  </div>
+              <div class="form-group">
+                <label for="origem">Origem *</label>
+                <select id="origem" name="origem">
+                  <option value="">Selecione</option>
+                  <option value="dr">DR</option>
+                  <option value="drloss">DRLoss</option>
+                  <option value="gca5">GCA 5</option>
+                  <option value="gca10">GCA 10</option>
+                  <option value="gca20">GCA 20</option>
+                  <option value="gca50">GCA 50</option>
+                  <option value="linha">Linha</option>
+                  <option value="selecao">Seleção</option>
+                  <option value="outros">Outros</option>
+                </select>
+              </div>
+            </div>
 
-  <!-- STATUS DA CONSULTA DE DUNS -->
-  <div id="dunsStatus" class="duns-status duns-status-neutral">
-    Informe um DUNS válido para localizar o fornecedor.
-  </div>
-</section>
+            <!-- STATUS DA CONSULTA DE DUNS -->
+            <div id="dunsStatus" class="duns-status duns-status-neutral">
+              Informe um DUNS válido para localizar o fornecedor.
+            </div>
+          </section>
 
           <!-- =================================================
                SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
@@ -259,6 +269,11 @@
               O campo Data/Lote inicial é obrigatório para o PN principal.
             </p>
 
+            <p class="section-note warning-note">
+              Após inclusão no processo, exclusões e alterações estruturais devem seguir fluxo controlado.
+              Correções sensíveis devem ser tratadas com apoio administrativo.
+            </p>
+
             <!-- AÇÕES DA TABELA DE PNs -->
             <div class="pn-header-line">
               <div class="pn-header-actions">
@@ -269,10 +284,6 @@
                 <button type="button" id="toggleMassPanel" class="secondary-btn">
                   Colar vários PNs
                 </button>
-                <div id="pnStatus" class="pn-status pn-status-neutral">
-  Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
-</div>
-
               </div>
             </div>
 
@@ -302,20 +313,27 @@
 
             <!-- TABELA DE PNs -->
             <div class="table-wrapper">
-              <table class="pn-table">
+              <table class="pn-table pn-table-refinada">
                 <thead>
                   <tr>
-                    <th class="center-cell">Principal</th>
-                    <th>PN *</th>
-                    <th>Data/Lote inicial *</th>
-                    <th>Qtd suspeita inicial</th>
-                    <th>Qtd checada inicial</th>
-                    <th>Qtd rejeitada inicial</th>
-                    <th>Ação</th>
+                    <th class="center-cell th-principal">Principal</th>
+                    <th class="th-pn">PN *</th>
+                    <th class="th-descricao">Descrição do PN</th>
+                    <th class="th-lote">Data/Lote inicial *</th>
+                    <th class="th-qtd">Qtd suspeita</th>
+                    <th class="th-qtd">Qtd checada</th>
+                    <th class="th-qtd">Qtd rejeitada</th>
+                    <th class="th-remover"></th>
                   </tr>
                 </thead>
 
                 <tbody id="pnTableBody">
+                  <!-- ===========================================
+                       LINHA INICIAL DA TABELA DE PN
+                       IMPORTANTE:
+                       Esta linha precisa ter a mesma estrutura
+                       das linhas criadas dinamicamente no app.js
+                       =========================================== -->
                   <tr class="pn-row">
                     <td class="center-cell">
                       <input
@@ -332,6 +350,21 @@
                         class="pn-input"
                         placeholder="8 dígitos"
                       />
+                      <input
+                        type="hidden"
+                        class="pn-id"
+                        value=""
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="text"
+                        class="pn-descricao system-field"
+                        value=""
+                        placeholder="Descrição do PN"
+                        readonly
+                      />
                     </td>
 
                     <td>
@@ -345,7 +378,7 @@
                     <td>
                       <input
                         type="number"
-                        class="qtd-suspeita"
+                        class="qtd-suspeita qtd-compacta"
                         min="0"
                         value="0"
                       />
@@ -354,7 +387,7 @@
                     <td>
                       <input
                         type="number"
-                        class="qtd-checada"
+                        class="qtd-checada qtd-compacta"
                         min="0"
                         value="0"
                       />
@@ -363,20 +396,30 @@
                     <td>
                       <input
                         type="number"
-                        class="qtd-rejeitada"
+                        class="qtd-rejeitada qtd-compacta"
                         min="0"
                         value="0"
                       />
                     </td>
 
-                    <td>
-                      <button type="button" class="danger-btn remove-row">
-                        Remover
+                    <td class="center-cell">
+                      <button
+                        type="button"
+                        class="remove-row icon-btn"
+                        title="Remover linha"
+                        aria-label="Remover linha"
+                      >
+                        ×
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- STATUS GERAL DA TABELA DE PN -->
+            <div id="pnStatus" class="pn-status pn-status-neutral">
+              Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
             </div>
           </section>
 
@@ -390,6 +433,94 @@
         </form>
       </section>
     </main>
+  </div>
+
+  <!-- =========================================================
+       MODAL - CADASTRO DE PN
+       ========================================================= -->
+  <div id="modalPn" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-icon">🔧</span>
+        <h3>Cadastrar PN</h3>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-text">
+          PN não encontrado no cadastro. Informe os dados para criação.
+        </p>
+
+        <div class="form-group">
+          <label>PN</label>
+          <input id="modalPnCodigo" type="text" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Descrição *</label>
+          <input
+            id="modalPnDescricao"
+            type="text"
+            placeholder="Ex.: Parafuso M8 Zincado"
+          />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelarPn" class="secondary-btn" type="button">Cancelar</button>
+        <button id="salvarPn" class="primary-btn" type="button">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL - CADASTRO DE FORNECEDOR
+       ========================================================= -->
+  <div id="modalFornecedor" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-icon">🏭</span>
+        <h3>Cadastrar fornecedor</h3>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-text">
+          DUNS não encontrado no cadastro. Informe os dados para criação.
+        </p>
+
+        <div class="form-group">
+          <label>DUNS</label>
+          <input id="modalFornecedorDuns" type="text" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Nome do fornecedor *</label>
+          <input
+            id="modalFornecedorNome"
+            type="text"
+            placeholder="Ex.: ABC Components"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Tipo do fornecedor *</label>
+          <select id="modalFornecedorTipo">
+            <option value="">Selecione</option>
+            <option value="LOCAL">LOCAL</option>
+            <option value="IMPORTADO">IMPORTADO</option>
+          </select>
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelarFornecedor" class="secondary-btn" type="button">
+          Cancelar
+        </button>
+        <button id="salvarFornecedor" class="primary-btn" type="button">
+          Salvar
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Arquivo JavaScript -->
