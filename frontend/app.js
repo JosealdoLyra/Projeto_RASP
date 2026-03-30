@@ -1,8 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   // ==========================================================
   // REFERÊNCIAS PRINCIPAIS DO DOM
   // ==========================================================
   const form = document.getElementById("raspForm");
+
+  // ==========================================================
+// CONTROLE DE ABAS DO RASP
+// ==========================================================
+const tabs = document.querySelectorAll(".rasp-tab");
+const tabContents = document.querySelectorAll(".rasp-tab-content");
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const target = tab.dataset.tab;
+
+    // Remove active de tudo
+    tabs.forEach((t) => t.classList.remove("active"));
+    tabContents.forEach((c) => c.classList.remove("active"));
+
+    // Ativa atual
+    tab.classList.add("active");
+    document.getElementById(`tab-${target}`).classList.add("active");
+  });
+});
+
+
+  // ----------------------------------------------------------
+  // Indicador visual do número do RASP
+  // OBS:
+  // Estes elementos devem existir no HTML como:
+  // <div id="raspIndicadorBox" ...>
+  // <span id="raspNumeroDisplay">---</span>
+  // ----------------------------------------------------------
+  const raspIndicadorBox = document.getElementById("raspIndicadorBox");
+  const raspNumeroDisplay = document.getElementById("raspNumeroDisplay");
 
   // ----------------------------------------------------------
   // Seção 2 - Dados básicos do RASP
@@ -108,6 +140,86 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function obterFornecedorPorDuns(duns) {
     return fornecedoresBase.find((item) => item.duns === duns) || null;
+  }
+
+  // ----------------------------------------------------------
+  // INDICADOR VISUAL DO RASP
+  // ----------------------------------------------------------
+  function atualizarNumeroRaspDisplay(numeroRasp) {
+    if (!raspNumeroDisplay) return;
+    raspNumeroDisplay.textContent = numeroRasp || "---";
+  }
+
+  function obterNumeroRaspAtual() {
+    if (!raspNumeroDisplay) return "";
+    return (raspNumeroDisplay.textContent || "").trim();
+  }
+
+  function destacarCopiaRasp() {
+    if (!raspIndicadorBox) return;
+
+    raspIndicadorBox.classList.add("copiado");
+
+    setTimeout(() => {
+      raspIndicadorBox.classList.remove("copiado");
+    }, 1000);
+  }
+
+  async function copiarTexto(texto) {
+    // 1) Tenta método moderno
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(texto);
+        return true;
+      }
+    } catch (error) {
+      console.warn("Falha no clipboard moderno, tentando fallback:", error);
+    }
+
+    // 2) Fallback para navegadores/ambientes com restrição
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = texto;
+
+      // Evita pulo visual na tela
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "0";
+
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      const copiou = document.execCommand("copy");
+      document.body.removeChild(textArea);
+
+      return copiou;
+    } catch (error) {
+      console.error("Falha também no fallback de cópia:", error);
+      return false;
+    }
+  }
+
+  // ==========================================================
+  // EVENTO: COPIAR NÚMERO DO RASP AO CLICAR NO BADGE
+  // ==========================================================
+  if (raspIndicadorBox) {
+    raspIndicadorBox.addEventListener("click", async () => {
+      const numeroAtual = obterNumeroRaspAtual();
+
+      if (!numeroAtual || numeroAtual === "---") {
+        return;
+      }
+
+      const copiou = await copiarTexto(numeroAtual);
+
+      if (copiou) {
+        destacarCopiaRasp();
+        alert(`Número copiado: ${numeroAtual}`);
+      } else {
+        alert("Não foi possível copiar o número do RASP.");
+      }
+    });
   }
 
   // ==========================================================
@@ -258,7 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const duns = modalFornecedorDuns.value.trim();
     const nome = modalFornecedorNome.value.trim();
     const tipoFornecedor = modalFornecedorTipo.value.trim();
-    
 
     if (!nome) {
       alert("Informe o nome do fornecedor.");
@@ -280,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
           duns,
           nome,
           tipoFornecedor,
-          ativo: true,
+          ativo: true
         })
       });
 
@@ -980,9 +1091,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ==========================================================
-  // EVENTO: LIMPAR FORMULÁRIO
+  // LIMPEZA COMPLETA DA TELA
+  // USO:
+  // - Botão "Novo RASP"
+  // - Recomeçar preenchimento do zero
   // ==========================================================
-  btnLimpar.addEventListener("click", () => {
+  function limparFormularioParaNovoRasp() {
     form.reset();
     analistaInput.value = usuarioLogado;
     statusInicialInput.value = "Em análise";
@@ -1002,46 +1116,51 @@ document.addEventListener("DOMContentLoaded", () => {
     limparTabelaPn();
     massPanel.classList.remove("show");
     pnsLoteTextarea.value = "";
+    atualizarNumeroRaspDisplay("");
+  }
+
+  // ==========================================================
+  // EVENTO: BOTÃO NOVO RASP
+  // ==========================================================
+  btnLimpar.addEventListener("click", () => {
+    limparFormularioParaNovoRasp();
   });
 
+  // ==========================================================
+  // SALVA OS PNs VINCULADOS AO RASP
+  // ==========================================================
   async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
-  // Criamos um array de promessas (todas as requisições iniciam juntas)
-  const promises = pns.map(async (item, i) => {
-    const payloadPn = {
-      idRasp: idRasp,
-      pn: item.pn,
-      quantidadeSuspeita: item.qtdSuspeitaInicial,
-      quantidadeChecada: item.qtdChecadaInicial,
-      quantidadeRejeitada: item.qtdRejeitadaInicial,
-      emContencao: false,
-      duns: dunsFornecedor,
-      ordemExibicao: i + 1
-    };
+    const promises = pns.map(async (item, i) => {
+      const payloadPn = {
+        idRasp: idRasp,
+        pn: item.pn,
+        quantidadeSuspeita: item.qtdSuspeitaInicial,
+        quantidadeChecada: item.qtdChecadaInicial,
+        quantidadeRejeitada: item.qtdRejeitadaInicial,
+        emContencao: false,
+        duns: dunsFornecedor,
+        ordemExibicao: i + 1
+      };
 
-    const response = await fetch("http://localhost:5050/rasp-pn", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payloadPn)
+      const response = await fetch("http://localhost:5050/rasp-pn", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payloadPn)
+      });
+
+      if (!response.ok) {
+        const mensagemErro = await response.text();
+        console.error("Erro API PN:", mensagemErro);
+        throw new Error(`Erro ao salvar PN ${item.pn}. Detalhe: ${mensagemErro}`);
+      }
+
+      return response.json();
     });
 
-    if (!response.ok) {
-      const mensagemErro = await response.text();
-      // Correção do parêntese aqui:
-      console.error("Erro API PN:", mensagemErro); 
-      throw new Error(`Erro ao salvar PN ${item.pn}. Detalhe: ${mensagemErro}`);
-    }
-
-    return response.json();
-  });
-
-  // Aguarda todas as requisições terminarem
-  return await Promise.all(promises);
-}
-    
-  
-
+    return await Promise.all(promises);
+  }
 
   // ==========================================================
   // EVENTO: SUBMISSÃO
@@ -1092,6 +1211,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
     if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
     if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
+    if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
     if (!setor) erros.push("Selecione o Setor.");
     if (!origem) erros.push("Selecione a Origem.");
     if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
@@ -1170,10 +1290,19 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const dataRasp = await responseRasp.json();
-      const idRaspCriado = dataRasp.id_rasp ?? dataRasp.idRasp;
+
+      const idRaspCriado =
+        dataRasp.idRasp ??
+        dataRasp.id_rasp ??
+        dataRasp.id;
+
+      const numeroRaspCriado =
+        dataRasp.numeroRasp ??
+        dataRasp.numero_rasp ??
+        dataRasp.numero;
 
       if (!idRaspCriado) {
-        throw new Error("A API criou o RASP, mas não retornou o id_rasp.");
+        throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
       }
 
       // ------------------------------------------------------
@@ -1183,16 +1312,29 @@ document.addEventListener("DOMContentLoaded", () => {
       await salvarPnsDoRasp(idRaspCriado, pns, duns);
 
       console.log("RASP criado com sucesso:", dataRasp);
-      alert(`RASP criado com sucesso! ID: ${idRaspCriado}`);
+
+      // ------------------------------------------------------
+      // 3. Atualiza o indicador visual no topo da tela
+      // ------------------------------------------------------
+      atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
+
+      // ------------------------------------------------------
+      // 4. Leva o usuário suavemente para o topo da página
+      // ------------------------------------------------------
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
     } catch (error) {
       console.error(error);
       alert(error.message || "Erro ao enviar RASP para API.");
     }
-});
+  });
 
   // ==========================================================
   // INICIALIZAÇÃO FINAL DA TELA
   // ==========================================================
   inicializarCamposFixos();
   aplicarValidacoesPnEmTela();
+  atualizarNumeroRaspDisplay("");
 });

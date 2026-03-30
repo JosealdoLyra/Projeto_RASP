@@ -13,13 +13,11 @@
   <!-- Arquivo de estilo -->
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <!-- =========================================================
        ESTRUTURA PRINCIPAL DA APLICAÇÃO
        ========================================================= -->
   <div class="app">
-
     <!-- =======================================================
          MENU LATERAL
          ======================================================= -->
@@ -59,7 +57,6 @@
          CONTEÚDO PRINCIPAL
          ======================================================= -->
     <main class="main-content">
-
       <!-- =====================================================
            TOPO DA PÁGINA
            ===================================================== -->
@@ -72,11 +69,38 @@
         <button type="button" class="ghost-btn">Salvar rascunho</button>
       </header>
 
+      
+
+      <!-- =========================================================
+     ABAS DO RASP
+     ========================================================= -->
+<div class="rasp-tabs">
+  <button class="rasp-tab active" data-tab="abertura">Abertura</button>
+  <button class="rasp-tab" data-tab="complementos">Complementos</button>
+</div>
+
+
       <!-- =====================================================
            ÁREA CENTRAL COM O FORMULÁRIO
+           IMPORTANTE:
+           - Deve existir apenas 1 formulário com id="raspForm"
            ===================================================== -->
       <section class="content">
-        <form id="raspForm" class="rasp-form">
+
+  <!-- ================= ABA ABERTURA ================= -->
+  <div class="rasp-tab-content active" id="tab-abertura">
+  <div
+    id="raspIndicadorBox"
+    class="rasp-indicador-box"
+    title="Clique para copiar o número do RASP"
+  >
+    <span class="rasp-indicador-titulo">RASP</span>
+    <span class="rasp-indicador-separador">•</span>
+    <span id="raspNumeroDisplay" class="rasp-indicador-valor">---</span>
+  </div>
+
+  <form id="raspForm" class="rasp-form">
+
 
           <!-- =================================================
                SEÇÃO 1 - OCORRÊNCIA
@@ -428,10 +452,23 @@
                ================================================= -->
           <div class="form-actions">
             <button type="submit" class="primary-btn">Criar RASP</button>
-            <button type="button" id="btnLimpar" class="secondary-btn">Limpar</button>
+            <button type="button" id="btnLimpar" class="secondary-btn">Novo RASP</button>
           </div>
         </form>
-      </section>
+  </div>
+
+  <!-- ================= ABA COMPLEMENTOS ================= -->
+  <div class="rasp-tab-content" id="tab-complementos">
+    <div class="form-section">
+      <h3>Complementos</h3>
+      <p class="section-note">
+        Campos adicionais do RASP serão inseridos aqui futuramente.
+      </p>
+    </div>
+  </div>
+
+</section>
+
     </main>
   </div>
 
@@ -509,7 +546,6 @@
             <option value="IMPORTADO">IMPORTADO</option>
           </select>
         </div>
-
       </div>
 
       <div class="modal-actions">
@@ -527,3 +563,4 @@
   <script src="app.js"></script>
 </body>
 </html>
+

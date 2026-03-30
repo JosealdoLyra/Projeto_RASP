@@ -904,6 +904,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         return Results.BadRequest("IdUsuarioCriador inválido.");
 
     var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
+
     if (string.IsNullOrWhiteSpace(descricaoProblema))
         return Results.BadRequest("DescricaoProblema é obrigatória.");
 
@@ -923,6 +924,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         return Results.BadRequest("Usuário criador está inativo.");
 
     var connStr = config.GetConnectionString("DefaultConnection");
+
     if (string.IsNullOrWhiteSpace(connStr))
         return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
 
@@ -940,11 +942,13 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         """;
 
     int idRasp;
+
     await using (var cmd = new NpgsqlCommand(insertSql, conn, tx))
     {
         cmd.Parameters.AddWithValue("id_fornecedor", req.IdFornecedorRasp);
         cmd.Parameters.AddWithValue("descricao", descricaoProblema);
         cmd.Parameters.AddWithValue("id_usuario_criador", req.IdUsuarioCriador);
+
         idRasp = (int)(await cmd.ExecuteScalarAsync() ?? 0);
     }
 
@@ -954,23 +958,31 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         return Results.Problem("Falha ao gerar id_rasp.");
     }
 
+    var numeroRasp = idRasp.ToString("D4") + "/" + DateTime.Today.ToString("yy");
+
     var updateSql = """
         UPDATE rasp
-        SET numero_rasp = LPAD(@id::text, 4, '0') || '/' || to_char(CURRENT_DATE, 'YY')
+        SET numero_rasp = @numero_rasp
         WHERE id_rasp = @id;
         """;
 
     await using (var cmd2 = new NpgsqlCommand(updateSql, conn, tx))
     {
         cmd2.Parameters.AddWithValue("id", idRasp);
+        cmd2.Parameters.AddWithValue("numero_rasp", numeroRasp);
         await cmd2.ExecuteNonQueryAsync();
     }
 
     await tx.CommitAsync();
 
-    return Results.Created($"/rasp/{idRasp}", new { id_rasp = idRasp });
+    return Results.Created($"/rasp/{idRasp}", new
+    {
+        id_rasp = idRasp,
+        numero_rasp = numeroRasp
+    });
 })
 .WithName("CriarRasp");
+
 
 // PUT /rasp/{id}
 // Atualiza o conteúdo principal do RASP enquanto ele ainda estiver em análise.

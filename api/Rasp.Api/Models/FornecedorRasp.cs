@@ -2,7 +2,7 @@ namespace Rasp.Api.Models
 {
     // Entidade de fornecedor usada no processo RASP.
     //
-    // Regras de negócio aplicadas na API:
+    // Regras de negócio aplicadas na API
     // - DUNS deve ter 9 dígitos numéricos
     // - Nome é obrigatório
     // - TipoFornecedor deve ser LOCAL ou IMPORTADO

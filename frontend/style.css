@@ -740,4 +740,83 @@ input[readonly] {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+/* ==========================================================
+   INDICADOR DO RASP
+   ========================================================== */
+#tab-abertura .rasp-indicador-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 18px 2px;
+  padding: 8px 14px;
+  background: #eef4ff;
+  border: 1px solid #c9d8f2;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2f4f88;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
 
+.rasp-indicador-titulo {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.rasp-indicador-separador {
+  opacity: 0.5;
+}
+
+.rasp-indicador-valor {
+  font-weight: 800;
+  color: #111827;
+}
+
+.rasp-indicador-box:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.rasp-indicador-box.copiado {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+/* ==========================================================
+   ABAS DO RASP
+   ========================================================== */
+.rasp-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 20px 32px;
+}
+
+.rasp-tab {
+  padding: 10px 18px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  cursor: pointer;
+  font-weight: 600;
+  color: #374151;
+  transition: all 0.2s ease;
+}
+
+.rasp-tab:hover {
+  background: #eef2ff;
+}
+
+.rasp-tab.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.rasp-tab-content {
+  display: none;
+}
+
+.rasp-tab-content.active {
+  display: block;
+}
