@@ -1,44 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   // ==========================================================
   // REFERÊNCIAS PRINCIPAIS DO DOM
   // ==========================================================
   const form = document.getElementById("raspForm");
 
   // ==========================================================
-// CONTROLE DE ABAS DO RASP
-// ==========================================================
-const tabs = document.querySelectorAll(".rasp-tab");
-const tabContents = document.querySelectorAll(".rasp-tab-content");
+  // CONTROLE DE ABAS DO RASP
+  // ==========================================================
+  const tabs = document.querySelectorAll(".rasp-tab");
+  const tabContents = document.querySelectorAll(".rasp-tab-content");
 
-tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    const target = tab.dataset.tab;
-
-    // Remove active de tudo
-    tabs.forEach((t) => t.classList.remove("active"));
-    tabContents.forEach((c) => c.classList.remove("active"));
-
-    // Ativa atual
-    tab.classList.add("active");
-    document.getElementById(`tab-${target}`).classList.add("active");
-  });
-});
-
-
-  // ----------------------------------------------------------
-  // Indicador visual do número do RASP
-  // OBS:
-  // Estes elementos devem existir no HTML como:
-  // <div id="raspIndicadorBox" ...>
-  // <span id="raspNumeroDisplay">---</span>
-  // ----------------------------------------------------------
+  // ==========================================================
+  // INDICADORES / INFORMAÇÕES DO RASP
+  // ==========================================================
   const raspIndicadorBox = document.getElementById("raspIndicadorBox");
   const raspNumeroDisplay = document.getElementById("raspNumeroDisplay");
+  const numeroRaspInfo = document.getElementById("numeroRasp");
+  const dataCriacaoRaspInfo = document.getElementById("dataCriacaoRasp");
 
-  // ----------------------------------------------------------
-  // Seção 2 - Dados básicos do RASP
-  // ----------------------------------------------------------
+  // ==========================================================
+  // SEÇÃO 2 - DADOS BÁSICOS DO RASP
+  // ==========================================================
   const dunsInput = document.getElementById("duns");
   const nomeFornecedorInput = document.getElementById("nomeFornecedor");
   const tipoFornecedorInput = document.getElementById("tipoFornecedor");
@@ -46,9 +28,9 @@ tabs.forEach((tab) => {
   const statusInicialInput = document.getElementById("statusInicial");
   const dunsStatus = document.getElementById("dunsStatus");
 
-  // ----------------------------------------------------------
-  // Seção 4 - PN
-  // ----------------------------------------------------------
+  // ==========================================================
+  // SEÇÃO 4 - PN
+  // ==========================================================
   const addPnRowBtn = document.getElementById("addPnRow");
   const pnTableBody = document.getElementById("pnTableBody");
   const btnLimpar = document.getElementById("btnLimpar");
@@ -58,24 +40,36 @@ tabs.forEach((tab) => {
   const pnsLoteTextarea = document.getElementById("pnsLoteTextarea");
   const pnStatus = document.getElementById("pnStatus");
 
-  // ----------------------------------------------------------
-  // Modal de cadastro de PN
-  // ----------------------------------------------------------
+  // ==========================================================
+  // MODAL DE CADASTRO DE PN
+  // ==========================================================
   const modalPn = document.getElementById("modalPn");
   const modalPnCodigo = document.getElementById("modalPnCodigo");
   const modalPnDescricao = document.getElementById("modalPnDescricao");
   const salvarPnBtn = document.getElementById("salvarPn");
   const cancelarPnBtn = document.getElementById("cancelarPn");
 
-  // ----------------------------------------------------------
-  // Modal de cadastro de fornecedor
-  // ----------------------------------------------------------
+  // ==========================================================
+  // MODAL DE CADASTRO DE FORNECEDOR
+  // ==========================================================
   const modalFornecedor = document.getElementById("modalFornecedor");
   const modalFornecedorDuns = document.getElementById("modalFornecedorDuns");
   const modalFornecedorNome = document.getElementById("modalFornecedorNome");
   const modalFornecedorTipo = document.getElementById("modalFornecedorTipo");
   const salvarFornecedorBtn = document.getElementById("salvarFornecedor");
   const cancelarFornecedorBtn = document.getElementById("cancelarFornecedor");
+
+  // ==========================================================
+  // SEÇÃO 5 - DADOS COMPLEMENTARES
+  // ==========================================================
+  const modeloVeiculoSelect = document.getElementById("modeloVeiculo");
+  const turnoRaspSelect = document.getElementById("turnoRasp");
+  const pilotoRaspSelect = document.getElementById("pilotoRasp");
+  const majorRaspSelect = document.getElementById("majorRasp");
+  const nomeContatoInput = document.getElementById("nomeContato");
+  const dataContatoInput = document.getElementById("dataContato");
+  const rdNumeroInput = document.getElementById("rdNumero");
+  const campanhaNumeroInput = document.getElementById("campanhaNumero");
 
   // ==========================================================
   // ESTADO DA TELA
@@ -86,9 +80,9 @@ tabs.forEach((tab) => {
 
   // ==========================================================
   // BASE TEMPORÁRIA DE FORNECEDORES
-  // OBSERVAÇÃO:
-  // Mantida apenas como apoio/histórico local.
-  // O fluxo oficial atual usa a API.
+  // OBS:
+  // Mantida apenas como apoio local.
+  // O fluxo oficial usa a API.
   // ==========================================================
   const fornecedoresBase = [
     { duns: "000104992", nome: "Alcom - USA", tipoFornecedor: "IMPORTADO" },
@@ -110,20 +104,49 @@ tabs.forEach((tab) => {
   ];
 
   // ==========================================================
-  // INICIALIZAÇÃO DA TELA
+  // CONTROLE DAS ABAS
+  // ==========================================================
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.tab;
+
+      tabs.forEach((t) => t.classList.remove("active"));
+      tabContents.forEach((c) => c.classList.remove("active"));
+
+      tab.classList.add("active");
+
+      const alvo = document.getElementById(`tab-${target}`);
+      if (alvo) {
+        alvo.classList.add("active");
+      }
+    });
+  });
+
+  // ==========================================================
+  // INICIALIZAÇÃO DOS CAMPOS FIXOS
   // ==========================================================
   function inicializarCamposFixos() {
-    analistaInput.value = usuarioLogado;
-    statusInicialInput.value = "Em análise";
+    if (analistaInput) analistaInput.value = usuarioLogado;
+    if (statusInicialInput) statusInicialInput.value = "Em análise";
+
+    if (nomeContatoInput && !nomeContatoInput.value.trim()) {
+      nomeContatoInput.value = "Não Contatado";
+      nomeContatoInput.classList.add("input-placeholder");
+    }
+
+    if (dataContatoInput) {
+      dataContatoInput.required = false;
+    }
+
+    atualizarNumeroRaspDisplay("");
+    atualizarDataCriacaoRaspDisplay("");
   }
 
   // ==========================================================
   // UTILITÁRIOS
   // ==========================================================
   function normalizarNumero(valor) {
-    return String(valor || "")
-      .replace(/\D/g, "")
-      .trim();
+    return String(valor || "").replace(/\D/g, "").trim();
   }
 
   function validarPn(pn) {
@@ -142,12 +165,39 @@ tabs.forEach((tab) => {
     return fornecedoresBase.find((item) => item.duns === duns) || null;
   }
 
-  // ----------------------------------------------------------
+  function formatarDataParaExibicao(valor) {
+    if (!valor) return "--/--/----";
+
+    const data = new Date(valor);
+
+    if (Number.isNaN(data.getTime())) {
+      return "--/--/----";
+    }
+
+    return data.toLocaleDateString("pt-BR");
+  }
+
+  // ==========================================================
   // INDICADOR VISUAL DO RASP
-  // ----------------------------------------------------------
+  // ==========================================================
   function atualizarNumeroRaspDisplay(numeroRasp) {
-    if (!raspNumeroDisplay) return;
-    raspNumeroDisplay.textContent = numeroRasp || "---";
+    const numeroFormatado = numeroRasp || "---";
+
+    if (raspNumeroDisplay) {
+      raspNumeroDisplay.textContent = numeroFormatado;
+    }
+
+    if (numeroRaspInfo) {
+      numeroRaspInfo.textContent = `Número: ${numeroFormatado}`;
+    }
+  }
+
+  function atualizarDataCriacaoRaspDisplay(dataCriacao) {
+    const texto = dataCriacao ? formatarDataParaExibicao(dataCriacao) : "--/--/----";
+
+    if (dataCriacaoRaspInfo) {
+      dataCriacaoRaspInfo.textContent = `Data: ${texto}`;
+    }
   }
 
   function obterNumeroRaspAtual() {
@@ -166,7 +216,6 @@ tabs.forEach((tab) => {
   }
 
   async function copiarTexto(texto) {
-    // 1) Tenta método moderno
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(texto);
@@ -176,12 +225,9 @@ tabs.forEach((tab) => {
       console.warn("Falha no clipboard moderno, tentando fallback:", error);
     }
 
-    // 2) Fallback para navegadores/ambientes com restrição
     try {
       const textArea = document.createElement("textarea");
       textArea.value = texto;
-
-      // Evita pulo visual na tela
       textArea.style.position = "fixed";
       textArea.style.left = "-9999px";
       textArea.style.top = "0";
@@ -200,9 +246,6 @@ tabs.forEach((tab) => {
     }
   }
 
-  // ==========================================================
-  // EVENTO: COPIAR NÚMERO DO RASP AO CLICAR NO BADGE
-  // ==========================================================
   if (raspIndicadorBox) {
     raspIndicadorBox.addEventListener("click", async () => {
       const numeroAtual = obterNumeroRaspAtual();
@@ -223,9 +266,166 @@ tabs.forEach((tab) => {
   }
 
   // ==========================================================
+  // CARGA DE DOMÍNIOS
+  // ==========================================================
+  function limparOpcoesSelect(selectElement, placeholder = "Selecione") {
+    if (!selectElement) return;
+
+    selectElement.innerHTML = "";
+
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = placeholder;
+    selectElement.appendChild(option);
+  }
+
+  function preencherSelectComChaves(selectElement, itens, valueKey, textKey) {
+    if (!selectElement) return;
+
+    itens.forEach((item) => {
+      const option = document.createElement("option");
+      option.value = item[valueKey] ?? "";
+      option.textContent = item[textKey] ?? "Sem descrição";
+      selectElement.appendChild(option);
+    });
+  }
+
+  async function carregarDominioSelect(url, selectElement, valueKey, textKey, nomeDominio) {
+    if (!selectElement) {
+      console.warn(`Select de ${nomeDominio} não encontrado no HTML.`);
+      return;
+    }
+
+    limparOpcoesSelect(selectElement);
+
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP ${response.status} ao carregar ${nomeDominio}`);
+      }
+
+      const itens = await response.json();
+
+      if (!Array.isArray(itens)) {
+        throw new Error(`Resposta inválida para ${nomeDominio}.`);
+      }
+
+      preencherSelectComChaves(selectElement, itens, valueKey, textKey);
+    } catch (error) {
+      console.error(`Erro ao carregar ${nomeDominio}:`, error);
+      limparOpcoesSelect(selectElement, `Erro ao carregar ${nomeDominio}`);
+    }
+  }
+
+  function selecionarMajorPadrao() {
+    if (!majorRaspSelect) return;
+
+    const opcoes = [...majorRaspSelect.options];
+    const opcaoNa = opcoes.find((option) => {
+      const texto = (option.textContent || "").trim().toUpperCase();
+      return texto === "N/A";
+    });
+
+    if (opcaoNa) {
+      majorRaspSelect.value = opcaoNa.value;
+    }
+  }
+
+  async function carregarDominiosComplementares() {
+    await Promise.all([
+      carregarDominioSelect(
+        "http://localhost:5050/modelo-veiculo-rasp",
+        modeloVeiculoSelect,
+        "idModeloVeiculoRasp",
+        "nomeModelo",
+        "modelo do veículo"
+      ),
+      carregarDominioSelect(
+        "http://localhost:5050/turno-rasp",
+        turnoRaspSelect,
+        "idTurnoRasp",
+        "descricao",
+        "turno"
+      ),
+      carregarDominioSelect(
+        "http://localhost:5050/piloto-rasp",
+        pilotoRaspSelect,
+        "idPilotoRasp",
+        "descricao",
+        "piloto"
+      ),
+      carregarDominioSelect(
+        "http://localhost:5050/major-rasp",
+        majorRaspSelect,
+        "idMajorRasp",
+        "descricao",
+        "major"
+      )
+    ]);
+
+    selecionarMajorPadrao();
+  }
+
+  // ==========================================================
+  // REGRA DO CAMPO CONTATO
+  // ==========================================================
+  function validarRegraContato() {
+    if (!nomeContatoInput || !dataContatoInput) return;
+
+    const nomeContato = nomeContatoInput.value.trim().toLowerCase();
+
+    const naoContatado =
+      nomeContato === "não contatado" ||
+      nomeContato === "nao contatado" ||
+      nomeContato === "";
+
+    dataContatoInput.required = !naoContatado;
+
+    if (!naoContatado) {
+      dataContatoInput.setAttribute("required", "required");
+    } else {
+      dataContatoInput.removeAttribute("required");
+    }
+  }
+
+  if (nomeContatoInput) {
+    nomeContatoInput.addEventListener("focus", () => {
+      const valor = nomeContatoInput.value.trim().toLowerCase();
+
+      if (valor === "não contatado" || valor === "nao contatado") {
+        nomeContatoInput.value = "";
+        nomeContatoInput.classList.remove("input-placeholder");
+      }
+    });
+
+    nomeContatoInput.addEventListener("blur", () => {
+      if (!nomeContatoInput.value.trim()) {
+        nomeContatoInput.value = "Não Contatado";
+        nomeContatoInput.classList.add("input-placeholder");
+      }
+
+      validarRegraContato();
+    });
+
+    nomeContatoInput.addEventListener("input", () => {
+      nomeContatoInput.classList.remove("input-placeholder");
+      validarRegraContato();
+    });
+  }
+
+  if (dataContatoInput) {
+    dataContatoInput.addEventListener("change", () => {
+      validarRegraContato();
+    });
+  }
+
+  // ==========================================================
   // MODAL - PN
   // ==========================================================
   function abrirModalPn(pn, linha) {
+    if (!modalPn || !modalPnCodigo || !modalPnDescricao) return;
+
     linhaPnAtual = linha;
     modalPnCodigo.value = pn;
     modalPnDescricao.value = "";
@@ -233,6 +433,7 @@ tabs.forEach((tab) => {
   }
 
   function fecharModalPn() {
+    if (!modalPn) return;
     modalPn.classList.add("hidden");
   }
 
@@ -240,6 +441,8 @@ tabs.forEach((tab) => {
   // MODAL - FORNECEDOR
   // ==========================================================
   function abrirModalFornecedor(duns) {
+    if (!modalFornecedor || !modalFornecedorDuns || !modalFornecedorNome || !modalFornecedorTipo) return;
+
     modalFornecedorDuns.value = duns;
     modalFornecedorNome.value = "";
     modalFornecedorTipo.value = "";
@@ -247,19 +450,24 @@ tabs.forEach((tab) => {
   }
 
   function fecharModalFornecedor() {
+    if (!modalFornecedor) return;
     modalFornecedor.classList.add("hidden");
   }
 
   // ==========================================================
   // EVENTOS DOS MODAIS
   // ==========================================================
-  cancelarPnBtn.addEventListener("click", () => {
-    fecharModalPn();
-  });
+  if (cancelarPnBtn) {
+    cancelarPnBtn.addEventListener("click", () => {
+      fecharModalPn();
+    });
+  }
 
-  cancelarFornecedorBtn.addEventListener("click", () => {
-    fecharModalFornecedor();
-  });
+  if (cancelarFornecedorBtn) {
+    cancelarFornecedorBtn.addEventListener("click", () => {
+      fecharModalFornecedor();
+    });
+  }
 
   // ==========================================================
   // API - FORNECEDOR
@@ -322,113 +530,129 @@ tabs.forEach((tab) => {
   // ==========================================================
   // SALVAR PN VIA MODAL
   // ==========================================================
-  salvarPnBtn.addEventListener("click", async () => {
-    const pn = modalPnCodigo.value;
-    const descricao = modalPnDescricao.value.trim();
+  if (salvarPnBtn) {
+    salvarPnBtn.addEventListener("click", async () => {
+      if (!modalPnCodigo || !modalPnDescricao || !linhaPnAtual) return;
 
-    if (!descricao) {
-      alert("Informe a descrição do PN.");
-      return;
-    }
+      const pn = modalPnCodigo.value;
+      const descricao = modalPnDescricao.value.trim();
 
-    try {
-      const response = await fetch("http://localhost:5050/pn-rasp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          codigoPn: pn,
-          nomePeca: descricao
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao cadastrar PN");
+      if (!descricao) {
+        alert("Informe a descrição do PN.");
+        return;
       }
 
-      const novoPn = await response.json();
+      try {
+        const response = await fetch("http://localhost:5050/pn-rasp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            codigoPn: pn,
+            nomePeca: descricao
+          })
+        });
 
-      linhaPnAtual.querySelector(".pn-id").value = novoPn.idPn ?? novoPn.id_pn ?? "";
-      linhaPnAtual.querySelector(".pn-descricao").value =
-        novoPn.nomePeca ?? novoPn.nome_peca ?? "";
+        if (!response.ok) {
+          throw new Error("Erro ao cadastrar PN");
+        }
 
-      fecharModalPn();
-      aplicarValidacoesPnEmTela();
+        const novoPn = await response.json();
 
-      alert("PN cadastrado com sucesso!");
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao cadastrar PN.");
-    }
-  });
+        linhaPnAtual.querySelector(".pn-id").value = novoPn.idPn ?? novoPn.id_pn ?? "";
+        linhaPnAtual.querySelector(".pn-descricao").value =
+          novoPn.nomePeca ?? novoPn.nome_peca ?? "";
+
+        fecharModalPn();
+        aplicarValidacoesPnEmTela();
+
+        alert("PN cadastrado com sucesso!");
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao cadastrar PN.");
+      }
+    });
+  }
 
   // ==========================================================
   // SALVAR FORNECEDOR VIA MODAL
   // ==========================================================
-  salvarFornecedorBtn.addEventListener("click", async () => {
-    const duns = modalFornecedorDuns.value.trim();
-    const nome = modalFornecedorNome.value.trim();
-    const tipoFornecedor = modalFornecedorTipo.value.trim();
+  if (salvarFornecedorBtn) {
+    salvarFornecedorBtn.addEventListener("click", async () => {
+      if (!modalFornecedorDuns || !modalFornecedorNome || !modalFornecedorTipo) return;
 
-    if (!nome) {
-      alert("Informe o nome do fornecedor.");
-      return;
-    }
+      const duns = modalFornecedorDuns.value.trim();
+      const nome = modalFornecedorNome.value.trim();
+      const tipoFornecedor = modalFornecedorTipo.value.trim();
 
-    if (!tipoFornecedor) {
-      alert("Selecione o tipo do fornecedor.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:5050/fornecedor-rasp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          duns,
-          nome,
-          tipoFornecedor,
-          ativo: true
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao cadastrar fornecedor");
+      if (!nome) {
+        alert("Informe o nome do fornecedor.");
+        return;
       }
 
-      const novoFornecedor = await response.json();
+      if (!tipoFornecedor) {
+        alert("Selecione o tipo do fornecedor.");
+        return;
+      }
 
-      fornecedorAtual = novoFornecedor;
-      nomeFornecedorInput.value = novoFornecedor.nome ?? "";
-      tipoFornecedorInput.value = novoFornecedor.tipoFornecedor ?? "";
+      try {
+        const response = await fetch("http://localhost:5050/fornecedor-rasp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            duns,
+            nome,
+            tipoFornecedor,
+            ativo: true
+          })
+        });
 
-      definirStatusDuns(
-        `Fornecedor localizado com sucesso: ${nomeFornecedorInput.value} (${tipoFornecedorInput.value}).`,
-        "success"
-      );
+        if (!response.ok) {
+          throw new Error("Erro ao cadastrar fornecedor");
+        }
 
-      fecharModalFornecedor();
+        const novoFornecedor = await response.json();
 
-      alert("Fornecedor cadastrado com sucesso!");
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao cadastrar fornecedor.");
-    }
-  });
+        fornecedorAtual = novoFornecedor;
+
+        if (nomeFornecedorInput) {
+          nomeFornecedorInput.value = novoFornecedor.nome ?? "";
+        }
+
+        if (tipoFornecedorInput) {
+          tipoFornecedorInput.value = novoFornecedor.tipoFornecedor ?? "";
+        }
+
+        definirStatusDuns(
+          `Fornecedor localizado com sucesso: ${nomeFornecedorInput?.value ?? ""} (${tipoFornecedorInput?.value ?? ""}).`,
+          "success"
+        );
+
+        fecharModalFornecedor();
+
+        alert("Fornecedor cadastrado com sucesso!");
+      } catch (error) {
+        console.error(error);
+        alert("Erro ao cadastrar fornecedor.");
+      }
+    });
+  }
 
   // ==========================================================
   // LIMPEZA / STATUS - FORNECEDOR
   // ==========================================================
   function limparFornecedorDerivado() {
-    nomeFornecedorInput.value = "";
-    tipoFornecedorInput.value = "";
+    if (nomeFornecedorInput) nomeFornecedorInput.value = "";
+    if (tipoFornecedorInput) tipoFornecedorInput.value = "";
     fornecedorAtual = null;
   }
 
   function definirStatusDuns(mensagem, tipo) {
+    if (!dunsStatus) return;
+
     dunsStatus.textContent = mensagem;
     dunsStatus.className = "duns-status";
 
@@ -449,6 +673,8 @@ tabs.forEach((tab) => {
   // LIMPEZA / STATUS - PN
   // ==========================================================
   function definirStatusPn(mensagem, tipo) {
+    if (!pnStatus) return;
+
     pnStatus.textContent = mensagem;
     pnStatus.className = "pn-status";
 
@@ -469,6 +695,10 @@ tabs.forEach((tab) => {
   // PROCESSAMENTO DO DUNS
   // ==========================================================
   async function processarDuns() {
+    if (!dunsInput) {
+      return { ok: false, motivo: "campo_ausente" };
+    }
+
     const duns = normalizarNumero(dunsInput.value);
     dunsInput.value = duns;
 
@@ -518,21 +748,23 @@ tabs.forEach((tab) => {
         return { ok: false, motivo: "falha_conexao" };
       }
 
-      definirStatusDuns(
-        "Erro ao consultar fornecedor na API.",
-        "error"
-      );
+      definirStatusDuns("Erro ao consultar fornecedor na API.", "error");
       return { ok: false, motivo: "erro_api" };
     }
 
     const fornecedor = resultadoApi.fornecedor;
     fornecedorAtual = fornecedor;
 
-    nomeFornecedorInput.value = fornecedor.nomeFornecedor ?? fornecedor.nome ?? "";
-    tipoFornecedorInput.value = fornecedor.tipoFornecedor ?? fornecedor.tipo ?? "";
+    if (nomeFornecedorInput) {
+      nomeFornecedorInput.value = fornecedor.nomeFornecedor ?? fornecedor.nome ?? "";
+    }
+
+    if (tipoFornecedorInput) {
+      tipoFornecedorInput.value = fornecedor.tipoFornecedor ?? fornecedor.tipo ?? "";
+    }
 
     definirStatusDuns(
-      `Fornecedor localizado com sucesso: ${nomeFornecedorInput.value} (${tipoFornecedorInput.value}).`,
+      `Fornecedor localizado com sucesso: ${nomeFornecedorInput?.value ?? ""} (${tipoFornecedorInput?.value ?? ""}).`,
       "success"
     );
 
@@ -546,33 +778,35 @@ tabs.forEach((tab) => {
   // ==========================================================
   // EVENTOS DO CAMPO DUNS
   // ==========================================================
-  dunsInput.addEventListener("input", async () => {
-    const valorNormalizado = normalizarNumero(dunsInput.value).slice(0, 9);
-    dunsInput.value = valorNormalizado;
+  if (dunsInput) {
+    dunsInput.addEventListener("input", async () => {
+      const valorNormalizado = normalizarNumero(dunsInput.value).slice(0, 9);
+      dunsInput.value = valorNormalizado;
 
-    if (valorNormalizado.length === 9) {
+      if (valorNormalizado.length === 9) {
+        await processarDuns();
+        return;
+      }
+
+      limparFornecedorDerivado();
+
+      if (valorNormalizado.length === 0) {
+        definirStatusDuns(
+          "Informe um DUNS válido para localizar o fornecedor.",
+          "neutral"
+        );
+      } else {
+        definirStatusDuns(
+          "Digite os 9 dígitos do DUNS para localizar o fornecedor.",
+          "neutral"
+        );
+      }
+    });
+
+    dunsInput.addEventListener("blur", async () => {
       await processarDuns();
-      return;
-    }
-
-    limparFornecedorDerivado();
-
-    if (valorNormalizado.length === 0) {
-      definirStatusDuns(
-        "Informe um DUNS válido para localizar o fornecedor.",
-        "neutral"
-      );
-    } else {
-      definirStatusDuns(
-        "Digite os 9 dígitos do DUNS para localizar o fornecedor.",
-        "neutral"
-      );
-    }
-  });
-
-  dunsInput.addEventListener("blur", async () => {
-    await processarDuns();
-  });
+    });
+  }
 
   // ==========================================================
   // TABELA DE PNs - UTILITÁRIOS
@@ -697,30 +931,30 @@ tabs.forEach((tab) => {
 
   // ==========================================================
   // REMOÇÃO LOCAL DE LINHA DE PN
-  // REGRA:
-  // Permitida apenas antes do registro oficial
   // ==========================================================
-  pnTableBody.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("remove-row")) return;
+  if (pnTableBody) {
+    pnTableBody.addEventListener("click", (event) => {
+      if (!event.target.classList.contains("remove-row")) return;
 
-    const rows = obterRowsPn();
+      const rows = obterRowsPn();
 
-    if (rows.length === 1) {
-      alert("O RASP precisa ter pelo menos 1 PN.");
-      return;
-    }
+      if (rows.length === 1) {
+        alert("O RASP precisa ter pelo menos 1 PN.");
+        return;
+      }
 
-    const linha = event.target.closest("tr");
-    const eraPrincipal = linha.querySelector(".pn-principal").checked;
+      const linha = event.target.closest("tr");
+      const eraPrincipal = linha.querySelector(".pn-principal").checked;
 
-    linha.remove();
+      linha.remove();
 
-    if (eraPrincipal) {
-      garantirPnPrincipal();
-    }
+      if (eraPrincipal) {
+        garantirPnPrincipal();
+      }
 
-    aplicarValidacoesPnEmTela();
-  });
+      aplicarValidacoesPnEmTela();
+    });
+  }
 
   // ==========================================================
   // COLETA TODOS OS PNs DIGITADOS NA TABELA
@@ -815,6 +1049,8 @@ tabs.forEach((tab) => {
   // REINICIA A TABELA DE PN
   // ==========================================================
   function limparTabelaPn() {
+    if (!pnTableBody) return;
+
     pnTableBody.innerHTML = "";
     pnTableBody.appendChild(criarLinhaPn({ principal: true }));
     aplicarValidacoesPnEmTela();
@@ -824,6 +1060,8 @@ tabs.forEach((tab) => {
   // ESTILO DE ERRO VISUAL NOS CAMPOS
   // ==========================================================
   function destacarErroCampo(input, comErro) {
+    if (!input) return;
+
     if (comErro) {
       input.style.borderColor = "#b02a37";
       input.style.backgroundColor = "#fff5f5";
@@ -969,137 +1207,145 @@ tabs.forEach((tab) => {
       return;
     }
 
-    definirStatusPn(
-      "PN(s) preenchido(s) corretamente.",
-      "success"
-    );
+    definirStatusPn("PN(s) preenchido(s) corretamente.", "success");
   }
 
   // ==========================================================
   // EVENTO: ADICIONAR NOVA LINHA DE PN
   // ==========================================================
-  addPnRowBtn.addEventListener("click", () => {
-    pnTableBody.appendChild(criarLinhaPn());
-    garantirPnPrincipal();
-    aplicarValidacoesPnEmTela();
-  });
+  if (addPnRowBtn) {
+    addPnRowBtn.addEventListener("click", () => {
+      if (!pnTableBody) return;
+
+      pnTableBody.appendChild(criarLinhaPn());
+      garantirPnPrincipal();
+      aplicarValidacoesPnEmTela();
+    });
+  }
 
   // ==========================================================
   // EVENTOS EM TEMPO REAL DA TABELA DE PN
   // ==========================================================
-  pnTableBody.addEventListener("input", async (event) => {
-    const linha = event.target.closest(".pn-row");
-    if (!linha) return;
+  if (pnTableBody) {
+    pnTableBody.addEventListener("input", async (event) => {
+      const linha = event.target.closest(".pn-row");
+      if (!linha) return;
 
-    normalizarInputsPnDaLinha(linha);
+      normalizarInputsPnDaLinha(linha);
 
-    if (event.target.classList.contains("pn-input")) {
-      const pnNormalizado = normalizarNumero(event.target.value).slice(0, 8);
-      event.target.value = pnNormalizado;
+      if (event.target.classList.contains("pn-input")) {
+        const pnNormalizado = normalizarNumero(event.target.value).slice(0, 8);
+        event.target.value = pnNormalizado;
 
-      if (pnNormalizado.length === 8) {
-        await processarPnDaLinha(linha);
-      } else {
-        limparPnDerivadoDaLinha(linha);
+        if (pnNormalizado.length === 8) {
+          await processarPnDaLinha(linha);
+        } else {
+          limparPnDerivadoDaLinha(linha);
+        }
       }
-    }
 
-    aplicarValidacoesPnEmTela();
-  });
-
-  pnTableBody.addEventListener("change", (event) => {
-    if (
-      event.target.classList.contains("pn-principal") ||
-      event.target.classList.contains("data-lote-inicial") ||
-      event.target.classList.contains("qtd-suspeita") ||
-      event.target.classList.contains("qtd-checada") ||
-      event.target.classList.contains("qtd-rejeitada")
-    ) {
       aplicarValidacoesPnEmTela();
-    }
-  });
+    });
+
+    pnTableBody.addEventListener("change", (event) => {
+      if (
+        event.target.classList.contains("pn-principal") ||
+        event.target.classList.contains("data-lote-inicial") ||
+        event.target.classList.contains("qtd-suspeita") ||
+        event.target.classList.contains("qtd-checada") ||
+        event.target.classList.contains("qtd-rejeitada")
+      ) {
+        aplicarValidacoesPnEmTela();
+      }
+    });
+  }
 
   // ==========================================================
   // EVENTO: ABRIR / FECHAR IMPORTAÇÃO EM MASSA
   // ==========================================================
-  toggleMassPanelBtn.addEventListener("click", () => {
-    massPanel.classList.toggle("show");
-  });
+  if (toggleMassPanelBtn) {
+    toggleMassPanelBtn.addEventListener("click", () => {
+      if (!massPanel) return;
+      massPanel.classList.toggle("show");
+    });
+  }
 
   // ==========================================================
   // EVENTO: IMPORTAÇÃO DE PNs EM MASSA
   // ==========================================================
-  importMassPnsBtn.addEventListener("click", () => {
-    const texto = pnsLoteTextarea.value.trim();
+  if (importMassPnsBtn) {
+    importMassPnsBtn.addEventListener("click", () => {
+      if (!pnsLoteTextarea || !pnTableBody) return;
 
-    if (!texto) {
-      alert("Cole pelo menos 1 PN para importar.");
-      return;
-    }
+      const texto = pnsLoteTextarea.value.trim();
 
-    const linhas = texto
-      .split("\n")
-      .map((linha) => normalizarNumero(linha))
-      .filter((linha) => linha !== "");
-
-    if (linhas.length === 0) {
-      alert("Nenhum PN válido foi identificado no texto colado.");
-      return;
-    }
-
-    const existentes = new Set(
-      obterRowsPn()
-        .map((row) => normalizarNumero(row.querySelector(".pn-input").value))
-        .filter(Boolean)
-    );
-
-    let adicionados = 0;
-    const invalidos = [];
-    const duplicados = [];
-
-    linhas.forEach((pn) => {
-      if (!validarPn(pn)) {
-        invalidos.push(pn);
+      if (!texto) {
+        alert("Cole pelo menos 1 PN para importar.");
         return;
       }
 
-      if (existentes.has(pn)) {
-        duplicados.push(pn);
+      const linhas = texto
+        .split("\n")
+        .map((linha) => normalizarNumero(linha))
+        .filter((linha) => linha !== "");
+
+      if (linhas.length === 0) {
+        alert("Nenhum PN válido foi identificado no texto colado.");
         return;
       }
 
-      existentes.add(pn);
-      pnTableBody.appendChild(criarLinhaPn({ pn }));
-      adicionados += 1;
+      const existentes = new Set(
+        obterRowsPn()
+          .map((row) => normalizarNumero(row.querySelector(".pn-input").value))
+          .filter(Boolean)
+      );
+
+      let adicionados = 0;
+      const invalidos = [];
+      const duplicados = [];
+
+      linhas.forEach((pn) => {
+        if (!validarPn(pn)) {
+          invalidos.push(pn);
+          return;
+        }
+
+        if (existentes.has(pn)) {
+          duplicados.push(pn);
+          return;
+        }
+
+        existentes.add(pn);
+        pnTableBody.appendChild(criarLinhaPn({ pn }));
+        adicionados += 1;
+      });
+
+      garantirPnPrincipal();
+      aplicarValidacoesPnEmTela();
+
+      let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
+
+      if (invalidos.length > 0) {
+        mensagem += `\nInválidos: ${invalidos.join(", ")}`;
+      }
+
+      if (duplicados.length > 0) {
+        mensagem += `\nDuplicados ignorados: ${duplicados.join(", ")}`;
+      }
+
+      alert(mensagem);
+      pnsLoteTextarea.value = "";
     });
-
-    garantirPnPrincipal();
-    aplicarValidacoesPnEmTela();
-
-    let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
-
-    if (invalidos.length > 0) {
-      mensagem += `\nInválidos: ${invalidos.join(", ")}`;
-    }
-
-    if (duplicados.length > 0) {
-      mensagem += `\nDuplicados ignorados: ${duplicados.join(", ")}`;
-    }
-
-    alert(mensagem);
-    pnsLoteTextarea.value = "";
-  });
+  }
 
   // ==========================================================
   // LIMPEZA COMPLETA DA TELA
-  // USO:
-  // - Botão "Novo RASP"
-  // - Recomeçar preenchimento do zero
   // ==========================================================
   function limparFormularioParaNovoRasp() {
-    form.reset();
-    analistaInput.value = usuarioLogado;
-    statusInicialInput.value = "Em análise";
+    if (form) form.reset();
+
+    if (analistaInput) analistaInput.value = usuarioLogado;
+    if (statusInicialInput) statusInicialInput.value = "Em análise";
 
     limparFornecedorDerivado();
 
@@ -1114,17 +1360,37 @@ tabs.forEach((tab) => {
     );
 
     limparTabelaPn();
-    massPanel.classList.remove("show");
-    pnsLoteTextarea.value = "";
+
+    if (massPanel) massPanel.classList.remove("show");
+    if (pnsLoteTextarea) pnsLoteTextarea.value = "";
+
     atualizarNumeroRaspDisplay("");
+    atualizarDataCriacaoRaspDisplay("");
+    carregarDominiosComplementares();
+
+    if (nomeContatoInput) {
+      nomeContatoInput.value = "Não Contatado";
+      nomeContatoInput.classList.add("input-placeholder");
+    }
+
+    if (dataContatoInput) {
+      dataContatoInput.value = "";
+    }
+
+    if (rdNumeroInput) rdNumeroInput.value = "";
+    if (campanhaNumeroInput) campanhaNumeroInput.value = "";
+
+    validarRegraContato();
   }
 
   // ==========================================================
   // EVENTO: BOTÃO NOVO RASP
   // ==========================================================
-  btnLimpar.addEventListener("click", () => {
-    limparFormularioParaNovoRasp();
-  });
+  if (btnLimpar) {
+    btnLimpar.addEventListener("click", () => {
+      limparFormularioParaNovoRasp();
+    });
+  }
 
   // ==========================================================
   // SALVA OS PNs VINCULADOS AO RASP
@@ -1163,178 +1429,228 @@ tabs.forEach((tab) => {
   }
 
   // ==========================================================
-  // EVENTO: SUBMISSÃO
+  // ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
   // ==========================================================
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const resultadoDuns = await processarDuns();
-    const duns = normalizarNumero(dunsInput.value);
-    const errosDuns = [];
-
-    if (!duns) {
-      errosDuns.push("Preencha o DUNS.");
-    } else if (!validarDunsFormato(duns)) {
-      errosDuns.push("O DUNS deve conter exatamente 9 dígitos numéricos.");
-    } else if (dunsEhSequenciaRepetida(duns)) {
-      errosDuns.push("DUNS inválido. Sequências repetidas como 000000000, 111111111 e semelhantes não são permitidas.");
-    } else if (!resultadoDuns.ok && resultadoDuns.motivo === "nao_encontrado") {
-      errosDuns.push("DUNS não encontrado. No fluxo final, o sistema deverá oferecer a opção de cadastrar o fornecedor sem perder os dados já preenchidos.");
-    } else if (!resultadoDuns.ok) {
-      errosDuns.push("O valor informado não parece ser um DUNS válido.");
-    }
-
-    if (errosDuns.length > 0) {
-      alert(errosDuns[0]);
-      dunsInput.focus();
-      return;
-    }
-
-    const resumo = document.getElementById("resumo").value.trim();
-    const descricaoInicial = document.getElementById("descricaoInicial").value.trim();
-    const fornecedor = nomeFornecedorInput.value.trim();
-    const tipoFornecedor = tipoFornecedorInput.value.trim();
-    const analista = analistaInput.value.trim();
-    const statusInicial = statusInicialInput.value.trim();
-    const setor = document.getElementById("setor").value;
-    const origem = document.getElementById("origem").value;
-    const maiorImpacto = document.getElementById("maiorImpacto").value;
-    const impactoQualidade = document.getElementById("impactoQualidade").value;
-    const impactoCliente = document.getElementById("impactoCliente").value;
-
-    const pns = coletarPns();
-    const erros = [];
-
-    if (!resumo) erros.push("Preencha o Resumo da ocorrência.");
-    if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
-    if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
-    if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
-    if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
-    if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
-    if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
-    if (!setor) erros.push("Selecione o Setor.");
-    if (!origem) erros.push("Selecione a Origem.");
-    if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
-    if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
-    if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
-
-    if (pns.length === 0) {
-      erros.push("Informe pelo menos 1 PN.");
-    } else {
-      const pnsUnicos = new Set();
-      let qtdPrincipais = 0;
-
-      pns.forEach((item, index) => {
-        if (item.principal) qtdPrincipais += 1;
-
-        if (!validarPn(item.pn)) {
-          erros.push(`O PN da linha ${index + 1} deve conter 8 dígitos numéricos.`);
-        }
-
-        if (item.pn && !item.idPn) {
-          erros.push(`O PN da linha ${index + 1} não está cadastrado no sistema.`);
-        }
-
-        if (pnsUnicos.has(item.pn)) {
-          erros.push(`O PN ${item.pn} está repetido.`);
-        } else {
-          pnsUnicos.add(item.pn);
-        }
-
-        if (!item.dataLoteInicial && item.principal) {
-          erros.push(`Preencha a Data/Lote inicial do PN principal na linha ${index + 1}.`);
-        }
-
-        if (
-          item.qtdSuspeitaInicial < 0 ||
-          item.qtdChecadaInicial < 0 ||
-          item.qtdRejeitadaInicial < 0
-        ) {
-          erros.push(`As quantidades da linha ${index + 1} não podem ser negativas.`);
-        }
-      });
-
-      if (qtdPrincipais === 0) erros.push("Marque 1 PN principal.");
-      if (qtdPrincipais > 1) erros.push("Apenas 1 PN pode ser principal.");
-    }
-
-    if (erros.length > 0) {
-      alert(erros.join("\n"));
-      aplicarValidacoesPnEmTela();
-      return;
-    }
-
-    const payload = {
-      idFornecedorRasp:
-        fornecedorAtual?.idFornecedor ??
-        fornecedorAtual?.idFornecedorRasp,
-      descricaoProblema: descricaoInicial,
-      idUsuarioCriador: 1
+  async function atualizarRascunhoRasp(idRasp) {
+    const payloadRascunho = {
+      idUsuarioExecutor: 1,
+      idModeloVeiculoRasp: modeloVeiculoSelect?.value
+        ? Number(modeloVeiculoSelect.value)
+        : null,
+      idTurnoRasp: turnoRaspSelect?.value
+        ? Number(turnoRaspSelect.value)
+        : null,
+      idPilotoRasp: pilotoRaspSelect?.value
+        ? Number(pilotoRaspSelect.value)
+        : null,
+      idMajorRasp: majorRaspSelect?.value
+        ? Number(majorRaspSelect.value)
+        : null
     };
 
-    try {
-      // ------------------------------------------------------
-      // 1. Cria o RASP
-      // ------------------------------------------------------
-      const responseRasp = await fetch("http://localhost:5050/rasp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+    const response = await fetch(`http://localhost:5050/rasp/${idRasp}/rascunho`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payloadRascunho)
+    });
 
-      if (!responseRasp.ok) {
-        const mensagemErro = await responseRasp.text();
-        throw new Error(`Erro ao criar RASP. Detalhe: ${mensagemErro}`);
-      }
-
-      const dataRasp = await responseRasp.json();
-
-      const idRaspCriado =
-        dataRasp.idRasp ??
-        dataRasp.id_rasp ??
-        dataRasp.id;
-
-      const numeroRaspCriado =
-        dataRasp.numeroRasp ??
-        dataRasp.numero_rasp ??
-        dataRasp.numero;
-
-      if (!idRaspCriado) {
-        throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
-      }
-
-      // ------------------------------------------------------
-      // 2. Salva os PNs vinculados ao RASP
-      // ------------------------------------------------------
-      console.log("PNS ENVIADOS:", pns);
-      await salvarPnsDoRasp(idRaspCriado, pns, duns);
-
-      console.log("RASP criado com sucesso:", dataRasp);
-
-      // ------------------------------------------------------
-      // 3. Atualiza o indicador visual no topo da tela
-      // ------------------------------------------------------
-      atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
-
-      // ------------------------------------------------------
-      // 4. Leva o usuário suavemente para o topo da página
-      // ------------------------------------------------------
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Erro ao enviar RASP para API.");
+    if (!response.ok) {
+      const mensagemErro = await response.text();
+      console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
+      throw new Error(
+        `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
+      );
     }
-  });
+
+    return await response.json();
+  }
+
+  // ==========================================================
+  // EVENTO: SUBMISSÃO
+  // ==========================================================
+  if (form) {
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const resultadoDuns = await processarDuns();
+      const duns = normalizarNumero(dunsInput?.value);
+      const errosDuns = [];
+
+      if (!duns) {
+        errosDuns.push("Preencha o DUNS.");
+      } else if (!validarDunsFormato(duns)) {
+        errosDuns.push("O DUNS deve conter exatamente 9 dígitos numéricos.");
+      } else if (dunsEhSequenciaRepetida(duns)) {
+        errosDuns.push("DUNS inválido. Sequências repetidas como 000000000, 111111111 e semelhantes não são permitidas.");
+      } else if (!resultadoDuns.ok && resultadoDuns.motivo === "nao_encontrado") {
+        errosDuns.push("DUNS não encontrado. No fluxo final, o sistema deverá oferecer a opção de cadastrar o fornecedor sem perder os dados já preenchidos.");
+      } else if (!resultadoDuns.ok) {
+        errosDuns.push("O valor informado não parece ser um DUNS válido.");
+      }
+
+      if (errosDuns.length > 0) {
+        alert(errosDuns[0]);
+        if (dunsInput) dunsInput.focus();
+        return;
+      }
+
+      const resumo = document.getElementById("resumo")?.value.trim() ?? "";
+      const descricaoInicial = document.getElementById("descricaoInicial")?.value.trim() ?? "";
+      const fornecedor = nomeFornecedorInput?.value.trim() ?? "";
+      const tipoFornecedor = tipoFornecedorInput?.value.trim() ?? "";
+      const analista = analistaInput?.value.trim() ?? "";
+      const statusInicial = statusInicialInput?.value.trim() ?? "";
+      const setor = document.getElementById("setor")?.value ?? "";
+      const origem = document.getElementById("origem")?.value ?? "";
+      const maiorImpacto = document.getElementById("maiorImpacto")?.value ?? "";
+      const impactoQualidade = document.getElementById("impactoQualidade")?.value ?? "";
+      const impactoCliente = document.getElementById("impactoCliente")?.value ?? "";
+      let nomeContato = nomeContatoInput?.value.trim() ?? "";
+      const dataContato = dataContatoInput?.value ?? "";
+
+      const pns = coletarPns();
+      const erros = [];
+
+      if (!nomeContato) {
+        nomeContato = "Não Contatado";
+      }
+
+      const nomeContatoNormalizado = nomeContato.toLowerCase();
+      const contatoInformado =
+        nomeContatoNormalizado !== "não contatado" &&
+        nomeContatoNormalizado !== "nao contatado" &&
+        nomeContatoNormalizado !== "";
+
+      if (contatoInformado && !dataContato) {
+        erros.push("Preencha a Data do contato quando houver uma pessoa contatada.");
+      }
+
+      if (!resumo) erros.push("Preencha o Resumo da ocorrência.");
+      if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
+      if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
+      if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
+      if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
+      if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
+      if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
+      if (!setor) erros.push("Selecione o Setor.");
+      if (!origem) erros.push("Selecione a Origem.");
+      if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
+      if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
+      if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
+
+      if (pns.length === 0) {
+        erros.push("Informe pelo menos 1 PN.");
+      } else {
+        const pnsUnicos = new Set();
+        let qtdPrincipais = 0;
+
+        pns.forEach((item, index) => {
+          if (item.principal) qtdPrincipais += 1;
+
+          if (!validarPn(item.pn)) {
+            erros.push(`O PN da linha ${index + 1} deve conter 8 dígitos numéricos.`);
+          }
+
+          if (item.pn && !item.idPn) {
+            erros.push(`O PN da linha ${index + 1} não está cadastrado no sistema.`);
+          }
+
+          if (pnsUnicos.has(item.pn)) {
+            erros.push(`O PN ${item.pn} está repetido.`);
+          } else {
+            pnsUnicos.add(item.pn);
+          }
+
+          if (!item.dataLoteInicial && item.principal) {
+            erros.push(`Preencha a Data/Lote inicial do PN principal na linha ${index + 1}.`);
+          }
+
+          if (
+            item.qtdSuspeitaInicial < 0 ||
+            item.qtdChecadaInicial < 0 ||
+            item.qtdRejeitadaInicial < 0
+          ) {
+            erros.push(`As quantidades da linha ${index + 1} não podem ser negativas.`);
+          }
+        });
+
+        if (qtdPrincipais === 0) erros.push("Marque 1 PN principal.");
+        if (qtdPrincipais > 1) erros.push("Apenas 1 PN pode ser principal.");
+      }
+
+      if (erros.length > 0) {
+        alert(erros.join("\n"));
+        aplicarValidacoesPnEmTela();
+        return;
+      }
+
+      const payload = {
+        idFornecedorRasp:
+          fornecedorAtual?.idFornecedor ??
+          fornecedorAtual?.idFornecedorRasp,
+        descricaoProblema: descricaoInicial,
+        idUsuarioCriador: 1
+      };
+
+      try {
+        const responseRasp = await fetch("http://localhost:5050/rasp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!responseRasp.ok) {
+          const mensagemErro = await responseRasp.text();
+          throw new Error(`Erro ao criar RASP. Detalhe: ${mensagemErro}`);
+        }
+
+        const dataRasp = await responseRasp.json();
+
+        const idRaspCriado =
+          dataRasp.idRasp ??
+          dataRasp.id_rasp ??
+          dataRasp.id;
+
+        const numeroRaspCriado =
+          dataRasp.numeroRasp ??
+          dataRasp.numero_rasp ??
+          dataRasp.numero;
+
+        const dataCriacaoRasp =
+          dataRasp.dataCriacao ??
+          dataRasp.data_criacao ??
+          dataRasp.data;
+
+        if (!idRaspCriado) {
+          throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
+        }
+
+        await salvarPnsDoRasp(idRaspCriado, pns, duns);
+        await atualizarRascunhoRasp(idRaspCriado);
+
+        atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
+        atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "Erro ao enviar RASP para API.");
+      }
+    });
+  }
 
   // ==========================================================
   // INICIALIZAÇÃO FINAL DA TELA
   // ==========================================================
   inicializarCamposFixos();
   aplicarValidacoesPnEmTela();
-  atualizarNumeroRaspDisplay("");
+  validarRegraContato();
+  carregarDominiosComplementares();
 });
