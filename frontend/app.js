@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   const raspIndicadorBox = document.getElementById("raspIndicadorBox");
   const raspNumeroDisplay = document.getElementById("raspNumeroDisplay");
+  const dataCriacaoRaspDisplay = document.getElementById("dataCriacaoRasp");
   const numeroRaspInfo = document.getElementById("numeroRasp");
   const dataCriacaoRaspInfo = document.getElementById("dataCriacaoRasp");
 
@@ -164,6 +165,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function obterFornecedorPorDuns(duns) {
     return fornecedoresBase.find((item) => item.duns === duns) || null;
   }
+  function formatarDataPtBr(dataValor) {
+  if (!dataValor) return "--/--/----";
+
+  const data = new Date(dataValor);
+
+  if (Number.isNaN(data.getTime())) {
+    return "--/--/----";
+  }
+
+  return data.toLocaleDateString("pt-BR");
+}
+
 
   function formatarDataParaExibicao(valor) {
     if (!valor) return "--/--/----";
@@ -180,90 +193,91 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // INDICADOR VISUAL DO RASP
   // ==========================================================
-  function atualizarNumeroRaspDisplay(numeroRasp) {
-    const numeroFormatado = numeroRasp || "---";
+ function atualizarNumeroRaspDisplay(numeroRasp) {
+  const numeroFormatado = numeroRasp || "---";
 
-    if (raspNumeroDisplay) {
-      raspNumeroDisplay.textContent = numeroFormatado;
+  if (raspNumeroDisplay) {
+    raspNumeroDisplay.textContent = numeroFormatado;
+  }
+
+  if (numeroRaspInfo) {
+    numeroRaspInfo.textContent = numeroFormatado;
+  }
+}
+
+function atualizarDataCriacaoRaspDisplay(dataCriacao) {
+  const texto = dataCriacao ? formatarDataParaExibicao(dataCriacao) : "--/--/----";
+
+  if (dataCriacaoRaspInfo) {
+    dataCriacaoRaspInfo.textContent = texto;
+  }
+}
+
+function obterNumeroRaspAtual() {
+  if (!raspNumeroDisplay) return "";
+  return (raspNumeroDisplay.textContent || "").trim();
+}
+
+function destacarCopiaRasp() {
+  if (!raspIndicadorBox) return;
+
+  raspIndicadorBox.classList.add("copiado");
+
+  setTimeout(() => {
+    raspIndicadorBox.classList.remove("copiado");
+  }, 1000);
+}
+
+async function copiarTexto(texto) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    }
+  } catch (error) {
+    console.warn("Falha no clipboard moderno, tentando fallback:", error);
+  }
+
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = texto;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-9999px";
+    textArea.style.top = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const copiou = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    return copiou;
+  } catch (error) {
+    console.error("Falha também no fallback de cópia:", error);
+    return false;
+  }
+}
+
+if (raspIndicadorBox) {
+  raspIndicadorBox.addEventListener("click", async () => {
+    const numeroAtual = obterNumeroRaspAtual();
+
+    if (!numeroAtual || numeroAtual === "---") {
+      return;
     }
 
-    if (numeroRaspInfo) {
-      numeroRaspInfo.textContent = `Número: ${numeroFormatado}`;
+    const copiou = await copiarTexto(numeroAtual);
+
+    if (copiou) {
+      destacarCopiaRasp();
+      alert(`Número copiado: ${numeroAtual}`);
+    } else {
+      alert("Não foi possível copiar o número do RASP.");
     }
-  }
+  });
+}
 
-  function atualizarDataCriacaoRaspDisplay(dataCriacao) {
-    const texto = dataCriacao ? formatarDataParaExibicao(dataCriacao) : "--/--/----";
-
-    if (dataCriacaoRaspInfo) {
-      dataCriacaoRaspInfo.textContent = `Data: ${texto}`;
-    }
-  }
-
-  function obterNumeroRaspAtual() {
-    if (!raspNumeroDisplay) return "";
-    return (raspNumeroDisplay.textContent || "").trim();
-  }
-
-  function destacarCopiaRasp() {
-    if (!raspIndicadorBox) return;
-
-    raspIndicadorBox.classList.add("copiado");
-
-    setTimeout(() => {
-      raspIndicadorBox.classList.remove("copiado");
-    }, 1000);
-  }
-
-  async function copiarTexto(texto) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(texto);
-        return true;
-      }
-    } catch (error) {
-      console.warn("Falha no clipboard moderno, tentando fallback:", error);
-    }
-
-    try {
-      const textArea = document.createElement("textarea");
-      textArea.value = texto;
-      textArea.style.position = "fixed";
-      textArea.style.left = "-9999px";
-      textArea.style.top = "0";
-
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-
-      const copiou = document.execCommand("copy");
-      document.body.removeChild(textArea);
-
-      return copiou;
-    } catch (error) {
-      console.error("Falha também no fallback de cópia:", error);
-      return false;
-    }
-  }
-
-  if (raspIndicadorBox) {
-    raspIndicadorBox.addEventListener("click", async () => {
-      const numeroAtual = obterNumeroRaspAtual();
-
-      if (!numeroAtual || numeroAtual === "---") {
-        return;
-      }
-
-      const copiou = await copiarTexto(numeroAtual);
-
-      if (copiou) {
-        destacarCopiaRasp();
-        alert(`Número copiado: ${numeroAtual}`);
-      } else {
-        alert("Não foi possível copiar o número do RASP.");
-      }
-    });
-  }
 
   // ==========================================================
   // CARGA DE DOMÍNIOS
@@ -1609,36 +1623,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const dataRasp = await responseRasp.json();
+console.log("RETORNO COMPLETO DO RASP:", dataRasp);
 
-        const idRaspCriado =
-          dataRasp.idRasp ??
-          dataRasp.id_rasp ??
-          dataRasp.id;
+const idRaspCriado =
+  dataRasp.idRasp ??
+  dataRasp.id_rasp ??
+  dataRasp.id;
 
-        const numeroRaspCriado =
-          dataRasp.numeroRasp ??
-          dataRasp.numero_rasp ??
-          dataRasp.numero;
+const numeroRaspCriado =
+  dataRasp.numeroRasp ??
+  dataRasp.numero_rasp ??
+  dataRasp.numero;
 
-        const dataCriacaoRasp =
-          dataRasp.dataCriacao ??
-          dataRasp.data_criacao ??
-          dataRasp.data;
+const dataCriacaoRasp =
+  dataRasp.dataCriacao ??
+  dataRasp.data_criacao ??
+  dataRasp.datacriacao;
 
-        if (!idRaspCriado) {
-          throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
-        }
+if (!idRaspCriado) {
+  throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
+}
+await salvarPnsDoRasp(idRaspCriado, pns, duns);
+await atualizarRascunhoRasp(idRaspCriado);
 
-        await salvarPnsDoRasp(idRaspCriado, pns, duns);
-        await atualizarRascunhoRasp(idRaspCriado);
+atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
+atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
 
-        atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
-        atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
+window.scrollTo({
+  top: 0,
+  behavior: "smooth"
+});
 
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
       } catch (error) {
         console.error(error);
         alert(error.message || "Erro ao enviar RASP para API.");
@@ -1651,6 +1666,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   inicializarCamposFixos();
   aplicarValidacoesPnEmTela();
+  atualizarNumeroRaspDisplay("");
+  atualizarDataCriacaoRaspDisplay("");
   validarRegraContato();
   carregarDominiosComplementares();
 });

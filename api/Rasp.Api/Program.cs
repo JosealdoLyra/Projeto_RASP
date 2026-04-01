@@ -882,7 +882,7 @@ app.MapGet("/rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterRaspPorId");
 
-// POST /rasp
+// // POST /rasp
 // Cria um novo RASP em rascunho.
 //
 // Regras:
@@ -933,11 +933,16 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     await using var tx = await conn.BeginTransactionAsync();
 
+    // Data e hora que serão gravadas no banco e devolvidas ao front
+    var agora = DateTime.Now;
+    var dataCriacao = DateOnly.FromDateTime(agora);
+    var horaCriacao = TimeOnly.FromDateTime(agora);
+
     var insertSql = """
         INSERT INTO rasp
             (numero_rasp, data_criacao, hora_criacao, id_fornecedor_rasp, descricao_problema, id_status_rasp, is_rascunho, percentual_completude, id_analista_mt)
         VALUES
-            ('TEMP', CURRENT_DATE, CURRENT_TIME, @id_fornecedor, @descricao, 1, true, 0, @id_usuario_criador)
+            ('TEMP', @data_criacao, @hora_criacao, @id_fornecedor, @descricao, 1, true, 0, @id_usuario_criador)
         RETURNING id_rasp;
         """;
 
@@ -945,6 +950,8 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     await using (var cmd = new NpgsqlCommand(insertSql, conn, tx))
     {
+        cmd.Parameters.AddWithValue("data_criacao", dataCriacao);
+        cmd.Parameters.AddWithValue("hora_criacao", horaCriacao);
         cmd.Parameters.AddWithValue("id_fornecedor", req.IdFornecedorRasp);
         cmd.Parameters.AddWithValue("descricao", descricaoProblema);
         cmd.Parameters.AddWithValue("id_usuario_criador", req.IdUsuarioCriador);
@@ -978,10 +985,13 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     return Results.Created($"/rasp/{idRasp}", new
     {
         id_rasp = idRasp,
-        numero_rasp = numeroRasp
+        numero_rasp = numeroRasp,
+        data_criacao = dataCriacao,
+        hora_criacao = horaCriacao
     });
 })
 .WithName("CriarRasp");
+
 
 
 // PUT /rasp/{id}

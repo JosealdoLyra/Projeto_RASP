@@ -915,26 +915,29 @@ input[readonly] {
 #tab-abertura .rasp-indicador-box {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 6px 0 18px 2px;
-  padding: 8px 14px;
-  background: #eef4ff;
-  border: 1px solid #c9d8f2;
-  border-radius: 8px;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #eef4ff 0%, #e8f0ff 100%);
+  border: 1px solid #cddcf7;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
   color: #2f4f88;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
 }
 
 .rasp-indicador-titulo {
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
+  color: #1e3a8a;
 }
 
 .rasp-indicador-separador {
-  opacity: 0.5;
+  opacity: 0.45;
+  font-weight: 700;
 }
 
 .rasp-indicador-valor {
@@ -944,13 +947,56 @@ input[readonly] {
 
 .rasp-indicador-box:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.14);
 }
 
 .rasp-indicador-box.copiado {
   background: #dcfce7;
   border-color: #86efac;
 }
+/* ==========================================================
+   TOPO DE INFORMAÇÕES DO RASP
+   ========================================================== */
+.rasp-topo-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0 22px 2px;
+  flex-wrap: wrap;
+}
+
+
+/* ==========================================================
+   CHIP DE DATA DO RASP
+   ========================================================== */
+.rasp-data-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+
+.rasp-data-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+
+.rasp-data-valor {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 
 /* ==========================================================
    TOPO AUXILIAR DO RASP
