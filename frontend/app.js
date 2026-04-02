@@ -1481,193 +1481,195 @@ if (raspIndicadorBox) {
     return await response.json();
   }
 
-  // ==========================================================
-  // EVENTO: SUBMISSÃO
-  // ==========================================================
-  if (form) {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+ // ==========================================================
+// EVENTO: SUBMISSÃO
+// ==========================================================
+if (form) {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-      const resultadoDuns = await processarDuns();
-      const duns = normalizarNumero(dunsInput?.value);
-      const errosDuns = [];
+    const resultadoDuns = await processarDuns();
+    const duns = normalizarNumero(dunsInput?.value);
+    const errosDuns = [];
 
-      if (!duns) {
-        errosDuns.push("Preencha o DUNS.");
-      } else if (!validarDunsFormato(duns)) {
-        errosDuns.push("O DUNS deve conter exatamente 9 dígitos numéricos.");
-      } else if (dunsEhSequenciaRepetida(duns)) {
-        errosDuns.push("DUNS inválido. Sequências repetidas como 000000000, 111111111 e semelhantes não são permitidas.");
-      } else if (!resultadoDuns.ok && resultadoDuns.motivo === "nao_encontrado") {
-        errosDuns.push("DUNS não encontrado. No fluxo final, o sistema deverá oferecer a opção de cadastrar o fornecedor sem perder os dados já preenchidos.");
-      } else if (!resultadoDuns.ok) {
-        errosDuns.push("O valor informado não parece ser um DUNS válido.");
-      }
+    if (!duns) {
+      errosDuns.push("Preencha o DUNS.");
+    } else if (!validarDunsFormato(duns)) {
+      errosDuns.push("O DUNS deve conter exatamente 9 dígitos numéricos.");
+    } else if (dunsEhSequenciaRepetida(duns)) {
+      errosDuns.push("DUNS inválido. Sequências repetidas como 000000000, 111111111 e semelhantes não são permitidas.");
+    } else if (!resultadoDuns.ok && resultadoDuns.motivo === "nao_encontrado") {
+      errosDuns.push("DUNS não encontrado. No fluxo final, o sistema deverá oferecer a opção de cadastrar o fornecedor sem perder os dados já preenchidos.");
+    } else if (!resultadoDuns.ok) {
+      errosDuns.push("O valor informado não parece ser um DUNS válido.");
+    }
 
-      if (errosDuns.length > 0) {
-        alert(errosDuns[0]);
-        if (dunsInput) dunsInput.focus();
-        return;
-      }
+    if (errosDuns.length > 0) {
+      alert(errosDuns[0]);
+      if (dunsInput) dunsInput.focus();
+      return;
+    }
 
-      const resumo = document.getElementById("resumo")?.value.trim() ?? "";
-      const descricaoInicial = document.getElementById("descricaoInicial")?.value.trim() ?? "";
-      const fornecedor = nomeFornecedorInput?.value.trim() ?? "";
-      const tipoFornecedor = tipoFornecedorInput?.value.trim() ?? "";
-      const analista = analistaInput?.value.trim() ?? "";
-      const statusInicial = statusInicialInput?.value.trim() ?? "";
-      const setor = document.getElementById("setor")?.value ?? "";
-      const origem = document.getElementById("origem")?.value ?? "";
-      const maiorImpacto = document.getElementById("maiorImpacto")?.value ?? "";
-      const impactoQualidade = document.getElementById("impactoQualidade")?.value ?? "";
-      const impactoCliente = document.getElementById("impactoCliente")?.value ?? "";
-      let nomeContato = nomeContatoInput?.value.trim() ?? "";
-      const dataContato = dataContatoInput?.value ?? "";
+    const resumo = document.getElementById("resumo")?.value.trim() ?? "";
+    const descricaoInicial = document.getElementById("descricaoInicial")?.value.trim() ?? "";
+    const fornecedor = nomeFornecedorInput?.value.trim() ?? "";
+    const tipoFornecedor = tipoFornecedorInput?.value.trim() ?? "";
+    const analista = analistaInput?.value.trim() ?? "";
+    const statusInicial = statusInicialInput?.value.trim() ?? "";
+    const setor = document.getElementById("setor")?.value ?? "";
+    const origem = document.getElementById("origem")?.value ?? "";
+    const maiorImpacto = document.getElementById("maiorImpacto")?.value ?? "";
+    const impactoQualidade = document.getElementById("impactoQualidade")?.value ?? "";
+    const impactoCliente = document.getElementById("impactoCliente")?.value ?? "";
+    let nomeContato = nomeContatoInput?.value.trim() ?? "";
+    const dataContato = dataContatoInput?.value ?? "";
+    const pns = coletarPns();
+    const erros = [];
 
-      const pns = coletarPns();
-      const erros = [];
+    if (!nomeContato) {
+      nomeContato = "Não Contatado";
+    }
 
-      if (!nomeContato) {
-        nomeContato = "Não Contatado";
-      }
+    const nomeContatoNormalizado = nomeContato.toLowerCase();
+    const contatoInformado =
+      nomeContatoNormalizado !== "não contatado" &&
+      nomeContatoNormalizado !== "nao contatado" &&
+      nomeContatoNormalizado !== "";
 
-      const nomeContatoNormalizado = nomeContato.toLowerCase();
-      const contatoInformado =
-        nomeContatoNormalizado !== "não contatado" &&
-        nomeContatoNormalizado !== "nao contatado" &&
-        nomeContatoNormalizado !== "";
+    if (contatoInformado && !dataContato) {
+      erros.push("Preencha a Data do contato quando houver uma pessoa contatada.");
+    }
 
-      if (contatoInformado && !dataContato) {
-        erros.push("Preencha a Data do contato quando houver uma pessoa contatada.");
-      }
+    if (!resumo) erros.push("Preencha o Resumo da ocorrência.");
+    if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
+    if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
+    if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
+    if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
+    if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
+    if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
+    if (!setor) erros.push("Selecione o Setor.");
+    if (!origem) erros.push("Selecione a Origem.");
+    if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
+    if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
+    if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
 
-      if (!resumo) erros.push("Preencha o Resumo da ocorrência.");
-      if (!descricaoInicial) erros.push("Preencha a Descrição inicial.");
-      if (!fornecedor) erros.push("O fornecedor deve ser carregado automaticamente pelo DUNS.");
-      if (!tipoFornecedor) erros.push("O tipo do fornecedor deve ser carregado automaticamente pelo DUNS.");
-      if (!fornecedorAtual) erros.push("O fornecedor precisa ser localizado corretamente pelo DUNS antes do envio.");
-      if (!analista) erros.push("O campo Analista deve vir preenchido pelo login.");
-      if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
-      if (!setor) erros.push("Selecione o Setor.");
-      if (!origem) erros.push("Selecione a Origem.");
-      if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
-      if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
-      if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
+    if (pns.length === 0) {
+      erros.push("Informe pelo menos 1 PN.");
+    } else {
+      const pnsUnicos = new Set();
+      let qtdPrincipais = 0;
 
-      if (pns.length === 0) {
-        erros.push("Informe pelo menos 1 PN.");
-      } else {
-        const pnsUnicos = new Set();
-        let qtdPrincipais = 0;
+      pns.forEach((item, index) => {
+        if (item.principal) qtdPrincipais += 1;
 
-        pns.forEach((item, index) => {
-          if (item.principal) qtdPrincipais += 1;
-
-          if (!validarPn(item.pn)) {
-            erros.push(`O PN da linha ${index + 1} deve conter 8 dígitos numéricos.`);
-          }
-
-          if (item.pn && !item.idPn) {
-            erros.push(`O PN da linha ${index + 1} não está cadastrado no sistema.`);
-          }
-
-          if (pnsUnicos.has(item.pn)) {
-            erros.push(`O PN ${item.pn} está repetido.`);
-          } else {
-            pnsUnicos.add(item.pn);
-          }
-
-          if (!item.dataLoteInicial && item.principal) {
-            erros.push(`Preencha a Data/Lote inicial do PN principal na linha ${index + 1}.`);
-          }
-
-          if (
-            item.qtdSuspeitaInicial < 0 ||
-            item.qtdChecadaInicial < 0 ||
-            item.qtdRejeitadaInicial < 0
-          ) {
-            erros.push(`As quantidades da linha ${index + 1} não podem ser negativas.`);
-          }
-        });
-
-        if (qtdPrincipais === 0) erros.push("Marque 1 PN principal.");
-        if (qtdPrincipais > 1) erros.push("Apenas 1 PN pode ser principal.");
-      }
-
-      if (erros.length > 0) {
-        alert(erros.join("\n"));
-        aplicarValidacoesPnEmTela();
-        return;
-      }
-
-      const payload = {
-        idFornecedorRasp:
-          fornecedorAtual?.idFornecedor ??
-          fornecedorAtual?.idFornecedorRasp,
-        descricaoProblema: descricaoInicial,
-        idUsuarioCriador: 1
-      };
-
-      try {
-        const responseRasp = await fetch("http://localhost:5050/rasp", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!responseRasp.ok) {
-          const mensagemErro = await responseRasp.text();
-          throw new Error(`Erro ao criar RASP. Detalhe: ${mensagemErro}`);
+        if (!validarPn(item.pn)) {
+          erros.push(`O PN da linha ${index + 1} deve conter 8 dígitos numéricos.`);
         }
 
-        const dataRasp = await responseRasp.json();
-console.log("RETORNO COMPLETO DO RASP:", dataRasp);
+        if (item.pn && !item.idPn) {
+          erros.push(`O PN da linha ${index + 1} não está cadastrado no sistema.`);
+        }
 
-const idRaspCriado =
-  dataRasp.idRasp ??
-  dataRasp.id_rasp ??
-  dataRasp.id;
+        if (pnsUnicos.has(item.pn)) {
+          erros.push(`O PN ${item.pn} está repetido.`);
+        } else {
+          pnsUnicos.add(item.pn);
+        }
 
-const numeroRaspCriado =
-  dataRasp.numeroRasp ??
-  dataRasp.numero_rasp ??
-  dataRasp.numero;
+        if (!item.dataLoteInicial && item.principal) {
+          erros.push(`Preencha a Data/Lote inicial do PN principal na linha ${index + 1}.`);
+        }
 
-const dataCriacaoRasp =
-  dataRasp.dataCriacao ??
-  dataRasp.data_criacao ??
-  dataRasp.datacriacao;
+        if (
+          item.qtdSuspeitaInicial < 0 ||
+          item.qtdChecadaInicial < 0 ||
+          item.qtdRejeitadaInicial < 0
+        ) {
+          erros.push(`As quantidades da linha ${index + 1} não podem ser negativas.`);
+        }
+      });
 
-if (!idRaspCriado) {
-  throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
-}
-await salvarPnsDoRasp(idRaspCriado, pns, duns);
-await atualizarRascunhoRasp(idRaspCriado);
+      if (qtdPrincipais === 0) erros.push("Marque 1 PN principal.");
+      if (qtdPrincipais > 1) erros.push("Apenas 1 PN pode ser principal.");
+    }
 
-atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
-atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
+    if (erros.length > 0) {
+      alert(erros.join("\n"));
+      aplicarValidacoesPnEmTela();
+      return;
+    }
 
-window.scrollTo({
-  top: 0,
-  behavior: "smooth"
-});
+    const payload = {
+      idFornecedorRasp:
+        fornecedorAtual?.idFornecedor ??
+        fornecedorAtual?.idFornecedorRasp,
+      descricaoProblema: descricaoInicial,
+      idUsuarioCriador: 1
+    };
 
-      } catch (error) {
-        console.error(error);
-        alert(error.message || "Erro ao enviar RASP para API.");
+    try {
+      const responseRasp = await fetch("http://localhost:5050/rasp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const resultado = await responseRasp.json();
+
+      if (!responseRasp.ok) {
+        throw new Error(resultado.erro || resultado.mensagem || "Erro ao criar RASP");
       }
-    });
-  }
 
-  // ==========================================================
-  // INICIALIZAÇÃO FINAL DA TELA
-  // ==========================================================
-  inicializarCamposFixos();
-  aplicarValidacoesPnEmTela();
-  atualizarNumeroRaspDisplay("");
-  atualizarDataCriacaoRaspDisplay("");
-  validarRegraContato();
-  carregarDominiosComplementares();
+      console.log("RETORNO COMPLETO DO RASP:", resultado);
+
+      const idRaspCriado =
+        resultado.idRasp ??
+        resultado.id_rasp ??
+        resultado.id;
+
+      const numeroRaspCriado =
+        resultado.numeroRasp ??
+        resultado.numero_rasp ??
+        resultado.numero;
+
+      const dataCriacaoRasp =
+        resultado.dataCriacao ??
+        resultado.data_criacao ??
+        resultado.datacriacao;
+
+      if (!idRaspCriado) {
+        throw new Error("A API criou o RASP, mas não retornou o ID do registro.");
+      }
+
+      await salvarPnsDoRasp(idRaspCriado, pns, duns);
+      await atualizarRascunhoRasp(idRaspCriado);
+
+      atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
+      atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
+
+      alert(`RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`);
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Erro ao enviar RASP para API.");
+    }
+  });
+}
+
+// ==========================================================
+// INICIALIZAÇÃO FINAL DA TELA
+// ==========================================================
+inicializarCamposFixos();
+aplicarValidacoesPnEmTela();
+atualizarNumeroRaspDisplay("");
+atualizarDataCriacaoRaspDisplay("");
+validarRegraContato();
+carregarDominiosComplementares();
 });
+

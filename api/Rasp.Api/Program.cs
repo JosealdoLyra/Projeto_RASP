@@ -985,7 +985,8 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     return Results.Created($"/rasp/{idRasp}", new
     {
         id_rasp = idRasp,
-        numero_rasp = numeroRasp,
+        numero_rasp = numeroRasp, 
+        mensagem = "RASP criado com sucesso.",
         data_criacao = dataCriacao,
         hora_criacao = horaCriacao
     });
