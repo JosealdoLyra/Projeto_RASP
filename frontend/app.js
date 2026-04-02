@@ -5,6 +5,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("raspForm");
 
   // ==========================================================
+// REFERÊNCIAS DE ELEMENTOS DO DOM
+// ==========================================================
+const mensagemRasp = document.getElementById("mensagemRasp");
+
+
+  // ==========================================================
   // CONTROLE DE ABAS DO RASP
   // ==========================================================
   const tabs = document.querySelectorAll(".rasp-tab");
@@ -18,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const dataCriacaoRaspDisplay = document.getElementById("dataCriacaoRasp");
   const numeroRaspInfo = document.getElementById("numeroRasp");
   const dataCriacaoRaspInfo = document.getElementById("dataCriacaoRasp");
+
 
   // ==========================================================
   // SEÇÃO 2 - DADOS BÁSICOS DO RASP
@@ -189,6 +196,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return data.toLocaleDateString("pt-BR");
   }
+
+  // ==========================================================
+// MENSAGEM DE RETORNO DO RASP
+// ==========================================================
+function mostrarMensagemRasp(texto) {
+  if (!mensagemRasp) return;
+  mensagemRasp.textContent = texto;
+  mensagemRasp.classList.remove("oculto");
+}
+
+function ocultarMensagemRasp() {
+  if (!mensagemRasp) return;
+  mensagemRasp.textContent = "";
+  mensagemRasp.classList.add("oculto");
+}
+
 
   // ==========================================================
   // INDICADOR VISUAL DO RASP
@@ -1481,6 +1504,118 @@ if (raspIndicadorBox) {
     return await response.json();
   }
 
+// ==========================================================
+// FORMATAÇÃO E VALIDAÇÃO DE DATA INICIAL (DD/MM/AA)
+// ==========================================================
+function formatarValorDataLote(valor) {
+  let somenteNumeros = valor.replace(/\D/g, "");
+
+  if (somenteNumeros.length > 6) {
+    somenteNumeros = somenteNumeros.slice(0, 6);
+  }
+
+  if (somenteNumeros.length >= 5) {
+    return somenteNumeros.replace(/(\d{2})(\d{2})(\d{1,2})/, "$1/$2/$3");
+  }
+
+  if (somenteNumeros.length >= 3) {
+    return somenteNumeros.replace(/(\d{2})(\d{1,2})/, "$1/$2");
+  }
+
+  return somenteNumeros;
+}
+
+function dataInicialEhValida(valor) {
+  if (!valor) return false;
+
+  const match = valor.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+  if (!match) return false;
+
+  const dia = Number(match[1]);
+  const mes = Number(match[2]);
+  const ano = Number(match[3]);
+
+  if (mes < 1 || mes > 12) return false;
+  if (dia < 1) return false;
+
+  const anoCompleto = 2000 + ano;
+  const ultimoDiaDoMes = new Date(anoCompleto, mes, 0).getDate();
+
+  return dia <= ultimoDiaDoMes;
+}
+
+function aplicarMascaraDataLote() {
+  document.addEventListener("input", (event) => {
+    const campo = event.target;
+
+    if (!campo.classList.contains("data-lote-inicial")) {
+      return;
+    }
+
+    campo.value = formatarValorDataLote(campo.value);
+
+    if (campo.value.length === 8 && dataInicialEhValida(campo.value)) {
+      limparErroDataInicial(campo);
+    }
+  });
+
+  document.addEventListener("blur", (event) => {
+    const campo = event.target;
+
+    if (!campo.classList.contains("data-lote-inicial")) {
+      return;
+    }
+
+    if (!campo.value) {
+      limparErroDataInicial(campo);
+      return;
+    }
+
+    if (!dataInicialEhValida(campo.value)) {
+      mostrarErroDataInicial(campo, "Data inválida. Use o formato DD/MM/AA.");
+      return;
+    }
+
+    limparErroDataInicial(campo);
+  }, true);
+}
+
+
+// ==========================================================
+// VALIDAÇÃO VISUAL DE DATA INICIAL
+// ==========================================================
+function obterMensagemErroData(campo) {
+  return campo.parentElement?.querySelector(".mensagem-erro-campo");
+}
+
+function mostrarErroDataInicial(campo, mensagem) {
+  if (!campo) return;
+
+  campo.classList.add("input-erro");
+
+  let mensagemErro = obterMensagemErroData(campo);
+
+  if (!mensagemErro) {
+    mensagemErro = document.createElement("div");
+    mensagemErro.className = "mensagem-erro-campo";
+    campo.parentElement?.appendChild(mensagemErro);
+  }
+
+  mensagemErro.textContent = mensagem;
+}
+
+function limparErroDataInicial(campo) {
+  if (!campo) return;
+
+  campo.classList.remove("input-erro");
+
+  const mensagemErro = obterMensagemErroData(campo);
+  if (mensagemErro) {
+    mensagemErro.remove();
+  }
+}
+
+
  // ==========================================================
 // EVENTO: SUBMISSÃO
 // ==========================================================
@@ -1577,8 +1712,13 @@ if (form) {
         }
 
         if (!item.dataLoteInicial && item.principal) {
-          erros.push(`Preencha a Data/Lote inicial do PN principal na linha ${index + 1}.`);
-        }
+  erros.push(`Preencha a Data inicial do PN principal na linha ${index + 1}.`);
+}
+
+        if (item.dataLoteInicial && !dataInicialEhValida(item.dataLoteInicial)) {
+  erros.push(`A Data inicial da linha ${index + 1} é inválida. Use o formato DD/MM/AA.`);
+}
+
 
         if (
           item.qtdSuspeitaInicial < 0 ||
@@ -1649,7 +1789,7 @@ if (form) {
       atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
       atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
 
-      alert(`RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`);
+      mostrarMensagemRasp (`RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`);
 
       window.scrollTo({
         top: 0,
@@ -1669,6 +1809,8 @@ inicializarCamposFixos();
 aplicarValidacoesPnEmTela();
 atualizarNumeroRaspDisplay("");
 atualizarDataCriacaoRaspDisplay("");
+ocultarMensagemRasp();
+aplicarMascaraDataLote();
 validarRegraContato();
 carregarDominiosComplementares();
 });

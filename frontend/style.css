@@ -1061,3 +1061,43 @@ input[readonly] {
   color: #9aa4b2;
   font-style: italic;
 }
+/* ==========================================================
+   MENSAGEM DE RETORNO DO RASP
+========================================================== */
+.mensagem-rasp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #b9e6c9;
+  background: #edf9f1;
+  color: #1f6b3b;
+  font-size: 0.98rem;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(31, 107, 59, 0.08);
+}
+
+.mensagem-rasp::before {
+  content: "✅";
+  font-size: 1.1rem;
+}
+
+.oculto {
+  display: none;
+}
+/* ==========================================================
+   VALIDAÇÃO VISUAL DE DATA INICIAL
+========================================================== */
+.input-erro {
+  border: 1px solid #d93025 !important;
+  box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.12);
+}
+
+.mensagem-erro-campo {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #d93025;
+  font-weight: 500;
+}
