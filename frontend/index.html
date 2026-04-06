@@ -122,7 +122,7 @@
                ================================================= -->
               <!-- Mensagem de retorno do RASP-->
                <div id="mensagemRasp"
-               class="mensagem-rasp oculto"></div></div>
+               class="mensagem-rasp oculto"></div>
           
                <form id="raspForm" class="rasp-form">
 
@@ -303,164 +303,167 @@
               </div>
             </section>
 
-            <!-- ===============================================
-                 SEÇÃO 4 - PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
-                 =============================================== -->
-            <section class="form-section">
-              <h3>4. PN(s) envolvidos no atendimento inicial</h3>
+    <!-- ===============================================
+     SEÇÃO 4 - PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
+     =============================================== -->
+<section class="form-section">
+  <h3>4. PN(s) envolvidos no atendimento inicial</h3>
 
-              <p class="section-note">
-                Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
-                O campo Data/Lote inicial é obrigatório para o PN principal.
-              </p>
+  <p class="section-note">
+    Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
+    O campo Data/Lote inicial é obrigatório para o PN principal.
+  </p>
 
-              <p class="section-note warning-note">
-                Após inclusão no processo, exclusões e alterações estruturais devem seguir fluxo controlado.
-                Correções sensíveis devem ser tratadas com apoio administrativo.
-              </p>
+  <p class="section-note warning-note">
+    Após inclusão no processo, exclusões e alterações estruturais devem seguir fluxo controlado.
+    Correções sensíveis devem ser tratadas com apoio administrativo.
+  </p>
 
-              <!-- AÇÕES DA TABELA DE PNs -->
-              <div class="pn-header-line">
-                <div class="pn-header-actions">
-                  <button type="button" id="addPnRow" class="secondary-btn">
-                    + Adicionar PN
-                  </button>
+  <!-- AÇÕES DA TABELA DE PNs -->
+  <div class="pn-header-line">
+    <div class="pn-header-actions">
+      <button type="button" id="addPnRow" class="secondary-btn">
+        + Adicionar PN
+      </button>
 
-                  <button type="button" id="toggleMassPanel" class="secondary-btn">
-                    Colar vários PNs
-                  </button>
-                </div>
-              </div>
+      <button type="button" id="toggleMassPanel" class="secondary-btn">
+        Colar vários PNs
+      </button>
+    </div>
+  </div>
 
-              <!-- PAINEL DE IMPORTAÇÃO EM MASSA -->
-              <div id="massPanel" class="mass-panel">
-                <label for="pnsLoteTextarea">Cole 1 PN por linha</label>
+  <!-- PAINEL DE IMPORTAÇÃO EM MASSA -->
+  <div id="massPanel" class="mass-panel">
+    <label for="pnsLoteTextarea">Cole 1 PN por linha</label>
 
-                <textarea
-                  id="pnsLoteTextarea"
-                  rows="6"
-                  placeholder="Exemplo:
+    <textarea
+      id="pnsLoteTextarea"
+      rows="6"
+      placeholder="Exemplo:
 12345678
 87654321
 11223344"
-                ></textarea>
+    ></textarea>
 
-                <div class="mass-panel-actions">
-                  <button type="button" id="importMassPns" class="primary-btn">
-                    Importar PNs
-                  </button>
-                </div>
+    <div class="mass-panel-actions">
+      <button type="button" id="importMassPns" class="primary-btn">
+        Importar PNs
+      </button>
+    </div>
 
-                <p class="small-text">
-                  Os PNs importados entrarão com quantidades zeradas e sem Data/Lote inicial.
-                </p>
-              </div>
+    <p class="small-text">
+      Os PNs importados entrarão com quantidades zeradas e sem Data/Lote inicial.
+    </p>
+  </div>
 
-              <!-- TABELA DE PNs -->
-              <div class="table-wrapper">
-                <table class="pn-table pn-table-refinada">
-                  <thead>
-                    <tr>
-                      <th class="center-cell th-principal">Principal</th>
-                      <th class="th-pn">PN *</th>
-                      <th class="th-descricao">Descrição do PN</th>
-                      <th class="th-lote">Data/Lote inicial *</th>
-                      <th class="th-qtd">Qtd suspeita</th>
-                      <th class="th-qtd">Qtd checada</th>
-                      <th class="th-qtd">Qtd rejeitada</th>
-                      <th class="th-remover"></th>
-                    </tr>
-                  </thead>
+  <!-- TABELA DE PNs -->
+  <div class="table-wrapper">
+    <table class="pn-table pn-table-refinada">
+      <thead>
+        <tr>
+          <th class="center-cell th-principal">Principal</th>
+          <th class="th-pn">PN *</th>
+          <th class="th-descricao">Descrição do PN</th>
+          <th class="th-lote">Data/Lote inicial *</th>
+          <th class="th-qtd">Qtd suspeita</th>
+          <th class="th-qtd">Qtd checada</th>
+          <th class="th-qtd">Qtd rejeitada</th>
+          <th class="th-remover"></th>
+        </tr>
+      </thead>
 
-                  <tbody id="pnTableBody">
-                    <tr class="pn-row">
-                      <td class="center-cell">
-                        <input
-                          type="radio"
-                          name="pnPrincipal"
-                          class="pn-principal"
-                          checked
-                        />
-                      </td>
+      <tbody id="pnTableBody">
+        <tr class="pn-row">
+          <td class="center-cell">
+            <input
+              type="radio"
+              name="pnPrincipal"
+              class="pn-principal"
+              checked
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="text"
-                          class="pn-input"
-                          placeholder="8 dígitos"
-                        />
-                        <input
-                          type="hidden"
-                          class="pn-id"
-                          value=""
-                        />
-                      </td>
+          <td>
+            <input
+              type="text"
+              class="pn-input"
+              placeholder="8 dígitos"
+            />
+            <input
+              type="hidden"
+              class="pn-id"
+              value=""
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="text"
-                          class="pn-descricao system-field"
-                          value=""
-                          placeholder="Descrição do PN"
-                          readonly
-                        />
-                      </td>
+          <td>
+            <input
+              type="text"
+              class="pn-descricao system-field"
+              value=""
+              placeholder="Descrição do PN"
+              readonly
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="text"
-                          class="data-lote-inicial"
-                          placeholder="Ex.: 12/03/2026 ou lote ABC123"
-                        />
-                      </td>
+          <td>
+            <input
+              type="text"
+              class="data-lote-inicial"
+              placeholder="Ex.: 12/03/26"
+              inputmode="numeric"
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          class="qtd-suspeita qtd-compacta"
-                          min="0"
-                          value="0"
-                        />
-                      </td>
+          <td>
+            <input
+              type="number"
+              class="qtd-suspeita qtd-compacta"
+              min="0"
+              value="0"
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          class="qtd-checada qtd-compacta"
-                          min="0"
-                          value="0"
-                        />
-                      </td>
+          <td>
+            <input
+              type="number"
+              class="qtd-checada qtd-compacta"
+              min="0"
+              value="0"
+            />
+          </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          class="qtd-rejeitada qtd-compacta"
-                          min="0"
-                          value="0"
-                        />
-                      </td>
+          <td>
+            <input
+              type="number"
+              class="qtd-rejeitada qtd-compacta"
+              min="0"
+              value="0"
+            />
+          </td>
 
-                      <td class="center-cell">
-                        <button
-                          type="button"
-                          class="remove-row icon-btn"
-                          title="Remover linha"
-                          aria-label="Remover linha"
-                        >
-                          ×
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+          <td class="center-cell">
+            <button
+              type="button"
+              class="remove-row icon-btn"
+              title="Remover linha"
+              aria-label="Remover linha"
+            >
+              ×
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-              <!-- STATUS GERAL DA TABELA DE PNs -->
-              <div id="pnStatus" class="pn-status pn-status-neutral">
-                Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
-              </div>
-            </section>
+  <!-- STATUS GERAL DA TABELA DE PNs -->
+  <div id="pnStatus" class="pn-status pn-status-neutral">
+    Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
+  </div>
+</section>
+
+
 
             <!-- ===============================================
                  SEÇÃO 5 - DADOS COMPLEMENTARES PARA APROVAÇÃO
@@ -547,6 +550,85 @@
                 O campo Campanha nº poderá futuramente gerar pendência quando a Origem for GCA10, GCA20 ou GCA50.
               </div>
             </section>
+
+            <!-- ===============================================
+     SEÇÃO 6 - BREAK POINT (BP)
+     =============================================== -->
+<section class="form-section section-bp">
+  <h3>6. Break Point (BP)</h3>
+
+  <p class="section-note">
+    Pode permanecer pendente em rascunho, mas será obrigatório antes do envio para aprovação.
+  </p>
+
+  <div class="grid grid-3">
+    <!-- Tipo de referência -->
+    <div class="form-group">
+      <label for="tipoReferenciaBp">Tipo de referência *</label>
+      <select id="tipoReferenciaBp" name="tipoReferenciaBp">
+        <option value="">Selecione</option>
+        <option value="VIN">VIN (Linha)</option>
+        <option value="LOCAL">Área / Célula</option>
+      </select>
+    </div>
+
+    <!-- Data -->
+    <div class="form-group">
+      <label for="dataBp">Data do BP *</label>
+      <input type="date" id="dataBp" name="dataBp" />
+    </div>
+
+    <!-- Hora -->
+    <div class="form-group">
+      <label for="horaBp">Hora do BP *</label>
+      <input type="time" id="horaBp" name="horaBp" />
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <!-- VIN -->
+    <div class="form-group">
+      <label for="vinBp">VIN</label>
+      <input
+        type="text"
+        id="vinBp"
+        name="vinBp"
+        placeholder="Ex.: 9BGXXXXX..."
+        maxlength="17"
+        disabled
+      />
+    </div>
+
+    <!-- Local / Célula -->
+    <div class="form-group">
+      <label for="localCelulaBp">Área / Célula</label>
+      <input
+        type="text"
+        id="localCelulaBp"
+        name="localCelulaBp"
+        placeholder="Ex.: Célula Injetora A"
+        disabled
+      />
+    </div>
+  </div>
+
+  <!-- Como foi identificado -->
+  <div class="form-group full">
+    <label for="comoIdentificadoBp">Como foi identificado *</label>
+    <textarea
+      id="comoIdentificadoBp"
+      name="comoIdentificadoBp"
+      rows="3"
+      placeholder="Descreva como o problema foi identificado"
+    ></textarea>
+  </div>
+
+  <!-- Status -->
+  <div id="bpStatus" class="pn-status pn-status-neutral">
+    BP não informado.
+  </div>
+</section>
+
 
             <!-- ===============================================
                  AÇÕES FINAIS DO FORMULÁRIO

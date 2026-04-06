@@ -993,6 +993,62 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 })
 .WithName("CriarRasp");
 
+// ==========================================================
+// BP DO RASP
+// ==========================================================
+app.MapPost("/rasp-bp", async (RaspDbContext db, RaspBp bp) =>
+{
+    // REGRA 1: Data e hora obrigatórios
+    if (bp.DataBp == default || bp.HoraBp == default)
+        return Results.BadRequest("Data e hora do BP são obrigatórias.");
+
+    // REGRA 2: Tipo referência obrigatório
+    if (string.IsNullOrWhiteSpace(bp.TipoReferenciaBp))
+        return Results.BadRequest("Tipo de referência é obrigatório.");
+
+    // REGRA 3: Como identificado obrigatório
+    if (string.IsNullOrWhiteSpace(bp.ComoIdentificado))
+        return Results.BadRequest("Campo 'Como identificado' é obrigatório.");
+
+    // REGRA 4: Tipo permitido
+    var tipo = bp.TipoReferenciaBp.Trim().ToUpperInvariant();
+
+    if (tipo != "VIN" && tipo != "LOCAL")
+        return Results.BadRequest("Tipo de referência deve ser VIN ou LOCAL.");
+
+    // REGRA 5: VIN x LOCAL
+    if (tipo == "VIN")
+    {
+        if (string.IsNullOrWhiteSpace(bp.Vin))
+            return Results.BadRequest("VIN é obrigatório quando o tipo for VIN.");
+
+        bp.Vin = bp.Vin.Trim().ToUpperInvariant();
+
+        if (!System.Text.RegularExpressions.Regex.IsMatch(bp.Vin, "^[A-HJ-NPR-Z0-9]{17}$"))
+            return Results.BadRequest("VIN inválido. Deve conter 17 caracteres alfanuméricos válidos.");
+
+        bp.LocalCelula = null;
+    }
+
+    if (tipo == "LOCAL")
+    {
+        if (string.IsNullOrWhiteSpace(bp.LocalCelula))
+            return Results.BadRequest("Local/Célula é obrigatório quando o tipo for LOCAL.");
+
+        bp.LocalCelula = bp.LocalCelula.Trim();
+        bp.Vin = null;
+    }
+
+    bp.TipoReferenciaBp = tipo;
+    bp.CriadoEm = DateTime.UtcNow;
+    bp.AtualizadoEm = DateTime.UtcNow;
+
+    db.RaspBp.Add(bp);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/rasp-bp/{bp.IdRaspBp}", bp);
+});
+
 
 
 // PUT /rasp/{id}

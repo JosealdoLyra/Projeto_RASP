@@ -40,6 +40,7 @@ namespace Rasp.Api.Data
         public DbSet<SppsClassificacaoRasp> SppsClassificacaoRasp => Set<SppsClassificacaoRasp>();
         public DbSet<SppsStatusRasp> SppsStatusRasp => Set<SppsStatusRasp>();
         public DbSet<IndiceOperacionalRasp> IndiceOperacionalRasp => Set<IndiceOperacionalRasp>();
+        public DbSet<RaspBp> RaspBp => Set<RaspBp>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

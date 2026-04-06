@@ -9,6 +9,16 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================================
 const mensagemRasp = document.getElementById("mensagemRasp");
 
+// ==========================================================
+// SEÇÃO 6 - BP (BREAK POINT)
+// ==========================================================
+const tipoReferenciaBp = document.getElementById("tipoReferenciaBp");
+const dataBp = document.getElementById("dataBp");
+const horaBp = document.getElementById("horaBp");
+const vinBp = document.getElementById("vinBp");
+const localCelulaBp = document.getElementById("localCelulaBp");
+const comoIdentificadoBp = document.getElementById("comoIdentificadoBp");
+const bpStatus = document.getElementById("bpStatus");
 
   // ==========================================================
   // CONTROLE DE ABAS DO RASP
@@ -300,7 +310,57 @@ if (raspIndicadorBox) {
     }
   });
 }
+// ==========================================================
+// EVENTOS DO BP
+// ==========================================================
+if (tipoReferenciaBp) {
+  tipoReferenciaBp.addEventListener("change", () => {
+    controlarTipoBp();
+    validarBpEmTela();
+  });
+}
 
+if (dataBp) {
+  dataBp.addEventListener("change", validarBpEmTela);
+}
+
+if (horaBp) {
+  horaBp.addEventListener("change", validarBpEmTela);
+}
+
+if (vinBp) {
+  vinBp.addEventListener("input", () => {
+    vinBp.value = normalizarVin(vinBp.value);
+    validarBpEmTela();
+  });
+}
+
+if (localCelulaBp) {
+  localCelulaBp.addEventListener("input", validarBpEmTela);
+}
+
+if (comoIdentificadoBp) {
+  comoIdentificadoBp.addEventListener("input", validarBpEmTela);
+}
+
+
+// ==========================================================
+// STATUS VISUAL DO BP
+// ==========================================================
+function definirStatusBp(mensagem, tipo) {
+  if (!bpStatus) return;
+
+  bpStatus.textContent = mensagem;
+  bpStatus.className = "pn-status";
+
+  if (tipo === "error") {
+    bpStatus.classList.add("pn-status-error");
+  } else if (tipo === "success") {
+    bpStatus.classList.add("pn-status-success");
+  } else {
+    bpStatus.classList.add("pn-status-neutral");
+  }
+}
 
   // ==========================================================
   // CARGA DE DOMÍNIOS
@@ -865,106 +925,102 @@ if (raspIndicadorBox) {
   }
 
   // ==========================================================
-  // CRIA UMA NOVA LINHA DE PN
-  // ==========================================================
-  function criarLinhaPn({
-    principal = false,
-    pn = "",
-    dataLoteInicial = "",
-    qtdSuspeita = 0,
-    qtdChecada = 0,
-    qtdRejeitada = 0
-  } = {}) {
-    const tr = document.createElement("tr");
-    tr.className = "pn-row";
+// CRIA UMA NOVA LINHA DE PN
+// ==========================================================
+function criarLinhaPn({
+  principal = false,
+  pn = "",
+  dataLoteInicial = "",
+  qtdSuspeita = 0,
+  qtdChecada = 0,
+  qtdRejeitada = 0
+} = {}) {
+  const tr = document.createElement("tr");
+  tr.className = "pn-row";
 
-    tr.innerHTML = `
-      <td class="center-cell">
-        <input
-          type="radio"
-          name="pnPrincipal"
-          class="pn-principal"
-          ${principal ? "checked" : ""}
-        />
-      </td>
+  tr.innerHTML = `
+    <td class="center-cell">
+      <input
+        type="radio"
+        name="pnPrincipal"
+        class="pn-principal"
+        ${principal ? "checked" : ""}
+      />
+    </td>
+    <td>
+      <input
+        type="text"
+        class="pn-input"
+        placeholder="8 dígitos"
+        value="${pn}"
+      />
+      <input
+        type="hidden"
+        class="pn-id"
+        value=""
+      />
+    </td>
+    <td>
+      <input
+        type="text"
+        class="pn-descricao system-field"
+        value=""
+        placeholder="Descrição do PN"
+        readonly
+      />
+    </td>
+    <td>
+      <input
+        type="text"
+        class="data-lote-inicial"
+        placeholder="Ex.: 12/03/26"
+        inputmode="numeric"
+        maxlength="8"
+        value="${dataLoteInicial}"
+      />
+    </td>
+    <td>
+      <input
+        type="number"
+        class="qtd-suspeita qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdSuspeita}"
+      />
+    </td>
+    <td>
+      <input
+        type="number"
+        class="qtd-checada qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdChecada}"
+      />
+    </td>
+    <td>
+      <input
+        type="number"
+        class="qtd-rejeitada qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdRejeitada}"
+      />
+    </td>
+    <td class="center-cell">
+      <button
+        type="button"
+        class="remove-row icon-btn"
+        title="Remover linha"
+        aria-label="Remover linha"
+      >
+        ×
+      </button>
+    </td>
+  `;
 
-      <td>
-        <input
-          type="text"
-          class="pn-input"
-          placeholder="8 dígitos"
-          value="${pn}"
-        />
-        <input
-          type="hidden"
-          class="pn-id"
-          value=""
-        />
-      </td>
+  return tr;
+}
 
-      <td>
-        <input
-          type="text"
-          class="pn-descricao system-field"
-          value=""
-          placeholder="Descrição do PN"
-          readonly
-        />
-      </td>
-
-      <td>
-        <input
-          type="text"
-          class="data-lote-inicial"
-          placeholder="Ex.: 12/03/2026 ou lote ABC123"
-          value="${dataLoteInicial}"
-        />
-      </td>
-
-      <td>
-        <input
-          type="number"
-          class="qtd-suspeita qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdSuspeita}"
-        />
-      </td>
-
-      <td>
-        <input
-          type="number"
-          class="qtd-checada qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdChecada}"
-        />
-      </td>
-
-      <td>
-        <input
-          type="number"
-          class="qtd-rejeitada qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdRejeitada}"
-        />
-      </td>
-
-      <td class="center-cell">
-        <button
-          type="button"
-          class="remove-row icon-btn"
-          title="Remover linha"
-          aria-label="Remover linha"
-        >
-          ×
-        </button>
-      </td>
-    `;
-
-    return tr;
-  }
 
   // ==========================================================
   // REMOÇÃO LOCAL DE LINHA DE PN
@@ -993,36 +1049,38 @@ if (raspIndicadorBox) {
     });
   }
 
-  // ==========================================================
-  // COLETA TODOS OS PNs DIGITADOS NA TABELA
-  // ==========================================================
-  function coletarPns() {
-    const rows = obterRowsPn();
+// ==========================================================
+// COLETA TODOS OS PNs DIGITADOS NA TABELA
+// ==========================================================
+function coletarPns() {
+  const rows = obterRowsPn();
 
-    return rows
-      .map((row) => {
-        const principal = row.querySelector(".pn-principal").checked;
-        const pn = normalizarNumero(row.querySelector(".pn-input").value);
-        const idPn = row.querySelector(".pn-id")?.value
-          ? Number(row.querySelector(".pn-id").value)
-          : null;
-        const dataLoteInicial = row.querySelector(".data-lote-inicial").value.trim();
-        const qtdSuspeitaInicial = Number(row.querySelector(".qtd-suspeita").value || 0);
-        const qtdChecadaInicial = Number(row.querySelector(".qtd-checada").value || 0);
-        const qtdRejeitadaInicial = Number(row.querySelector(".qtd-rejeitada").value || 0);
+  return rows
+    .map((row) => {
+      const principal = row.querySelector(".pn-principal").checked;
+      const pn = normalizarNumero(row.querySelector(".pn-input").value);
+      const idPn = row.querySelector(".pn-id")?.value
+        ? Number(row.querySelector(".pn-id").value)
+        : null;
+      const dataLoteInicial = row.querySelector(".data-lote-inicial").value.trim();
+      const qtdSuspeitaInicial = Number(row.querySelector(".qtd-suspeita").value || 0);
+      const qtdChecadaInicial = Number(row.querySelector(".qtd-checada").value || 0);
+      const qtdRejeitadaInicial = Number(row.querySelector(".qtd-rejeitada").value || 0);
 
-        return {
-          principal,
-          pn,
-          idPn,
-          dataLoteInicial,
-          qtdSuspeitaInicial,
-          qtdChecadaInicial,
-          qtdRejeitadaInicial
-        };
-      })
-      .filter((item) => item.pn !== "");
-  }
+      return {
+        principal,
+        pn,
+        idPn,
+        dataLoteInicial,
+        qtdSuspeitaInicial,
+        qtdChecadaInicial,
+        qtdRejeitadaInicial
+      };
+    })
+    .filter((item) => item.pn !== "");
+}
+
+
 
   // ==========================================================
   // LIMPEZA DOS CAMPOS DERIVADOS DO PN NA LINHA
@@ -1171,81 +1229,166 @@ if (raspIndicadorBox) {
       }
     });
   }
+// ==========================================================
+// CONTROLE DE VIN x LOCAL
+// ==========================================================
+function controlarTipoBp() {
+  const tipo = tipoReferenciaBp?.value ?? "";
 
-  // ==========================================================
-  // VALIDAÇÕES GERAIS DA TABELA DE PN
-  // ==========================================================
-  function aplicarValidacoesPnEmTela() {
-    const rows = obterRowsPn();
+  vinBp.value = "";
+  localCelulaBp.value = "";
 
-    rows.forEach((row) => {
-      normalizarInputsPnDaLinha(row);
-    });
-
-    validarDuplicidadePnEmTela();
-    validarPnPrincipalEmTela();
-
-    const pns = coletarPns();
-
-    if (pns.length === 0) {
-      definirStatusPn(
-        "Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.",
-        "neutral"
-      );
-      return;
-    }
-
-    const pnsUnicos = new Set();
-    let temDuplicado = false;
-    let principalSemLote = false;
-    let temPnInvalido = false;
-
-    pns.forEach((item) => {
-      if (!validarPn(item.pn)) {
-        temPnInvalido = true;
-      }
-
-      if (item.pn && !item.idPn) {
-        temPnInvalido = true;
-      }
-
-      if (pnsUnicos.has(item.pn)) {
-        temDuplicado = true;
-      } else {
-        pnsUnicos.add(item.pn);
-      }
-
-      if (item.principal && !item.dataLoteInicial) {
-        principalSemLote = true;
-      }
-    });
-
-    if (temDuplicado) {
-      definirStatusPn(
-        "Existem PNs duplicados na tabela. Cada PN deve aparecer apenas uma vez.",
-        "error"
-      );
-      return;
-    }
-
-    if (temPnInvalido) {
-      definirStatusPn(
-        "Existe PN inválido ou não cadastrado. Cada PN deve conter 8 dígitos numéricos e existir no cadastro mestre.",
-        "error"
-      );
-      return;
-    }
-
-    if (principalSemLote) {
-      definirStatusPn(
-        "O PN principal precisa ter a Data/Lote inicial preenchida.",
-        "error"
-      );
-      return;
-    }
-
-    definirStatusPn("PN(s) preenchido(s) corretamente.", "success");
+  if (tipo === "VIN") {
+    vinBp.disabled = false;
+    localCelulaBp.disabled = true;
+  } else if (tipo === "LOCAL") {
+    vinBp.disabled = true;
+    localCelulaBp.disabled = false;
+  } else {
+    vinBp.disabled = true;
+    localCelulaBp.disabled = true;
   }
+}
+
+// ==========================================================
+// VALIDAÇÃO DO BP EM TELA
+// ==========================================================
+function validarBpEmTela() {
+  const tipo = tipoReferenciaBp?.value ?? "";
+  const data = dataBp?.value ?? "";
+  const hora = horaBp?.value ?? "";
+  const vin = vinBp?.value.trim() ?? "";
+  const local = localCelulaBp?.value.trim() ?? "";
+  const como = comoIdentificadoBp?.value.trim() ?? "";
+
+  if (!tipo && !data && !hora && !vin && !local && !como) {
+    definirStatusBp("BP não informado.", "neutral");
+    return;
+  }
+
+  if (!tipo) {
+    definirStatusBp("Selecione o tipo de referência do BP.", "error");
+    return;
+  }
+
+  if (!data || !hora) {
+    definirStatusBp("Data e hora do BP são obrigatórias.", "error");
+    return;
+  }
+
+  if (tipo === "VIN" && !vin) {
+    definirStatusBp("Informe o VIN para BP do tipo VIN.", "error");
+    return;
+  }
+
+  if (tipo === "VIN" && !vinEhValido(vin)) {
+    definirStatusBp("VIN inválido. Informe 17 caracteres alfanuméricos válidos.", "error");
+    return;
+  }
+
+  if (tipo === "LOCAL" && !local) {
+    definirStatusBp("Informe a Área / Célula para BP do tipo LOCAL.", "error");
+    return;
+  }
+
+  if (!como) {
+    definirStatusBp("Descreva como o problema foi identificado.", "error");
+    return;
+  }
+
+  definirStatusBp("BP preenchido corretamente.", "success");
+}
+
+
+// ==========================================================
+// VALIDAÇÕES GERAIS DA TABELA DE PN
+// ==========================================================
+function aplicarValidacoesPnEmTela() {
+  const rows = obterRowsPn();
+
+  rows.forEach((row) => {
+    normalizarInputsPnDaLinha(row);
+  });
+
+  validarDuplicidadePnEmTela();
+  validarPnPrincipalEmTela();
+
+  const pns = coletarPns();
+
+  if (pns.length === 0) {
+    definirStatusPn(
+      "Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.",
+      "neutral"
+    );
+    return;
+  }
+
+  const pnsUnicos = new Set();
+  let temDuplicado = false;
+  let principalSemLote = false;
+  let temPnInvalido = false;
+  let temDataInvalida = false;
+
+  pns.forEach((item) => {
+    if (!validarPn(item.pn)) {
+      temPnInvalido = true;
+    }
+
+    if (item.pn && !item.idPn) {
+      temPnInvalido = true;
+    }
+
+    if (pnsUnicos.has(item.pn)) {
+      temDuplicado = true;
+    } else {
+      pnsUnicos.add(item.pn);
+    }
+
+    if (item.principal && !item.dataLoteInicial) {
+      principalSemLote = true;
+    }
+
+    if (item.dataLoteInicial && !dataInicialEhValida(item.dataLoteInicial)) {
+      temDataInvalida = true;
+    }
+  });
+
+  if (temDuplicado) {
+    definirStatusPn(
+      "Existem PNs duplicados na tabela. Cada PN deve aparecer apenas uma vez.",
+      "error"
+    );
+    return;
+  }
+
+  if (temPnInvalido) {
+    definirStatusPn(
+      "Existe PN inválido ou não cadastrado. Cada PN deve conter 8 dígitos numéricos e existir no cadastro mestre.",
+      "error"
+    );
+    return;
+  }
+
+  if (principalSemLote) {
+    definirStatusPn(
+      "O PN principal precisa ter a Data/Lote inicial preenchida.",
+      "error"
+    );
+    return;
+  }
+
+  if (temDataInvalida) {
+    definirStatusPn(
+      "Existe Data/Lote inicial inválida na tabela. Use o formato DD/MM/AA.",
+      "error"
+    );
+    return;
+  }
+
+  definirStatusPn("PN(s) preenchido(s) corretamente.", "success");
+}
+
+
 
   // ==========================================================
   // EVENTO: ADICIONAR NOVA LINHA DE PN
@@ -1259,6 +1402,22 @@ if (raspIndicadorBox) {
       aplicarValidacoesPnEmTela();
     });
   }
+tipoReferenciaBp.addEventListener("change", () => {
+  controlarTipoBp();
+  validarBpEmTela();
+});
+
+dataBp.addEventListener("change", validarBpEmTela);
+horaBp.addEventListener("change", validarBpEmTela);
+
+vinBp.addEventListener("input", () => {
+  vinBp.value = normalizarVin(vinBp.value);
+  validarBpEmTela();
+});
+
+localCelulaBp.addEventListener("input", validarBpEmTela);
+comoIdentificadoBp.addEventListener("input", validarBpEmTela);
+
 
   // ==========================================================
   // EVENTOS EM TEMPO REAL DA TABELA DE PN
@@ -1802,6 +1961,35 @@ if (form) {
   });
 }
 
+function coletarBp() {
+  return {
+    tipoReferenciaBp: tipoReferenciaBp.value,
+    dataBp: dataBp.value,
+    horaBp: horaBp.value,
+    vin: vinBp.value.trim() || null,
+    localCelula: localCelulaBp.value.trim() || null,
+    comoIdentificado: comoIdentificadoBp.value.trim()
+  };
+}
+// ==========================================================
+// NORMALIZAÇÃO DO VIN
+// ==========================================================
+function normalizarVin(valor) {
+  return valor
+    .toUpperCase()
+    .replace(/\s/g, "")
+    .replace(/[^A-Z0-9]/g, "")
+    .replace(/[IOQ]/g, "")
+    .slice(0, 17);
+}
+// ==========================================================
+// VALIDAÇÃO DO VIN
+// ==========================================================
+function vinEhValido(valor) {
+  return /^[A-HJ-NPR-Z0-9]{17}$/.test(valor);
+}
+
+
 // ==========================================================
 // INICIALIZAÇÃO FINAL DA TELA
 // ==========================================================
@@ -1813,5 +2001,9 @@ ocultarMensagemRasp();
 aplicarMascaraDataLote();
 validarRegraContato();
 carregarDominiosComplementares();
-});
 
+if (tipoReferenciaBp && dataBp && horaBp && vinBp && localCelulaBp && comoIdentificadoBp && bpStatus) {
+  controlarTipoBp();
+  validarBpEmTela();
+}
+});
