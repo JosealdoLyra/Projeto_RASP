@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -2372,10 +2373,29 @@ app.MapDelete("/rasp-arquivo/{id:int}", async (int id, RaspDbContext db) =>
 
 // -----------------------------------------------------------------------------
 // 20. RASP - ATUALIZAÇÃO DE RASCUNHO
+//
+// Atualiza um RASP ainda em rascunho sem perder os dados já salvos.
+//
+// Regras desta versão:
+// - só atualiza se o RASP existir
+// - só atualiza se ainda estiver em rascunho
+// - só atualiza se estiver no status 1 (Em análise)
+// - valida o usuário executor
+// - ADMIN pode atualizar
+// - não ADMIN só pode atualizar se for o autor MT do RASP
+// - campos enviados como null não são alterados
+// - campos string enviados como "" limpam o valor
+// - campos FK opcionais enviados como 0 limpam o valor
 // -----------------------------------------------------------------------------
-
-app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoRequest req, RaspDbContext db) =>
+app.MapPut("/rasp/{id:int}/rascunho", async (
+    int id,
+    AtualizarRaspRascunhoRequest req,
+    RaspDbContext db) =>
 {
+
+    // -------------------------------------------------------------------------
+    // 01. VALIDAÇÃO INICIAL DO RASP E DO EXECUTOR
+    // -------------------------------------------------------------------------
     if (id <= 0)
         return Results.BadRequest("Id do RASP inválido.");
 
@@ -2412,6 +2432,10 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
     bool alterou = false;
 
+
+    // -------------------------------------------------------------------------
+    // 02. FORNECEDOR (OBRIGATÓRIO NO REGISTRO, OPCIONAL NO UPDATE)
+    // -------------------------------------------------------------------------
     if (req.IdFornecedorRasp.HasValue)
     {
         if (req.IdFornecedorRasp.Value <= 0)
@@ -2427,6 +2451,9 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         alterou = true;
     }
 
+    // -------------------------------------------------------------------------
+    // 03. DESCRIÇÃO PRINCIPAL
+    // -------------------------------------------------------------------------
     if (req.DescricaoProblema is not null)
     {
         var descricao = req.DescricaoProblema.Trim();
@@ -2437,6 +2464,13 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         rasp.DescricaoProblema = descricao;
         alterou = true;
     }
+
+    // -------------------------------------------------------------------------
+    // 04. DOMÍNIOS / FKs OPCIONAIS
+    // null = não altera
+    // 0    = limpa
+    // >0   = valida e grava
+    // -------------------------------------------------------------------------
 
     if (req.IdModeloVeiculoRasp.HasValue)
     {
@@ -2454,6 +2488,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdModeloVeiculoRasp = req.IdModeloVeiculoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2473,6 +2508,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdSetorRasp = req.IdSetorRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2492,6 +2528,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdTurnoRasp = req.IdTurnoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2511,6 +2548,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdOrigemFabricacaoRasp = req.IdOrigemFabricacaoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2530,6 +2568,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdPilotoRasp = req.IdPilotoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2541,13 +2580,15 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         }
         else
         {
-            var existe = await db.ImpactoClienteRasp.FindAsync(req.IdImpactoClienteRasp.Value);
+            var existe = await db.ImpactoClienteRasp
+                .FindAsync(req.IdImpactoClienteRasp.Value);
 
             if (existe is null)
                 return Results.BadRequest("IdImpactoClienteRasp não existe.");
 
             rasp.IdImpactoClienteRasp = req.IdImpactoClienteRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2567,6 +2608,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdImpactoQualidadeRasp = req.IdImpactoQualidadeRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2586,6 +2628,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdMaiorImpactoRasp = req.IdMaiorImpactoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2605,6 +2648,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdMajorRasp = req.IdMajorRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2624,6 +2668,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdSppsClassificacaoRasp = req.IdSppsClassificacaoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2643,6 +2688,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdSppsStatusRasp = req.IdSppsStatusRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2654,13 +2700,15 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         }
         else
         {
-            var existe = await db.EmpresaSelecaoRasp.FindAsync(req.IdEmpresaSelecaoRasp.Value);
+            var existe = await db.EmpresaSelecaoRasp
+                .FindAsync(req.IdEmpresaSelecaoRasp.Value);
 
             if (existe is null)
                 return Results.BadRequest("IdEmpresaSelecaoRasp não existe.");
 
             rasp.IdEmpresaSelecaoRasp = req.IdEmpresaSelecaoRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2672,13 +2720,15 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         }
         else
         {
-            var existe = await db.ContaCrRasp.FindAsync(req.IdContaCrRasp.Value);
+            var existe = await db.ContaCrRasp
+                .FindAsync(req.IdContaCrRasp.Value);
 
             if (existe is null)
                 return Results.BadRequest("IdContaCrRasp não existe.");
 
             rasp.IdContaCrRasp = req.IdContaCrRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2690,13 +2740,15 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         }
         else
         {
-            var existe = await db.ContaCrSubcontaRasp.FindAsync(req.IdContaCrSubcontaRasp.Value);
+            var existe = await db.ContaCrSubcontaRasp
+                .FindAsync(req.IdContaCrSubcontaRasp.Value);
 
             if (existe is null)
                 return Results.BadRequest("IdContaCrSubcontaRasp não existe.");
 
             rasp.IdContaCrSubcontaRasp = req.IdContaCrSubcontaRasp.Value;
         }
+
         alterou = true;
     }
 
@@ -2716,28 +2768,65 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.IdGmAliadoRasp = req.IdGmAliadoRasp.Value;
         }
+
         alterou = true;
     }
 
-    if (req.IdIndiceOperacionalRasp.HasValue)
+    // -------------------------------------------------------------------------
+// 05. APROVADOR FT
+// Regras:
+// - se IdAprovadorFt vier preenchido, usa ele
+// - se não vier, mas IdTurnoRasp vier preenchido, busca automaticamente
+//   o FT ativo do turno informado
+// -------------------------------------------------------------------------
+if (req.IdAprovadorFt.HasValue || req.IdTurnoRasp.HasValue)
+{
+    int? idAprovadorFtFinal = null;
+
+    // 1) Se o front enviou o FT, usa esse valor
+    if (req.IdAprovadorFt.HasValue && req.IdAprovadorFt.Value > 0)
     {
-        if (req.IdIndiceOperacionalRasp.Value == 0)
-        {
-            rasp.IdIndiceOperacionalRasp = null;
-        }
-        else
-        {
-            var existe = await db.IndiceOperacionalRasp
-                .AnyAsync(x => x.IdIndiceOperacionalRasp == req.IdIndiceOperacionalRasp.Value);
-
-            if (!existe)
-                return Results.BadRequest("IdIndiceOperacionalRasp não existe.");
-
-            rasp.IdIndiceOperacionalRasp = req.IdIndiceOperacionalRasp.Value;
-        }
-        alterou = true;
+        idAprovadorFtFinal = req.IdAprovadorFt.Value;
+    }
+    // 2) Se não enviou o FT, mas enviou o turno, busca o FT automaticamente
+    else if (req.IdTurnoRasp.HasValue && req.IdTurnoRasp.Value > 0)
+    {
+        idAprovadorFtFinal = await db.Usuarios
+            .Where(u =>
+                u.Ativo &&
+                u.IdPerfil == 3 &&
+                u.IdTurnoRasp == req.IdTurnoRasp.Value)
+            .Select(u => (int?)u.IdUsuario)
+            .FirstOrDefaultAsync();
     }
 
+    // 3) Se veio 0 explicitamente, limpa o campo
+    if (req.IdAprovadorFt.HasValue && req.IdAprovadorFt.Value == 0)
+    {
+        rasp.IdAprovadorFt = null;
+        alterou = true;
+    }
+    else if (idAprovadorFtFinal.HasValue)
+    {
+        var ftExiste = await db.Usuarios.AnyAsync(u =>
+            u.IdUsuario == idAprovadorFtFinal.Value &&
+            u.Ativo &&
+            u.IdPerfil == 3);
+
+        if (!ftExiste)
+            return Results.BadRequest("Aprovador FT inválido.");
+
+        rasp.IdAprovadorFt = idAprovadorFtFinal.Value;
+        alterou = true;
+    }
+}
+
+
+    // -------------------------------------------------------------------------
+    // 06. CAMPOS STRING OPCIONAIS
+    // null = não altera
+    // ""   = limpa
+    // -------------------------------------------------------------------------
     if (req.SppsNumero is not null)
     {
         var valor = req.SppsNumero.Trim();
@@ -2753,6 +2842,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.SppsNumero = valor;
         }
+
         alterou = true;
     }
 
@@ -2785,6 +2875,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
 
             rasp.BpSerie = valor;
         }
+
         alterou = true;
     }
 
@@ -2809,6 +2900,9 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         alterou = true;
     }
 
+    // -------------------------------------------------------------------------
+    // 07. DATAS OPCIONAIS
+    // -------------------------------------------------------------------------
     if (req.BpDatahora.HasValue)
     {
         rasp.BpDatahora = req.BpDatahora.Value;
@@ -2821,6 +2915,9 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         alterou = true;
     }
 
+    // -------------------------------------------------------------------------
+    // 08. FLAGS OPCIONAIS
+    // -------------------------------------------------------------------------
     if (req.IniciativaFornecedor.HasValue)
     {
         rasp.IniciativaFornecedor = req.IniciativaFornecedor.Value;
@@ -2881,10 +2978,44 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
         alterou = true;
     }
 
+    // -------------------------------------------------------------------------
+    // 09. ENCERRAMENTO
+    // -------------------------------------------------------------------------
     if (!alterou)
         return Results.BadRequest("Nenhum campo válido foi informado para atualização.");
 
     await db.SaveChangesAsync();
+
+    // -------------------------------------------------------------------------
+// 10. REGRA AUTOMÁTICA DE APROVADOR FT PELO TURNO JÁ DEFINIDO NO RASP
+// -------------------------------------------------------------------------
+// Se o aprovador FT ainda estiver vazio, mas o turno já tiver sido definido,
+// o sistema busca automaticamente um FT ativo daquele turno.
+if (!rasp.IdAprovadorFt.HasValue && rasp.IdTurnoRasp.HasValue)
+{
+    Console.WriteLine($"Turno atual do RASP: {rasp.IdTurnoRasp.Value}");
+
+    var ftDoTurno = await db.Usuarios
+        .Where(u =>
+            u.Ativo &&
+            u.IdPerfil == 3 &&
+            u.IdTurnoRasp == rasp.IdTurnoRasp.Value)
+        .OrderBy(u => u.IdUsuario)
+        .FirstOrDefaultAsync();
+
+    if (ftDoTurno is not null)
+    {
+        rasp.IdAprovadorFt = ftDoTurno.IdUsuario;
+        alterou = true;
+
+        Console.WriteLine($"FT encontrado automaticamente: {ftDoTurno.IdUsuario} - {ftDoTurno.Nome}");
+    }
+    else
+    {
+        Console.WriteLine("Nenhum FT encontrado para o turno informado.");
+    }
+}
+
 
     return Results.Ok(new
     {
@@ -2893,6 +3024,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (int id, AtualizarRaspRascunhoReques
     });
 })
 .WithName("AtualizarRaspRascunho");
+
 
 // -----------------------------------------------------------------------------
 // 21. DEBUG
@@ -2919,12 +3051,18 @@ app.Run();
 // 22. REQUESTS / RECORDS
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Criação inicial do RASP em rascunho
+// -----------------------------------------------------------------------------
 public record CriarRaspRequest(
     int IdFornecedorRasp,
     string DescricaoProblema,
     int IdUsuarioCriador
 );
 
+// -----------------------------------------------------------------------------
+// Atualização completa do RASP em análise
+// -----------------------------------------------------------------------------
 public record AtualizarRaspRequest(
     int IdUsuarioExecutor,
     string DescricaoProblema,
@@ -2970,10 +3108,77 @@ public record AtualizarRaspRequest(
     int? IdIndiceOperacionalRasp
 );
 
+// -----------------------------------------------------------------------------
+// Atualização parcial do RASP em rascunho
+//
+// Regras:
+// - null = não altera
+// - 0 em campos FK opcionais = limpa o campo
+// - strings vazias podem ser interpretadas pela rota como limpeza, conforme regra
+//
+// Inclusão importante:
+// - IdAprovadorFt foi adicionado para permitir salvar o FT automático por turno
+// -----------------------------------------------------------------------------
+public record AtualizarRaspRascunhoRequest(
+    int IdUsuarioExecutor,
+    int? IdFornecedorRasp,
+    string? DescricaoProblema,
+
+    int? IdModeloVeiculoRasp,
+    int? IdSetorRasp,
+    int? IdTurnoRasp,
+    int? IdOrigemFabricacaoRasp,
+    int? IdPilotoRasp,
+
+    int? IdImpactoClienteRasp,
+    int? IdImpactoQualidadeRasp,
+    int? IdMaiorImpactoRasp,
+    int? IdMajorRasp,
+
+    int? IdSppsClassificacaoRasp,
+    int? IdSppsStatusRasp,
+    int? IdEmpresaSelecaoRasp,
+    int? IdContaCrRasp,
+    int? IdContaCrSubcontaRasp,
+    int? IdGmAliadoRasp,
+    [property:
+    JsonPropertyName("idAprovadorFt")]
+    int? IdAprovadorFt,
+    int? IdIndiceOperacionalRasp,
+
+    string? SppsNumero,
+    string? Procedencia,
+    string? BpTexto,
+    string? BpSerie,
+    string? BreakpointTexto,
+    string? BreakpointCodigo,
+    string? ObservacaoGeral,
+
+    DateTime? BpDatahora,
+    DateTime? BreakpointDatahora,
+
+    bool? IniciativaFornecedor,
+    bool? SupplierAlert,
+    bool? Reversao,
+    bool? Safety,
+    bool? EmitiuPrr,
+    bool? AprovadoLg,
+    bool? IsSupplierAlert,
+    bool? IsSafety,
+    bool? IsReversao,
+    bool? GeraPrr
+);
+
+// -----------------------------------------------------------------------------
+// Request padrão para ações de fluxo
+// -----------------------------------------------------------------------------
 public record AcaoFluxoRaspRequest(
     int IdUsuarioExecutor
 );
 
+// -----------------------------------------------------------------------------
+// Criação de vínculo RASP x PN
+// -----------------------------------------------------------------------------
 public record CriarRaspPnRequest(
     int IdRasp,
     string Pn,
@@ -2985,6 +3190,9 @@ public record CriarRaspPnRequest(
     short OrdemExibicao
 );
 
+// -----------------------------------------------------------------------------
+// Cadastro de fornecedor
+// -----------------------------------------------------------------------------
 public record CriarFornecedorRaspRequest(
     string Duns,
     string Nome,
@@ -2992,11 +3200,17 @@ public record CriarFornecedorRaspRequest(
     bool Ativo
 );
 
+// -----------------------------------------------------------------------------
+// Cadastro de PN no mestre
+// -----------------------------------------------------------------------------
 public record CriarPnRaspRequest(
     string CodigoPn,
     string NomePeca
 );
 
+// -----------------------------------------------------------------------------
+// Registro de SPPS
+// -----------------------------------------------------------------------------
 public record RegistrarSppsRequest(
     int IdUsuarioExecutor,
     string SppsNumero,
@@ -3004,17 +3218,26 @@ public record RegistrarSppsRequest(
     int? IdSppsStatusRasp
 );
 
+// -----------------------------------------------------------------------------
+// Atualização de arquivo do RASP
+// -----------------------------------------------------------------------------
 public record AtualizarRaspArquivoRequest(
     string TipoArquivo,
     string? Descricao,
     string CaminhoArquivo
 );
 
+// -----------------------------------------------------------------------------
+// Atualização de anotação do RASP
+// -----------------------------------------------------------------------------
 public record AtualizarRaspAnotacaoRequest(
     string? TipoAnotacao,
     string TextoAnotacao
 );
 
+// -----------------------------------------------------------------------------
+// Atualização de vínculo RASP x PN
+// -----------------------------------------------------------------------------
 public record AtualizarRaspPnRequest(
     int QuantidadeSuspeita,
     int QuantidadeChecada,
@@ -3024,17 +3247,27 @@ public record AtualizarRaspPnRequest(
     short OrdemExibicao
 );
 
+// -----------------------------------------------------------------------------
+// Troca administrativa de analista
+// -----------------------------------------------------------------------------
 public record TrocarAnalistaRaspRequest(
     int IdUsuarioExecutor,
     int IdNovoAnalistaMt
 );
 
+// -----------------------------------------------------------------------------
+// Troca administrativa de FT
+// -----------------------------------------------------------------------------
 public record TrocarFtRaspRequest(
     int IdUsuarioExecutor,
     int IdNovoAprovadorFt
 );
 
+// -----------------------------------------------------------------------------
+// Troca administrativa de LG
+// -----------------------------------------------------------------------------
 public record TrocarLgRaspRequest(
     int IdUsuarioExecutor,
     int IdNovoAprovadorLg
 );
+

@@ -1130,3 +1130,60 @@ input[readonly] {
   grid-template-columns: 1fr 1.2fr 0.9fr 1fr;
   gap: 16px;
 }
+
+.success-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  border: 1px solid #16a34a;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22);
+  cursor: not-allowed;
+  opacity: 1;
+  transition: all 0.2s ease;
+}
+
+.success-btn:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+}
+
+.success-btn:disabled {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #ffffff;
+  border: 1px solid #16a34a;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.secondary-btn {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 1;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border: 1px solid #e5e7eb;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.secondary-btn.enabled-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  border: 1px solid #2563eb;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+  cursor: pointer;
+}
+
+.secondary-btn.enabled-btn:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+}
+

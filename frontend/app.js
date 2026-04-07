@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   const form = document.getElementById("raspForm");
   const mensagemRasp = document.getElementById("mensagemRasp");
+  const btnCriarRasp = form?.querySelector('button[type="submit"]');
+  const btnLimpar = document.getElementById("btnLimpar");
 
   // ==========================================================
   // 03. CONTROLE DE ABAS DO RASP
@@ -36,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const analistaInput = document.getElementById("analista");
   const statusInicialInput = document.getElementById("statusInicial");
   const dunsStatus = document.getElementById("dunsStatus");
-
   const setorSelect = document.getElementById("setor");
   const origemSelect = document.getElementById("origem");
 
@@ -52,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   const addPnRowBtn = document.getElementById("addPnRow");
   const pnTableBody = document.getElementById("pnTableBody");
-  const btnLimpar = document.getElementById("btnLimpar");
   const toggleMassPanelBtn = document.getElementById("toggleMassPanel");
   const massPanel = document.getElementById("massPanel");
   const importMassPnsBtn = document.getElementById("importMassPns");
@@ -85,12 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const turnoRaspSelect = document.getElementById("turnoRasp");
   const pilotoRaspSelect = document.getElementById("pilotoRasp");
   const majorRaspSelect = document.getElementById("majorRasp");
-
   const gmAliadoSelect = document.getElementById("gmAliado");
   const aprovadorFtInput = document.getElementById("aprovadorFt");
   const aprovadorFtIdInput = document.getElementById("aprovadorFtId");
   const iniciativaFornecedorInput = document.getElementById("iniciativaFornecedor");
-
   const nomeContatoInput = document.getElementById("nomeContato");
   const dataContatoInput = document.getElementById("dataContato");
   const rdNumeroInput = document.getElementById("rdNumero");
@@ -197,6 +195,39 @@ document.addEventListener("DOMContentLoaded", () => {
   function vinEhValido(valor) {
     return /^[A-HJ-NPR-Z0-9]{17}$/.test(valor);
   }
+
+  // ==========================================================
+  // 16. CONTROLE VISUAL DO BOTÃO CRIAR RASP
+  // ==========================================================
+  function marcarBotaoRaspComoCriado() {
+  if (btnCriarRasp) {
+    btnCriarRasp.disabled = true;
+    btnCriarRasp.textContent = "RASP criado";
+    btnCriarRasp.classList.remove("primary-btn");
+    btnCriarRasp.classList.add("success-btn");
+  }
+
+  if (btnLimpar) {
+    btnLimpar.disabled = false;
+    btnLimpar.classList.add("enabled-btn");
+  }
+}
+
+function restaurarBotaoCriarRasp() {
+  if (btnCriarRasp) {
+    btnCriarRasp.disabled = false;
+    btnCriarRasp.textContent = "Criar RASP";
+    btnCriarRasp.classList.remove("success-btn");
+    btnCriarRasp.classList.add("primary-btn");
+  }
+
+  if (btnLimpar) {
+    btnLimpar.disabled = true;
+    btnLimpar.classList.remove("enabled-btn");
+  }
+}
+
+
 
   // ==========================================================
   // 16. MENSAGEM DE RETORNO DO RASP
@@ -1501,50 +1532,58 @@ async function atualizarAprovadorFtPorTurno() {
   }
 
   // ==========================================================
-  // 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
-  // OBS:
-  // Este payload foi ampliado com os novos campos da Seção 5.
-  // Se algum campo ainda não estiver mapeado no backend,
-  // o backend precisará ser ajustado para receber.
-  // ==========================================================
-  async function atualizarRascunhoRasp(idRasp) {
-    const payloadRascunho = {
-      idUsuarioExecutor: ID_USUARIO_LOGADO,
-      idModeloVeiculoRasp: modeloVeiculoSelect?.value ? Number(modeloVeiculoSelect.value) : null,
-      idTurnoRasp: turnoRaspSelect?.value ? Number(turnoRaspSelect.value) : null,
-      idPilotoRasp: pilotoRaspSelect?.value ? Number(pilotoRaspSelect.value) : null,
-      idMajorRasp: majorRaspSelect?.value ? Number(majorRaspSelect.value) : null,
+// 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
+// OBS:
+// Esta versão envia apenas os campos já alinhados com o backend
+// da rota PUT /rasp/{id}/rascunho.
+// ==========================================================
+async function atualizarRascunhoRasp(idRasp) {
+  const payloadRascunho = {
+    idUsuarioExecutor: ID_USUARIO_LOGADO,
 
-      // Novos campos da Seção 5
-      idGmAliadoRasp: gmAliadoSelect?.value ? Number(gmAliadoSelect.value) : null,
-      idAprovadorFt: aprovadorFtIdInput?.value ? Number(aprovadorFtIdInput.value) : null,
-      iniciativaFornecedor: Boolean(iniciativaFornecedorInput?.checked),
+    idModeloVeiculoRasp: modeloVeiculoSelect?.value
+      ? Number(modeloVeiculoSelect.value)
+      : null,
 
-      // Campos já existentes na tela
-      nomeContato: nomeContatoInput?.value?.trim() || null,
-      dataContato: dataContatoInput?.value || null,
-      rdNumero: rdNumeroInput?.value?.trim() || null,
-      campanhaNumero: campanhaNumeroInput?.value?.trim() || null
-    };
+    idTurnoRasp: turnoRaspSelect?.value
+      ? Number(turnoRaspSelect.value)
+      : null,
 
-    const response = await fetch(`${API_BASE_URL}/rasp/${idRasp}/rascunho`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payloadRascunho)
-    });
+    idPilotoRasp: pilotoRaspSelect?.value
+      ? Number(pilotoRaspSelect.value)
+      : null,
 
-    if (!response.ok) {
-      const mensagemErro = await response.text();
-      console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
-      throw new Error(
-        `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
-      );
-    }
+    idMajorRasp: majorRaspSelect?.value
+      ? Number(majorRaspSelect.value)
+      : null,
 
-    return await response.json();
+    idGmAliadoRasp: gmAliadoSelect?.value
+      ? Number(gmAliadoSelect.value)
+      : null,
+
+    iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false
+  };
+    console.log("payloadRascunho =>", payloadRascunho);
+  const response = await fetch(`${API_BASE_URL}/rasp/${idRasp}/rascunho`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payloadRascunho)
+  });
+
+  if (!response.ok) {
+    const mensagemErro = await response.text();
+    console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
+
+    throw new Error(
+      `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
+    );
   }
+
+  return await response.json();
+}
+
 
   // ==========================================================
   // 42. VALIDAÇÃO GERAL DO FORMULÁRIO
@@ -1758,7 +1797,7 @@ async function atualizarAprovadorFtPorTurno() {
       mostrarMensagemRasp(
         `RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`
       );
-
+      marcarBotaoRaspComoCriado();
       window.scrollTo({
         top: 0,
         behavior: "smooth"
@@ -2040,13 +2079,19 @@ async function atualizarAprovadorFtPorTurno() {
   if (btnLimpar) {
     btnLimpar.addEventListener("click", async () => {
       await limparFormularioParaNovoRasp();
+      restaurarBotaoCriarRasp();
     });
   }
 
   if (form) {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      await enviarFormularioRasp();
+
+      const criadoComSucesso = await enviarFormularioRasp();
+
+      if (criadoComSucesso) {
+        marcarBotaoRaspComoCriado();
+      }
     });
   }
 
@@ -2068,6 +2113,7 @@ async function atualizarAprovadorFtPorTurno() {
       }
     });
   }
+
 
   // ==========================================================
   // 53. INICIALIZAÇÃO FINAL DA TELA
@@ -2093,4 +2139,5 @@ async function atualizarAprovadorFtPorTurno() {
   }
 
   inicializarTelaRasp();
+  
 });
