@@ -13,6 +13,7 @@ namespace Rasp.Api.Models
     // - LG
     //
     // O vínculo com o perfil é feito por IdPerfil.
+    // O vínculo com o turno é feito por IdTurnoRasp.
     public class Usuario
     {
         // Identificador interno do usuário
@@ -35,6 +36,9 @@ namespace Rasp.Api.Models
 
         // Perfil de acesso do usuário
         public int? IdPerfil { get; set; }
+
+        // Turno vinculado ao usuário
+        public int? IdTurnoRasp { get; set; }
 
         // Campo auxiliar não mapeado no banco e não exposto no JSON.
         // Mantido fora do persistido para evitar gravação indevida e exposição na API.

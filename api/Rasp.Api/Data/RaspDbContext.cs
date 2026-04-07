@@ -281,6 +281,10 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.IdPerfil)
                     .HasColumnName("id_perfil");
+                entity.Property(e => e.IdTurnoRasp)
+                    .HasColumnName("id_turno_rasp");
+                entity.Property(e => e.Ativo)
+                    .HasColumnName("ativo");
             });
 
             // -----------------------------------------------------------------

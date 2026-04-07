@@ -1101,3 +1101,32 @@ input[readonly] {
   color: #d93025;
   font-weight: 500;
 }
+
+.checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.checkbox-inline input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.checkbox-inline span {
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.dados-basicos-grid-topo {
+  grid-template-columns: 1fr 1.2fr 0.9fr 1fr;
+  gap: 16px;
+}

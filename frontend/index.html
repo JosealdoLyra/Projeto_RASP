@@ -154,154 +154,182 @@
                 </div>
               </div>
             </section>
+            <div class="grid grid-2">
+  <div class="form-group full">
+    <label for="iniciativaFornecedor">Iniciativa do Fornecedor?</label>
+
+    <div class="checkbox-inline">
+      <input
+        type="checkbox"
+        id="iniciativaFornecedor"
+        name="iniciativaFornecedor"
+      />
+      <span>Sim, a ocorrência já foi comunicada diretamente pelo fornecedor.</span>
+    </div>
+  </div>
+</div>
+
 
             <!-- ===============================================
-                 SEÇÃO 2 - DADOS BÁSICOS DO RASP
-                 =============================================== -->
-            <section class="form-section">
-              <h3>2. Dados básicos do RASP</h3>
+     SEÇÃO 2 - DADOS BÁSICOS DO RASP
+     =============================================== -->
+<section class="form-section">
+  <h3>2. Dados básicos do RASP</h3>
 
-              <div class="grid grid-3">
-                <div class="form-group">
-                  <label for="duns">DUNS *</label>
-                  <input
-                    type="text"
-                    id="duns"
-                    name="duns"
-                    maxlength="9"
-                    placeholder="Digite 9 dígitos"
-                  />
-                </div>
+  <div class="grid grid-4 dados-basicos-grid-topo">
+    <div class="form-group">
+      <label for="duns">DUNS *</label>
+      <input
+        type="text"
+        id="duns"
+        name="duns"
+        maxlength="9"
+        placeholder="Digite 9 dígitos"
+      />
+    </div>
 
-                <div class="form-group">
-                  <label for="nomeFornecedor">Nome do fornecedor</label>
-                  <input
-                    type="text"
-                    id="nomeFornecedor"
-                    name="nomeFornecedor"
-                    class="system-field"
-                    readonly
-                    placeholder="Preenchido automaticamente pelo DUNS"
-                  />
-                </div>
+    <div class="form-group">
+      <label for="nomeFornecedor">Nome do fornecedor</label>
+      <input
+        type="text"
+        id="nomeFornecedor"
+        name="nomeFornecedor"
+        class="system-field"
+        readonly
+        placeholder="Preenchido automaticamente pelo DUNS"
+      />
+    </div>
 
-                <div class="form-group">
-                  <label for="tipoFornecedor">Tipo do fornecedor</label>
-                  <input
-                    type="text"
-                    id="tipoFornecedor"
-                    name="tipoFornecedor"
-                    class="system-field"
-                    readonly
-                    placeholder="LOCAL ou IMPORTADO"
-                  />
-                </div>
+    <div class="form-group">
+      <label for="gmAliado">GM aliado</label>
+      <select id="gmAliado" name="gmAliado">
+        <option value="">Selecione</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="analista">Analista *</label>
-                  <input
-                    type="text"
-                    id="analista"
-                    name="analista"
-                    class="system-field"
-                    readonly
-                  />
-                </div>
+    <div class="form-group">
+      <label for="tipoFornecedor">Tipo do fornecedor</label>
+      <input
+        type="text"
+        id="tipoFornecedor"
+        name="tipoFornecedor"
+        class="system-field"
+        readonly
+        placeholder="LOCAL ou IMPORTADO"
+      />
+    </div>
+  </div>
 
-                <div class="form-group">
-                  <label for="statusInicial">Status inicial</label>
-                  <input
-                    type="text"
-                    id="statusInicial"
-                    name="statusInicial"
-                    class="system-field"
-                    value="Em análise"
-                    readonly
-                  />
-                </div>
+  <div class="grid grid-2">
+    <div class="form-group">
+      <label for="analista">Analista *</label>
+      <input
+        type="text"
+        id="analista"
+        name="analista"
+        class="system-field"
+        readonly
+      />
+    </div>
 
-                <div class="form-group">
-                  <label for="setor">Setor *</label>
-                  <select id="setor" name="setor">
-                    <option value="">Selecione</option>
-                    <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
-                    <option value="montagem">Montagem</option>
-                    <option value="funilaria">Funilaria</option>
-                    <option value="pintura">Pintura</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
+    <div class="form-group">
+      <label for="statusInicial">Status inicial</label>
+      <input
+        type="text"
+        id="statusInicial"
+        name="statusInicial"
+        class="system-field"
+        value="Em análise"
+        readonly
+      />
+    </div>
+  </div>
 
-                <div class="form-group">
-                  <label for="origem">Origem *</label>
-                  <select id="origem" name="origem">
-                    <option value="">Selecione</option>
-                    <option value="dr">DR</option>
-                    <option value="drloss">DRLoss</option>
-                    <option value="gca5">GCA 5</option>
-                    <option value="gca10">GCA 10</option>
-                    <option value="gca20">GCA 20</option>
-                    <option value="gca50">GCA 50</option>
-                    <option value="linha">Linha</option>
-                    <option value="selecao">Seleção</option>
-                    <option value="outros">Outros</option>
-                  </select>
-                </div>
-              </div>
+  <!-- STATUS DA CONSULTA DE DUNS -->
+  <div id="dunsStatus" class="duns-status duns-status-neutral">
+    Informe um DUNS válido para localizar o fornecedor.
+  </div>
+</section>
 
-              <!-- STATUS DA CONSULTA DE DUNS -->
-              <div id="dunsStatus" class="duns-status duns-status-neutral">
-                Informe um DUNS válido para localizar o fornecedor.
-              </div>
-            </section>
 
             <!-- ===============================================
                  SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
                  =============================================== -->
             <section class="form-section">
-              <h3>3. Classificação inicial</h3>
+  <h3>3. Classificação inicial</h3>
 
-              <div class="grid grid-3">
-                <div class="form-group">
-                  <label for="maiorImpacto">Maior impacto *</label>
-                  <select id="maiorImpacto" name="maiorImpacto">
-                    <option value="">Selecione</option>
-                    <option value="peca-nao-instalada">
-                      Peça não instalada em submontagem / veículo / motor / transmissão
-                    </option>
-                    <option value="downtime">Downtime</option>
-                    <option value="stockout">Stockout</option>
-                    <option value="plant-disruption">Plant disruption</option>
-                    <option value="na">N/A</option>
-                  </select>
-                </div>
+  <div class="grid grid-2">
+    <div class="form-group">
+      <label for="setor">Setor *</label>
+      <select id="setor" name="setor">
+        <option value="">Selecione</option>
+        <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
+        <option value="montagem">Montagem</option>
+        <option value="funilaria">Funilaria</option>
+        <option value="pintura">Pintura</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="impactoQualidade">Impacto qualidade *</label>
-                  <select id="impactoQualidade" name="impactoQualidade">
-                    <option value="">Selecione</option>
-                    <option value="tempo-processamento">Tempo de processamento</option>
-                    <option value="dimensional">Dimensional</option>
-                    <option value="aparencia">Aparência</option>
-                    <option value="funcional">Funcional</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
+    <div class="form-group">
+      <label for="origem">Origem *</label>
+      <select id="origem" name="origem">
+        <option value="">Selecione</option>
+        <option value="dr">DR</option>
+        <option value="drloss">DRLoss</option>
+        <option value="gca5">GCA 5</option>
+        <option value="gca10">GCA 10</option>
+        <option value="gca20">GCA 20</option>
+        <option value="gca50">GCA 50</option>
+        <option value="linha">Linha</option>
+        <option value="selecao">Seleção</option>
+        <option value="outros">Outros</option>
+      </select>
+    </div>
+  </div>
 
-                <div class="form-group">
-                  <label for="impactoCliente">Impacto cliente *</label>
-                  <select id="impactoCliente" name="impactoCliente">
-                    <option value="">Selecione</option>
-                    <option value="line-accumulation">Line Accumulation</option>
-                    <option value="supplier-initiated">Supplier Initiated</option>
-                    <option value="single-occurrence">Single Occurrence</option>
-                    <option value="multiple-occurrence">Multiple Occurrence</option>
-                    <option value="repeat-occurrence">Repeat Occurrence</option>
-                    <option value="program-management">Program Management</option>
-                  </select>
-                </div>
-              </div>
-            </section>
+  <div class="grid grid-3">
+    <div class="form-group">
+      <label for="maiorImpacto">Maior impacto *</label>
+      <select id="maiorImpacto" name="maiorImpacto">
+        <option value="">Selecione</option>
+        <option value="peca-nao-instalada">
+          Peça não instalada em submontagem / veículo / motor / transmissão
+        </option>
+        <option value="downtime">Downtime</option>
+        <option value="stockout">Stockout</option>
+        <option value="plant-disruption">Plant disruption</option>
+        <option value="na">N/A</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="impactoQualidade">Impacto qualidade *</label>
+      <select id="impactoQualidade" name="impactoQualidade">
+        <option value="">Selecione</option>
+        <option value="tempo-processamento">Tempo de processamento</option>
+        <option value="dimensional">Dimensional</option>
+        <option value="aparencia">Aparência</option>
+        <option value="funcional">Funcional</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="impactoCliente">Impacto cliente *</label>
+      <select id="impactoCliente" name="impactoCliente">
+        <option value="">Selecione</option>
+        <option value="line-accumulation">Line Accumulation</option>
+        <option value="supplier-initiated">Supplier Initiated</option>
+        <option value="single-occurrence">Single Occurrence</option>
+        <option value="multiple-occurrence">Multiple Occurrence</option>
+        <option value="repeat-occurrence">Repeat Occurrence</option>
+        <option value="program-management">Program Management</option>
+      </select>
+    </div>
+  </div>
+</section>
+
 
     <!-- ===============================================
      SEÇÃO 4 - PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
@@ -465,91 +493,106 @@
 
 
 
-            <!-- ===============================================
-                 SEÇÃO 5 - DADOS COMPLEMENTARES PARA APROVAÇÃO
-                 =============================================== -->
-            <section class="form-section section-aprovacao">
-              <div class="section-aprovacao-header">
-                <h3>5. Dados complementares para aprovação</h3>
-                <p class="section-note">
-                  Estes dados podem ser preenchidos já na abertura para permitir o avanço do RASP ao fluxo de aprovação quando aplicável.
-                </p>
-              </div>
+<!-- ===============================================
+     SEÇÃO 5 - DADOS COMPLEMENTARES PARA APROVAÇÃO
+     =============================================== -->
+<section class="form-section section-aprovacao">
+  <div class="section-aprovacao-header">
+    <h3>5. Dados complementares para aprovação</h3>
+    <p class="section-note">
+      Estes dados podem ser preenchidos já na abertura para permitir o avanço do RASP ao fluxo de aprovação quando aplicável.
+    </p>
+  </div>
 
-              <div class="aprovacao-grid">
-                <div class="form-group">
-                  <label for="modeloVeiculo">Modelo do veículo</label>
-                  <select id="modeloVeiculo" name="modeloVeiculo">
-                    <option value="">Selecione</option>
-                  </select>
-                </div>
+  <div class="aprovacao-grid">
+    <div class="form-group">
+      <label for="modeloVeiculo">Modelo do veículo</label>
+      <select id="modeloVeiculo" name="modeloVeiculo">
+        <option value="">Selecione</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="turnoRasp">Turno</label>
-                  <select id="turnoRasp" name="turnoRasp">
-                    <option value="">Selecione</option>
-                  </select>
-                </div>
+    <div class="form-group">
+      <label for="turnoRasp">Turno</label>
+      <select id="turnoRasp" name="turnoRasp">
+        <option value="">Selecione</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="pilotoRasp">Piloto</label>
-                  <select id="pilotoRasp" name="pilotoRasp">
-                    <option value="">Selecione</option>
-                  </select>
-                </div>
+    <div class="form-group">
+      <label for="pilotoRasp">Piloto</label>
+      <select id="pilotoRasp" name="pilotoRasp">
+        <option value="">Selecione</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="majorRasp">Major</label>
-                  <select id="majorRasp" name="majorRasp">
-                    <option value="">Selecione</option>
-                  </select>
-                </div>
+    <div class="form-group">
+      <label for="majorRasp">Major</label>
+      <select id="majorRasp" name="majorRasp">
+        <option value="">Selecione</option>
+      </select>
+    </div>
 
-                <div class="form-group">
-                  <label for="nomeContato">Nome da pessoa contatada</label>
-                  <input
-                    type="text"
-                    id="nomeContato"
-                    name="nomeContato"
-                    value="Não Contatado"
-                    placeholder="Ex.: João Silva"
-                  />
-                </div>
+    <div class="form-group">
+      <label for="aprovadorFt">Aprovador (FT) *</label>
+      <input
+        type="text"
+        id="aprovadorFt"
+        name="aprovadorFt"
+        class="system-field"
+        readonly
+        placeholder="Preenchido automaticamente pelo turno"
+      />
+      <input type="hidden" id="aprovadorFtId" name="aprovadorFtId" />
+    </div>
 
-                <div class="form-group">
-                  <label for="dataContato">Data do contato</label>
-                  <input
-                    type="date"
-                    id="dataContato"
-                    name="dataContato"
-                  />
-                </div>
+    <div class="form-group">
+      <label for="nomeContato">Nome da pessoa contatada</label>
+      <input
+        type="text"
+        id="nomeContato"
+        name="nomeContato"
+        value="Não Contatado"
+        placeholder="Ex.: João Silva"
+      />
+    </div>
 
-                <div class="form-group">
-                  <label for="rdNumero">RD Nº</label>
-                  <input
-                    type="text"
-                    id="rdNumero"
-                    name="rdNumero"
-                    placeholder="Informe o número do relatório dimensional"
-                  />
-                </div>
+    <div class="form-group">
+      <label for="dataContato">Data do contato</label>
+      <input
+        type="date"
+        id="dataContato"
+        name="dataContato"
+      />
+    </div>
 
-                <div class="form-group">
-                  <label for="campanhaNumero">Campanha nº</label>
-                  <input
-                    type="text"
-                    id="campanhaNumero"
-                    name="campanhaNumero"
-                    placeholder="Informe o número da campanha"
-                  />
-                </div>
-              </div>
+    <div class="form-group">
+      <label for="rdNumero">RD Nº</label>
+      <input
+        type="text"
+        id="rdNumero"
+        name="rdNumero"
+        placeholder="Informe o número do relatório dimensional"
+      />
+    </div>
 
-              <div class="aprovacao-alerta">
-                O campo Campanha nº poderá futuramente gerar pendência quando a Origem for GCA10, GCA20 ou GCA50.
-              </div>
-            </section>
+    <div class="form-group">
+      <label for="campanhaNumero">Campanha nº</label>
+      <input
+        type="text"
+        id="campanhaNumero"
+        name="campanhaNumero"
+        placeholder="Informe o número da campanha"
+      />
+    </div>
+  </div>
+
+  <div class="aprovacao-alerta">
+    O campo Campanha nº poderá futuramente gerar pendência quando a Origem for GCA10, GCA20 ou GCA50.
+  </div>
+</section>
+
+
 
             <!-- ===============================================
      SEÇÃO 6 - BREAK POINT (BP)
