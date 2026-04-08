@@ -446,6 +446,12 @@ namespace Rasp.Api.Data
                 entity.Property(e => e.IdStatusRasp)
                     .HasColumnName("id_status_rasp");
 
+                entity.Property(e => e.RdNumero).HasColumnName("rd_numero");
+                entity.Property(e => e.CampanhaNumero).HasColumnName("campanha_numero");
+                entity.Property(e => e.NomeContato).HasColumnName("nome_contato");
+                entity.Property(e => e.DataContato).HasColumnName("data_contato");
+
+
                 entity.Property(e => e.IdIndiceOperacionalRasp)
                     .HasColumnName("id_indice_operacional_rasp");
             });

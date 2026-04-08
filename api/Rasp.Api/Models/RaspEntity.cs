@@ -104,5 +104,11 @@ namespace Rasp.Api.Models
 
         // Índice operacional vinculado ao RASP
         public int? IdIndiceOperacionalRasp { get; set; }
+
+        public string? RdNumero { get; set; }
+        public string? CampanhaNumero { get; set; }
+        public string? NomeContato { get; set; }
+        public DateOnly? DataContato { get; set; }
+
     }
 }

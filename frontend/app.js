@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("APP JS CARREGADO");
   // ==========================================================
   // 01. CONFIGURAÇÕES GERAIS
   // ==========================================================
@@ -93,6 +94,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const dataContatoInput = document.getElementById("dataContato");
   const rdNumeroInput = document.getElementById("rdNumero");
   const campanhaNumeroInput = document.getElementById("campanhaNumero");
+
+  if (iniciativaFornecedorInput && impactoClienteSelect) {
+  iniciativaFornecedorInput.addEventListener("change", () => {
+
+    if (iniciativaFornecedorInput.checked) {
+
+      const option = Array.from(impactoClienteSelect.options)
+        .find(opt => opt.text.toLowerCase().includes("supplier"));
+
+      if (option) {
+        impactoClienteSelect.value = option.value;
+        impactoClienteSelect.disabled = true; // 🔒 trava
+      }
+
+    } else {
+
+      impactoClienteSelect.disabled = false; // 🔓 libera
+
+    }
+
+  });
+}
 
   // ==========================================================
   // 11. SEÇÃO 6 - BP (BREAK POINT)
@@ -420,6 +443,8 @@ function restaurarBotaoCriarRasp() {
   function preencherSelectComChaves(selectElement, itens, valueKey, textKey) {
     if (!selectElement) return;
 
+
+
     itens.forEach((item) => {
       const option = document.createElement("option");
       option.value = item[valueKey] ?? "";
@@ -450,6 +475,10 @@ function restaurarBotaoCriarRasp() {
       }
 
       preencherSelectComChaves(selectElement, itens, valueKey, textKey);
+      console.log(`Total de opções em ${nomeDominio}:`, selectElement.options.length);
+console.log(`Última opção de ${nomeDominio}:`, selectElement.options[selectElement.options.length - 1]?.text);
+console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].map(o => o.text));
+
     } catch (error) {
       console.error(`Erro ao carregar ${nomeDominio}:`, error);
       limparOpcoesSelect(selectElement, `Erro ao carregar ${nomeDominio}`);
@@ -498,6 +527,14 @@ function restaurarBotaoCriarRasp() {
     }
   }
 
+  
+  // ==========================================================
+  // 24. CARGA DE DOMÍNIOS COMPLEMENTARES
+  // OBS:
+  // Agora também carrega:
+  // - Setor
+  // - Origem de fabricação
+  // ==========================================================
   async function carregarDominiosComplementares() {
     await Promise.all([
       carregarDominioSelect(
@@ -507,6 +544,7 @@ function restaurarBotaoCriarRasp() {
         "nomeModelo",
         "modelo do veículo"
       ),
+
       carregarDominioSelect(
         `${API_BASE_URL}/turno-rasp`,
         turnoRaspSelect,
@@ -514,6 +552,7 @@ function restaurarBotaoCriarRasp() {
         "descricao",
         "turno"
       ),
+
       carregarDominioSelect(
         `${API_BASE_URL}/piloto-rasp`,
         pilotoRaspSelect,
@@ -521,6 +560,7 @@ function restaurarBotaoCriarRasp() {
         "descricao",
         "piloto"
       ),
+
       carregarDominioSelect(
         `${API_BASE_URL}/major-rasp`,
         majorRaspSelect,
@@ -528,11 +568,59 @@ function restaurarBotaoCriarRasp() {
         "descricao",
         "major"
       ),
-      carregarGmAliado()
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/gm-aliado-rasp`,
+        gmAliadoSelect,
+        "idGmAliadoRasp",
+        "descricao",
+        "GM aliado"
+      ),
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/setor-rasp`,
+        setorSelect,
+        "idSetorRasp",
+        "descricao",
+        "setor"
+      ),
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/indice-operacional-rasp`,
+        origemSelect,
+        "idIndiceOperacionalRasp",
+        "descricao",
+        "origem"
+      ),
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/maior-impacto-rasp`,
+        maiorImpactoSelect,
+        "idMaiorImpactoRasp",
+        "descricao",
+        "maior impacto"
+      ),
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/impacto-qualidade-rasp`,
+        impactoQualidadeSelect,
+        "idImpactoQualidadeRasp",
+        "descricao",
+        "impacto qualidade"
+      ),
+
+      carregarDominioSelect(
+        `${API_BASE_URL}/impacto-cliente-rasp`,
+        impactoClienteSelect,
+        "idImpactoCliente",
+        "descricao",
+        "impacto cliente"
+      )
     ]);
 
     selecionarMajorPadrao();
   }
+
 
   // ==========================================================
   // 23. REGRA DO CAMPO CONTATO
@@ -1531,39 +1619,65 @@ async function atualizarAprovadorFtPorTurno() {
     return await Promise.all(promises);
   }
 
-  // ==========================================================
+ // ==========================================================
 // 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
 // OBS:
-// Esta versão envia apenas os campos já alinhados com o backend
-// da rota PUT /rasp/{id}/rascunho.
+// Esta versão envia os campos complementares já alinhados com o backend
+// da rota PUT /rasp/{id}/rascunho, incluindo agora:
+// - Setor
+// - Origem de fabricação
 // ==========================================================
 async function atualizarRascunhoRasp(idRasp) {
+  console.log("Tipo fornecedor:", tipoFornecedorInput?.value)
   const payloadRascunho = {
     idUsuarioExecutor: ID_USUARIO_LOGADO,
-
     idModeloVeiculoRasp: modeloVeiculoSelect?.value
       ? Number(modeloVeiculoSelect.value)
       : null,
-
+    idSetorRasp: setorSelect?.value
+      ? Number(setorSelect.value)
+      : null,
     idTurnoRasp: turnoRaspSelect?.value
       ? Number(turnoRaspSelect.value)
+      : null,
+    idIndiceOperacionalRasp: origemSelect?.value
+  ? Number(origemSelect.value)
+  : null,
+
+    idOrigemFabricacaoRasp:
+      tipoFornecedorInput?.value === "IMPORTADO"
+    ? 2
+    : tipoFornecedorInput?.value === "LOCAL"
+      ? 1
       : null,
 
     idPilotoRasp: pilotoRaspSelect?.value
       ? Number(pilotoRaspSelect.value)
       : null,
-
+    idMaiorImpactoRasp: maiorImpactoSelect?.value
+      ? Number(maiorImpactoSelect.value)
+      : null,
+    idImpactoQualidadeRasp: impactoQualidadeSelect?.value
+      ? Number(impactoQualidadeSelect.value)
+      : null,
+    idImpactoClienteRasp: impactoClienteSelect?.value
+      ? Number(impactoClienteSelect.value)
+      : null,
     idMajorRasp: majorRaspSelect?.value
       ? Number(majorRaspSelect.value)
       : null,
-
     idGmAliadoRasp: gmAliadoSelect?.value
       ? Number(gmAliadoSelect.value)
       : null,
-
+    rdNumero: rdNumeroInput?.value?.trim() || null,
+    campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
+    nomeContato: nomeContatoInput?.value?.trim() || null,
+    dataContato: dataContatoInput?.value || null,
     iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false
   };
-    console.log("payloadRascunho =>", payloadRascunho);
+
+  console.log("payloadRascunho =>", payloadRascunho);
+
   const response = await fetch(`${API_BASE_URL}/rasp/${idRasp}/rascunho`, {
     method: "PUT",
     headers: {
@@ -1575,7 +1689,6 @@ async function atualizarRascunhoRasp(idRasp) {
   if (!response.ok) {
     const mensagemErro = await response.text();
     console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
-
     throw new Error(
       `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
     );
@@ -1583,6 +1696,8 @@ async function atualizarRascunhoRasp(idRasp) {
 
   return await response.json();
 }
+
+
 
 
   // ==========================================================
@@ -1624,6 +1739,14 @@ async function atualizarRascunhoRasp(idRasp) {
     const maiorImpacto = maiorImpactoSelect?.value ?? "";
     const impactoQualidade = impactoQualidadeSelect?.value ?? "";
     const impactoCliente = impactoClienteSelect?.value ?? "";
+
+    console.log("VALIDAÇÃO COMBOS:",{
+      setor,
+      origem,
+      maiorImpacto,
+      impactoQualidade,
+      impactoCliente
+    });
 
     let nomeContato = nomeContatoInput?.value.trim() ?? "";
     const dataContato = dataContatoInput?.value ?? "";
@@ -2140,4 +2263,5 @@ async function atualizarRascunhoRasp(idRasp) {
 
   inicializarTelaRasp();
   
+
 });
