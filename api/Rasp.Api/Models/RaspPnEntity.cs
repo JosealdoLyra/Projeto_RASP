@@ -17,6 +17,8 @@ namespace Rasp.Api.Models
     // - não permitir repetição do mesmo PN no mesmo RASP
     public class RaspPnEntity
     {
+
+        public DateTime? DataLoteInicial { get; set;}
         // Identificador interno do vínculo RASP x PN
         public int IdRaspPn { get; set; }
 

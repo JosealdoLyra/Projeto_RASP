@@ -456,42 +456,45 @@ namespace Rasp.Api.Data
                     .HasColumnName("id_indice_operacional_rasp");
             });
 
-            // -----------------------------------------------------------------
-            // RASP_PN
-            // -----------------------------------------------------------------
-            modelBuilder.Entity<RaspPnEntity>(entity =>
-            {
-                entity.ToTable("rasp_pn");
+// -----------------------------------------------------------------
+// RASP_PN
+// -----------------------------------------------------------------
+modelBuilder.Entity<RaspPnEntity>(entity =>
+{
+    entity.ToTable("rasp_pn");
 
-                entity.HasKey(e => e.IdRaspPn);
+    entity.HasKey(e => e.IdRaspPn);
 
-                entity.Property(e => e.IdRaspPn)
-                    .HasColumnName("id_rasp_pn");
+    entity.Property(e => e.IdRaspPn)
+        .HasColumnName("id_rasp_pn");
 
-                entity.Property(e => e.IdRasp)
-                    .HasColumnName("id_rasp");
+    entity.Property(e => e.IdRasp)
+        .HasColumnName("id_rasp");
 
-                entity.Property(e => e.Pn)
-                    .HasColumnName("pn");
+    entity.Property(e => e.Pn)
+        .HasColumnName("pn");
 
-                entity.Property(e => e.QuantidadeSuspeita)
-                    .HasColumnName("quantidade_suspeita");
+    entity.Property(e => e.DataLoteInicial)
+        .HasColumnName("data_lote_inicial");
 
-                entity.Property(e => e.QuantidadeChecada)
-                    .HasColumnName("quantidade_checada");
+    entity.Property(e => e.QuantidadeSuspeita)
+        .HasColumnName("quantidade_suspeita");
 
-                entity.Property(e => e.QuantidadeRejeitada)
-                    .HasColumnName("quantidade_rejeitada");
+    entity.Property(e => e.QuantidadeChecada)
+        .HasColumnName("quantidade_checada");
 
-                entity.Property(e => e.EmContencao)
-                    .HasColumnName("em_contencao");
+    entity.Property(e => e.QuantidadeRejeitada)
+        .HasColumnName("quantidade_rejeitada");
 
-                entity.Property(e => e.Duns)
-                    .HasColumnName("duns");
+    entity.Property(e => e.EmContencao)
+        .HasColumnName("em_contencao");
 
-                entity.Property(e => e.OrdemExibicao)
-                    .HasColumnName("ordem_exibicao");
-            });
+    entity.Property(e => e.Duns)
+        .HasColumnName("duns");
+
+    entity.Property(e => e.OrdemExibicao)
+        .HasColumnName("ordem_exibicao");
+});
 
             // -----------------------------------------------------------------
             // RASP ANOTAÇÃO

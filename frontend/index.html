@@ -21,39 +21,74 @@
   <div class="app">
 
     <!-- =======================================================
-         MENU LATERAL
-         ======================================================= -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <h1>RASP</h1>
+     MENU LATERAL
+     ======================================================= -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-top">
+      <h1>RASP</h1>
+      <span class="sidebar-brand-chip">Sistema de Qualidade</span>
+    </div>
 
-        <p class="sidebar-subtitle">
-          <span class="sidebar-line">
-            <span class="sigla-letra">R</span>elatório de
-          </span>
-          <span class="sidebar-line">
-            <span class="sigla-letra">A</span>nálise e
-          </span>
-          <span class="sidebar-line">
-            <span class="sigla-letra">S</span>olução de
-          </span>
-          <span class="sidebar-line">
-            <span class="sigla-letra">P</span>roblemas
-          </span>
-        </p>
+    <p class="sidebar-subtitle">
+      <span class="sidebar-line">
+        <span class="sigla-letra">R</span>elatório de
+      </span>
+      <span class="sidebar-line">
+        <span class="sigla-letra">A</span>nálise e
+      </span>
+      <span class="sidebar-line">
+        <span class="sigla-letra">S</span>olução de
+      </span>
+      <span class="sidebar-line">
+        <span class="sigla-letra">P</span>roblemas
+      </span>
+    </p>
 
-        <div class="sidebar-badge">SAC - S10 SJC</div>
-      </div>
+    <div class="sidebar-badge">SAC - S10 SJC</div>
+  </div>
 
-      <nav class="sidebar-nav">
-        <ul>
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#" class="active">Novo RASP</a></li>
-          <li><a href="#">Consulta</a></li>
-          <li><a href="#">Cadastros</a></li>
-        </ul>
-      </nav>
-    </aside>
+  <!-- =====================================================
+       ACESSO RÁPIDO
+       ===================================================== -->
+  <section class="sidebar-panel sidebar-quick-access">
+    <div class="sidebar-panel-header">
+      <h3>Acesso rápido</h3>
+      <span class="sidebar-panel-tag">RASP</span>
+    </div>
+
+    <label for="buscarRaspNumero" class="sidebar-label">
+      Abrir RASP existente
+    </label>
+
+    <div class="sidebar-search-box">
+      <input
+        type="text"
+        id="buscarRaspNumero"
+        name="buscarRaspNumero"
+        placeholder="Ex.: 0052/26"
+        autocomplete="off"
+      />
+      <button type="button" id="btnBuscarRasp" class="sidebar-search-btn">
+        Abrir
+      </button>
+    </div>
+
+    <p class="sidebar-helper-text">
+      Digite o número do RASP para carregar e continuar a edição.
+    </p>
+  </section>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#" class="active">Novo RASP</a></li>
+      <li><a href="#">Consulta</a></li>
+      <li><a href="#">Cadastros</a></li>
+    </ul>
+  </nav>
+</aside>
+
 
     <!-- =======================================================
          CONTEÚDO PRINCIPAL

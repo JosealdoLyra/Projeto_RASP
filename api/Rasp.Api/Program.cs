@@ -1660,15 +1660,39 @@ app.MapGet("/rasp/numero/{numeroRasp}", async (string numeroRasp, RaspDbContext 
     if (string.IsNullOrWhiteSpace(numeroLimpo))
         return Results.BadRequest("NumeroRasp é obrigatório.");
 
-    var item = await db.Rasp
-        .AsNoTracking()
-        .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+    // remove espaços
+    numeroLimpo = numeroLimpo.Replace(" ", "");
 
-    return item is null
-        ? Results.NotFound("RASP não encontrado para o número informado.")
-        : Results.Ok(item);
+    // se vier no formato completo, busca exata
+    if (numeroLimpo.Contains("/"))
+    {
+        var itemCompleto = await db.Rasp
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+
+        return itemCompleto is null
+            ? Results.NotFound("RASP não encontrado para o número informado.")
+            : Results.Ok(itemCompleto);
+    }
+
+    // se vier só a parte inicial, ex: 0056
+    var candidatos = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.NumeroRasp.StartsWith(numeroLimpo + "/"))
+        .OrderByDescending(r => r.IdRasp)
+        .ToListAsync();
+
+    if (candidatos.Count == 0)
+        return Results.NotFound("RASP não encontrado para o número informado.");
+
+    if (candidatos.Count == 1)
+        return Results.Ok(candidatos[0]);
+
+    // se houver mais de um com a mesma base, retorna o mais recente
+    return Results.Ok(candidatos[0]);
 })
 .WithName("ObterRaspPorNumero");
+
 
 app.MapGet("/rasp/resumo", async (RaspDbContext db) =>
 {
@@ -2108,46 +2132,36 @@ app.MapPut("/rasp/{id:int}/trocar-analista", async (int id, TrocarAnalistaRaspRe
 // -----------------------------------------------------------------------------
 // 18. RASP PN - CRIAÇÃO / EDIÇÃO / EXCLUSÃO
 // -----------------------------------------------------------------------------
-
 app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 {
     if (req.IdRasp <= 0)
         return Results.BadRequest("IdRasp inválido.");
 
     var raspExiste = await db.Rasp.AnyAsync(r => r.IdRasp == req.IdRasp);
-
     if (!raspExiste)
         return Results.BadRequest("RASP informado não existe.");
 
     var pn = (req.Pn ?? string.Empty).Trim();
-
     if (string.IsNullOrWhiteSpace(pn))
         return Results.BadRequest("Pn é obrigatório.");
-
     if (pn.Length != 8)
         return Results.BadRequest("Pn deve ter exatamente 8 caracteres.");
-
     if (!pn.All(char.IsDigit))
         return Results.BadRequest("Pn deve conter somente números.");
 
     var pnExiste = await db.PnRasp.AnyAsync(p => p.CodigoPn == pn);
-
     if (!pnExiste)
         return Results.BadRequest("PN informado não existe no cadastro.");
 
     var duns = (req.Duns ?? string.Empty).Trim();
-
     if (string.IsNullOrWhiteSpace(duns))
         return Results.BadRequest("Duns é obrigatório.");
-
     if (duns.Length != 9)
         return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
-
     if (!duns.All(char.IsDigit))
         return Results.BadRequest("Duns deve conter somente números.");
 
     var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
-
     if (!dunsExiste)
         return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
 
@@ -2163,10 +2177,28 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     if (raspPnJaExiste)
         return Results.BadRequest("Este PN já está vinculado a este RASP.");
 
+    DateTime? dataLoteInicial = null;
+
+    if (!string.IsNullOrWhiteSpace(req.DataLoteInicial))
+    {
+        if (!DateTime.TryParseExact(
+            req.DataLoteInicial,
+            "dd/MM/yy",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out var dataConvertida))
+        {
+            return Results.BadRequest("DataLoteInicial inválida. Use o formato DD/MM/AA.");
+        }
+
+        dataLoteInicial = DateTime.SpecifyKind(dataConvertida,DateTimeKind.Utc);
+    }
+
     var item = new RaspPnEntity
     {
         IdRasp = req.IdRasp,
         Pn = pn,
+        DataLoteInicial = dataLoteInicial,
         QuantidadeSuspeita = req.QuantidadeSuspeita,
         QuantidadeChecada = req.QuantidadeChecada,
         QuantidadeRejeitada = req.QuantidadeRejeitada,
@@ -2194,18 +2226,14 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
         return Results.NotFound("RASP PN não encontrado.");
 
     var duns = (req.Duns ?? string.Empty).Trim();
-
     if (string.IsNullOrWhiteSpace(duns))
         return Results.BadRequest("Duns é obrigatório.");
-
     if (duns.Length != 9)
         return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
-
     if (!duns.All(char.IsDigit))
         return Results.BadRequest("Duns deve conter somente números.");
 
     var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
-
     if (!dunsExiste)
         return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
 
@@ -2215,6 +2243,24 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
     if (req.OrdemExibicao <= 0)
         return Results.BadRequest("OrdemExibicao deve ser maior que zero.");
 
+    DateTime? dataLoteInicial = null;
+
+    if (!string.IsNullOrWhiteSpace(req.DataLoteInicial))
+    {
+        if (!DateTime.TryParseExact(
+            req.DataLoteInicial,
+            "dd/MM/yy",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None,
+            out var dataConvertida))
+        {
+            return Results.BadRequest("DataLoteInicial inválida. Use o formato DD/MM/AA.");
+        }
+
+        dataLoteInicial = DateTime.SpecifyKind(dataConvertida,DateTimeKind.Utc);
+    }
+
+    item.DataLoteInicial = dataLoteInicial;
     item.QuantidadeSuspeita = req.QuantidadeSuspeita;
     item.QuantidadeChecada = req.QuantidadeChecada;
     item.QuantidadeRejeitada = req.QuantidadeRejeitada;
@@ -2245,6 +2291,7 @@ app.MapDelete("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
     return Results.Ok($"RASP PN com id {id} removido com sucesso.");
 })
 .WithName("ExcluirRaspPn");
+
 
 // -----------------------------------------------------------------------------
 // 19. RASP ARQUIVO
@@ -3219,6 +3266,7 @@ public record AcaoFluxoRaspRequest(
 public record CriarRaspPnRequest(
     int IdRasp,
     string Pn,
+    string? DataLoteInicial,
     int QuantidadeSuspeita,
     int QuantidadeChecada,
     int QuantidadeRejeitada,
@@ -3276,6 +3324,7 @@ public record AtualizarRaspAnotacaoRequest(
 // Atualização de vínculo RASP x PN
 // -----------------------------------------------------------------------------
 public record AtualizarRaspPnRequest(
+    string? DataLoteInicial,
     int QuantidadeSuspeita,
     int QuantidadeChecada,
     int QuantidadeRejeitada,

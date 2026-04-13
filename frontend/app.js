@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("APP JS CARREGADO");
+
   // ==========================================================
   // 01. CONFIGURAÇÕES GERAIS
   // ==========================================================
@@ -96,26 +97,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const campanhaNumeroInput = document.getElementById("campanhaNumero");
 
   if (iniciativaFornecedorInput && impactoClienteSelect) {
-  iniciativaFornecedorInput.addEventListener("change", () => {
+    iniciativaFornecedorInput.addEventListener("change", () => {
+      if (iniciativaFornecedorInput.checked) {
+        const option = Array.from(impactoClienteSelect.options).find((opt) =>
+          (opt.textContent || "").toLowerCase().includes("supplier")
+        );
 
-    if (iniciativaFornecedorInput.checked) {
-
-      const option = Array.from(impactoClienteSelect.options)
-        .find(opt => opt.text.toLowerCase().includes("supplier"));
-
-      if (option) {
-        impactoClienteSelect.value = option.value;
-        impactoClienteSelect.disabled = true; // 🔒 trava
+        if (option) {
+          impactoClienteSelect.value = option.value;
+          impactoClienteSelect.disabled = true;
+        }
+      } else {
+        impactoClienteSelect.disabled = false;
       }
-
-    } else {
-
-      impactoClienteSelect.disabled = false; // 🔓 libera
-
-    }
-
-  });
-}
+    });
+  }
 
   // ==========================================================
   // 11. SEÇÃO 6 - BP (BREAK POINT)
@@ -142,9 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ==========================================================
   // 14. BASE LOCAL TEMPORÁRIA DE FORNECEDORES
-  // OBS:
-  // Mantida apenas como apoio local / histórico.
-  // O fluxo oficial usa a API.
   // ==========================================================
   const fornecedoresBase = [
     { duns: "000104992", nome: "Alcom - USA", tipoFornecedor: "IMPORTADO" },
@@ -168,6 +161,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // 15. UTILITÁRIOS GERAIS
   // ==========================================================
+  function formatarDataLoteParaTela(dataIso) {
+    if (!dataIso) return "";
+
+    const data = new Date(dataIso);
+    if (Number.isNaN(data.getTime())) return "";
+
+    const dia = String(data.getDate()).padStart(2, "0");
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const ano = String(data.getFullYear()).slice(-2);
+
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  function montarDataHoraUtc(data, hora) {
+    if (!data || !hora) return null;
+
+    const dataHoraLocal = new Date(`${data}T${hora}:00`);
+    if (Number.isNaN(dataHoraLocal.getTime())) {
+      return null;
+    }
+
+    return dataHoraLocal.toISOString();
+  }
+
   function normalizarNumero(valor) {
     return String(valor || "").replace(/\D/g, "").trim();
   }
@@ -190,19 +207,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatarDataPtBr(dataValor) {
     if (!dataValor) return "--/--/----";
+
     const data = new Date(dataValor);
     if (Number.isNaN(data.getTime())) {
       return "--/--/----";
     }
+
     return data.toLocaleDateString("pt-BR");
   }
 
   function formatarDataParaExibicao(valor) {
     if (!valor) return "--/--/----";
+
     const data = new Date(valor);
     if (Number.isNaN(data.getTime())) {
       return "--/--/----";
     }
+
     return data.toLocaleDateString("pt-BR");
   }
 
@@ -223,34 +244,469 @@ document.addEventListener("DOMContentLoaded", () => {
   // 16. CONTROLE VISUAL DO BOTÃO CRIAR RASP
   // ==========================================================
   function marcarBotaoRaspComoCriado() {
-  if (btnCriarRasp) {
-    btnCriarRasp.disabled = true;
-    btnCriarRasp.textContent = "RASP criado";
-    btnCriarRasp.classList.remove("primary-btn");
-    btnCriarRasp.classList.add("success-btn");
+    if (btnCriarRasp) {
+      btnCriarRasp.disabled = true;
+      btnCriarRasp.textContent = "RASP criado";
+      btnCriarRasp.classList.remove("primary-btn");
+      btnCriarRasp.classList.add("success-btn");
+    }
+
+    if (btnLimpar) {
+      btnLimpar.disabled = false;
+      btnLimpar.classList.add("enabled-btn");
+    }
   }
 
-  if (btnLimpar) {
-    btnLimpar.disabled = false;
-    btnLimpar.classList.add("enabled-btn");
+  function restaurarBotaoCriarRasp() {
+    if (btnCriarRasp) {
+      btnCriarRasp.disabled = false;
+      btnCriarRasp.textContent = "Criar RASP";
+      btnCriarRasp.classList.remove("success-btn");
+      btnCriarRasp.classList.add("primary-btn");
+    }
+
+    if (btnLimpar) {
+      btnLimpar.disabled = true;
+      btnLimpar.classList.remove("enabled-btn");
+    }
   }
-}
 
-function restaurarBotaoCriarRasp() {
-  if (btnCriarRasp) {
-    btnCriarRasp.disabled = false;
-    btnCriarRasp.textContent = "Criar RASP";
-    btnCriarRasp.classList.remove("success-btn");
-    btnCriarRasp.classList.add("primary-btn");
+  // ==========================================================
+  // 16.1 BUSCA RÁPIDA DE RASP
+  // ==========================================================
+  const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+  const buscarRaspNumeroInput = document.getElementById("buscarRaspNumero");
+
+  function formatarNumeroRaspBusca(valor) {
+    const somenteNumeros = String(valor || "").replace(/\D/g, "").slice(0, 6);
+
+    if (somenteNumeros.length === 0) return "";
+    if (somenteNumeros.length <= 4) {
+      return `${somenteNumeros}${somenteNumeros.length === 4 ? "/" : ""}`;
+    }
+
+    return `${somenteNumeros.slice(0, 4)}/${somenteNumeros.slice(4)}`;
   }
 
-  if (btnLimpar) {
-    btnLimpar.disabled = true;
-    btnLimpar.classList.remove("enabled-btn");
+  if (buscarRaspNumeroInput) {
+    buscarRaspNumeroInput.addEventListener("input", (e) => {
+      e.target.value = formatarNumeroRaspBusca(e.target.value);
+    });
+
+    buscarRaspNumeroInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnBuscarRasp?.click();
+      }
+    });
   }
-}
 
+  if (btnBuscarRasp && buscarRaspNumeroInput) {
+    btnBuscarRasp.addEventListener("click", async () => {
+      const numeroDigitado = buscarRaspNumeroInput.value.trim();
 
+      if (!numeroDigitado) {
+        alert("Informe o número do RASP.");
+        return;
+      }
+
+      const numeroNormalizado = numeroDigitado.endsWith("/")
+        ? numeroDigitado.slice(0, -1)
+        : numeroDigitado;
+
+      try {
+        const responseBusca = await fetch(
+          `${API_BASE_URL}/rasp/numero/${encodeURIComponent(numeroNormalizado)}`
+        );
+
+        if (!responseBusca.ok) {
+          alert("RASP não encontrado.");
+          return;
+        }
+
+        const raspEncontrado = await responseBusca.json();
+        console.log("RASP encontrado:", raspEncontrado);
+
+        const idRaspEncontrado =
+          raspEncontrado.idRasp ??
+          raspEncontrado.id_rasp ??
+          raspEncontrado.id;
+
+        if (!idRaspEncontrado) {
+          alert("A API localizou o RASP, mas não retornou o ID.");
+          return;
+        }
+
+        const responseDetalhe = await fetch(
+          `${API_BASE_URL}/rasp/${idRaspEncontrado}/detalhe`
+        );
+
+        if (!responseDetalhe.ok) {
+          alert("Não foi possível carregar o detalhe do RASP.");
+          return;
+        }
+
+        const detalhe = await responseDetalhe.json();
+        console.log("Detalhe completo do RASP:", detalhe);
+
+        await preencherFormularioRasp(detalhe);
+
+        console.log("ENTREI NA preencherFormularioRasp");
+        console.log("DETALHE RECEBIDO:", detalhe);
+        console.log("RASP RECEBIDO:", detalhe?.rasp);
+
+        alert("RASP carregado com sucesso.");
+      } catch (error) {
+        console.error("Erro ao buscar RASP:", error);
+        alert("Erro ao buscar RASP.");
+      }
+    });
+  }
+
+  async function preencherFormularioRasp(detalhe) {
+    const rasp = detalhe?.rasp;
+    const pns = detalhe?.pns || [];
+
+    if (!rasp) {
+      console.error("Detalhe do RASP veio sem objeto principal.");
+      return;
+    }
+
+    console.log("RASP para preenchimento:", rasp);
+    console.log("PNs do RASP:", pns);
+
+    // ==========================================================
+    // 1) GARANTE QUE OS DOMÍNIOS ESTEJAM CARREGADOS
+    // ==========================================================
+    await carregarDominiosComplementares();
+
+    // ==========================================================
+    // 2) INFORMAÇÕES GERAIS
+    // ==========================================================
+    if (raspNumeroDisplay) raspNumeroDisplay.textContent = rasp.numeroRasp || "---";
+    if (numeroRaspInfo) numeroRaspInfo.textContent = rasp.numeroRasp || "---";
+
+    if (dataCriacaoRaspDisplay) {
+      dataCriacaoRaspDisplay.textContent = formatarDataParaExibicao(rasp.dataCriacao);
+    }
+
+    if (dataCriacaoRaspInfo) {
+      dataCriacaoRaspInfo.textContent = formatarDataParaExibicao(rasp.dataCriacao);
+    }
+
+    // ==========================================================
+    // 3) OCORRÊNCIA
+    // OBS: hoje o backend só guarda descricaoProblema
+    // ==========================================================
+    if (descricaoInicialInput) descricaoInicialInput.value = rasp.descricaoProblema || "";
+    if (resumoInput) resumoInput.value = rasp.descricaoProblema || "";
+
+    // ==========================================================
+    // 4) FORNECEDOR
+    // ==========================================================
+    if (rasp.idFornecedorRasp) {
+      try {
+        const responseFornecedor = await fetch(
+          `${API_BASE_URL}/fornecedor-rasp/${rasp.idFornecedorRasp}`
+        );
+
+        if (responseFornecedor.ok) {
+          const fornecedor = await responseFornecedor.json();
+
+          if (dunsInput) dunsInput.value = fornecedor.duns || "";
+          if (nomeFornecedorInput) nomeFornecedorInput.value = fornecedor.nome || "";
+          if (tipoFornecedorInput) {
+            tipoFornecedorInput.value =
+              fornecedor.tipoFornecedor ||
+              fornecedor.tipo ||
+              "";
+          }
+
+          fornecedorAtual = fornecedor;
+
+          definirStatusDuns(
+            `Fornecedor localizado com sucesso: ${fornecedor.nome || ""} (${fornecedor.tipoFornecedor || fornecedor.tipo || ""}).`,
+            "success"
+          );
+        } else {
+          console.log("Fornecedor não carregou. Status:", responseFornecedor.status);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar fornecedor:", error);
+      }
+    }
+
+    // ==========================================================
+    // 5) FLAGS
+    // ==========================================================
+    if (iniciativaFornecedorInput) {
+      iniciativaFornecedorInput.checked = !!rasp.iniciativaFornecedor;
+    }
+
+    // ==========================================================
+    // 6) SEÇÕES 2 / 3 / 5 - CAMPOS QUE DEPENDEM DE DOMÍNIOS
+    // ==========================================================
+    if (gmAliadoSelect) {
+      gmAliadoSelect.value = rasp.idGmAliadoRasp ? String(rasp.idGmAliadoRasp) : "";
+    }
+
+    if (setorSelect) {
+      setorSelect.value = rasp.idSetorRasp ? String(rasp.idSetorRasp) : "";
+    }
+
+    if (origemSelect) {
+      origemSelect.value = rasp.idIndiceOperacionalRasp ? String(rasp.idIndiceOperacionalRasp) : "";
+    }
+
+    if (maiorImpactoSelect) {
+      maiorImpactoSelect.value = rasp.idMaiorImpactoRasp ? String(rasp.idMaiorImpactoRasp) : "";
+    }
+
+    if (impactoQualidadeSelect) {
+      impactoQualidadeSelect.value = rasp.idImpactoQualidadeRasp ? String(rasp.idImpactoQualidadeRasp) : "";
+    }
+
+    if (impactoClienteSelect) {
+      impactoClienteSelect.value = rasp.idImpactoClienteRasp ? String(rasp.idImpactoClienteRasp) : "";
+    }
+
+    if (modeloVeiculoSelect) {
+      modeloVeiculoSelect.value = rasp.idModeloVeiculoRasp ? String(rasp.idModeloVeiculoRasp) : "";
+    }
+
+    if (turnoRaspSelect) {
+      turnoRaspSelect.value = rasp.idTurnoRasp ? String(rasp.idTurnoRasp) : "";
+    }
+
+    if (pilotoRaspSelect) {
+      pilotoRaspSelect.value = rasp.idPilotoRasp ? String(rasp.idPilotoRasp) : "";
+    }
+
+    if (majorRaspSelect) {
+      majorRaspSelect.value = rasp.idMajorRasp ? String(rasp.idMajorRasp) : "";
+    }
+
+    if (impactoClienteSelect) {
+      if (iniciativaFornecedorInput?.checked) {
+        impactoClienteSelect.disabled = true;
+      } else {
+        impactoClienteSelect.disabled = false;
+      }
+    }
+
+    // ==========================================================
+    // 7) COMPLEMENTARES
+    // ==========================================================
+    if (nomeContatoInput) nomeContatoInput.value = rasp.nomeContato || "";
+    if (rdNumeroInput) rdNumeroInput.value = rasp.rdNumero || "";
+    if (campanhaNumeroInput) campanhaNumeroInput.value = rasp.campanhaNumero || "";
+
+    if (dataContatoInput) {
+      dataContatoInput.value = rasp.dataContato || "";
+    }
+
+    if (tipoFornecedorInput) {
+      if (rasp.idOrigemFabricacaoRasp === 1) {
+        tipoFornecedorInput.value = "LOCAL";
+      } else if (rasp.idOrigemFabricacaoRasp === 2) {
+        tipoFornecedorInput.value = "IMPORTADO";
+      }
+    }
+
+    // ==========================================================
+    // 8) APROVADOR FT
+    // ==========================================================
+    await atualizarAprovadorFtPorTurno();
+
+    if (aprovadorFtIdInput) {
+      aprovadorFtIdInput.value = rasp.idAprovadorFt || "";
+    }
+
+    if (aprovadorFtInput) {
+      if (!aprovadorFtInput.value && rasp.idAprovadorFt) {
+        aprovadorFtInput.value = `ID ${rasp.idAprovadorFt}`;
+      }
+    }
+
+    // ==========================================================
+    // 9) BP
+    // ==========================================================
+    if (tipoReferenciaBp) {
+      if (rasp.bpSerie) {
+        tipoReferenciaBp.value = "VIN";
+      } else if (rasp.breakpointCodigo) {
+        tipoReferenciaBp.value = "LOCAL";
+      } else {
+        tipoReferenciaBp.value = "";
+      }
+    }
+
+    controlarTipoBp();
+
+    const bpDataHoraValor =
+      rasp.bpDatahora ||
+      rasp.bpDataHora ||
+      rasp.bp_datahora ||
+      null;
+
+    if (dataBp && bpDataHoraValor) {
+      const dt = new Date(bpDataHoraValor);
+
+      if (!Number.isNaN(dt.getTime())) {
+        dataBp.value = dt.toISOString().slice(0, 10);
+
+        if (horaBp) {
+          horaBp.value = dt.toTimeString().slice(0, 5);
+        }
+      }
+    } else {
+      if (dataBp) dataBp.value = "";
+      if (horaBp) horaBp.value = "";
+    }
+
+    if (vinBp) vinBp.value = rasp.bpSerie || "";
+    if (localCelulaBp) localCelulaBp.value = rasp.breakpointCodigo || "";
+    if (comoIdentificadoBp) comoIdentificadoBp.value = rasp.bpTexto || "";
+
+    validarBpEmTela();
+
+    // ==========================================================
+    // 10) PNs
+    // ==========================================================
+    if (pnTableBody) {
+      pnTableBody.innerHTML = "";
+
+      if (pns.length > 0) {
+        if (typeof criarLinhaPn === "function") {
+          for (let index = 0; index < pns.length; index++) {
+            const pn = pns[index];
+
+            const linha = criarLinhaPn({
+              principal: index === 0,
+              pn: pn.pn || "",
+              dataLoteInicial:
+                pn.dataLoteInicial ||
+                pn.data_lote_inicial ||
+                "",
+              qtdSuspeita:
+                pn.quantidadeSuspeita ??
+                pn.qtdSuspeita ??
+                pn.qtdSuspeitaInicial ??
+                0,
+              qtdChecada:
+                pn.quantidadeChecada ??
+                pn.qtdChecada ??
+                pn.qtdChecadaInicial ??
+                0,
+              qtdRejeitada:
+                pn.quantidadeRejeitada ??
+                pn.qtdRejeitada ??
+                pn.qtdRejeitadaInicial ??
+                0
+            });
+
+            pnTableBody.appendChild(linha);
+
+            const principalRadio = linha.querySelector(".pn-principal");
+            const pnInput = linha.querySelector(".pn-input");
+            const descricaoPnInput = linha.querySelector(".pn-descricao");
+            const dataLoteInput = linha.querySelector(".data-lote-inicial");
+            const qtdSuspeitaInput = linha.querySelector(".qtd-suspeita");
+            const qtdChecadaInput = linha.querySelector(".qtd-checada");
+            const qtdRejeitadaInput = linha.querySelector(".qtd-rejeitada");
+            const pnIdInput = linha.querySelector(".pn-id");
+
+            if (principalRadio) {
+              principalRadio.checked = !!pn.principal || index === 0;
+            }
+
+            if (pnInput) {
+              pnInput.value = pn.pn || "";
+            }
+
+            if (pnIdInput) {
+              pnIdInput.value = pn.idPn || pn.id_pn || "";
+            }
+
+            if (descricaoPnInput) {
+              descricaoPnInput.value =
+                pn.nomePeca ||
+                pn.nome_peca ||
+                pn.descricaoPn ||
+                pn.descricao_pn ||
+                pn.descricao ||
+                "";
+            }
+
+            if (
+              typeof processarPnDaLinha === "function" &&
+              pnInput &&
+              pnInput.value &&
+              descricaoPnInput &&
+              !descricaoPnInput.value
+            ) {
+              await processarPnDaLinha(linha);
+            }
+
+            if (dataLoteInput) {
+              const dataLoteBruta =
+                pn.dataLoteInicial ??
+                pn.data_lote_inicial ??
+                pn.dataLote ??
+                pn.data_lote ??
+                "";
+
+              dataLoteInput.value = formatarDataLoteParaTela(dataLoteBruta);
+            }
+
+            if (qtdSuspeitaInput) {
+              qtdSuspeitaInput.value =
+                pn.quantidadeSuspeita ??
+                pn.qtdSuspeita ??
+                pn.qtdSuspeitaInicial ??
+                0;
+            }
+
+            if (qtdChecadaInput) {
+              qtdChecadaInput.value =
+                pn.quantidadeChecada ??
+                pn.qtdChecada ??
+                pn.qtdChecadaInicial ??
+                0;
+            }
+
+            if (qtdRejeitadaInput) {
+              qtdRejeitadaInput.value =
+                pn.quantidadeRejeitada ??
+                pn.qtdRejeitada ??
+                pn.qtdRejeitadaInicial ??
+                0;
+            }
+          }
+
+          garantirPnPrincipal();
+          aplicarValidacoesPnEmTela();
+        }
+      } else {
+        console.log("Nenhum PN retornado no detalhe.");
+      }
+    }
+
+    // ==========================================================
+    // 11) CONTROLE VISUAL
+    // ==========================================================
+    mostrarMensagemRasp(`RASP ${rasp.numeroRasp} carregado para edição.`);
+    restaurarBotaoCriarRasp();
+
+    if (btnCriarRasp) {
+      btnCriarRasp.textContent = "Salvar alterações";
+    }
+
+    if (btnLimpar) {
+      btnLimpar.disabled = false;
+      btnLimpar.classList.add("enabled-btn");
+    }
+  }
 
   // ==========================================================
   // 16. MENSAGEM DE RETORNO DO RASP
@@ -272,9 +728,11 @@ function restaurarBotaoCriarRasp() {
   // ==========================================================
   function atualizarNumeroRaspDisplay(numeroRasp) {
     const numeroFormatado = numeroRasp || "---";
+
     if (raspNumeroDisplay) {
       raspNumeroDisplay.textContent = numeroFormatado;
     }
+
     if (numeroRaspInfo) {
       numeroRaspInfo.textContent = numeroFormatado;
     }
@@ -282,9 +740,11 @@ function restaurarBotaoCriarRasp() {
 
   function atualizarDataCriacaoRaspDisplay(dataCriacao) {
     const texto = dataCriacao ? formatarDataParaExibicao(dataCriacao) : "--/--/----";
+
     if (dataCriacaoRaspDisplay) {
       dataCriacaoRaspDisplay.textContent = texto;
     }
+
     if (dataCriacaoRaspInfo) {
       dataCriacaoRaspInfo.textContent = texto;
     }
@@ -297,7 +757,9 @@ function restaurarBotaoCriarRasp() {
 
   function destacarCopiaRasp() {
     if (!raspIndicadorBox) return;
+
     raspIndicadorBox.classList.add("copiado");
+
     setTimeout(() => {
       raspIndicadorBox.classList.remove("copiado");
     }, 1000);
@@ -443,8 +905,6 @@ function restaurarBotaoCriarRasp() {
   function preencherSelectComChaves(selectElement, itens, valueKey, textKey) {
     if (!selectElement) return;
 
-
-
     itens.forEach((item) => {
       const option = document.createElement("option");
       option.value = item[valueKey] ?? "";
@@ -475,10 +935,16 @@ function restaurarBotaoCriarRasp() {
       }
 
       preencherSelectComChaves(selectElement, itens, valueKey, textKey);
-      console.log(`Total de opções em ${nomeDominio}:`, selectElement.options.length);
-console.log(`Última opção de ${nomeDominio}:`, selectElement.options[selectElement.options.length - 1]?.text);
-console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].map(o => o.text));
 
+      console.log(`Total de opções em ${nomeDominio}:`, selectElement.options.length);
+      console.log(
+        `Última opção de ${nomeDominio}:`,
+        selectElement.options[selectElement.options.length - 1]?.text
+      );
+      console.log(
+        `Todas as opções de ${nomeDominio}:`,
+        [...selectElement.options].map((o) => o.text)
+      );
     } catch (error) {
       console.error(`Erro ao carregar ${nomeDominio}:`, error);
       limparOpcoesSelect(selectElement, `Erro ao carregar ${nomeDominio}`);
@@ -500,7 +966,7 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
   }
 
   // ==========================================================
-  // 22. CARGA DE DOMÍNIOS - SEÇÃO 5
+  // 22. CARGA DE DOMÍNIOS COMPLEMENTARES
   // ==========================================================
   async function carregarGmAliado() {
     if (!gmAliadoSelect) return;
@@ -527,14 +993,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
     }
   }
 
-  
-  // ==========================================================
-  // 24. CARGA DE DOMÍNIOS COMPLEMENTARES
-  // OBS:
-  // Agora também carrega:
-  // - Setor
-  // - Origem de fabricação
-  // ==========================================================
   async function carregarDominiosComplementares() {
     await Promise.all([
       carregarDominioSelect(
@@ -544,7 +1002,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "nomeModelo",
         "modelo do veículo"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/turno-rasp`,
         turnoRaspSelect,
@@ -552,7 +1009,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "turno"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/piloto-rasp`,
         pilotoRaspSelect,
@@ -560,7 +1016,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "piloto"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/major-rasp`,
         majorRaspSelect,
@@ -568,7 +1023,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "major"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/gm-aliado-rasp`,
         gmAliadoSelect,
@@ -576,7 +1030,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "GM aliado"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/setor-rasp`,
         setorSelect,
@@ -584,7 +1037,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "setor"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/indice-operacional-rasp`,
         origemSelect,
@@ -592,7 +1044,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "origem"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/maior-impacto-rasp`,
         maiorImpactoSelect,
@@ -600,7 +1051,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "maior impacto"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/impacto-qualidade-rasp`,
         impactoQualidadeSelect,
@@ -608,7 +1058,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
         "descricao",
         "impacto qualidade"
       ),
-
       carregarDominioSelect(
         `${API_BASE_URL}/impacto-cliente-rasp`,
         impactoClienteSelect,
@@ -620,7 +1069,6 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
 
     selecionarMajorPadrao();
   }
-
 
   // ==========================================================
   // 23. REGRA DO CAMPO CONTATO
@@ -727,58 +1175,56 @@ console.log(`Todas as opções de ${nomeDominio}:`, [...selectElement.options].m
     }
   }
 
-// ==========================================================
-// 28. APROVADOR FT POR TURNO (VERSÃO FINAL)
-// ==========================================================
+  // ==========================================================
+  // 28. APROVADOR FT POR TURNO
+  // ==========================================================
+  async function buscarFtPorTurno(idTurno) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/usuarios`);
 
-async function buscarFtPorTurno(idTurno) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/usuarios`);
+      if (!response.ok) {
+        throw new Error("Erro ao carregar usuários");
+      }
 
-    if (!response.ok) {
-      throw new Error("Erro ao carregar usuários");
+      const usuarios = await response.json();
+
+      const ft = usuarios.find(
+        (u) =>
+          Number(u.idPerfil) === 3 &&
+          Number(u.idTurnoRasp) === Number(idTurno) &&
+          u.ativo === true
+      );
+
+      return ft || null;
+    } catch (error) {
+      console.error("Erro buscar FT:", error);
+      return null;
+    }
+  }
+
+  async function atualizarAprovadorFtPorTurno() {
+    if (!turnoRaspSelect || !aprovadorFtInput || !aprovadorFtIdInput) return;
+
+    const idTurno = turnoRaspSelect.value;
+
+    if (!idTurno) {
+      aprovadorFtInput.value = "";
+      aprovadorFtIdInput.value = "";
+      return;
     }
 
-    const usuarios = await response.json();
+    aprovadorFtInput.value = "Buscando FT...";
 
-    const ft = usuarios.find(u =>
-      Number(u.idPerfil) === 3 &&
-      Number(u.idTurnoRasp) === Number(idTurno) &&
-      u.ativo === true
-    );
+    const ft = await buscarFtPorTurno(idTurno);
 
-    return ft || null;
-
-  } catch (error) {
-    console.error("Erro buscar FT:", error);
-    return null;
+    if (ft) {
+      aprovadorFtInput.value = ft.nome;
+      aprovadorFtIdInput.value = ft.idUsuario;
+    } else {
+      aprovadorFtInput.value = "Nenhum FT vinculado ao turno";
+      aprovadorFtIdInput.value = "";
+    }
   }
-}
-
-async function atualizarAprovadorFtPorTurno() {
-  if (!turnoRaspSelect || !aprovadorFtInput || !aprovadorFtIdInput) return;
-
-  const idTurno = turnoRaspSelect.value;
-
-  if (!idTurno) {
-    aprovadorFtInput.value = "";
-    aprovadorFtIdInput.value = "";
-    return;
-  }
-
-  // 🔄 feedback visual
-  aprovadorFtInput.value = "Buscando FT...";
-
-  const ft = await buscarFtPorTurno(idTurno);
-
-  if (ft) {
-    aprovadorFtInput.value = ft.nome;
-    aprovadorFtIdInput.value = ft.idUsuario;
-  } else {
-    aprovadorFtInput.value = "Nenhum FT vinculado ao turno";
-    aprovadorFtIdInput.value = "";
-  }
-}
 
   // ==========================================================
   // 29. SALVAR PN VIA MODAL
@@ -1350,9 +1796,6 @@ async function atualizarAprovadorFtPorTurno() {
   function controlarTipoBp() {
     const tipo = tipoReferenciaBp?.value ?? "";
 
-    if (vinBp) vinBp.value = "";
-    if (localCelulaBp) localCelulaBp.value = "";
-
     if (tipo === "VIN") {
       if (vinBp) vinBp.disabled = false;
       if (localCelulaBp) localCelulaBp.disabled = true;
@@ -1423,7 +1866,7 @@ async function atualizarAprovadorFtPorTurno() {
   }
 
   // ==========================================================
-  // 38. FORMATAÇÃO E VALIDAÇÃO DE DATA INICIAL (DD/MM/AA)
+  // 38. FORMATAÇÃO E VALIDAÇÃO DE DATA INICIAL
   // ==========================================================
   function formatarValorDataLote(valor) {
     let somenteNumeros = String(valor || "").replace(/\D/g, "");
@@ -1573,6 +2016,30 @@ async function atualizarAprovadorFtPorTurno() {
     if (aprovadorFtInput) aprovadorFtInput.value = "";
     if (aprovadorFtIdInput) aprovadorFtIdInput.value = "";
 
+    if (gmAliadoSelect) gmAliadoSelect.value = "";
+    if (setorSelect) setorSelect.value = "";
+    if (origemSelect) origemSelect.value = "";
+    if (maiorImpactoSelect) maiorImpactoSelect.value = "";
+    if (impactoQualidadeSelect) impactoQualidadeSelect.value = "";
+    if (impactoClienteSelect) {
+      impactoClienteSelect.value = "";
+      impactoClienteSelect.disabled = false;
+    }
+    if (modeloVeiculoSelect) modeloVeiculoSelect.value = "";
+    if (turnoRaspSelect) turnoRaspSelect.value = "";
+    if (pilotoRaspSelect) pilotoRaspSelect.value = "";
+    if (majorRaspSelect) {
+      majorRaspSelect.value = "";
+      selecionarMajorPadrao();
+    }
+
+    if (tipoReferenciaBp) tipoReferenciaBp.value = "";
+    if (dataBp) dataBp.value = "";
+    if (horaBp) horaBp.value = "";
+    if (vinBp) vinBp.value = "";
+    if (localCelulaBp) localCelulaBp.value = "";
+    if (comoIdentificadoBp) comoIdentificadoBp.value = "";
+
     validarRegraContato();
     ocultarMensagemRasp();
 
@@ -1591,6 +2058,7 @@ async function atualizarAprovadorFtPorTurno() {
       const payloadPn = {
         idRasp: idRasp,
         pn: item.pn,
+        dataLoteInicial: item.dataLoteInicial || null,
         quantidadeSuspeita: item.qtdSuspeitaInicial,
         quantidadeChecada: item.qtdChecadaInicial,
         quantidadeRejeitada: item.qtdRejeitadaInicial,
@@ -1619,86 +2087,94 @@ async function atualizarAprovadorFtPorTurno() {
     return await Promise.all(promises);
   }
 
- // ==========================================================
-// 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
-// OBS:
-// Esta versão envia os campos complementares já alinhados com o backend
-// da rota PUT /rasp/{id}/rascunho, incluindo agora:
-// - Setor
-// - Origem de fabricação
-// ==========================================================
-async function atualizarRascunhoRasp(idRasp) {
-  console.log("Tipo fornecedor:", tipoFornecedorInput?.value)
-  const payloadRascunho = {
-    idUsuarioExecutor: ID_USUARIO_LOGADO,
-    idModeloVeiculoRasp: modeloVeiculoSelect?.value
-      ? Number(modeloVeiculoSelect.value)
-      : null,
-    idSetorRasp: setorSelect?.value
-      ? Number(setorSelect.value)
-      : null,
-    idTurnoRasp: turnoRaspSelect?.value
-      ? Number(turnoRaspSelect.value)
-      : null,
-    idIndiceOperacionalRasp: origemSelect?.value
-  ? Number(origemSelect.value)
-  : null,
+  // ==========================================================
+  // 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
+  // ==========================================================
+  async function atualizarRascunhoRasp(idRasp) {
+    console.log("Tipo fornecedor:", tipoFornecedorInput?.value);
 
-    idOrigemFabricacaoRasp:
-      tipoFornecedorInput?.value === "IMPORTADO"
-    ? 2
-    : tipoFornecedorInput?.value === "LOCAL"
-      ? 1
-      : null,
+    const payloadRascunho = {
+      idUsuarioExecutor: ID_USUARIO_LOGADO,
 
-    idPilotoRasp: pilotoRaspSelect?.value
-      ? Number(pilotoRaspSelect.value)
-      : null,
-    idMaiorImpactoRasp: maiorImpactoSelect?.value
-      ? Number(maiorImpactoSelect.value)
-      : null,
-    idImpactoQualidadeRasp: impactoQualidadeSelect?.value
-      ? Number(impactoQualidadeSelect.value)
-      : null,
-    idImpactoClienteRasp: impactoClienteSelect?.value
-      ? Number(impactoClienteSelect.value)
-      : null,
-    idMajorRasp: majorRaspSelect?.value
-      ? Number(majorRaspSelect.value)
-      : null,
-    idGmAliadoRasp: gmAliadoSelect?.value
-      ? Number(gmAliadoSelect.value)
-      : null,
-    rdNumero: rdNumeroInput?.value?.trim() || null,
-    campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
-    nomeContato: nomeContatoInput?.value?.trim() || null,
-    dataContato: dataContatoInput?.value || null,
-    iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false
-  };
+      idModeloVeiculoRasp: modeloVeiculoSelect?.value
+        ? Number(modeloVeiculoSelect.value)
+        : null,
 
-  console.log("payloadRascunho =>", payloadRascunho);
+      idSetorRasp: setorSelect?.value
+        ? Number(setorSelect.value)
+        : null,
 
-  const response = await fetch(`${API_BASE_URL}/rasp/${idRasp}/rascunho`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payloadRascunho)
-  });
+      idTurnoRasp: turnoRaspSelect?.value
+        ? Number(turnoRaspSelect.value)
+        : null,
 
-  if (!response.ok) {
-    const mensagemErro = await response.text();
-    console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
-    throw new Error(
-      `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
-    );
+      idIndiceOperacionalRasp: origemSelect?.value
+        ? Number(origemSelect.value)
+        : null,
+
+      idOrigemFabricacaoRasp:
+        tipoFornecedorInput?.value === "IMPORTADO"
+          ? 2
+          : tipoFornecedorInput?.value === "LOCAL"
+            ? 1
+            : null,
+
+      idPilotoRasp: pilotoRaspSelect?.value
+        ? Number(pilotoRaspSelect.value)
+        : null,
+
+      idMaiorImpactoRasp: maiorImpactoSelect?.value
+        ? Number(maiorImpactoSelect.value)
+        : null,
+
+      idImpactoQualidadeRasp: impactoQualidadeSelect?.value
+        ? Number(impactoQualidadeSelect.value)
+        : null,
+
+      idImpactoClienteRasp: impactoClienteSelect?.value
+        ? Number(impactoClienteSelect.value)
+        : null,
+
+      idMajorRasp: majorRaspSelect?.value
+        ? Number(majorRaspSelect.value)
+        : null,
+
+      idGmAliadoRasp: gmAliadoSelect?.value
+        ? Number(gmAliadoSelect.value)
+        : null,
+
+      rdNumero: rdNumeroInput?.value?.trim() || null,
+      campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
+      nomeContato: nomeContatoInput?.value?.trim() || null,
+      dataContato: dataContatoInput?.value || null,
+      iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
+
+      bpTexto: comoIdentificadoBp?.value?.trim() || null,
+      bpSerie: vinBp?.value?.trim() || null,
+      bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
+      breakpointCodigo: localCelulaBp?.value?.trim() || null
+    };
+
+    console.log("payloadRascunho =>", payloadRascunho);
+
+    const response = await fetch(`${API_BASE_URL}/rasp/${idRasp}/rascunho`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payloadRascunho)
+    });
+
+    if (!response.ok) {
+      const mensagemErro = await response.text();
+      console.error("Erro ao atualizar rascunho do RASP:", mensagemErro);
+      throw new Error(
+        `Erro ao salvar dados complementares do RASP. Detalhe: ${mensagemErro}`
+      );
+    }
+
+    return await response.json();
   }
-
-  return await response.json();
-}
-
-
-
 
   // ==========================================================
   // 42. VALIDAÇÃO GERAL DO FORMULÁRIO
@@ -1709,9 +2185,6 @@ async function atualizarRascunhoRasp(idRasp) {
 
     const erros = [];
 
-    // --------------------------------------------------------
-    // DUNS
-    // --------------------------------------------------------
     if (!duns) {
       erros.push("Preencha o DUNS.");
     } else if (!validarDunsFormato(duns)) {
@@ -1724,9 +2197,6 @@ async function atualizarRascunhoRasp(idRasp) {
       erros.push("O valor informado não parece ser um DUNS válido.");
     }
 
-    // --------------------------------------------------------
-    // CAMPOS PRINCIPAIS
-    // --------------------------------------------------------
     const resumo = resumoInput?.value.trim() ?? "";
     const descricaoInicial = descricaoInicialInput?.value.trim() ?? "";
     const fornecedor = nomeFornecedorInput?.value.trim() ?? "";
@@ -1740,7 +2210,7 @@ async function atualizarRascunhoRasp(idRasp) {
     const impactoQualidade = impactoQualidadeSelect?.value ?? "";
     const impactoCliente = impactoClienteSelect?.value ?? "";
 
-    console.log("VALIDAÇÃO COMBOS:",{
+    console.log("VALIDAÇÃO COMBOS:", {
       setor,
       origem,
       maiorImpacto,
@@ -1780,16 +2250,10 @@ async function atualizarRascunhoRasp(idRasp) {
     if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
     if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
 
-    // --------------------------------------------------------
-    // APROVADOR FT (OBRIGATÓRIO NA CRIAÇÃO)
-    // --------------------------------------------------------
     if (!aprovadorFtIdInput?.value) {
       erros.push("Selecione um Turno válido para preencher automaticamente o Aprovador (FT).");
     }
 
-    // --------------------------------------------------------
-    // PNs
-    // --------------------------------------------------------
     if (pns.length === 0) {
       erros.push("Informe pelo menos 1 PN.");
     } else {
@@ -1845,9 +2309,6 @@ async function atualizarRascunhoRasp(idRasp) {
 
   // ==========================================================
   // 43. CRIAÇÃO DO RASP - PAYLOAD INICIAL
-  // OBS:
-  // O POST /rasp continua mínimo, conforme sua API atual.
-  // Os complementos seguem no PUT /rasp/{id}/rascunho.
   // ==========================================================
   function montarPayloadCriacaoRasp(descricaoInicial) {
     return {
@@ -1870,7 +2331,7 @@ async function atualizarRascunhoRasp(idRasp) {
     if (!validacao.ok) {
       alert(validacao.erros.join("\n"));
       aplicarValidacoesPnEmTela();
-      return;
+      return false;
     }
 
     const payloadCriacao = montarPayloadCriacaoRasp(validacao.descricaoInicial);
@@ -1920,14 +2381,19 @@ async function atualizarRascunhoRasp(idRasp) {
       mostrarMensagemRasp(
         `RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`
       );
+
       marcarBotaoRaspComoCriado();
+
       window.scrollTo({
         top: 0,
         behavior: "smooth"
       });
+
+      return true;
     } catch (error) {
       console.error(error);
       alert(error.message || "Erro ao enviar RASP para API.");
+      return false;
     }
   }
 
@@ -2237,7 +2703,6 @@ async function atualizarRascunhoRasp(idRasp) {
     });
   }
 
-
   // ==========================================================
   // 53. INICIALIZAÇÃO FINAL DA TELA
   // ==========================================================
@@ -2262,6 +2727,4 @@ async function atualizarRascunhoRasp(idRasp) {
   }
 
   inicializarTelaRasp();
-  
-
 });
