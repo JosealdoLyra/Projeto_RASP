@@ -97,21 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const campanhaNumeroInput = document.getElementById("campanhaNumero");
 
   if (iniciativaFornecedorInput && impactoClienteSelect) {
-    iniciativaFornecedorInput.addEventListener("change", () => {
-      if (iniciativaFornecedorInput.checked) {
-        const option = Array.from(impactoClienteSelect.options).find((opt) =>
-          (opt.textContent || "").toLowerCase().includes("supplier")
-        );
+  iniciativaFornecedorInput.addEventListener("change", () => {
+    aplicarRegraIniciativaFornecedor();
+  });
+}
 
-        if (option) {
-          impactoClienteSelect.value = option.value;
-          impactoClienteSelect.disabled = true;
-        }
-      } else {
-        impactoClienteSelect.disabled = false;
-      }
-    });
-  }
 
   // ==========================================================
   // 11. SEÇÃO 6 - BP (BREAK POINT)
@@ -135,6 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   let fornecedorAtual = null;
   let linhaPnAtual = null;
+
+  let idRaspEmEdicao = null;
+  let numeroRaspEmEdicao = null;
+  let modoEdicao = false;
+
+  let primeiroPnOriginal = null;
+  let contatoOriginalTravado = false;
+  let bpOriginalTravado = false;
 
   // ==========================================================
   // 14. BASE LOCAL TEMPORÁRIA DE FORNECEDORES
@@ -163,25 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   function formatarDataLoteParaTela(dataIso) {
     if (!dataIso) return "";
-
     const data = new Date(dataIso);
     if (Number.isNaN(data.getTime())) return "";
-
     const dia = String(data.getDate()).padStart(2, "0");
     const mes = String(data.getMonth() + 1).padStart(2, "0");
     const ano = String(data.getFullYear()).slice(-2);
-
     return `${dia}/${mes}/${ano}`;
   }
 
   function montarDataHoraUtc(data, hora) {
     if (!data || !hora) return null;
-
     const dataHoraLocal = new Date(`${data}T${hora}:00`);
-    if (Number.isNaN(dataHoraLocal.getTime())) {
-      return null;
-    }
-
+    if (Number.isNaN(dataHoraLocal.getTime())) return null;
     return dataHoraLocal.toISOString();
   }
 
@@ -207,23 +198,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatarDataPtBr(dataValor) {
     if (!dataValor) return "--/--/----";
-
     const data = new Date(dataValor);
-    if (Number.isNaN(data.getTime())) {
-      return "--/--/----";
-    }
-
+    if (Number.isNaN(data.getTime())) return "--/--/----";
     return data.toLocaleDateString("pt-BR");
   }
 
   function formatarDataParaExibicao(valor) {
     if (!valor) return "--/--/----";
-
     const data = new Date(valor);
-    if (Number.isNaN(data.getTime())) {
-      return "--/--/----";
-    }
-
+    if (Number.isNaN(data.getTime())) return "--/--/----";
     return data.toLocaleDateString("pt-BR");
   }
 
@@ -238,6 +221,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function vinEhValido(valor) {
     return /^[A-HJ-NPR-Z0-9]{17}$/.test(valor);
+  }
+
+  function textoTemConteudoReal(valor) {
+    const texto = String(valor || "").trim().toLowerCase();
+    return texto !== "" && texto !== "não contatado" && texto !== "nao contatado";
+  }
+
+  function bpTemConteudoNoRasp(rasp) {
+    return !!(
+      rasp?.bpTexto ||
+      rasp?.bpSerie ||
+      rasp?.bpDatahora ||
+      rasp?.bpDataHora ||
+      rasp?.bp_datahora ||
+      rasp?.breakpointCodigo ||
+      rasp?.breakpointTexto
+    );
   }
 
   // ==========================================================
@@ -363,6 +363,136 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function bloquearCampo(input, bloquear = true) {
+  if (!input) return;
+
+  input.readOnly = bloquear;
+  input.disabled = false;
+
+  if (bloquear) {
+    input.classList.add("system-field");
+  } else {
+    input.classList.remove("system-field");
+  }
+}
+
+
+ function bloquearSelect(select, bloquear = true) {
+  if (!select) return;
+
+  select.disabled = bloquear;
+
+  if (bloquear) {
+    select.classList.add("system-field");
+  } else {
+    select.classList.remove("system-field");
+  }
+}
+
+
+
+  function travarPrimeiroPnOriginalSeNecessario() {
+  if (!pnTableBody || !primeiroPnOriginal) return;
+
+  const linhas = [...pnTableBody.querySelectorAll(".pn-row")];
+
+  linhas.forEach((linha) => {
+    const pnInput = linha.querySelector(".pn-input");
+    const dataLoteInput = linha.querySelector(".data-lote-inicial");
+    const removeBtn = linha.querySelector(".remove-row");
+    const principalRadio = linha.querySelector(".pn-principal");
+    const valorPn = normalizarNumero(pnInput?.value || "");
+
+    if (valorPn === primeiroPnOriginal) {
+      if (pnInput) {
+  pnInput.readOnly = true;
+  pnInput.disabled = false;
+  pnInput.classList.add("system-field");
+}
+
+if (dataLoteInput) {
+  dataLoteInput.readOnly = true;
+  dataLoteInput.disabled = false;
+  dataLoteInput.classList.add("system-field");
+}
+
+const descricaoPnInput = linha.querySelector(".pn-descricao");
+if (descricaoPnInput) {
+  descricaoPnInput.readOnly = true;
+  descricaoPnInput.disabled = false;
+  descricaoPnInput.classList.add("system-field");
+}
+
+
+      if (removeBtn) {
+        removeBtn.disabled = true;
+        removeBtn.title = "O PN original da criação não pode ser removido.";
+      }
+
+      if (principalRadio) {
+        principalRadio.disabled = true;
+      }
+    }
+  });
+}
+
+
+  function aplicarTravaContato() {
+    bloquearCampo(nomeContatoInput, contatoOriginalTravado);
+    bloquearCampo(dataContatoInput, contatoOriginalTravado);
+  }
+
+  function aplicarTravaBp() {
+    bloquearSelect(tipoReferenciaBp, bpOriginalTravado);
+    bloquearCampo(dataBp, bpOriginalTravado);
+    bloquearCampo(horaBp, bpOriginalTravado);
+    bloquearCampo(vinBp, bpOriginalTravado);
+    bloquearCampo(localCelulaBp, bpOriginalTravado);
+    bloquearCampo(comoIdentificadoBp, bpOriginalTravado);
+
+    if (!bpOriginalTravado) {
+      controlarTipoBp();
+    }
+  }
+
+  function limparEstadoEdicao() {
+    modoEdicao = false;
+    idRaspEmEdicao = null;
+    numeroRaspEmEdicao = null;
+    primeiroPnOriginal = null;
+    contatoOriginalTravado = false;
+    bpOriginalTravado = false;
+  }
+
+  function aplicarRegraIniciativaFornecedor() {
+  if (!iniciativaFornecedorInput || !impactoClienteSelect) return;
+
+  if (iniciativaFornecedorInput.checked) {
+    const optionFornecedor = Array.from(impactoClienteSelect.options).find((opt) => {
+      const texto = (opt.textContent || "").trim().toLowerCase();
+      return (
+        texto === "iniciado - fornecedor" ||
+        texto === "iniciado-fornecedor" ||
+        texto.includes("iniciado") && texto.includes("fornecedor")
+      );
+    });
+
+    if (optionFornecedor) {
+      impactoClienteSelect.value = optionFornecedor.value;
+    }
+
+    impactoClienteSelect.disabled = true;
+  } else {
+    impactoClienteSelect.disabled = false;
+
+    if (impactoClienteSelect.value) {
+      impactoClienteSelect.value = "";
+    }
+  }
+}
+
+
+
   async function preencherFormularioRasp(detalhe) {
     const rasp = detalhe?.rasp;
     const pns = detalhe?.pns || [];
@@ -371,6 +501,15 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Detalhe do RASP veio sem objeto principal.");
       return;
     }
+
+    idRaspEmEdicao = rasp.idRasp ?? null;
+    numeroRaspEmEdicao = rasp.numeroRasp ?? null;
+    modoEdicao = true;
+
+    primeiroPnOriginal = pns.length > 0 ? normalizarNumero(pns[0].pn || "") : null;
+    contatoOriginalTravado =
+      textoTemConteudoReal(rasp.nomeContato) || !!rasp.dataContato;
+    bpOriginalTravado = bpTemConteudoNoRasp(rasp);
 
     console.log("RASP para preenchimento:", rasp);
     console.log("PNs do RASP:", pns);
@@ -396,7 +535,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ==========================================================
     // 3) OCORRÊNCIA
-    // OBS: hoje o backend só guarda descricaoProblema
     // ==========================================================
     if (descricaoInicialInput) descricaoInicialInput.value = rasp.descricaoProblema || "";
     if (resumoInput) resumoInput.value = rasp.descricaoProblema || "";
@@ -415,6 +553,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (dunsInput) dunsInput.value = fornecedor.duns || "";
           if (nomeFornecedorInput) nomeFornecedorInput.value = fornecedor.nome || "";
+
           if (tipoFornecedorInput) {
             tipoFornecedorInput.value =
               fornecedor.tipoFornecedor ||
@@ -483,16 +622,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (majorRaspSelect) {
-      majorRaspSelect.value = rasp.idMajorRasp ? String(rasp.idMajorRasp) : "";
-    }
+  majorRaspSelect.value = rasp.idMajorRasp ? String(rasp.idMajorRasp) : "";
+}
 
-    if (impactoClienteSelect) {
-      if (iniciativaFornecedorInput?.checked) {
-        impactoClienteSelect.disabled = true;
-      } else {
-        impactoClienteSelect.disabled = false;
-      }
-    }
+aplicarRegraIniciativaFornecedor();
+
 
     // ==========================================================
     // 7) COMPLEMENTARES
@@ -528,6 +662,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    bloquearCampo(aprovadorFtIdInput, true);
+
     // ==========================================================
     // 9) BP
     // ==========================================================
@@ -540,8 +676,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tipoReferenciaBp.value = "";
       }
     }
-
-    controlarTipoBp();
 
     const bpDataHoraValor =
       rasp.bpDatahora ||
@@ -567,8 +701,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (vinBp) vinBp.value = rasp.bpSerie || "";
     if (localCelulaBp) localCelulaBp.value = rasp.breakpointCodigo || "";
     if (comoIdentificadoBp) comoIdentificadoBp.value = rasp.bpTexto || "";
-
-    validarBpEmTela();
 
     // ==========================================================
     // 10) PNs
@@ -686,11 +818,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
           garantirPnPrincipal();
           aplicarValidacoesPnEmTela();
+          travarPrimeiroPnOriginalSeNecessario();
         }
       } else {
         console.log("Nenhum PN retornado no detalhe.");
       }
     }
+
+    aplicarTravaContato();
+    aplicarTravaBp();
+    validarBpEmTela();
 
     // ==========================================================
     // 11) CONTROLE VISUAL
@@ -757,9 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function destacarCopiaRasp() {
     if (!raspIndicadorBox) return;
-
     raspIndicadorBox.classList.add("copiado");
-
     setTimeout(() => {
       raspIndicadorBox.classList.remove("copiado");
     }, 1000);
@@ -1357,18 +1492,12 @@ document.addEventListener("DOMContentLoaded", () => {
     limparFornecedorDerivado();
 
     if (!duns) {
-      definirStatusDuns(
-        "Informe um DUNS válido para localizar o fornecedor.",
-        "neutral"
-      );
+      definirStatusDuns("Informe um DUNS válido para localizar o fornecedor.", "neutral");
       return { ok: false, motivo: "vazio" };
     }
 
     if (!validarDunsFormato(duns)) {
-      definirStatusDuns(
-        "O DUNS deve conter exatamente 9 dígitos numéricos.",
-        "error"
-      );
+      definirStatusDuns("O DUNS deve conter exatamente 9 dígitos numéricos.", "error");
       return { ok: false, motivo: "formato" };
     }
 
@@ -1393,10 +1522,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (resultadoApi.motivo === "falha_conexao") {
-        definirStatusDuns(
-          "Não foi possível conectar à API no momento.",
-          "error"
-        );
+        definirStatusDuns("Não foi possível conectar à API no momento.", "error");
         return { ok: false, motivo: "falha_conexao" };
       }
 
@@ -1625,7 +1751,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     pnTableBody.innerHTML = "";
     pnTableBody.appendChild(criarLinhaPn({ principal: true }));
-
     aplicarValidacoesPnEmTela();
   }
 
@@ -1794,6 +1919,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // 37. BP - CONTROLE DE VIN x LOCAL
   // ==========================================================
   function controlarTipoBp() {
+    if (bpOriginalTravado) return;
+
     const tipo = tipoReferenciaBp?.value ?? "";
 
     if (tipo === "VIN") {
@@ -1981,6 +2108,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function limparFormularioParaNovoRasp() {
     if (form) form.reset();
 
+    limparEstadoEdicao();
+
     if (analistaInput) analistaInput.value = NOME_USUARIO_LOGADO;
     if (statusInicialInput) statusInicialInput.value = "Em análise";
 
@@ -2021,13 +2150,19 @@ document.addEventListener("DOMContentLoaded", () => {
     if (origemSelect) origemSelect.value = "";
     if (maiorImpactoSelect) maiorImpactoSelect.value = "";
     if (impactoQualidadeSelect) impactoQualidadeSelect.value = "";
+
     if (impactoClienteSelect) {
       impactoClienteSelect.value = "";
       impactoClienteSelect.disabled = false;
     }
+    if (iniciativaFornecedorInput) {
+      iniciativaFornecedorInput.checked = false;
+    }
+
     if (modeloVeiculoSelect) modeloVeiculoSelect.value = "";
     if (turnoRaspSelect) turnoRaspSelect.value = "";
     if (pilotoRaspSelect) pilotoRaspSelect.value = "";
+
     if (majorRaspSelect) {
       majorRaspSelect.value = "";
       selecionarMajorPadrao();
@@ -2039,6 +2174,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (vinBp) vinBp.value = "";
     if (localCelulaBp) localCelulaBp.value = "";
     if (comoIdentificadoBp) comoIdentificadoBp.value = "";
+
+    aplicarTravaContato();
+    aplicarTravaBp();
 
     validarRegraContato();
     ocultarMensagemRasp();
@@ -2095,60 +2233,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payloadRascunho = {
       idUsuarioExecutor: ID_USUARIO_LOGADO,
-
       idModeloVeiculoRasp: modeloVeiculoSelect?.value
         ? Number(modeloVeiculoSelect.value)
         : null,
-
       idSetorRasp: setorSelect?.value
         ? Number(setorSelect.value)
         : null,
-
       idTurnoRasp: turnoRaspSelect?.value
         ? Number(turnoRaspSelect.value)
         : null,
-
       idIndiceOperacionalRasp: origemSelect?.value
         ? Number(origemSelect.value)
         : null,
-
       idOrigemFabricacaoRasp:
         tipoFornecedorInput?.value === "IMPORTADO"
           ? 2
           : tipoFornecedorInput?.value === "LOCAL"
             ? 1
             : null,
-
       idPilotoRasp: pilotoRaspSelect?.value
         ? Number(pilotoRaspSelect.value)
         : null,
-
       idMaiorImpactoRasp: maiorImpactoSelect?.value
         ? Number(maiorImpactoSelect.value)
         : null,
-
       idImpactoQualidadeRasp: impactoQualidadeSelect?.value
         ? Number(impactoQualidadeSelect.value)
         : null,
-
       idImpactoClienteRasp: impactoClienteSelect?.value
         ? Number(impactoClienteSelect.value)
         : null,
-
       idMajorRasp: majorRaspSelect?.value
         ? Number(majorRaspSelect.value)
         : null,
-
       idGmAliadoRasp: gmAliadoSelect?.value
         ? Number(gmAliadoSelect.value)
         : null,
-
       rdNumero: rdNumeroInput?.value?.trim() || null,
       campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
       nomeContato: nomeContatoInput?.value?.trim() || null,
       dataContato: dataContatoInput?.value || null,
       iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
-
       bpTexto: comoIdentificadoBp?.value?.trim() || null,
       bpSerie: vinBp?.value?.trim() || null,
       bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
@@ -2182,7 +2307,6 @@ document.addEventListener("DOMContentLoaded", () => {
   async function validarFormularioAntesDoEnvio() {
     const resultadoDuns = await processarDuns();
     const duns = normalizarNumero(dunsInput?.value);
-
     const erros = [];
 
     if (!duns) {
@@ -2220,7 +2344,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let nomeContato = nomeContatoInput?.value.trim() ?? "";
     const dataContato = dataContatoInput?.value ?? "";
-
     const pns = coletarPns();
 
     if (!nomeContato) {
@@ -2334,9 +2457,107 @@ document.addEventListener("DOMContentLoaded", () => {
       return false;
     }
 
-    const payloadCriacao = montarPayloadCriacaoRasp(validacao.descricaoInicial);
-
     try {
+      // ======================================================
+      // MODO EDIÇÃO
+      // ======================================================
+      if (modoEdicao && idRaspEmEdicao) {
+        const payloadEdicao = {
+          idUsuarioExecutor: ID_USUARIO_LOGADO,
+          descricaoProblema: validacao.descricaoInicial,
+
+          idModeloVeiculoRasp: modeloVeiculoSelect?.value
+            ? Number(modeloVeiculoSelect.value)
+            : null,
+          idSetorRasp: setorSelect?.value
+            ? Number(setorSelect.value)
+            : null,
+          idTurnoRasp: turnoRaspSelect?.value
+            ? Number(turnoRaspSelect.value)
+            : null,
+          idIndiceOperacionalRasp: origemSelect?.value
+            ? Number(origemSelect.value)
+            : null,
+          idOrigemFabricacaoRasp:
+            tipoFornecedorInput?.value === "IMPORTADO"
+              ? 2
+              : tipoFornecedorInput?.value === "LOCAL"
+                ? 1
+                : null,
+          idPilotoRasp: pilotoRaspSelect?.value
+            ? Number(pilotoRaspSelect.value)
+            : null,
+          idMaiorImpactoRasp: maiorImpactoSelect?.value
+            ? Number(maiorImpactoSelect.value)
+            : null,
+          idImpactoQualidadeRasp: impactoQualidadeSelect?.value
+            ? Number(impactoQualidadeSelect.value)
+            : null,
+          idImpactoClienteRasp: impactoClienteSelect?.value
+            ? Number(impactoClienteSelect.value)
+            : null,
+          idMajorRasp: majorRaspSelect?.value
+            ? Number(majorRaspSelect.value)
+            : null,
+          idGmAliadoRasp: gmAliadoSelect?.value
+            ? Number(gmAliadoSelect.value)
+            : null,
+
+          rdNumero: rdNumeroInput?.value?.trim() || null,
+          campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
+          nomeContato: nomeContatoInput?.value?.trim() || null,
+          dataContato: dataContatoInput?.value || null,
+          iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
+
+          bpTexto: comoIdentificadoBp?.value?.trim() || null,
+          bpSerie: vinBp?.value?.trim() || null,
+          bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
+          breakpointCodigo: localCelulaBp?.value?.trim() || null
+        };
+
+        console.log("payloadEdicao =>", payloadEdicao);
+
+        const responseEdicao = await fetch(`${API_BASE_URL}/rasp/${idRaspEmEdicao}/rascunho`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payloadEdicao)
+        });
+
+        if (!responseEdicao.ok) {
+          const mensagemErro = await responseEdicao.text();
+          console.error("Erro ao atualizar RASP em edição:", mensagemErro);
+          throw new Error(`Erro ao atualizar RASP. Detalhe: ${mensagemErro}`);
+        }
+
+        await responseEdicao.json();
+
+        atualizarNumeroRaspDisplay(numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`);
+        mostrarMensagemRasp(
+          `RASP ${numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`} atualizado com sucesso.`
+        );
+
+        if (btnCriarRasp) {
+          btnCriarRasp.textContent = "Salvar alterações";
+          btnCriarRasp.disabled = false;
+          btnCriarRasp.classList.remove("success-btn");
+          btnCriarRasp.classList.add("primary-btn");
+        }
+
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+
+        return true;
+      }
+
+      // ======================================================
+      // MODO CRIAÇÃO
+      // ======================================================
+      const payloadCriacao = montarPayloadCriacaoRasp(validacao.descricaoInicial);
+
       const responseRasp = await fetch(`${API_BASE_URL}/rasp`, {
         method: "POST",
         headers: {
@@ -2375,6 +2596,28 @@ document.addEventListener("DOMContentLoaded", () => {
       await salvarPnsDoRasp(idRaspCriado, validacao.pns, validacao.duns);
       await atualizarRascunhoRasp(idRaspCriado);
 
+      idRaspEmEdicao = idRaspCriado;
+      numeroRaspEmEdicao = numeroRaspCriado || null;
+      modoEdicao = true;
+
+      if (validacao.pns.length > 0) {
+        primeiroPnOriginal = normalizarNumero(validacao.pns[0].pn || "");
+      }
+
+      contatoOriginalTravado =
+        textoTemConteudoReal(nomeContatoInput?.value) || !!dataContatoInput?.value;
+
+      bpOriginalTravado =
+        !!(comoIdentificadoBp?.value?.trim() ||
+        vinBp?.value?.trim() ||
+        localCelulaBp?.value?.trim() ||
+        dataBp?.value ||
+        horaBp?.value);
+
+      aplicarTravaContato();
+      aplicarTravaBp();
+      travarPrimeiroPnOriginalSeNecessario();
+
       atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
       atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
 
@@ -2402,6 +2645,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   if (nomeContatoInput) {
     nomeContatoInput.addEventListener("focus", () => {
+      if (contatoOriginalTravado) return;
+
       const valor = nomeContatoInput.value.trim().toLowerCase();
 
       if (valor === "não contatado" || valor === "nao contatado") {
@@ -2411,21 +2656,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     nomeContatoInput.addEventListener("blur", () => {
+      if (contatoOriginalTravado) return;
+
       if (!nomeContatoInput.value.trim()) {
         nomeContatoInput.value = "Não Contatado";
         nomeContatoInput.classList.add("input-placeholder");
       }
+
       validarRegraContato();
     });
 
     nomeContatoInput.addEventListener("input", () => {
+      if (contatoOriginalTravado) return;
+
       nomeContatoInput.classList.remove("input-placeholder");
       validarRegraContato();
     });
   }
 
   if (dataContatoInput) {
-    dataContatoInput.addEventListener("change", validarRegraContato);
+    dataContatoInput.addEventListener("change", () => {
+      if (contatoOriginalTravado) return;
+      validarRegraContato();
+    });
   }
 
   // ==========================================================
@@ -2488,12 +2741,22 @@ document.addEventListener("DOMContentLoaded", () => {
       pnTableBody.appendChild(criarLinhaPn());
       garantirPnPrincipal();
       aplicarValidacoesPnEmTela();
+      travarPrimeiroPnOriginalSeNecessario();
     });
   }
 
   if (pnTableBody) {
     pnTableBody.addEventListener("click", (event) => {
       if (!event.target.classList.contains("remove-row")) return;
+
+      const linha = event.target.closest("tr");
+      const pnInput = linha?.querySelector(".pn-input");
+      const valorPn = normalizarNumero(pnInput?.value || "");
+
+      if (primeiroPnOriginal && valorPn === primeiroPnOriginal) {
+        alert("O PN original da criação não pode ser removido.");
+        return;
+      }
 
       const rows = obterRowsPn();
 
@@ -2502,9 +2765,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const linha = event.target.closest("tr");
       const eraPrincipal = linha.querySelector(".pn-principal").checked;
-
       linha.remove();
 
       if (eraPrincipal) {
@@ -2512,11 +2773,25 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       aplicarValidacoesPnEmTela();
+      travarPrimeiroPnOriginalSeNecessario();
     });
 
     pnTableBody.addEventListener("input", async (event) => {
       const linha = event.target.closest(".pn-row");
       if (!linha) return;
+
+      const pnInputAtual = linha.querySelector(".pn-input");
+      const valorPnAtual = normalizarNumero(pnInputAtual?.value || "");
+
+      if (
+        event.target.classList.contains("pn-input") &&
+        primeiroPnOriginal &&
+        valorPnAtual === primeiroPnOriginal &&
+        pnInputAtual?.readOnly
+      ) {
+        pnInputAtual.value = primeiroPnOriginal;
+        return;
+      }
 
       normalizarInputsPnDaLinha(linha);
 
@@ -2532,9 +2807,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       aplicarValidacoesPnEmTela();
+      travarPrimeiroPnOriginalSeNecessario();
     });
 
     pnTableBody.addEventListener("change", (event) => {
+      const linha = event.target.closest(".pn-row");
+      const pnInput = linha?.querySelector(".pn-input");
+      const valorPn = normalizarNumero(pnInput?.value || "");
+
+      if (
+        event.target.classList.contains("pn-principal") &&
+        primeiroPnOriginal &&
+        valorPn === primeiroPnOriginal
+      ) {
+        event.target.checked = true;
+      }
+
       if (
         event.target.classList.contains("pn-principal") ||
         event.target.classList.contains("data-lote-inicial") ||
@@ -2543,6 +2831,7 @@ document.addEventListener("DOMContentLoaded", () => {
         event.target.classList.contains("qtd-rejeitada")
       ) {
         aplicarValidacoesPnEmTela();
+        travarPrimeiroPnOriginalSeNecessario();
       }
     });
   }
@@ -2606,6 +2895,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       garantirPnPrincipal();
       aplicarValidacoesPnEmTela();
+      travarPrimeiroPnOriginalSeNecessario();
 
       let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
 
@@ -2627,32 +2917,46 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   if (tipoReferenciaBp) {
     tipoReferenciaBp.addEventListener("change", () => {
+      if (bpOriginalTravado) return;
       controlarTipoBp();
       validarBpEmTela();
     });
   }
 
   if (dataBp) {
-    dataBp.addEventListener("change", validarBpEmTela);
+    dataBp.addEventListener("change", () => {
+      if (bpOriginalTravado) return;
+      validarBpEmTela();
+    });
   }
 
   if (horaBp) {
-    horaBp.addEventListener("change", validarBpEmTela);
+    horaBp.addEventListener("change", () => {
+      if (bpOriginalTravado) return;
+      validarBpEmTela();
+    });
   }
 
   if (vinBp) {
     vinBp.addEventListener("input", () => {
+      if (bpOriginalTravado) return;
       vinBp.value = normalizarVin(vinBp.value);
       validarBpEmTela();
     });
   }
 
   if (localCelulaBp) {
-    localCelulaBp.addEventListener("input", validarBpEmTela);
+    localCelulaBp.addEventListener("input", () => {
+      if (bpOriginalTravado) return;
+      validarBpEmTela();
+    });
   }
 
   if (comoIdentificadoBp) {
-    comoIdentificadoBp.addEventListener("input", validarBpEmTela);
+    comoIdentificadoBp.addEventListener("input", () => {
+      if (bpOriginalTravado) return;
+      validarBpEmTela();
+    });
   }
 
   // ==========================================================
@@ -2675,12 +2979,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (form) {
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
-
-      const criadoComSucesso = await enviarFormularioRasp();
-
-      if (criadoComSucesso) {
-        marcarBotaoRaspComoCriado();
-      }
+      await enviarFormularioRasp();
     });
   }
 
@@ -2709,16 +3008,19 @@ document.addEventListener("DOMContentLoaded", () => {
   async function inicializarTelaRasp() {
     inicializarCamposFixos();
     ocultarMensagemRasp();
-
     aplicarMascaraDataLote();
     validarRegraContato();
 
     await carregarDominiosComplementares();
+    aplicarRegraIniciativaFornecedor();
     await atualizarAprovadorFtPorTurno();
 
     aplicarValidacoesPnEmTela();
+    aplicarTravaContato();
+    aplicarTravaBp();
     controlarTipoBp();
     validarBpEmTela();
+    aplicarRegraIniciativaFornecedor();
 
     definirStatusDuns(
       "Informe um DUNS válido para localizar o fornecedor.",
