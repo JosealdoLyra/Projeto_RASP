@@ -1572,98 +1572,125 @@ aplicarRegraIniciativaFornecedor();
   }
 
   function criarLinhaPn({
-    principal = false,
-    pn = "",
-    dataLoteInicial = "",
-    qtdSuspeita = 0,
-    qtdChecada = 0,
-    qtdRejeitada = 0
-  } = {}) {
-    const tr = document.createElement("tr");
-    tr.className = "pn-row";
+  principal = false,
+  pn = "",
+  dataLoteInicial = "",
+  qtdSuspeita = 0,
+  qtdChecada = 0,
+  qtdRejeitada = 0,
+  emSelecao = false
+} = {}) {
+  const tr = document.createElement("tr");
+  tr.className = "pn-row";
 
-    tr.innerHTML = `
-      <td class="center-cell">
-        <input
-          type="radio"
-          name="pnPrincipal"
-          class="pn-principal"
-          ${principal ? "checked" : ""}
-        />
-      </td>
-      <td>
-        <input
-          type="text"
-          class="pn-input"
-          placeholder="8 dígitos"
-          value="${pn}"
-        />
-        <input
-          type="hidden"
-          class="pn-id"
-          value=""
-        />
-      </td>
-      <td>
-        <input
-          type="text"
-          class="pn-descricao system-field"
-          value=""
-          placeholder="Descrição do PN"
-          readonly
-        />
-      </td>
-      <td>
-        <input
-          type="text"
-          class="data-lote-inicial"
-          placeholder="Ex.: 12/03/26"
-          inputmode="numeric"
-          maxlength="8"
-          value="${dataLoteInicial}"
-        />
-      </td>
-      <td>
-        <input
-          type="number"
-          class="qtd-suspeita qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdSuspeita}"
-        />
-      </td>
-      <td>
-        <input
-          type="number"
-          class="qtd-checada qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdChecada}"
-        />
-      </td>
-      <td>
-        <input
-          type="number"
-          class="qtd-rejeitada qtd-compacta"
-          min="0"
-          step="1"
-          value="${qtdRejeitada}"
-        />
-      </td>
-      <td class="center-cell">
-        <button
-          type="button"
-          class="remove-row icon-btn"
-          title="Remover linha"
-          aria-label="Remover linha"
-        >
-          ×
-        </button>
-      </td>
-    `;
+  tr.innerHTML = `
+    <td class="center-cell">
+      <input
+        type="radio"
+        name="pnPrincipal"
+        class="pn-principal"
+        ${principal ? "checked" : ""}
+      />
+    </td>
 
-    return tr;
-  }
+    <td>
+      <input
+        type="text"
+        class="pn-input"
+        placeholder="8 dígitos"
+        value="${pn}"
+      />
+      <input
+        type="hidden"
+        class="pn-id"
+        value=""
+      />
+    </td>
+
+    <td>
+      <input
+        type="text"
+        class="pn-descricao system-field"
+        value=""
+        placeholder="Descrição do PN"
+        readonly
+      />
+    </td>
+
+    <td>
+      <input
+        type="text"
+        class="data-lote-inicial"
+        placeholder="Ex.: 12/03/26"
+        inputmode="numeric"
+        maxlength="8"
+        value="${dataLoteInicial}"
+      />
+    </td>
+
+    <td>
+      <input
+        type="number"
+        class="qtd-suspeita qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdSuspeita}"
+      />
+    </td>
+
+    <td>
+      <input
+        type="number"
+        class="qtd-checada qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdChecada}"
+      />
+    </td>
+
+    <td>
+      <input
+        type="number"
+        class="qtd-rejeitada qtd-compacta"
+        min="0"
+        step="1"
+        value="${qtdRejeitada}"
+      />
+    </td>
+
+    <td class="center-cell">
+      <span class="pn-badge ${emSelecao ? "pn-badge-selecao" : "pn-badge-neutro"}">
+        ${emSelecao ? "Em seleção" : "Fora"}
+      </span>
+    </td>
+
+    <td class="center-cell">
+      <button
+        type="button"
+        class="btn-detalhes-linha"
+        title="Ver detalhes operacionais do PN"
+        aria-label="Ver detalhes operacionais do PN"
+      >
+        Detalhes
+      </button>
+    </td>
+
+    <td class="center-cell">
+      <button
+        type="button"
+        class="remove-row icon-btn"
+        title="Remover linha"
+        aria-label="Remover linha"
+      >
+        ×
+      </button>
+    </td>
+  `;
+
+  return tr;
+}
+
+
 
   function coletarPns() {
     const rows = obterRowsPn();
@@ -2733,12 +2760,17 @@ aplicarRegraIniciativaFornecedor();
 
   // ==========================================================
   // 48. EVENTOS - TABELA DE PNs
+  // Finalidade:
+  // - remover linha
+  // - processar PN digitado
+  // - validar principal / lote / quantidades
+  // - abrir e fechar o detalhe operacional do PN
   // ==========================================================
   if (addPnRowBtn) {
     addPnRowBtn.addEventListener("click", () => {
       if (!pnTableBody) return;
 
-      pnTableBody.appendChild(criarLinhaPn());
+      pnTableBody.appendChild(criarLinhaPn({ principal: false }));
       garantirPnPrincipal();
       aplicarValidacoesPnEmTela();
       travarPrimeiroPnOriginalSeNecessario();
@@ -2747,11 +2779,29 @@ aplicarRegraIniciativaFornecedor();
 
   if (pnTableBody) {
     pnTableBody.addEventListener("click", (event) => {
-      if (!event.target.classList.contains("remove-row")) return;
+      const alvo = event.target;
 
-      const linha = event.target.closest("tr");
-      const pnInput = linha?.querySelector(".pn-input");
-      const valorPn = normalizarNumero(pnInput?.value || "");
+      // ------------------------------------------------------
+      // 48.1 ABRIR / FECHAR DETALHES DO PN
+      // ------------------------------------------------------
+      if (alvo.classList.contains("btn-detalhes-linha")) {
+        toggleDetalhePnLinha(alvo);
+        return;
+      }
+
+      // ------------------------------------------------------
+      // 48.2 REMOVER LINHA
+      // ------------------------------------------------------
+      if (!alvo.classList.contains("remove-row")) {
+        return;
+      }
+
+      const linha = alvo.closest(".pn-row");
+      if (!linha) return;
+
+      const valorPn = normalizarNumero(
+        linha.querySelector(".pn-input")?.value || ""
+      );
 
       if (primeiroPnOriginal && valorPn === primeiroPnOriginal) {
         alert("O PN original da criação não pode ser removido.");
@@ -2765,7 +2815,14 @@ aplicarRegraIniciativaFornecedor();
         return;
       }
 
-      const eraPrincipal = linha.querySelector(".pn-principal").checked;
+      const linhaDetalhe = linha.nextElementSibling;
+      const eraPrincipal = linha.querySelector(".pn-principal")?.checked;
+
+      // Remove também a linha de detalhe, se existir
+      if (linhaDetalhe && linhaDetalhe.classList.contains("pn-detalhe-row")) {
+        linhaDetalhe.remove();
+      }
+
       linha.remove();
 
       if (eraPrincipal) {
@@ -2783,6 +2840,9 @@ aplicarRegraIniciativaFornecedor();
       const pnInputAtual = linha.querySelector(".pn-input");
       const valorPnAtual = normalizarNumero(pnInputAtual?.value || "");
 
+      // ------------------------------------------------------
+      // 48.3 BLOQUEIO DO PN ORIGINAL
+      // ------------------------------------------------------
       if (
         event.target.classList.contains("pn-input") &&
         primeiroPnOriginal &&
@@ -2795,6 +2855,9 @@ aplicarRegraIniciativaFornecedor();
 
       normalizarInputsPnDaLinha(linha);
 
+      // ------------------------------------------------------
+      // 48.4 PROCESSAMENTO AUTOMÁTICO DO PN
+      // ------------------------------------------------------
       if (event.target.classList.contains("pn-input")) {
         const pnNormalizado = normalizarNumero(event.target.value).slice(0, 8);
         event.target.value = pnNormalizado;
@@ -2812,9 +2875,14 @@ aplicarRegraIniciativaFornecedor();
 
     pnTableBody.addEventListener("change", (event) => {
       const linha = event.target.closest(".pn-row");
-      const pnInput = linha?.querySelector(".pn-input");
+      if (!linha) return;
+
+      const pnInput = linha.querySelector(".pn-input");
       const valorPn = normalizarNumero(pnInput?.value || "");
 
+      // ------------------------------------------------------
+      // 48.5 MANTÉM O PN ORIGINAL COMO PRINCIPAL/BLOQUEADO
+      // ------------------------------------------------------
       if (
         event.target.classList.contains("pn-principal") &&
         primeiroPnOriginal &&
@@ -2823,6 +2891,9 @@ aplicarRegraIniciativaFornecedor();
         event.target.checked = true;
       }
 
+      // ------------------------------------------------------
+      // 48.6 REVALIDAÇÃO DOS CAMPOS DA LINHA
+      // ------------------------------------------------------
       if (
         event.target.classList.contains("pn-principal") ||
         event.target.classList.contains("data-lote-inicial") ||
@@ -2835,6 +2906,8 @@ aplicarRegraIniciativaFornecedor();
       }
     });
   }
+
+
 
   // ==========================================================
   // 49. EVENTOS - IMPORTAÇÃO EM MASSA DE PNs
@@ -3006,27 +3079,164 @@ aplicarRegraIniciativaFornecedor();
   // 53. INICIALIZAÇÃO FINAL DA TELA
   // ==========================================================
   async function inicializarTelaRasp() {
-    inicializarCamposFixos();
-    ocultarMensagemRasp();
-    aplicarMascaraDataLote();
-    validarRegraContato();
+  inicializarCamposFixos();
+  ocultarMensagemRasp();
+  aplicarMascaraDataLote();
+  validarRegraContato();
 
-    await carregarDominiosComplementares();
-    aplicarRegraIniciativaFornecedor();
-    await atualizarAprovadorFtPorTurno();
+  await carregarDominiosComplementares();
+  aplicarRegraIniciativaFornecedor();
+  await atualizarAprovadorFtPorTurno();
 
-    aplicarValidacoesPnEmTela();
-    aplicarTravaContato();
-    aplicarTravaBp();
-    controlarTipoBp();
-    validarBpEmTela();
-    aplicarRegraIniciativaFornecedor();
-
-    definirStatusDuns(
-      "Informe um DUNS válido para localizar o fornecedor.",
-      "neutral"
-    );
+  // ========================================================
+  // GARANTE 1 LINHA INICIAL NA SEÇÃO 4
+  // ========================================================
+  if (pnTableBody && pnTableBody.children.length === 0) {
+    pnTableBody.appendChild(criarLinhaPn({ principal: true }));
   }
+
+  aplicarValidacoesPnEmTela();
+  aplicarTravaContato();
+  aplicarTravaBp();
+  controlarTipoBp();
+  validarBpEmTela();
+  aplicarRegraIniciativaFornecedor();
+
+  definirStatusDuns(
+    "Informe um DUNS válido para localizar o fornecedor.",
+    "neutral"
+  );
+}
+
 
   inicializarTelaRasp();
 });
+
+  /* =========================================================
+     FUNÇÃO: ABRIR / FECHAR DETALHE DO PN
+     Regra:
+     - abre somente a linha de detalhe ligada ao botão clicado
+     - fecha as demais
+     ========================================================= */
+  // ==========================================================
+// ETAPA 2 - DETALHE RECOLHÍVEL POR LINHA DE PN
+// ==========================================================
+function criarLinhaDetalhePn() {
+  const tr = document.createElement("tr");
+  tr.className = "pn-detalhe-row";
+
+  tr.innerHTML = `
+    <td colspan="10" class="pn-detalhe-cell">
+      <div class="pn-detalhe-wrap">
+        <div class="pn-detalhe-header">
+          <h4>Controle operacional do PN</h4>
+          <span>Seleção, trava e QHD no nível do item</span>
+        </div>
+
+        <div class="pn-detalhe-grid">
+          <div class="pn-card-mini">
+            <h5>Seleção</h5>
+
+            <div class="campo">
+              <label>Entrou em seleção</label>
+              <div class="toggle-line">
+                <input type="checkbox" class="pn-entrou-selecao" />
+                <span>Ativar seleção</span>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label>Status</label>
+              <div class="input-readonly">Fora da seleção</div>
+            </div>
+
+            <div class="campo">
+              <label>Entrada em seleção</label>
+              <div class="input-readonly">-</div>
+            </div>
+
+            <div class="campo">
+              <label>Saída da seleção</label>
+              <div class="input-readonly">-</div>
+            </div>
+          </div>
+
+          <div class="pn-card-mini">
+            <h5>Trava</h5>
+
+            <div class="campo">
+              <label>Trava ativa</label>
+              <div class="toggle-line">
+                <input type="checkbox" class="pn-trava-ativa" />
+                <span>Ativar trava</span>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label>Solicitação da trava</label>
+              <div class="input-readonly">-</div>
+            </div>
+
+            <div class="campo">
+              <label>Remoção da trava</label>
+              <div class="input-readonly">-</div>
+            </div>
+          </div>
+
+          <div class="pn-card-mini">
+            <h5>QHD</h5>
+
+            <div class="campo">
+              <label>QHD ativo</label>
+              <div class="toggle-line">
+                <input type="checkbox" class="pn-qhd-ativo" />
+                <span>Ativar QHD</span>
+              </div>
+            </div>
+
+            <div class="campo">
+              <label>Data/hora QHD</label>
+              <div class="input-readonly">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pn-alerta-mini">
+          A seleção pode ser acionada antes da aprovação do RASP. Após a saída,
+          o sistema permitirá ajustes por até 1 hora.
+        </div>
+      </div>
+    </td>
+  `;
+
+  return tr;
+}
+
+function fecharTodosDetalhesPn() {
+  const detalhes = document.querySelectorAll(".pn-detalhe-row");
+  const botoes = document.querySelectorAll(".btn-detalhes-linha");
+
+  detalhes.forEach((linha) => linha.classList.remove("ativo"));
+  botoes.forEach((btn) => (btn.textContent = "Detalhes"));
+}
+
+function toggleDetalhePnLinha(botao) {
+  const linhaPrincipal = botao.closest(".pn-row");
+  if (!linhaPrincipal) return;
+
+  let linhaDetalhe = linhaPrincipal.nextElementSibling;
+
+  if (!linhaDetalhe || !linhaDetalhe.classList.contains("pn-detalhe-row")) {
+    linhaDetalhe = criarLinhaDetalhePn();
+    linhaPrincipal.insertAdjacentElement("afterend", linhaDetalhe);
+  }
+
+  const vaiAbrir = !linhaDetalhe.classList.contains("ativo");
+
+  fecharTodosDetalhesPn();
+
+  if (vaiAbrir) {
+    linhaDetalhe.classList.add("ativo");
+    botao.textContent = "Fechar";
+  }
+}

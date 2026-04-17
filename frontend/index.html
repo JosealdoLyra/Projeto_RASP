@@ -357,166 +357,100 @@
 </section>
 
 
-    <!-- ===============================================
-     SEÇÃO 4 - PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
-     =============================================== -->
-<section class="form-section">
-  <h3>4. PN(s) envolvidos no atendimento inicial</h3>
+<!-- =========================================================
+     SEÇÃO 04: PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
+     Compatível com o app.js atual
+     - mantém ids esperados pela lógica antiga
+     - melhora o visual sem quebrar a funcionalidade
+     ========================================================= -->
+<section class="form-section pn-section">
+  <div class="section-title">
+    <h2>4. PN(s) envolvidos no atendimento inicial</h2>
+    <span>Controle de seleção no nível do PN</span>
+  </div>
 
-  <p class="section-note">
+  <p style="margin-top: -4px; color: var(--cinza-500); font-size: 13px;">
     Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
-    O campo Data/Lote inicial é obrigatório para o PN principal.
+    A seleção, trava e QHD são controlados por PN e independem do fluxo de aprovação.
   </p>
 
-  <p class="section-note warning-note">
-    Após inclusão no processo, exclusões e alterações estruturais devem seguir fluxo controlado.
-    Correções sensíveis devem ser tratadas com apoio administrativo.
-  </p>
-
-  <!-- AÇÕES DA TABELA DE PNs -->
-  <div class="pn-header-line">
-    <div class="pn-header-actions">
-      <button type="button" id="addPnRow" class="secondary-btn">
-        + Adicionar PN
-      </button>
-
-      <button type="button" id="toggleMassPanel" class="secondary-btn">
-        Colar vários PNs
-      </button>
-    </div>
+  <div class="alerta" style="margin-bottom: 14px;">
+    Após a saída da seleção, o sistema permitirá ajustes por até 1 hora.
+    Depois disso, o PN não poderá retornar à seleção no mesmo RASP.
   </div>
 
-  <!-- PAINEL DE IMPORTAÇÃO EM MASSA -->
+  <!-- =======================================================
+       AÇÕES PRINCIPAIS DA SEÇÃO 4
+       IDs compatíveis com app.js
+       ======================================================= -->
+  <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
+    <button id="addPnRow" class="primary-btn" type="button">+ Adicionar PN</button>
+    <button id="toggleMassPanel" class="primary-btn" type="button">Colar vários PNs</button>
+  </div>
+
+  <!-- =======================================================
+       PAINEL DE IMPORTAÇÃO EM MASSA
+       IDs compatíveis com app.js
+       ======================================================= -->
   <div id="massPanel" class="mass-panel">
-    <label for="pnsLoteTextarea">Cole 1 PN por linha</label>
-
-    <textarea
-      id="pnsLoteTextarea"
-      rows="6"
-      placeholder="Exemplo:
-12345678
-87654321
-11223344"
-    ></textarea>
-
-    <div class="mass-panel-actions">
-      <button type="button" id="importMassPns" class="primary-btn">
-        Importar PNs
-      </button>
+    <div class="form-group full" style="margin-bottom: 10px;">
+      <label for="pnsLoteTextarea">Cole vários PNs</label>
+      <textarea
+        id="pnsLoteTextarea"
+        rows="5"
+        placeholder="Cole um PN por linha&#10;Ex.:&#10;11098761&#10;12345678&#10;87654321"
+      ></textarea>
     </div>
 
-    <p class="small-text">
-      Os PNs importados entrarão com quantidades zeradas e sem Data/Lote inicial.
-    </p>
+    <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
+      <button id="importMassPns" class="primary-btn" type="button">Importar PNs</button>
+    </div>
   </div>
 
-  <!-- TABELA DE PNs -->
-  <div class="table-wrapper">
-    <table class="pn-table pn-table-refinada">
+  <!-- =======================================================
+       TABELA PRINCIPAL DE PNs
+       tbody compatível com app.js
+       ======================================================= -->
+  <div class="pn-tabela-wrap">
+    <table class="pn-tabela">
       <thead>
-        <tr>
-          <th class="center-cell th-principal">Principal</th>
-          <th class="th-pn">PN *</th>
-          <th class="th-descricao">Descrição do PN</th>
-          <th class="th-lote">Data/Lote inicial *</th>
-          <th class="th-qtd">Qtd suspeita</th>
-          <th class="th-qtd">Qtd checada</th>
-          <th class="th-qtd">Qtd rejeitada</th>
-          <th class="th-remover"></th>
-        </tr>
-      </thead>
+      <tr>
+        <th class="col-principal">Principal</th>
+        <th class="col-pn">PN *</th>
+        <th class="col-descricao">Descrição do PN</th>
+        <th class="col-data-lote">Data/Lote inicial *</th>
+        <th class="col-qtd">Qtd suspeita</th>
+        <th class="col-qtd">Qtd checada</th>
+        <th class="col-qtd">Qtd rejeitada</th>
+        <th class="col-badge">Seleção</th>
+        <th class="col-acao">Detalhes</th>
+        <th class="col-acao">Ação</th>
+      </tr>
+    </thead>
+
 
       <tbody id="pnTableBody">
-        <tr class="pn-row">
-          <td class="center-cell">
-            <input
-              type="radio"
-              name="pnPrincipal"
-              class="pn-principal"
-              checked
-            />
-          </td>
-
-          <td>
-            <input
-              type="text"
-              class="pn-input"
-              placeholder="8 dígitos"
-            />
-            <input
-              type="hidden"
-              class="pn-id"
-              value=""
-            />
-          </td>
-
-          <td>
-            <input
-              type="text"
-              class="pn-descricao system-field"
-              value=""
-              placeholder="Descrição do PN"
-              readonly
-            />
-          </td>
-
-          <td>
-            <input
-              type="text"
-              class="data-lote-inicial"
-              placeholder="Ex.: 12/03/26"
-              inputmode="numeric"
-            />
-          </td>
-
-          <td>
-            <input
-              type="number"
-              class="qtd-suspeita qtd-compacta"
-              min="0"
-              value="0"
-            />
-          </td>
-
-          <td>
-            <input
-              type="number"
-              class="qtd-checada qtd-compacta"
-              min="0"
-              value="0"
-            />
-          </td>
-
-          <td>
-            <input
-              type="number"
-              class="qtd-rejeitada qtd-compacta"
-              min="0"
-              value="0"
-            />
-          </td>
-
-          <td class="center-cell">
-            <button
-              type="button"
-              class="remove-row icon-btn"
-              title="Remover linha"
-              aria-label="Remover linha"
-            >
-              ×
-            </button>
-          </td>
-        </tr>
+        <!--
+          IMPORTANTE:
+          As linhas serão geradas pelo app.js com criarLinhaPn().
+          Não inserir linha manual fixa aqui.
+        -->
       </tbody>
     </table>
   </div>
 
-  <!-- STATUS GERAL DA TABELA DE PNs -->
-  <div id="pnStatus" class="pn-status pn-status-neutral">
+  <!-- =======================================================
+       STATUS DOS PNs
+       ID compatível com app.js
+       ======================================================= -->
+  <div
+    id="pnStatus"
+    class="pn-status pn-status-neutral"
+    style="margin-top: 12px;"
+  >
     Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
   </div>
 </section>
-
 
 
 <!-- ===============================================

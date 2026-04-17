@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seleção de Peças em Contenção</title>
+
+  <style>
+    /* =========================================================
+       SEÇÃO CSS 01: VARIÁVEIS GLOBAIS
+       ========================================================= */
+    :root {
+      --azul-900: #0f2747;
+      --azul-800: #15365f;
+      --azul-700: #1d4f86;
+      --azul-100: #eaf2fb;
+
+      --cinza-900: #1f2937;
+      --cinza-700: #4b5563;
+      --cinza-500: #6b7280;
+      --cinza-300: #d1d5db;
+      --cinza-200: #e5e7eb;
+      --cinza-100: #f3f4f6;
+
+      --branco: #ffffff;
+      --verde: #0f9d58;
+      --vermelho: #d93025;
+      --amarelo: #b7791f;
+
+      --sombra: 0 10px 24px rgba(0, 0, 0, 0.08);
+      --radius: 14px;
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 02: RESET E BASE
+       ========================================================= */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f6f8fb;
+      color: var(--cinza-900);
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 03: CABEÇALHO SUPERIOR
+       ========================================================= */
+    .topbar {
+      background: linear-gradient(90deg, var(--azul-900), var(--azul-700));
+      color: var(--branco);
+      padding: 18px 28px;
+      box-shadow: var(--sombra);
+    }
+
+    .topbar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .titulo-wrap h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.3px;
+    }
+
+    .titulo-wrap p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    .topbar-info {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 04: CONTAINER E CARTÕES
+       ========================================================= */
+    .container {
+      max-width: 1780px;
+      margin: 16px auto;
+      padding: 0 10px 20px;
+    }
+
+    .card {
+      background: var(--branco);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+      padding: 14px;
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 05: FILTROS SUPERIORES
+       ========================================================= */
+    .filtros {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .campo label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--cinza-700);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .campo input,
+    .campo select {
+      height: 40px;
+      border: 1px solid var(--cinza-300);
+      border-radius: 10px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: var(--branco);
+      color: var(--cinza-900);
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 06: GRID PRINCIPAL
+       ========================================================= */
+    .grid-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2.7fr) minmax(260px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .coluna-esquerda,
+    .coluna-direita {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .coluna-direita {
+      position: sticky;
+      top: 18px;
+    }
+
+    .card-acao {
+      border: 1px solid var(--cinza-200);
+    }
+
+    .subinfo-card {
+      font-size: 12px;
+      color: var(--cinza-500);
+      margin-top: -4px;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--azul-900);
+    }
+
+    .section-title span {
+      font-size: 12px;
+      color: var(--cinza-500);
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 07: TABELA DE ITENS
+       ========================================================= */
+    .tabela-wrap {
+      overflow: auto;
+      border: 1px solid var(--cinza-200);
+      border-radius: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1020px;
+      background: var(--branco);
+    }
+
+    thead th {
+      background: var(--azul-100);
+      color: var(--azul-900);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--cinza-200);
+      white-space: nowrap;
+    }
+
+    tbody td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--cinza-200);
+      font-size: 13px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    tbody tr:hover {
+      background: #f8fbff;
+      cursor: pointer;
+    }
+
+    tbody tr.ativo {
+      background: #eef5ff;
+      outline: 2px solid #b9d3f4;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-verde {
+      background: var(--verde);
+    }
+
+    .dot-amarelo {
+      background: var(--amarelo);
+    }
+
+    .dot-vermelho {
+      background: var(--vermelho);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-trava {
+      background: #fde68a;
+      color: #7c5600;
+    }
+
+    .badge-sem-trava {
+      background: #dbeafe;
+      color: #12467a;
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 08: PAINEL LATERAL / RESUMO
+       ========================================================= */
+    .bloco-info {
+      border: 1px solid var(--cinza-200);
+      border-radius: 12px;
+      padding: 14px;
+      background: #fbfcfe;
+      margin-bottom: 16px;
+    }
+
+    .bloco-info h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: var(--azul-900);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+    }
+
+    .info-item small {
+      display: block;
+      font-size: 11px;
+      color: var(--cinza-500);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .info-item strong {
+      font-size: 14px;
+      color: var(--cinza-900);
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 09: FORMULÁRIO LATERAL
+       ========================================================= */
+    .form-grid-card {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .form-grid-card .campo.full {
+      grid-column: 1;
+    }
+
+    .form-grid-card textarea,
+    .form-grid-card input,
+    .form-grid-card select {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      border: 1px solid var(--cinza-300);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .alerta {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      height: 42px;
+      padding: 0 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-secundario {
+      background: var(--cinza-100);
+      color: var(--cinza-900);
+      border: 1px solid var(--cinza-300);
+    }
+
+    .btn-primario {
+      background: var(--azul-700);
+      color: var(--branco);
+    }
+
+    .rodape-nota {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--cinza-500);
+    }
+
+    /* =========================================================
+       SEÇÃO CSS 10: RESPONSIVIDADE
+       ========================================================= */
+    @media (max-width: 1280px) {
+      .filtros {
+        grid-template-columns: repeat(4, minmax(140px, 1fr));
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .coluna-direita {
+        position: static;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .filtros,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       SEÇÃO HTML 01: CABEÇALHO SUPERIOR
+       ========================================================= -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="titulo-wrap">
+        <h1>Seleção de Peças em Contenção</h1>
+        <p>SAC - S10 SJC • Tela Operacional de Apontamento</p>
+      </div>
+
+      <div class="topbar-info">
+        <div class="pill">Turno Atual: A</div>
+        <div class="pill">Usuário: Terminal Operacional</div>
+        <div class="pill">Somente Itens Ativos</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- =========================================================
+         SEÇÃO HTML 02: FILTROS OPERACIONAIS
+         ========================================================= -->
+    <"section class="card" style="margin-bottom: 18px;">
+      <div class="section-title">"
+        <h2>Filtros Operacionais</h2>
+        <span>A tela exibe apenas itens em seleção ativa e aptos a receber apontamento.</span>
+      </div>
+
+      <div class="filtros">
+        <div class="campo">
+          <label>PN</label>
+          <input type="text" placeholder="Buscar PN" />
+        </div>
+
+        <div class="campo">
+          <label>RASP</label>
+          <input type="text" placeholder="Ex: 0065/26" />
+        </div>
+
+        <div class="campo">
+          <label>Fornecedor</label>
+          <select>
+            <option>Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Turno</label>
+          <select>
+            <option>Todos</option>
+            <option>A</option>
+            <option>B</option>
+            <option>C</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Executor da Seleção</label>
+          <select>
+            <option>Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>MT Responsável</label>
+          <select>
+            <option>Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Status</label>
+          <select>
+            <option>Em seleção</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Prioridade</label>
+          <select>
+            <option>Todas</option>
+            <option>Normal</option>
+            <option>Atenção</option>
+            <option>Crítica</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-layout">
+      <!-- =========================================================
+           SEÇÃO HTML 03: COLUNA ESQUERDA / TABELA
+           ========================================================= -->
+      <div class="coluna-esquerda">
+        <section class="card">
+          <div class="section-title">
+            <h2>Itens em Seleção Ativa</h2>
+            <span>Selecione uma linha para registrar o apontamento.</span>
+          </div>
+
+          <div class="tabela-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>PN</th>
+                  <th>RASP</th>
+                  <th>Fornecedor</th>
+                  <th>MT Responsável</th>
+                  <th>Executor</th>
+                  <th>Turno</th>
+                  <th>Data</th>
+                  <th>Hora Início</th>
+                  <th>Hora Fim</th>
+                  <th>Dias</th>
+                  <th>Status</th>
+                  <th>Trava</th>
+                </tr>
+              </thead>
+
+              <!-- =================================================
+                   CORPO DA TABELA
+                   ================================================= -->
+              <tbody id="tabela-itens-selecao">
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rodape-nota">
+            Observação: itens finalizados não aparecem nesta tela operacional.
+          </div>
+        </section>
+      </div>
+
+      <!-- =========================================================
+           SEÇÃO HTML 04: COLUNA DIREITA / PAINEL DE APONTAMENTO
+           ========================================================= -->
+      <aside class="coluna-direita">
+        <section class="card card-acao">
+          <div class="section-title">
+            <h2>Painel de Apontamento</h2>
+            <span>Registro rápido do item selecionado.</span>
+          </div>
+
+          <div class="subinfo-card">
+            Selecione um item na tabela à esquerda. Os dados abaixo serão atualizados automaticamente.
+          </div>
+
+          <!-- =====================================================
+               SEÇÃO HTML 04A: RESUMO DO ITEM SELECIONADO
+               ===================================================== -->
+          <div class="bloco-info">
+            <h3>Resumo do Item</h3>
+
+            <div class="info-grid">
+              <div class="info-item">
+                <small>PN</small>
+                <strong id="resumo-pn">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>RASP</small>
+                <strong id="resumo-rasp">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Fornecedor</small>
+                <strong id="resumo-fornecedor">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>MT Responsável</small>
+                <strong id="resumo-mt">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Executor Atual</small>
+                <strong id="resumo-executor">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Turno</small>
+                <strong id="resumo-turno">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Data</small>
+                <strong id="resumo-data">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Hora Início</small>
+                <strong id="resumo-hora-inicio">-</strong>
+              </div>
+
+              <div class="info-item">
+                <small>Hora Fim</small>
+                <strong id="resumo-hora-fim">-</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- =====================================================
+               SEÇÃO HTML 04B: FORMULÁRIO DE NOVO APONTAMENTO
+               ===================================================== -->
+          <div>
+            <div class="section-title" style="margin-bottom: 10px;">
+              <h2 style="font-size: 16px;">Novo Apontamento</h2>
+              <span>Registro operacional</span>
+            </div>
+
+            <div class="form-grid-card">
+              <div class="campo">
+                <label>Data do Lote Verificada</label>
+                <input type="date" value="2026-04-15" />
+              </div>
+
+              <div class="campo">
+                <label>Lote</label>
+                <input type="text" placeholder="Ex: LT-2026-0415-A" />
+              </div>
+
+              <div class="campo">
+                <label>Quantidade Verificada</label>
+                <input type="number" placeholder="0" />
+              </div>
+
+              <div class="campo">
+                <label>Quantidade Rejeitada</label>
+                <input type="number" placeholder="0" />
+              </div>
+
+              <div class="campo">
+                <label>Turno do Apontamento</label>
+                <select>
+                  <option>A</option>
+                  <option>B</option>
+                  <option>C</option>
+                </select>
+              </div>
+
+              <div class="campo">
+                <label>Executor</label>
+                <select>
+                  <option>João Silva - Empresa A</option>
+                  <option>Maria Souza - Empresa A</option>
+                  <option>Carlos Lima - Empresa B</option>
+                </select>
+              </div>
+
+              <div class="campo full">
+                <label>Observação</label>
+                <textarea placeholder="Digite uma observação, se necessário."></textarea>
+              </div>
+            </div>
+
+            <div class="alerta" style="margin-top: 14px;">
+              Confirme com atenção. Após registrar este apontamento, a edição será permitida por até 1 hora.
+            </div>
+
+            <div class="acoes" style="margin-top: 16px;">
+              <button class="btn-secundario" type="button">Limpar</button>
+              <button class="btn-primario" type="button">Registrar Apontamento</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       SEÇÃO JS 01: CARREGAMENTO DA TELA E INTEGRAÇÃO COM API
+       ========================================================= -->
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    /* =======================================================
+       FUNÇÃO 01: REFERÊNCIAS DO DOM
+       ======================================================= */
+    const tabela = document.querySelector("#tabela-itens-selecao");
+
+    if (!tabela) {
+      console.error("Elemento #tabela-itens-selecao não encontrado.");
+      return;
+    }
+
+    const resumoPn = document.getElementById("resumo-pn");
+    const resumoRasp = document.getElementById("resumo-rasp");
+    const resumoFornecedor = document.getElementById("resumo-fornecedor");
+    const resumoMt = document.getElementById("resumo-mt");
+    const resumoExecutor = document.getElementById("resumo-executor");
+    const resumoTurno = document.getElementById("resumo-turno");
+    const resumoData = document.getElementById("resumo-data");
+    const resumoHoraInicio = document.getElementById("resumo-hora-inicio");
+    const resumoHoraFim = document.getElementById("resumo-hora-fim");
+
+    /* =======================================================
+       FUNÇÃO 02: FORMATA DATA
+       ======================================================= */
+    function formatarData(dataIso) {
+      if (!dataIso) return "-";
+
+      const data = new Date(dataIso);
+      if (isNaN(data.getTime())) return "-";
+
+      return data.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo"
+      });
+    }
+
+    /* =======================================================
+       FUNÇÃO 03: FORMATA HORA
+       ======================================================= */
+    function formatarHora(dataIso) {
+      if (!dataIso) return "-";
+
+      const data = new Date(dataIso);
+      if (isNaN(data.getTime())) return "-";
+
+      return data.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "America/Sao_Paulo"
+      });
+    }
+
+    /* =======================================================
+       FUNÇÃO 04: PREENCHE O RESUMO LATERAL
+       ======================================================= */
+    function preencherResumo(linha) {
+      if (!linha) return;
+
+      resumoPn.textContent = linha.dataset.pn || "-";
+      resumoRasp.textContent = linha.dataset.rasp || "-";
+      resumoFornecedor.textContent = linha.dataset.fornecedor || "-";
+      resumoMt.textContent = linha.dataset.mt || "-";
+      resumoExecutor.textContent = linha.dataset.executor || "-";
+      resumoTurno.textContent = linha.dataset.turno || "-";
+      resumoData.textContent = linha.dataset.data || "-";
+      resumoHoraInicio.textContent = linha.dataset.horaInicio || "-";
+      resumoHoraFim.textContent = linha.dataset.horaFim || "-";
+    }
+
+    /* =======================================================
+       FUNÇÃO 05: ATIVA CLIQUE DA LINHA
+       ======================================================= */
+    function adicionarEventoCliqueLinha(linha) {
+      linha.addEventListener("click", () => {
+        const linhas = document.querySelectorAll("#tabela-itens-selecao tr");
+
+        linhas.forEach((l) => l.classList.remove("ativo"));
+        linha.classList.add("ativo");
+
+        preencherResumo(linha);
+      });
+    }
+
+    /* =======================================================
+       FUNÇÃO 06: CARREGA ITENS DA TELA OPERACIONAL
+       Agora usando endpoint enriquecido:
+       GET /selecao-operacional/itens-ativos
+       ======================================================= */
+    async function carregarItensSelecao() {
+      try {
+        const response = await fetch("http://localhost:5050/selecao-operacional/itens-ativos");
+
+        if (!response.ok) {
+          tabela.innerHTML = `
+            <tr>
+              <td colspan="12">Erro ao carregar dados da API.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        const itens = await response.json();
+        tabela.innerHTML = "";
+
+        if (!itens || itens.length === 0) {
+          tabela.innerHTML = `
+            <tr>
+              <td colspan="12">Nenhum item encontrado.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        itens.forEach((item, index) => {
+          const tr = document.createElement("tr");
+
+          if (index === 0) {
+            tr.classList.add("ativo");
+          }
+
+          const pn = item.pn ?? "-";
+          const rasp = item.numeroRasp ?? "-";
+          const fornecedor = item.fornecedor ?? "-";
+          const mt = item.mtResponsavel ?? "-";
+
+          const executor =
+            item.nomeOperadorSelecaoTerceiro
+              ? `${item.nomeOperadorSelecaoTerceiro}${item.empresaOperadorSelecaoTerceiro ? " - " + item.empresaOperadorSelecaoTerceiro : ""}`
+              : "-";
+
+          const turno = item.turno ?? "-";
+          const data = formatarData(item.dataApontamento || item.horaInicio);
+          const horaInicio = formatarHora(item.horaInicio);
+          const horaFim = formatarHora(item.horaFim);
+          const duracao = item.duracaoEmSelecaoDias ?? "-";
+          const status = item.status ?? "Em seleção";
+          const trava = item.trava ?? "-";
+
+          tr.dataset.pn = pn;
+          tr.dataset.rasp = rasp;
+          tr.dataset.fornecedor = fornecedor;
+          tr.dataset.mt = mt;
+          tr.dataset.executor = executor;
+          tr.dataset.turno = turno;
+          tr.dataset.data = data;
+          tr.dataset.horaInicio = horaInicio;
+          tr.dataset.horaFim = horaFim;
+
+          tr.innerHTML = `
+            <td>${pn}</td>
+            <td>${rasp}</td>
+            <td>${fornecedor}</td>
+            <td>${mt}</td>
+            <td>${executor}</td>
+            <td>${turno}</td>
+            <td>${data}</td>
+            <td>${horaInicio}</td>
+            <td>${horaFim}</td>
+            <td>${duracao}</td>
+            <td>
+              <span class="status">
+                <span class="dot dot-verde"></span>
+                ${status}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${trava === "Ativa" ? "badge-trava" : "badge-sem-trava"}">
+                ${trava}
+              </span>
+            </td>
+          `;
+
+          tabela.appendChild(tr);
+          adicionarEventoCliqueLinha(tr);
+        });
+
+        const primeiraLinha =
+          tabela.querySelector("tr.ativo") || tabela.querySelector("tr");
+
+        if (primeiraLinha) {
+          preencherResumo(primeiraLinha);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar itens de seleção:", error);
+
+        tabela.innerHTML = `
+          <tr>
+            <td colspan="12">Falha de comunicação com a API.</td>
+          </tr>
+        `;
+      }
+    }
+
+    /* =======================================================
+       FUNÇÃO 07: INICIALIZAÇÃO
+       ======================================================= */
+    carregarItensSelecao();
+  });
+</script>
+
+</body>
+</html>

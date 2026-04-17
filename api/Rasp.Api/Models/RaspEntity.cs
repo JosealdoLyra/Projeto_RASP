@@ -109,6 +109,5 @@ namespace Rasp.Api.Models
         public string? CampanhaNumero { get; set; }
         public string? NomeContato { get; set; }
         public DateOnly? DataContato { get; set; }
-
     }
 }

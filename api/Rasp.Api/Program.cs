@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using Rasp.Api.Data;
 using Rasp.Api.Models;
+using Rasp.Api.Models.Requests;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -175,6 +176,9 @@ app.MapDelete("/rasp-anotacao/{id:int}", async (int id, RaspDbContext db) =>
     return Results.Ok($"Anotação com id {id} removida com sucesso.");
 })
 .WithName("ExcluirRaspAnotacao");
+
+
+
 
 // -----------------------------------------------------------------------------
 // 05. STATUS RASP
@@ -847,7 +851,7 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
 
     await using var tx = await conn.BeginTransactionAsync();
 
-    var agora = DateTime.Now;
+    var agora = DateTime.UtcNow;
     var dataCriacao = DateOnly.FromDateTime(agora);
     var horaCriacao = TimeOnly.FromDateTime(agora);
 
@@ -1615,6 +1619,128 @@ app.MapGet("/rasp/{id:int}/pns", async (int id, RaspDbContext db) =>
 })
 .WithName("ListarPnsPorRasp");
 
+app.MapPut("/rasp-pn/{idRaspPn:int}/entrar-selecao", async (
+    int idRaspPn,
+    EntrarSelecaoRequest request,
+    RaspDbContext db) =>
+{
+    var raspPn = await db.RaspPn
+        .FirstOrDefaultAsync(x => x.IdRaspPn == idRaspPn);
+
+    if (raspPn is null)
+    {
+        return Results.NotFound(new { mensagem = "RASP_PN não encontrado." });
+    }
+
+    if (raspPn.StatusSelecao == 2)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Este PN já teve a seleção encerrada neste RASP. É necessário abrir um novo RASP."
+        });
+    }
+
+    if (raspPn.StatusSelecao == 1)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Este PN já está em seleção."
+        });
+    }
+
+    var agora = DateTime.UtcNow;
+
+    raspPn.EntrouSelecao = true;
+    raspPn.StatusSelecao = 1;
+    raspPn.DatahoraEntradaSelecao = agora;
+    raspPn.DatahoraSaidaSelecao = null;
+
+    raspPn.TravaAtiva = request.TravaAtiva;
+
+    if (request.TravaAtiva)
+    {
+        raspPn.DatahoraSolicitacaoTrava = agora;
+        raspPn.DatahoraRemocaoTrava = null;
+    }
+    else
+    {
+        raspPn.DatahoraSolicitacaoTrava = null;
+        raspPn.DatahoraRemocaoTrava = null;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "PN colocado em seleção com sucesso.",
+        idRaspPn = raspPn.IdRaspPn,
+        entrouSelecao = raspPn.EntrouSelecao,
+        statusSelecao = raspPn.StatusSelecao,
+        datahoraEntradaSelecao = raspPn.DatahoraEntradaSelecao,
+        travaAtiva = raspPn.TravaAtiva,
+        datahoraSolicitacaoTrava = raspPn.DatahoraSolicitacaoTrava
+    });
+})
+.WithName("EntrarSelecaoRaspPn")
+.WithTags("RASP Seleção");
+
+app.MapPut("/rasp-pn/{idRaspPn:int}/sair-selecao", async (
+    int idRaspPn,
+    SairSelecaoRequest request,
+    RaspDbContext db) =>
+{
+    var raspPn = await db.RaspPn
+        .FirstOrDefaultAsync(x => x.IdRaspPn == idRaspPn);
+
+    if (raspPn is null)
+    {
+        return Results.NotFound(new { mensagem = "RASP_PN não encontrado." });
+    }
+
+    if (raspPn.StatusSelecao == 0)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Este PN ainda não entrou em seleção."
+        });
+    }
+
+    if (raspPn.StatusSelecao == 2)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Este PN já está com a seleção encerrada."
+        });
+    }
+
+    var agora = DateTime.UtcNow;
+
+    raspPn.StatusSelecao = 2;
+    raspPn.DatahoraSaidaSelecao = agora;
+
+    if (raspPn.TravaAtiva && request.RemoverTrava)
+    {
+        raspPn.TravaAtiva = false;
+        raspPn.DatahoraRemocaoTrava = agora;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Seleção encerrada com sucesso.",
+        idRaspPn = raspPn.IdRaspPn,
+        statusSelecao = raspPn.StatusSelecao,
+        datahoraSaidaSelecao = raspPn.DatahoraSaidaSelecao,
+        travaAtiva = raspPn.TravaAtiva,
+        datahoraRemocaoTrava = raspPn.DatahoraRemocaoTrava
+    });
+})
+.WithName("SairSelecaoRaspPn")
+.WithTags("RASP Seleção");
+
+
+
 app.MapGet("/rasp/{id:int}/detalhe", async (int id, RaspDbContext db) =>
 {
     var rasp = await db.Rasp
@@ -2291,6 +2417,525 @@ app.MapDelete("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
     return Results.Ok($"RASP PN com id {id} removido com sucesso.");
 })
 .WithName("ExcluirRaspPn");
+
+// -----------------------------------------------------------------------------
+// 18A. SELECAO OPERACIONAL - ITENS ATIVOS
+// Finalidade:
+// - fornecer para a tela operacional uma visão pronta dos itens em seleção ativa
+// - evitar que o front precise juntar várias APIs
+// - devolver dados já enriquecidos com:
+//   • PN real
+//   • número do RASP
+//   • fornecedor
+//   • MT responsável
+//   • turno
+//   • data de entrada em seleção
+//   • duração em seleção
+//   • último apontamento operacional do item
+//
+// Regras desta visão:
+// - considera ativo todo RASP_PN com EmContencao = true
+// - busca o último apontamento em rasp_contencao por IdRaspPn
+// - usa DataLoteInicial do RASP_PN como referência de entrada em seleção
+// - a duração é contada em dias corridos desde a entrada em seleção
+//
+// Observação:
+// - este endpoint não substitui /rasp-contencao
+// - ele existe para alimentar a tela operacional com dados mais ricos
+// -----------------------------------------------------------------------------
+app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
+{
+    // -------------------------------------------------------------------------
+    // 01. BUSCA BASE DOS ITENS EM SELEÇÃO ATIVA
+    // - parte fixa da linha operacional
+    // - vem do vínculo RASP_PN + RASP + FORNECEDOR + USUÁRIO + TURNO
+    // -------------------------------------------------------------------------
+    var itensBase = await (
+        from rp in db.RaspPn.AsNoTracking()
+        join r in db.Rasp.AsNoTracking()
+            on rp.IdRasp equals r.IdRasp
+        join f in db.FornecedorRasp.AsNoTracking()
+            on r.IdFornecedorRasp equals f.IdFornecedor
+        join mtJoin in db.Usuarios.AsNoTracking()
+            on r.IdAnalistaMt equals mtJoin.IdUsuario into mtLeft
+        from mt in mtLeft.DefaultIfEmpty()
+        join turnoJoin in db.TurnoRasp.AsNoTracking()
+            on r.IdTurnoRasp equals turnoJoin.IdTurnoRasp into turnoLeft
+        from turno in turnoLeft.DefaultIfEmpty()
+        where rp.EmContencao == true
+        select new
+        {
+            rp.IdRaspPn,
+            Pn = rp.Pn,
+            rp.IdRasp,
+            r.NumeroRasp,
+            Fornecedor = f.Nome,
+            MtResponsavel = mt != null ? mt.Nome : null,
+            Turno = turno != null ? turno.Descricao : null,
+            rp.DataLoteInicial
+        }
+    )
+    .OrderBy(x => x.NumeroRasp)
+    .ThenBy(x => x.Pn)
+    .ToListAsync();
+
+    // -------------------------------------------------------------------------
+    // 02. SE NÃO HOUVER ITENS ATIVOS, DEVOLVE LISTA VAZIA
+    // -------------------------------------------------------------------------
+    if (itensBase.Count == 0)
+        return Results.Ok(Array.Empty<object>());
+
+    // -------------------------------------------------------------------------
+    // 03. MONTA LISTA DE IDS DOS ITENS ATIVOS
+    // -------------------------------------------------------------------------
+    var idsRaspPn = itensBase
+        .Select(x => x.IdRaspPn)
+        .ToList();
+
+    // -------------------------------------------------------------------------
+    // 04. BUSCA TODOS OS APONTAMENTOS DESSES ITENS
+    // - ainda em memória vamos pegar o último de cada IdRaspPn
+    // -------------------------------------------------------------------------
+    var apontamentos = await db.Set<RaspContencao>()
+        .AsNoTracking()
+        .Where(x => idsRaspPn.Contains(x.IdRaspPn))
+        .OrderByDescending(x => x.DataAtualizacao)
+        .Select(x => new
+        {
+            x.IdRaspContencao,
+            x.IdRaspPn,
+            x.DataAtualizacao,
+            x.DataHoraInicioAtividade,
+            x.DataHoraFimAtividade,
+            x.IdOperadorSelecaoTerceiro,
+            x.OrigemRegistro,
+            x.QuantidadeVerificada,
+            x.QuantidadeRejeitada,
+            x.QuantidadeOk,
+            x.Observacao
+        })
+        .ToListAsync();
+
+    // -------------------------------------------------------------------------
+    // 05. PEGA O ÚLTIMO APONTAMENTO DE CADA ITEM EM SELEÇÃO
+    // -------------------------------------------------------------------------
+    var ultimoApontamentoPorRaspPn = apontamentos
+        .GroupBy(x => x.IdRaspPn)
+        .ToDictionary(
+            g => g.Key,
+            g => g
+                .OrderByDescending(x => x.DataAtualizacao)
+                .First()
+        );
+
+    // -------------------------------------------------------------------------
+    // 06. MONTA LISTA DE IDS DE OPERADORES TERCEIROS USADOS
+    // -------------------------------------------------------------------------
+    var idsOperadores = ultimoApontamentoPorRaspPn.Values
+        .Where(x => x.IdOperadorSelecaoTerceiro.HasValue)
+        .Select(x => x.IdOperadorSelecaoTerceiro!.Value)
+        .Distinct()
+        .ToList();
+
+    // -------------------------------------------------------------------------
+    // 07. BUSCA DADOS DOS OPERADORES TERCEIROS
+    // -------------------------------------------------------------------------
+    var operadores = await db.OperadorSelecaoTerceiro
+        .AsNoTracking()
+        .Where(x => idsOperadores.Contains(x.IdOperadorSelecaoTerceiro))
+        .Select(x => new
+        {
+            x.IdOperadorSelecaoTerceiro,
+            x.Nome,
+            x.Empresa
+        })
+        .ToListAsync();
+
+    var operadorPorId = operadores.ToDictionary(
+        x => x.IdOperadorSelecaoTerceiro,
+        x => x
+    );
+
+    // -------------------------------------------------------------------------
+    // 08. MONTA O RETORNO FINAL DA TELA OPERACIONAL
+    // -------------------------------------------------------------------------
+    var agoraUtc = DateTime.UtcNow;
+
+    var resultado = itensBase.Select(itemBase =>
+    {
+        ultimoApontamentoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var ultimo);
+
+        DateTime? dataEntradaSelecao = itemBase.DataLoteInicial;
+int? duracaoEmSelecaoDias = null;
+
+if (dataEntradaSelecao.HasValue)
+{
+    var dataEntrada = dataEntradaSelecao.Value.Date;
+    var hoje = DateTime.UtcNow.Date;
+
+    duracaoEmSelecaoDias = (hoje - dataEntrada).Days;
+
+    if (duracaoEmSelecaoDias < 0)
+        duracaoEmSelecaoDias = 0;
+}
+
+
+        string? nomeOperador = null;
+        string? empresaOperador = null;
+
+        if (ultimo?.IdOperadorSelecaoTerceiro is int idOperador &&
+            operadorPorId.TryGetValue(idOperador, out var operador))
+        {
+            nomeOperador = operador.Nome;
+            empresaOperador = operador.Empresa;
+        }
+
+        return new
+        {
+            // -----------------------------------------------------
+            // IDENTIFICAÇÃO DO ITEM EM SELEÇÃO
+            // -----------------------------------------------------
+            itemBase.IdRaspPn,
+            Pn = itemBase.Pn,
+            itemBase.IdRasp,
+            itemBase.NumeroRasp,
+            itemBase.Fornecedor,
+            itemBase.MtResponsavel,
+            itemBase.Turno,
+
+            // -----------------------------------------------------
+            // CONTROLE DA ENTRADA EM SELEÇÃO
+            // -----------------------------------------------------
+            DataEntradaSelecao = dataEntradaSelecao,
+            DuracaoEmSelecaoDias = duracaoEmSelecaoDias,
+
+            // -----------------------------------------------------
+            // ÚLTIMO APONTAMENTO OPERACIONAL
+            // -----------------------------------------------------
+            IdRaspContencao = ultimo?.IdRaspContencao,
+            DataApontamento = ultimo?.DataHoraInicioAtividade.HasValue == true
+                ? ultimo.DataHoraInicioAtividade.Value.Date
+                : (DateTime?)null,
+
+            HoraInicio = ultimo?.DataHoraInicioAtividade,
+            HoraFim = ultimo?.DataHoraFimAtividade,
+            ultimo?.OrigemRegistro,
+            ultimo?.QuantidadeVerificada,
+            ultimo?.QuantidadeRejeitada,
+            ultimo?.QuantidadeOk,
+            ultimo?.Observacao,
+
+            // -----------------------------------------------------
+            // EXECUTOR TERCEIRO, QUANDO HOUVER
+            // -----------------------------------------------------
+            ultimo?.IdOperadorSelecaoTerceiro,
+            NomeOperadorSelecaoTerceiro = nomeOperador,
+            EmpresaOperadorSelecaoTerceiro = empresaOperador,
+
+            // -----------------------------------------------------
+            // STATUS FIXO DA VISÃO OPERACIONAL
+            // -----------------------------------------------------
+            Status = "Em seleção",
+            Trava = itemBase.IdRaspPn > 0 ? "Ativa" : "Sem trava"
+        };
+    })
+    .OrderBy(x => x.NumeroRasp)
+    .ThenBy(x => x.Pn)
+    .ToList();
+
+    return Results.Ok(resultado);
+})
+.WithName("ListarItensAtivosSelecaoOperacional")
+.WithTags("RASP Seleção");
+
+
+// -----------------------------------------------------------------------------
+// 18A. RASP CONTENCAO - LEITURA
+// Retorno limpo:
+// - evita expor campos legados/confusos
+// - mantém somente os campos válidos do modelo atual
+// -----------------------------------------------------------------------------
+app.MapGet("/rasp-contencao", async (RaspDbContext db) =>
+{
+    var itens = await db.Set<RaspContencao>()
+        .OrderByDescending(x => x.IdRaspContencao)
+        .Select(x => new
+        {
+            x.IdRaspContencao,
+            x.IdRaspPn,
+            x.DataLoteVerificada,
+            x.QuantidadeVerificada,
+            x.QuantidadeRejeitada,
+            x.QuantidadeOk,
+            x.Observacao,
+            x.DataAtualizacao,
+            x.IdUsuarioExecucao,
+            x.IdOperadorSelecaoTerceiro,
+            x.OrigemRegistro,
+            x.IdTurnoRasp,
+            x.DataHoraInicioAtividade,
+            x.DataHoraFimAtividade
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarRaspContencao")
+.WithTags("RASP Seleção");
+
+app.MapGet("/rasp-contencao/{id:int}", async (int id, RaspDbContext db) =>
+{
+    var item = await db.Set<RaspContencao>()
+        .Where(x => x.IdRaspContencao == id)
+        .Select(x => new
+        {
+            x.IdRaspContencao,
+            x.IdRaspPn,
+            x.DataLoteVerificada,
+            x.QuantidadeVerificada,
+            x.QuantidadeRejeitada,
+            x.QuantidadeOk,
+            x.Observacao,
+            x.DataAtualizacao,
+            x.IdUsuarioExecucao,
+            x.IdOperadorSelecaoTerceiro,
+            x.OrigemRegistro,
+            x.IdTurnoRasp,
+            x.DataHoraInicioAtividade,
+            x.DataHoraFimAtividade
+        })
+        .FirstOrDefaultAsync();
+
+    return item is null
+        ? Results.NotFound("Apontamento de contenção não encontrado.")
+        : Results.Ok(item);
+})
+.WithName("ObterRaspContencaoPorId")
+.WithTags("RASP Seleção");
+
+app.MapGet("/rasp-pn/{idRaspPn:int}/contencoes", async (int idRaspPn, RaspDbContext db) =>
+{
+    if (idRaspPn <= 0)
+        return Results.BadRequest("IdRaspPn inválido.");
+
+    var raspPnExiste = await db.RaspPn.AnyAsync(x => x.IdRaspPn == idRaspPn);
+    if (!raspPnExiste)
+        return Results.NotFound("RASP_PN não encontrado.");
+
+    var itens = await db.Set<RaspContencao>()
+        .Where(x => x.IdRaspPn == idRaspPn)
+        .OrderByDescending(x => x.DataAtualizacao)
+        .Select(x => new
+        {
+            x.IdRaspContencao,
+            x.IdRaspPn,
+            x.DataLoteVerificada,
+            x.QuantidadeVerificada,
+            x.QuantidadeRejeitada,
+            x.QuantidadeOk,
+            x.Observacao,
+            x.DataAtualizacao,
+            x.IdUsuarioExecucao,
+            x.IdOperadorSelecaoTerceiro,
+            x.OrigemRegistro,
+            x.IdTurnoRasp,
+            x.DataHoraInicioAtividade,
+            x.DataHoraFimAtividade
+        })
+        .ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("ListarContencoesPorRaspPn")
+.WithTags("RASP Seleção");
+
+
+
+// -----------------------------------------------------------------------------
+// 18A. RASP CONTENCAO
+// Finalidade:
+// - registrar um apontamento operacional dentro de uma seleção já aberta
+// - NÃO abre seleção
+// - NÃO fecha seleção
+// - NÃO decide trava
+//
+// Regras principais:
+// - valida vínculo com RASP_PN
+// - valida turno
+// - valida origem do registro (terceiro ou usuário interno)
+// - valida quantidades
+// - valida coerência entre início e fim da atividade real
+// - grava data/hora de auditoria no sistema
+// -----------------------------------------------------------------------------
+app.MapPost("/rasp-contencao", async (
+    CriarRaspContencaoRequest req,
+    RaspDbContext db) =>
+{
+    // -------------------------------------------------------------------------
+    // 01. VALIDAÇÕES BÁSICAS
+    // -------------------------------------------------------------------------
+    if (req.IdRaspPn <= 0)
+        return Results.BadRequest("IdRaspPn inválido.");
+
+    if (req.IdTurnoRasp <= 0)
+        return Results.BadRequest("IdTurnoRasp inválido.");
+
+    if (req.QuantidadeVerificada < 0)
+        return Results.BadRequest("QuantidadeVerificada não pode ser negativa.");
+
+    if (req.QuantidadeRejeitada < 0)
+        return Results.BadRequest("QuantidadeRejeitada não pode ser negativa.");
+
+    if (req.QuantidadeRejeitada > req.QuantidadeVerificada)
+        return Results.BadRequest("QuantidadeRejeitada não pode ser maior que QuantidadeVerificada.");
+
+    if (req.OrigemRegistro != 1 && req.OrigemRegistro != 2)
+        return Results.BadRequest("OrigemRegistro deve ser 1 (terceiro) ou 2 (usuário interno).");
+
+    // -------------------------------------------------------------------------
+    // 02. VALIDAÇÃO DA ATIVIDADE REAL
+    // Observação:
+    // - estes campos representam o início e o fim do trabalho executado
+    // - NÃO representam entrada/saída da seleção macro do PN
+    // -------------------------------------------------------------------------
+    if (req.DataHoraInicioAtividade.HasValue && req.DataHoraFimAtividade.HasValue)
+    {
+        if (req.DataHoraInicioAtividade.Value > req.DataHoraFimAtividade.Value)
+            return Results.BadRequest(
+                "DataHoraInicioAtividade não pode ser maior que DataHoraFimAtividade.");
+    }
+
+    // -------------------------------------------------------------------------
+    // 03. VALIDAÇÃO DO RASP_PN
+    // -------------------------------------------------------------------------
+    var raspPn = await db.RaspPn
+        .FirstOrDefaultAsync(rp => rp.IdRaspPn == req.IdRaspPn);
+
+    if (raspPn is null)
+        return Results.BadRequest("RaspPn não encontrado.");
+
+    // -------------------------------------------------------------------------
+    // 04. VALIDAÇÃO DO TURNO
+    // -------------------------------------------------------------------------
+    var turnoExiste = await db.TurnoRasp
+        .AnyAsync(t => t.IdTurnoRasp == req.IdTurnoRasp);
+
+    if (!turnoExiste)
+        return Results.BadRequest("Turno informado não existe.");
+
+    // -------------------------------------------------------------------------
+    // 05. VALIDAÇÃO DA ORIGEM DO REGISTRO
+    // OrigemRegistro = 1 -> terceiro
+    // OrigemRegistro = 2 -> usuário interno
+    // -------------------------------------------------------------------------
+    if (req.OrigemRegistro == 1)
+    {
+        if (!req.IdOperadorSelecaoTerceiro.HasValue || req.IdOperadorSelecaoTerceiro.Value <= 0)
+            return Results.BadRequest("IdOperadorSelecaoTerceiro é obrigatório quando OrigemRegistro = 1.");
+
+        if (req.IdUsuarioInterno.HasValue)
+            return Results.BadRequest("IdUsuarioInterno deve ficar vazio quando OrigemRegistro = 1.");
+
+        var operadorExiste = await db.Set<OperadorSelecaoTerceiro>()
+            .AnyAsync(o =>
+                o.IdOperadorSelecaoTerceiro == req.IdOperadorSelecaoTerceiro.Value &&
+                o.Ativo);
+
+        if (!operadorExiste)
+            return Results.BadRequest("Operador terceiro não encontrado ou inativo.");
+    }
+    else
+    {
+        if (!req.IdUsuarioInterno.HasValue || req.IdUsuarioInterno.Value <= 0)
+            return Results.BadRequest("IdUsuarioInterno é obrigatório quando OrigemRegistro = 2.");
+
+        if (req.IdOperadorSelecaoTerceiro.HasValue)
+            return Results.BadRequest("IdOperadorSelecaoTerceiro deve ficar vazio quando OrigemRegistro = 2.");
+
+        var usuarioExiste = await db.Usuarios
+            .AnyAsync(u =>
+                u.IdUsuario == req.IdUsuarioInterno.Value &&
+                u.Ativo);
+
+        if (!usuarioExiste)
+            return Results.BadRequest("Usuário interno não encontrado ou inativo.");
+    }
+
+    // -------------------------------------------------------------------------
+    // 06. CÁLCULO DA QUANTIDADE OK
+    // -------------------------------------------------------------------------
+    var quantidadeOk = req.QuantidadeVerificada - req.QuantidadeRejeitada;
+
+// -------------------------------------------------------------------------
+// 07. MONTAGEM DO REGISTRO DE CONTENÇÃO
+// Importante:
+// - DataHoraInicioAtividade e DataHoraFimAtividade = atividade real
+// - DataAtualizacao = momento do registro no sistema (auditoria)
+// - PostgreSQL com "timestamp with time zone" exige DateTime em UTC
+// -------------------------------------------------------------------------
+
+DateTime? dataHoraInicioUtc = null;
+if (req.DataHoraInicioAtividade.HasValue)
+{
+    var inicio = req.DataHoraInicioAtividade.Value;
+
+    dataHoraInicioUtc = inicio.Kind == DateTimeKind.Utc
+        ? inicio
+        : inicio.Kind == DateTimeKind.Local
+            ? inicio.ToUniversalTime()
+            : DateTime.SpecifyKind(inicio, DateTimeKind.Utc);
+}
+
+DateTime? dataHoraFimUtc = null;
+if (req.DataHoraFimAtividade.HasValue)
+{
+    var fim = req.DataHoraFimAtividade.Value;
+
+    dataHoraFimUtc = fim.Kind == DateTimeKind.Utc
+        ? fim
+        : fim.Kind == DateTimeKind.Local
+            ? fim.ToUniversalTime()
+            : DateTime.SpecifyKind(fim, DateTimeKind.Utc);
+}
+
+var item = new RaspContencao
+{
+    IdRaspPn = req.IdRaspPn,
+    DataLoteVerificada = req.DataLoteVerificada,
+    QuantidadeVerificada = req.QuantidadeVerificada,
+    QuantidadeRejeitada = req.QuantidadeRejeitada,
+    QuantidadeOk = quantidadeOk,
+    Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
+    IdTurnoRasp = req.IdTurnoRasp,
+    IdOperadorSelecaoTerceiro = req.IdOperadorSelecaoTerceiro,
+    IdUsuarioExecucao = req.IdUsuarioInterno,
+    OrigemRegistro = req.OrigemRegistro,
+
+    // NOVOS CAMPOS DA ATIVIDADE REAL
+    DataHoraInicioAtividade = dataHoraInicioUtc,
+    DataHoraFimAtividade = dataHoraFimUtc,
+
+    // AUDITORIA DO SISTEMA
+    DataAtualizacao = DateTime.UtcNow
+};
+
+
+
+    // -------------------------------------------------------------------------
+    // 08. GRAVAÇÃO
+    // -------------------------------------------------------------------------
+    db.Set<RaspContencao>().Add(item);
+    await db.SaveChangesAsync();
+
+    // -------------------------------------------------------------------------
+    // 09. RETORNO
+    // -------------------------------------------------------------------------
+    return Results.Created($"/rasp-contencao/{item.IdRaspContencao}", item);
+})
+.WithName("CriarRaspContencao")
+.WithTags("RASP Seleção");
+
+
 
 
 // -----------------------------------------------------------------------------

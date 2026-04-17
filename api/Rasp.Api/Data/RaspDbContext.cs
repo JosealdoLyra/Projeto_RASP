@@ -39,10 +39,14 @@ namespace Rasp.Api.Data
         public DbSet<GmAliadoRasp> GmAliadoRasp => Set<GmAliadoRasp>();
         public DbSet<SppsClassificacaoRasp> SppsClassificacaoRasp => Set<SppsClassificacaoRasp>();
         public DbSet<SppsStatusRasp> SppsStatusRasp => Set<SppsStatusRasp>();
+        public DbSet<OperadorSelecaoTerceiro> OperadorSelecaoTerceiro => Set<OperadorSelecaoTerceiro>();
         public DbSet<IndiceOperacionalRasp> IndiceOperacionalRasp => Set<IndiceOperacionalRasp>();
         public DbSet<RaspBp> RaspBp => Set<RaspBp>();
 
+        public DbSet<RaspContencao> RaspContencao { get; set;}
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
+
         {
             // -----------------------------------------------------------------
             // STATUS RASP
@@ -762,6 +766,36 @@ modelBuilder.Entity<RaspPnEntity>(entity =>
                 entity.Property(e => e.Descricao)
                     .HasColumnName("descricao");
             });
+// -----------------------------------------------------------------
+// OPERADOR SELEÇÃO TERCEIRO
+// -----------------------------------------------------------------
+modelBuilder.Entity<OperadorSelecaoTerceiro>(entity =>
+{
+    entity.ToTable("operador_selecao_terceiro");
+
+    entity.HasKey(e => e.IdOperadorSelecaoTerceiro);
+
+    entity.Property(e => e.IdOperadorSelecaoTerceiro)
+        .HasColumnName("id_operador_selecao_terceiro");
+
+    entity.Property(e => e.Nome)
+        .HasColumnName("nome");
+
+    entity.Property(e => e.Empresa)
+        .HasColumnName("empresa");
+
+    entity.Property(e => e.Ativo)
+        .HasColumnName("ativo");
+
+    entity.Property(e => e.Observacao)
+        .HasColumnName("observacao");
+
+    entity.Property(e => e.DataCriacao)
+        .HasColumnName("data_criacao");
+
+    entity.Property(e => e.DataInativacao)
+        .HasColumnName("data_inativacao");
+});
 
             base.OnModelCreating(modelBuilder);
         }
