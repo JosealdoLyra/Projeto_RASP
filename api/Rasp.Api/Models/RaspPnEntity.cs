@@ -26,9 +26,6 @@ namespace Rasp.Api.Models
     // - controla QHD
     public class RaspPnEntity
     {
-        [Column("data_lote_inicial")]
-        public DateTime? DataLoteInicial { get; set; }
-
         [Column("id_rasp_pn")]
         public int IdRaspPn { get; set; }
 
@@ -37,6 +34,9 @@ namespace Rasp.Api.Models
 
         [Column("pn")]
         public string Pn { get; set; } = string.Empty;
+
+        [Column("data_lote_inicial")]
+        public DateTime? DataLoteInicial { get; set; }
 
         [Column("quantidade_suspeita")]
         public int QuantidadeSuspeita { get; set; }
@@ -47,6 +47,7 @@ namespace Rasp.Api.Models
         [Column("quantidade_rejeitada")]
         public int QuantidadeRejeitada { get; set; }
 
+        // Controle macro/legado de contenção
         [Column("em_contencao")]
         public bool EmContencao { get; set; }
 
@@ -56,35 +57,43 @@ namespace Rasp.Api.Models
         [Column("ordem_exibicao")]
         public short OrdemExibicao { get; set; }
 
+        // ==========================================================
         // CONTROLE DE SELEÇÃO
+        // ==========================================================
         [Column("entrou_selecao")]
         public bool EntrouSelecao { get; set; }
 
+        // 0 = Fora da seleção
+        // 1 = Em seleção
+        // 2 = Seleção encerrada
         [Column("status_selecao")]
         public short StatusSelecao { get; set; }
 
         [Column("datahora_entrada_selecao")]
-        public DateTime? DatahoraEntradaSelecao { get; set; }
+        public DateTime? DataHoraEntradaSelecao { get; set; }
 
         [Column("datahora_saida_selecao")]
-        public DateTime? DatahoraSaidaSelecao { get; set; }
+        public DateTime? DataHoraSaidaSelecao { get; set; }
 
+        // ==========================================================
         // CONTROLE DE TRAVA
+        // ==========================================================
         [Column("trava_ativa")]
         public bool TravaAtiva { get; set; }
 
         [Column("datahora_solicitacao_trava")]
-        public DateTime? DatahoraSolicitacaoTrava { get; set; }
+        public DateTime? DataHoraSolicitacaoTrava { get; set; }
 
         [Column("datahora_remocao_trava")]
-        public DateTime? DatahoraRemocaoTrava { get; set; }
+        public DateTime? DataHoraRemocaoTrava { get; set; }
 
+        // ==========================================================
         // CONTROLE DE QHD
+        // ==========================================================
         [Column("qhd_ativo")]
         public bool QhdAtivo { get; set; }
 
         [Column("datahora_qhd")]
-        public DateTime? DatahoraQhd { get; set; }
+        public DateTime? DataHoraQhd { get; set; }
     }
 }
-

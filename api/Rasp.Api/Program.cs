@@ -1652,20 +1652,20 @@ app.MapPut("/rasp-pn/{idRaspPn:int}/entrar-selecao", async (
 
     raspPn.EntrouSelecao = true;
     raspPn.StatusSelecao = 1;
-    raspPn.DatahoraEntradaSelecao = agora;
-    raspPn.DatahoraSaidaSelecao = null;
+    raspPn.DataHoraEntradaSelecao = agora;
+    raspPn.DataHoraSaidaSelecao = null;
 
     raspPn.TravaAtiva = request.TravaAtiva;
 
     if (request.TravaAtiva)
     {
-        raspPn.DatahoraSolicitacaoTrava = agora;
-        raspPn.DatahoraRemocaoTrava = null;
+        raspPn.DataHoraSolicitacaoTrava = agora;
+        raspPn.DataHoraRemocaoTrava = null;
     }
     else
     {
-        raspPn.DatahoraSolicitacaoTrava = null;
-        raspPn.DatahoraRemocaoTrava = null;
+        raspPn.DataHoraSolicitacaoTrava = null;
+        raspPn.DataHoraRemocaoTrava = null;
     }
 
     await db.SaveChangesAsync();
@@ -1676,9 +1676,9 @@ app.MapPut("/rasp-pn/{idRaspPn:int}/entrar-selecao", async (
         idRaspPn = raspPn.IdRaspPn,
         entrouSelecao = raspPn.EntrouSelecao,
         statusSelecao = raspPn.StatusSelecao,
-        datahoraEntradaSelecao = raspPn.DatahoraEntradaSelecao,
+        datahoraEntradaSelecao = raspPn.DataHoraEntradaSelecao,
         travaAtiva = raspPn.TravaAtiva,
-        datahoraSolicitacaoTrava = raspPn.DatahoraSolicitacaoTrava
+        datahoraSolicitacaoTrava = raspPn.DataHoraSolicitacaoTrava
     });
 })
 .WithName("EntrarSelecaoRaspPn")
@@ -1716,12 +1716,12 @@ app.MapPut("/rasp-pn/{idRaspPn:int}/sair-selecao", async (
     var agora = DateTime.UtcNow;
 
     raspPn.StatusSelecao = 2;
-    raspPn.DatahoraSaidaSelecao = agora;
+    raspPn.DataHoraSaidaSelecao = agora;
 
     if (raspPn.TravaAtiva && request.RemoverTrava)
     {
         raspPn.TravaAtiva = false;
-        raspPn.DatahoraRemocaoTrava = agora;
+        raspPn.DataHoraRemocaoTrava = agora;
     }
 
     await db.SaveChangesAsync();
@@ -1731,9 +1731,9 @@ app.MapPut("/rasp-pn/{idRaspPn:int}/sair-selecao", async (
         mensagem = "Seleção encerrada com sucesso.",
         idRaspPn = raspPn.IdRaspPn,
         statusSelecao = raspPn.StatusSelecao,
-        datahoraSaidaSelecao = raspPn.DatahoraSaidaSelecao,
+        datahoraSaidaSelecao = raspPn.DataHoraSaidaSelecao,
         travaAtiva = raspPn.TravaAtiva,
-        datahoraRemocaoTrava = raspPn.DatahoraRemocaoTrava
+        datahoraRemocaoTrava = raspPn.DataHoraRemocaoTrava
     });
 })
 .WithName("SairSelecaoRaspPn")
@@ -2299,12 +2299,10 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
 
     var raspPnJaExiste = await db.RaspPn
         .AnyAsync(rp => rp.IdRasp == req.IdRasp && rp.Pn == pn);
-
     if (raspPnJaExiste)
         return Results.BadRequest("Este PN já está vinculado a este RASP.");
 
     DateTime? dataLoteInicial = null;
-
     if (!string.IsNullOrWhiteSpace(req.DataLoteInicial))
     {
         if (!DateTime.TryParseExact(
@@ -2317,8 +2315,46 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
             return Results.BadRequest("DataLoteInicial inválida. Use o formato DD/MM/AA.");
         }
 
-        dataLoteInicial = DateTime.SpecifyKind(dataConvertida,DateTimeKind.Utc);
+        dataLoteInicial = DateTime.SpecifyKind(dataConvertida, DateTimeKind.Utc);
     }
+
+    // -------------------------------------------------------------------------
+    // CONTROLE DE SELEÇÃO / TRAVA / QHD
+    // -------------------------------------------------------------------------
+    var entrouSelecao = req.EntrouSelecao;
+    var statusSelecao = req.StatusSelecao;
+    var dataHoraEntradaSelecao = req.DataHoraEntradaSelecao;
+    var dataHoraSaidaSelecao = req.DataHoraSaidaSelecao;
+
+    var travaAtiva = req.TravaAtiva;
+    var dataHoraSolicitacaoTrava = req.DataHoraSolicitacaoTrava;
+    var dataHoraRemocaoTrava = req.DataHoraRemocaoTrava;
+
+    var qhdAtivo = req.QhdAtivo;
+    var dataHoraQhd = req.DataHoraQhd;
+
+    if (statusSelecao < 0)
+        return Results.BadRequest("StatusSelecao inválido.");
+
+    if (dataHoraEntradaSelecao.HasValue && dataHoraSaidaSelecao.HasValue &&
+        dataHoraSaidaSelecao.Value < dataHoraEntradaSelecao.Value)
+    {
+        return Results.BadRequest("DataHoraSaidaSelecao não pode ser menor que DataHoraEntradaSelecao.");
+    }
+
+    if (dataHoraSolicitacaoTrava.HasValue && dataHoraRemocaoTrava.HasValue &&
+        dataHoraRemocaoTrava.Value < dataHoraSolicitacaoTrava.Value)
+    {
+        return Results.BadRequest("DataHoraRemocaoTrava não pode ser menor que DataHoraSolicitacaoTrava.");
+    }
+
+    // Se entrou em seleção e não veio status, assume Em seleção = 1
+    if (entrouSelecao && statusSelecao == 0)
+        statusSelecao = 1;
+
+    // Se não entrou em seleção e não veio status, assume Fora da seleção = 0
+    if (!entrouSelecao && statusSelecao == 0)
+        statusSelecao = 0;
 
     var item = new RaspPnEntity
     {
@@ -2330,7 +2366,19 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
         QuantidadeRejeitada = req.QuantidadeRejeitada,
         EmContencao = req.EmContencao,
         Duns = duns,
-        OrdemExibicao = req.OrdemExibicao
+        OrdemExibicao = req.OrdemExibicao,
+
+        EntrouSelecao = entrouSelecao,
+        StatusSelecao = statusSelecao,
+        DataHoraEntradaSelecao = dataHoraEntradaSelecao,
+        DataHoraSaidaSelecao = dataHoraSaidaSelecao,
+
+        TravaAtiva = travaAtiva,
+        DataHoraSolicitacaoTrava = dataHoraSolicitacaoTrava,
+        DataHoraRemocaoTrava = dataHoraRemocaoTrava,
+
+        QhdAtivo = qhdAtivo,
+        DataHoraQhd = dataHoraQhd
     };
 
     db.RaspPn.Add(item);
@@ -2370,7 +2418,6 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
         return Results.BadRequest("OrdemExibicao deve ser maior que zero.");
 
     DateTime? dataLoteInicial = null;
-
     if (!string.IsNullOrWhiteSpace(req.DataLoteInicial))
     {
         if (!DateTime.TryParseExact(
@@ -2383,8 +2430,44 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
             return Results.BadRequest("DataLoteInicial inválida. Use o formato DD/MM/AA.");
         }
 
-        dataLoteInicial = DateTime.SpecifyKind(dataConvertida,DateTimeKind.Utc);
+        dataLoteInicial = DateTime.SpecifyKind(dataConvertida, DateTimeKind.Utc);
     }
+
+    // -------------------------------------------------------------------------
+    // CONTROLE DE SELEÇÃO / TRAVA / QHD
+    // -------------------------------------------------------------------------
+    var entrouSelecao = req.EntrouSelecao;
+    var statusSelecao = req.StatusSelecao;
+    var dataHoraEntradaSelecao = req.DataHoraEntradaSelecao;
+    var dataHoraSaidaSelecao = req.DataHoraSaidaSelecao;
+
+    var travaAtiva = req.TravaAtiva;
+    var dataHoraSolicitacaoTrava = req.DataHoraSolicitacaoTrava;
+    var dataHoraRemocaoTrava = req.DataHoraRemocaoTrava;
+
+    var qhdAtivo = req.QhdAtivo;
+    var dataHoraQhd = req.DataHoraQhd;
+
+    if (statusSelecao < 0)
+        return Results.BadRequest("StatusSelecao inválido.");
+
+    if (dataHoraEntradaSelecao.HasValue && dataHoraSaidaSelecao.HasValue &&
+        dataHoraSaidaSelecao.Value < dataHoraEntradaSelecao.Value)
+    {
+        return Results.BadRequest("DataHoraSaidaSelecao não pode ser menor que DataHoraEntradaSelecao.");
+    }
+
+    if (dataHoraSolicitacaoTrava.HasValue && dataHoraRemocaoTrava.HasValue &&
+        dataHoraRemocaoTrava.Value < dataHoraSolicitacaoTrava.Value)
+    {
+        return Results.BadRequest("DataHoraRemocaoTrava não pode ser menor que DataHoraSolicitacaoTrava.");
+    }
+
+    if (entrouSelecao && statusSelecao == 0)
+        statusSelecao = 1;
+
+    if (!entrouSelecao && statusSelecao == 0)
+        statusSelecao = 0;
 
     item.DataLoteInicial = dataLoteInicial;
     item.QuantidadeSuspeita = req.QuantidadeSuspeita;
@@ -2393,6 +2476,18 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
     item.EmContencao = req.EmContencao;
     item.Duns = duns;
     item.OrdemExibicao = req.OrdemExibicao;
+
+    item.EntrouSelecao = entrouSelecao;
+    item.StatusSelecao = statusSelecao;
+    item.DataHoraEntradaSelecao = dataHoraEntradaSelecao;
+    item.DataHoraSaidaSelecao = dataHoraSaidaSelecao;
+
+    item.TravaAtiva = travaAtiva;
+    item.DataHoraSolicitacaoTrava = dataHoraSolicitacaoTrava;
+    item.DataHoraRemocaoTrava = dataHoraRemocaoTrava;
+
+    item.QhdAtivo = qhdAtivo;
+    item.DataHoraQhd = dataHoraQhd;
 
     await db.SaveChangesAsync();
 
@@ -2417,6 +2512,7 @@ app.MapDelete("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
     return Results.Ok($"RASP PN com id {id} removido com sucesso.");
 })
 .WithName("ExcluirRaspPn");
+
 
 // -----------------------------------------------------------------------------
 // 18A. SELECAO OPERACIONAL - ITENS ATIVOS
@@ -3917,7 +4013,16 @@ public record CriarRaspPnRequest(
     int QuantidadeRejeitada,
     bool EmContencao,
     string Duns,
-    short OrdemExibicao
+    short OrdemExibicao,
+    bool EntrouSelecao,
+    short StatusSelecao,
+    DateTime? DataHoraEntradaSelecao,
+    DateTime? DataHoraSaidaSelecao,
+    bool TravaAtiva,
+    DateTime? DataHoraSolicitacaoTrava,
+    DateTime? DataHoraRemocaoTrava,
+    bool QhdAtivo,
+    DateTime? DataHoraQhd
 );
 
 // -----------------------------------------------------------------------------
@@ -3975,7 +4080,16 @@ public record AtualizarRaspPnRequest(
     int QuantidadeRejeitada,
     bool EmContencao,
     string Duns,
-    short OrdemExibicao
+    short OrdemExibicao,
+    bool EntrouSelecao,
+    short StatusSelecao,
+    DateTime? DataHoraEntradaSelecao,
+    DateTime? DataHoraSaidaSelecao,
+    bool TravaAtiva,
+    DateTime? DataHoraSolicitacaoTrava,
+    DateTime? DataHoraRemocaoTrava,
+    bool QhdAtivo,
+    DateTime? DataHoraQhd
 );
 
 // -----------------------------------------------------------------------------

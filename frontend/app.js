@@ -714,28 +714,40 @@ aplicarRegraIniciativaFornecedor();
             const pn = pns[index];
 
             const linha = criarLinhaPn({
-              principal: index === 0,
-              pn: pn.pn || "",
-              dataLoteInicial:
-                pn.dataLoteInicial ||
-                pn.data_lote_inicial ||
-                "",
-              qtdSuspeita:
-                pn.quantidadeSuspeita ??
-                pn.qtdSuspeita ??
-                pn.qtdSuspeitaInicial ??
-                0,
-              qtdChecada:
-                pn.quantidadeChecada ??
-                pn.qtdChecada ??
-                pn.qtdChecadaInicial ??
-                0,
-              qtdRejeitada:
-                pn.quantidadeRejeitada ??
-                pn.qtdRejeitada ??
-                pn.qtdRejeitadaInicial ??
-                0
-            });
+            idRaspPn: pn.idRaspPn ?? pn.id_rasp_pn ?? "",
+            principal: index === 0,
+            pn: pn.pn || "",
+            dataLoteInicial:
+              pn.dataLoteInicial ||
+              pn.data_lote_inicial ||
+              "",
+            qtdSuspeita:
+              pn.quantidadeSuspeita ??
+              pn.qtdSuspeita ??
+              pn.qtdSuspeitaInicial ??
+              0,
+            qtdChecada:
+              pn.quantidadeChecada ??
+              pn.qtdChecada ??
+              pn.qtdChecadaInicial ??
+              0,
+            qtdRejeitada:
+              pn.quantidadeRejeitada ??
+              pn.qtdRejeitada ??
+              pn.qtdRejeitadaInicial ??
+              0,
+            emSelecao: Number(pn.statusSelecao ?? 0) === 1,
+            statusSelecao: pn.statusSelecao ?? 0,
+            entrouSelecao: pn.entrouSelecao ?? false,
+            travaAtiva: pn.travaAtiva ?? false,
+            qhdAtivo: pn.qhdAtivo ?? false,
+            dataHoraEntradaSelecao: pn.dataHoraEntradaSelecao ?? null,
+            dataHoraSaidaSelecao: pn.dataHoraSaidaSelecao ?? null,
+            dataHoraSolicitacaoTrava: pn.dataHoraSolicitacaoTrava ?? null,
+            dataHoraRemocaoTrava: pn.dataHoraRemocaoTrava ?? null,
+            dataHoraQhd: pn.dataHoraQhd ?? null
+          });
+
 
             pnTableBody.appendChild(linha);
 
@@ -1572,16 +1584,49 @@ aplicarRegraIniciativaFornecedor();
   }
 
   function criarLinhaPn({
+  idRaspPn = "",
   principal = false,
   pn = "",
   dataLoteInicial = "",
   qtdSuspeita = 0,
   qtdChecada = 0,
   qtdRejeitada = 0,
-  emSelecao = false
+  emSelecao = false,
+  statusSelecao = 0,
+  entrouSelecao = false,
+  travaAtiva = false,
+  qhdAtivo = false,
+  dataHoraEntradaSelecao = null,
+  dataHoraSaidaSelecao = null,
+  dataHoraSolicitacaoTrava = null,
+  dataHoraRemocaoTrava = null,
+  dataHoraQhd = null
 } = {}) {
   const tr = document.createElement("tr");
   tr.className = "pn-row";
+
+  tr.dataset.idRaspPn = idRaspPn ? String(idRaspPn) : "";
+  tr.dataset.statusSelecao = String(statusSelecao ?? 0);
+  tr.dataset.entrouSelecao = String(!!entrouSelecao);
+  tr.dataset.travaAtiva = String(!!travaAtiva);
+  tr.dataset.qhdAtivo = String(!!qhdAtivo);
+  tr.dataset.dataHoraEntradaSelecao = dataHoraEntradaSelecao || "";
+  tr.dataset.dataHoraSaidaSelecao = dataHoraSaidaSelecao || "";
+  tr.dataset.dataHoraSolicitacaoTrava = dataHoraSolicitacaoTrava || "";
+  tr.dataset.dataHoraRemocaoTrava = dataHoraRemocaoTrava || "";
+  tr.dataset.dataHoraQhd = dataHoraQhd || "";
+
+  const textoBadge =
+    Number(statusSelecao) === 2
+      ? "Encerrada"
+      : (Number(statusSelecao) === 1 || entrouSelecao || emSelecao)
+        ? "Em seleção"
+        : "Fora";
+
+  const classeBadge =
+    Number(statusSelecao) === 1 || entrouSelecao || emSelecao
+      ? "pn-badge-selecao"
+      : "pn-badge-neutro";
 
   tr.innerHTML = `
     <td class="center-cell">
@@ -1659,8 +1704,8 @@ aplicarRegraIniciativaFornecedor();
     </td>
 
     <td class="center-cell">
-      <span class="pn-badge ${emSelecao ? "pn-badge-selecao" : "pn-badge-neutro"}">
-        ${emSelecao ? "Em seleção" : "Fora"}
+      <span class="pn-badge ${classeBadge}">
+        ${textoBadge}
       </span>
     </td>
 
@@ -1689,6 +1734,7 @@ aplicarRegraIniciativaFornecedor();
 
   return tr;
 }
+
 
 
 
@@ -2667,6 +2713,71 @@ aplicarRegraIniciativaFornecedor();
     }
   }
 
+ // ==========================================================
+  // 38.1 API - CONTROLE DE SELEÇÃO DO PN
+  // ==========================================================
+  async function entrarSelecaoPn(idRaspPn, travaAtiva = false) {
+    const response = await fetch(`${API_BASE_URL}/rasp-pn/${idRaspPn}/entrar-selecao`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        travaAtiva: !!travaAtiva
+      })
+    });
+
+    const respostaTexto = await response.text();
+    let respostaJson = null;
+
+    try {
+      respostaJson = respostaTexto ? JSON.parse(respostaTexto) : null;
+    } catch {
+      respostaJson = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        respostaJson?.mensagem ||
+        respostaTexto ||
+        "Erro ao colocar PN em seleção."
+      );
+    }
+
+    return respostaJson;
+  }
+
+  async function sairSelecaoPn(idRaspPn, removerTrava = false) {
+    const response = await fetch(`${API_BASE_URL}/rasp-pn/${idRaspPn}/sair-selecao`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        removerTrava: !!removerTrava
+      })
+    });
+
+    const respostaTexto = await response.text();
+    let respostaJson = null;
+
+    try {
+      respostaJson = respostaTexto ? JSON.parse(respostaTexto) : null;
+    } catch {
+      respostaJson = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        respostaJson?.mensagem ||
+        respostaTexto ||
+        "Erro ao encerrar seleção do PN."
+      );
+    }
+
+    return respostaJson;
+  }
+ 
   // ==========================================================
   // 45. EVENTOS - CAMPOS DE CONTATO
   // ==========================================================
@@ -2758,7 +2869,7 @@ aplicarRegraIniciativaFornecedor();
     dunsInput.addEventListener("blur", processarDuns);
   }
 
-  // ==========================================================
+ // ==========================================================
   // 48. EVENTOS - TABELA DE PNs
   // Finalidade:
   // - remover linha
@@ -2784,8 +2895,9 @@ aplicarRegraIniciativaFornecedor();
       // ------------------------------------------------------
       // 48.1 ABRIR / FECHAR DETALHES DO PN
       // ------------------------------------------------------
-      if (alvo.classList.contains("btn-detalhes-linha")) {
-        toggleDetalhePnLinha(alvo);
+      const botaoDetalhes = alvo.closest(".btn-detalhes-linha");
+      if (botaoDetalhes) {
+        toggleDetalhePnLinha(botaoDetalhes);
         return;
       }
 
@@ -2906,6 +3018,7 @@ aplicarRegraIniciativaFornecedor();
       }
     });
   }
+
 
 
 
@@ -3136,9 +3249,6 @@ function criarLinhaDetalhePn() {
         </div>
 
         <div class="pn-detalhe-grid">
-          <!-- =================================================
-               BLOCO 1: SELEÇÃO
-               ================================================= -->
           <div class="pn-card-mini">
             <h5>Seleção</h5>
 
@@ -3152,23 +3262,20 @@ function criarLinhaDetalhePn() {
 
             <div class="campo">
               <label>Status</label>
-              <div class="input-readonly">Fora da seleção</div>
+              <div class="input-readonly pn-status-selecao-texto">Fora da seleção</div>
             </div>
 
             <div class="campo">
               <label>Entrada em seleção</label>
-              <div class="input-readonly">-</div>
+              <div class="input-readonly pn-data-entrada-selecao">-</div>
             </div>
 
             <div class="campo">
               <label>Saída da seleção</label>
-              <div class="input-readonly">-</div>
+              <div class="input-readonly pn-data-saida-selecao">-</div>
             </div>
           </div>
 
-          <!-- =================================================
-               BLOCO 2: TRAVA
-               ================================================= -->
           <div class="pn-card-mini">
             <h5>Trava</h5>
 
@@ -3182,21 +3289,15 @@ function criarLinhaDetalhePn() {
 
             <div class="campo">
               <label>Solicitação da trava</label>
-              <div class="input-readonly">-</div>
+              <div class="input-readonly pn-data-solicitacao-trava">-</div>
             </div>
 
             <div class="campo">
               <label>Remoção da trava</label>
-              <div class="input-readonly">-</div>
+              <div class="input-readonly pn-data-remocao-trava">-</div>
             </div>
           </div>
 
-          <!-- =================================================
-               BLOCO 3: QHD
-               Regra:
-               - nasce travado
-               - somente FT / LG / Admin poderão alterar futuramente
-               ================================================= -->
           <div class="pn-card-mini">
             <h5>QHD</h5>
 
@@ -3207,20 +3308,15 @@ function criarLinhaDetalhePn() {
                   type="checkbox"
                   class="pn-qhd-ativo"
                   disabled
-                  title="Somente FT, LG ou Admin podem ativar o QHD"
+                  title="Somente FT, LG ou ADMIN podem ativar o QHD"
                 />
-                <span>Controlado por FT / LG / Admin</span>
+                <span>Ativar QHD</span>
               </div>
             </div>
 
             <div class="campo">
               <label>Data/hora QHD</label>
-              <div
-                class="input-readonly"
-                title="Campo controlado por FT / LG / Admin"
-              >
-                Bloqueado na criação
-              </div>
+              <div class="input-readonly pn-datahora-qhd">-</div>
             </div>
           </div>
         </div>
@@ -3235,6 +3331,172 @@ function criarLinhaDetalhePn() {
 
   return tr;
 }
+
+function formatarDataHoraDetalhe(valor) {
+  if (!valor) return "-";
+
+  const data = new Date(valor);
+
+  if (Number.isNaN(data.getTime())) return "-";
+
+  return data.toLocaleString("pt-BR");
+}
+
+function aplicarEstadoVisualSelecaoNaLinha(linhaPrincipal, dados = {}) {
+  if (!linhaPrincipal) return;
+
+  const badgeSelecao = linhaPrincipal.querySelector(".pn-badge");
+  const botaoDetalhes = linhaPrincipal.querySelector(".btn-detalhes-linha");
+  const linhaDetalhe = linhaPrincipal.nextElementSibling;
+
+  const statusSelecao = Number(dados.statusSelecao ?? 0);
+  const travaAtiva = !!dados.travaAtiva;
+  const entrouSelecao = !!dados.entrouSelecao;
+
+  if (badgeSelecao) {
+    badgeSelecao.classList.remove("pn-badge-neutro", "pn-badge-selecao");
+
+    if (statusSelecao === 1 || entrouSelecao) {
+      badgeSelecao.classList.add("pn-badge-selecao");
+      badgeSelecao.textContent = "Em seleção";
+    } else if (statusSelecao === 2) {
+      badgeSelecao.classList.add("pn-badge-neutro");
+      badgeSelecao.textContent = "Encerrada";
+    } else {
+      badgeSelecao.classList.add("pn-badge-neutro");
+      badgeSelecao.textContent = "Fora";
+    }
+  }
+
+  if (!linhaDetalhe || !linhaDetalhe.classList.contains("pn-detalhe-row")) return;
+
+  const chkSelecao = linhaDetalhe.querySelector(".pn-entrou-selecao");
+  const chkTrava = linhaDetalhe.querySelector(".pn-trava-ativa");
+  const txtStatus = linhaDetalhe.querySelector(".pn-status-selecao-texto");
+  const txtEntrada = linhaDetalhe.querySelector(".pn-data-entrada-selecao");
+  const txtSaida = linhaDetalhe.querySelector(".pn-data-saida-selecao");
+  const txtSolicTrava = linhaDetalhe.querySelector(".pn-data-solicitacao-trava");
+  const txtRemTrava = linhaDetalhe.querySelector(".pn-data-remocao-trava");
+  const chkQhd = linhaDetalhe.querySelector(".pn-qhd-ativo");
+  const txtQhd = linhaDetalhe.querySelector(".pn-datahora-qhd");
+
+  if (chkSelecao) {
+    chkSelecao.checked = statusSelecao === 1 || entrouSelecao;
+    chkSelecao.disabled = statusSelecao === 2;
+  }
+
+  if (chkTrava) {
+    chkTrava.checked = travaAtiva;
+    chkTrava.disabled = statusSelecao === 2;
+  }
+
+  if (txtStatus) {
+    if (statusSelecao === 1 || entrouSelecao) {
+      txtStatus.textContent = "Em seleção";
+    } else if (statusSelecao === 2) {
+      txtStatus.textContent = "Seleção encerrada";
+    } else {
+      txtStatus.textContent = "Fora da seleção";
+    }
+  }
+
+  if (txtEntrada) {
+    txtEntrada.textContent = formatarDataHoraDetalhe(dados.datahoraEntradaSelecao);
+  }
+
+  if (txtSaida) {
+    txtSaida.textContent = formatarDataHoraDetalhe(dados.datahoraSaidaSelecao);
+  }
+
+  if (txtSolicTrava) {
+    txtSolicTrava.textContent = formatarDataHoraDetalhe(dados.datahoraSolicitacaoTrava);
+  }
+
+  if (txtRemTrava) {
+    txtRemTrava.textContent = formatarDataHoraDetalhe(dados.datahoraRemocaoTrava);
+  }
+
+  if (chkQhd) {
+    chkQhd.checked = !!dados.qhdAtivo;
+  }
+
+  if (txtQhd) {
+    txtQhd.textContent = formatarDataHoraDetalhe(dados.datahoraQhd);
+  }
+
+  if (botaoDetalhes && statusSelecao === 2) {
+    botaoDetalhes.title = "Seleção encerrada para este PN";
+  }
+}
+
+
+function obterDataHoraAtualFormatada() {
+  const agora = new Date();
+
+  return agora.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+function vincularEventosDetalhePn(linhaDetalhe, linhaPrincipal) {
+  if (!linhaDetalhe || !linhaPrincipal) return;
+
+  const chkSelecao = linhaDetalhe.querySelector(".pn-entrou-selecao");
+  const statusSelecao = linhaDetalhe.querySelector(".pn-status-selecao-texto");
+  const dataEntradaSelecao = linhaDetalhe.querySelector(".pn-data-entrada-selecao");
+  const dataSaidaSelecao = linhaDetalhe.querySelector(".pn-data-saida-selecao");
+
+  const chkTrava = linhaDetalhe.querySelector(".pn-trava-ativa");
+  const dataSolicitacaoTrava = linhaDetalhe.querySelector(".pn-data-solicitacao-trava");
+  const dataRemocaoTrava = linhaDetalhe.querySelector(".pn-data-remocao-trava");
+
+  const badgeSelecaoLinha = linhaPrincipal.querySelector(".pn-badge");
+
+  if (chkSelecao) {
+    chkSelecao.addEventListener("change", () => {
+      const dataHoraAtual = obterDataHoraAtualFormatada();
+
+      if (chkSelecao.checked) {
+        if (statusSelecao) statusSelecao.textContent = "Em seleção";
+        if (dataEntradaSelecao) dataEntradaSelecao.textContent = dataHoraAtual;
+        if (dataSaidaSelecao) dataSaidaSelecao.textContent = "-";
+
+        if (badgeSelecaoLinha) {
+          badgeSelecaoLinha.textContent = "Em seleção";
+          badgeSelecaoLinha.classList.remove("pn-badge-neutro");
+          badgeSelecaoLinha.classList.add("pn-badge-selecao");
+        }
+      } else {
+        if (statusSelecao) statusSelecao.textContent = "Fora da seleção";
+        if (dataSaidaSelecao) dataSaidaSelecao.textContent = dataHoraAtual;
+
+        if (badgeSelecaoLinha) {
+          badgeSelecaoLinha.textContent = "Fora";
+          badgeSelecaoLinha.classList.remove("pn-badge-selecao");
+          badgeSelecaoLinha.classList.add("pn-badge-neutro");
+        }
+      }
+    });
+  }
+
+  if (chkTrava) {
+    chkTrava.addEventListener("change", () => {
+      const dataHoraAtual = obterDataHoraAtualFormatada();
+
+      if (chkTrava.checked) {
+        if (dataSolicitacaoTrava) dataSolicitacaoTrava.textContent = dataHoraAtual;
+        if (dataRemocaoTrava) dataRemocaoTrava.textContent = "-";
+      } else {
+        if (dataRemocaoTrava) dataRemocaoTrava.textContent = dataHoraAtual;
+      }
+    });
+  }
+}
+
 
 function fecharTodosDetalhesPn() {
   const detalhes = document.querySelectorAll(".pn-detalhe-row");
@@ -3255,6 +3517,7 @@ function toggleDetalhePnLinha(botao) {
   if (!linhaDetalhe || !linhaDetalhe.classList.contains("pn-detalhe-row")) {
     linhaDetalhe = criarLinhaDetalhePn();
     linhaPrincipal.insertAdjacentElement("afterend", linhaDetalhe);
+    vincularEventosDetalhePn(linhaDetalhe, linhaPrincipal);
   }
 
   const vaiAbrir = !linhaDetalhe.classList.contains("ativo");
@@ -3264,6 +3527,10 @@ function toggleDetalhePnLinha(botao) {
   if (vaiAbrir) {
     linhaDetalhe.classList.add("ativo");
     botao.textContent = "Fechar";
+
+    const estadoAtual = obterEstadoSelecaoDaLinha(linhaPrincipal);
+    aplicarEstadoVisualSelecaoNaLinha(linhaPrincipal, estadoAtual);
   }
 }
+
 
