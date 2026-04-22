@@ -3112,13 +3112,15 @@ aplicarRegraIniciativaFornecedor();
   inicializarTelaRasp();
 });
 
-  /* =========================================================
-     FUNÇÃO: ABRIR / FECHAR DETALHE DO PN
-     Regra:
-     - abre somente a linha de detalhe ligada ao botão clicado
-     - fecha as demais
-     ========================================================= */
-  // ==========================================================
+ /* =========================================================
+   FUNÇÃO: ABRIR / FECHAR DETALHE DO PN
+   Regra:
+   - abre somente a linha de detalhe ligada ao botão clicado
+   - fecha as demais
+   - QHD nasce travado no front
+   ========================================================= */
+
+// ==========================================================
 // ETAPA 2 - DETALHE RECOLHÍVEL POR LINHA DE PN
 // ==========================================================
 function criarLinhaDetalhePn() {
@@ -3134,6 +3136,9 @@ function criarLinhaDetalhePn() {
         </div>
 
         <div class="pn-detalhe-grid">
+          <!-- =================================================
+               BLOCO 1: SELEÇÃO
+               ================================================= -->
           <div class="pn-card-mini">
             <h5>Seleção</h5>
 
@@ -3161,6 +3166,9 @@ function criarLinhaDetalhePn() {
             </div>
           </div>
 
+          <!-- =================================================
+               BLOCO 2: TRAVA
+               ================================================= -->
           <div class="pn-card-mini">
             <h5>Trava</h5>
 
@@ -3183,20 +3191,36 @@ function criarLinhaDetalhePn() {
             </div>
           </div>
 
+          <!-- =================================================
+               BLOCO 3: QHD
+               Regra:
+               - nasce travado
+               - somente FT / LG / Admin poderão alterar futuramente
+               ================================================= -->
           <div class="pn-card-mini">
             <h5>QHD</h5>
 
             <div class="campo">
               <label>QHD ativo</label>
               <div class="toggle-line">
-                <input type="checkbox" class="pn-qhd-ativo" />
-                <span>Ativar QHD</span>
+                <input
+                  type="checkbox"
+                  class="pn-qhd-ativo"
+                  disabled
+                  title="Somente FT, LG ou Admin podem ativar o QHD"
+                />
+                <span>Controlado por FT / LG / Admin</span>
               </div>
             </div>
 
             <div class="campo">
               <label>Data/hora QHD</label>
-              <div class="input-readonly">-</div>
+              <div
+                class="input-readonly"
+                title="Campo controlado por FT / LG / Admin"
+              >
+                Bloqueado na criação
+              </div>
             </div>
           </div>
         </div>
@@ -3217,7 +3241,9 @@ function fecharTodosDetalhesPn() {
   const botoes = document.querySelectorAll(".btn-detalhes-linha");
 
   detalhes.forEach((linha) => linha.classList.remove("ativo"));
-  botoes.forEach((btn) => (btn.textContent = "Detalhes"));
+  botoes.forEach((btn) => {
+    btn.textContent = "Detalhes";
+  });
 }
 
 function toggleDetalhePnLinha(botao) {
@@ -3240,3 +3266,4 @@ function toggleDetalhePnLinha(botao) {
     botao.textContent = "Fechar";
   }
 }
+
