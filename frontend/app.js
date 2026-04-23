@@ -533,11 +533,22 @@ if (descricaoPnInput) {
       dataCriacaoRaspInfo.textContent = formatarDataParaExibicao(rasp.dataCriacao);
     }
 
-    // ==========================================================
-    // 3) OCORRÊNCIA
-    // ==========================================================
-    if (descricaoInicialInput) descricaoInicialInput.value = rasp.descricaoProblema || "";
-    if (resumoInput) resumoInput.value = rasp.descricaoProblema || "";
+// ==========================================================
+// 3) OCORRÊNCIA
+// Regra:
+// - descricaoInicial vem de descricaoProblema
+// - resumo vem de resumoOcorrencia
+// - se algum deles vier nulo, carregar vazio
+// ==========================================================
+if (descricaoInicialInput) {
+  descricaoInicialInput.value = rasp.descricaoProblema || "";
+}
+
+if (resumoInput) {
+  resumoInput.value = rasp.resumoOcorrencia || "";
+}
+
+
 
     // ==========================================================
     // 4) FORNECEDOR
@@ -2306,6 +2317,9 @@ aplicarRegraIniciativaFornecedor();
 
     const payloadRascunho = {
       idUsuarioExecutor: ID_USUARIO_LOGADO,
+      resumoOcorrencia: resumoInput?.value?.trim() || null,
+      descricaoProblema: descricaoInicialInput?.value?.trim() || null,
+
       idModeloVeiculoRasp: modeloVeiculoSelect?.value
         ? Number(modeloVeiculoSelect.value)
         : null,
@@ -2342,11 +2356,14 @@ aplicarRegraIniciativaFornecedor();
       idGmAliadoRasp: gmAliadoSelect?.value
         ? Number(gmAliadoSelect.value)
         : null,
+
       rdNumero: rdNumeroInput?.value?.trim() || null,
       campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
       nomeContato: nomeContatoInput?.value?.trim() || null,
       dataContato: dataContatoInput?.value || null,
+
       iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
+
       bpTexto: comoIdentificadoBp?.value?.trim() || null,
       bpSerie: vinBp?.value?.trim() || null,
       bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
@@ -2400,7 +2417,6 @@ aplicarRegraIniciativaFornecedor();
     const tipoFornecedor = tipoFornecedorInput?.value.trim() ?? "";
     const analista = analistaInput?.value.trim() ?? "";
     const statusInicial = statusInicialInput?.value.trim() ?? "";
-
     const setor = setorSelect?.value ?? "";
     const origem = origemSelect?.value ?? "";
     const maiorImpacto = maiorImpactoSelect?.value ?? "";
@@ -2537,6 +2553,7 @@ aplicarRegraIniciativaFornecedor();
       if (modoEdicao && idRaspEmEdicao) {
         const payloadEdicao = {
           idUsuarioExecutor: ID_USUARIO_LOGADO,
+          resumoOcorrencia: resumoInput?.value?.trim() || null,
           descricaoProblema: validacao.descricaoInicial,
 
           idModeloVeiculoRasp: modeloVeiculoSelect?.value
@@ -2580,6 +2597,7 @@ aplicarRegraIniciativaFornecedor();
           campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
           nomeContato: nomeContatoInput?.value?.trim() || null,
           dataContato: dataContatoInput?.value || null,
+
           iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
 
           bpTexto: comoIdentificadoBp?.value?.trim() || null,
@@ -2681,11 +2699,13 @@ aplicarRegraIniciativaFornecedor();
         textoTemConteudoReal(nomeContatoInput?.value) || !!dataContatoInput?.value;
 
       bpOriginalTravado =
-        !!(comoIdentificadoBp?.value?.trim() ||
-        vinBp?.value?.trim() ||
-        localCelulaBp?.value?.trim() ||
-        dataBp?.value ||
-        horaBp?.value);
+        !!(
+          comoIdentificadoBp?.value?.trim() ||
+          vinBp?.value?.trim() ||
+          localCelulaBp?.value?.trim() ||
+          dataBp?.value ||
+          horaBp?.value
+        );
 
       aplicarTravaContato();
       aplicarTravaBp();
@@ -2693,7 +2713,6 @@ aplicarRegraIniciativaFornecedor();
 
       atualizarNumeroRaspDisplay(numeroRaspCriado || `ID ${idRaspCriado}`);
       atualizarDataCriacaoRaspDisplay(dataCriacaoRasp);
-
       mostrarMensagemRasp(
         `RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`
       );
@@ -2712,6 +2731,7 @@ aplicarRegraIniciativaFornecedor();
       return false;
     }
   }
+
 
  // ==========================================================
   // 38.1 API - CONTROLE DE SELEÇÃO DO PN
@@ -3033,70 +3053,97 @@ aplicarRegraIniciativaFornecedor();
   }
 
   if (importMassPnsBtn) {
-    importMassPnsBtn.addEventListener("click", () => {
-      if (!pnsLoteTextarea || !pnTableBody) return;
+  importMassPnsBtn.addEventListener("click", async () => {
+    if (!pnsLoteTextarea || !pnTableBody) return;
 
-      const texto = pnsLoteTextarea.value.trim();
+    const texto = pnsLoteTextarea.value.trim();
 
-      if (!texto) {
-        alert("Cole pelo menos 1 PN para importar.");
+    if (!texto) {
+      alert("Cole pelo menos 1 PN para importar.");
+      return;
+    }
+
+    const linhas = texto
+      .split("\n")
+      .map((linha) => normalizarNumero(linha))
+      .filter((linha) => linha !== "");
+
+    if (linhas.length === 0) {
+      alert("Nenhum PN válido foi identificado no texto colado.");
+      return;
+    }
+
+    const existentes = new Set(
+      obterRowsPn()
+        .map((row) => normalizarNumero(row.querySelector(".pn-input")?.value || ""))
+        .filter(Boolean)
+    );
+
+    let adicionados = 0;
+    const invalidos = [];
+    const duplicados = [];
+    const linhasAdicionadas = [];
+
+    // ------------------------------------------------------
+    // 49.1 ADICIONA AS LINHAS NOVAS
+    // ------------------------------------------------------
+    linhas.forEach((pn) => {
+      if (!validarPn(pn)) {
+        invalidos.push(pn);
         return;
       }
 
-      const linhas = texto
-        .split("\n")
-        .map((linha) => normalizarNumero(linha))
-        .filter((linha) => linha !== "");
-
-      if (linhas.length === 0) {
-        alert("Nenhum PN válido foi identificado no texto colado.");
+      if (existentes.has(pn)) {
+        duplicados.push(pn);
         return;
       }
 
-      const existentes = new Set(
-        obterRowsPn()
-          .map((row) => normalizarNumero(row.querySelector(".pn-input").value))
-          .filter(Boolean)
-      );
+      existentes.add(pn);
 
-      let adicionados = 0;
-      const invalidos = [];
-      const duplicados = [];
+      const novaLinha = criarLinhaPn({ pn });
+      pnTableBody.appendChild(novaLinha);
+      linhasAdicionadas.push(novaLinha);
 
-      linhas.forEach((pn) => {
-        if (!validarPn(pn)) {
-          invalidos.push(pn);
-          return;
-        }
-
-        if (existentes.has(pn)) {
-          duplicados.push(pn);
-          return;
-        }
-
-        existentes.add(pn);
-        pnTableBody.appendChild(criarLinhaPn({ pn }));
-        adicionados += 1;
-      });
-
-      garantirPnPrincipal();
-      aplicarValidacoesPnEmTela();
-      travarPrimeiroPnOriginalSeNecessario();
-
-      let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
-
-      if (invalidos.length > 0) {
-        mensagem += `\nInválidos: ${invalidos.join(", ")}`;
-      }
-
-      if (duplicados.length > 0) {
-        mensagem += `\nDuplicados ignorados: ${duplicados.join(", ")}`;
-      }
-
-      alert(mensagem);
-      pnsLoteTextarea.value = "";
+      adicionados += 1;
     });
-  }
+
+    // ------------------------------------------------------
+    // 49.2 PROCESSA CADA PN NOVO NA API
+    // - busca descrição
+    // - preenche id do PN
+    // - se não existir, abre modal apenas quando o usuário
+    //   tratar individualmente depois
+    // ------------------------------------------------------
+    for (const linha of linhasAdicionadas) {
+      try {
+        await processarPnDaLinha(linha);
+      } catch (error) {
+        console.error("Erro ao processar PN importado:", error);
+      }
+    }
+
+    // ------------------------------------------------------
+    // 49.3 AJUSTES FINAIS DE TELA
+    // ------------------------------------------------------
+    garantirPnPrincipal();
+    aplicarValidacoesPnEmTela();
+    travarPrimeiroPnOriginalSeNecessario();
+
+    let mensagem = `Importação concluída.\nAdicionados: ${adicionados}`;
+
+    if (invalidos.length > 0) {
+      mensagem += `\nInválidos: ${invalidos.join(", ")}`;
+    }
+
+    if (duplicados.length > 0) {
+      mensagem += `\nDuplicados ignorados: ${duplicados.join(", ")}`;
+    }
+
+    alert(mensagem);
+    pnsLoteTextarea.value = "";
+  });
+}
+
 
   // ==========================================================
   // 50. EVENTOS - BP

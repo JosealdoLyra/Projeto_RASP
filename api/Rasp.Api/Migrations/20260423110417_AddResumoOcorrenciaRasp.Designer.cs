@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rasp.Api.Data;
@@ -11,9 +12,11 @@ using Rasp.Api.Data;
 namespace Rasp.Api.Migrations
 {
     [DbContext(typeof(RaspDbContext))]
-    partial class RaspDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423110417_AddResumoOcorrenciaRasp")]
+    partial class AddResumoOcorrenciaRasp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

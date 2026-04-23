@@ -1,37 +1,78 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Rasp.Api.Models
 {
-    // Entidade principal do processo RASP.
-    //
-    // Esta classe representa o registro central da reclamação e concentra:
-    // - identificação do RASP
-    // - dados básicos do problema
-    // - vínculos com fornecedor e tabelas auxiliares
-    // - indicadores de impacto
-    // - dados de BP / breakpoint
-    // - responsáveis pelas etapas
-    // - status, rascunho e completude
-    //
-    // Observações importantes para o projeto:
-    // - IdAnalistaMt representa a autoria do RASP na fase MT
-    // - IdStatusRasp controla a etapa atual do fluxo
-    // - IsRascunho indica se o RASP ainda está em construção
-    // - SppsNumero só passa a fazer sentido após evolução do fluxo
+    /// <summary>
+    /// Entidade principal do processo RASP.
+    ///
+    /// Esta classe representa o registro central da reclamação e concentra:
+    /// - identificação do RASP;
+    /// - dados básicos do problema;
+    /// - vínculos com fornecedor e tabelas auxiliares;
+    /// - indicadores de impacto;
+    /// - dados de BP / breakpoint;
+    /// - responsáveis pelas etapas;
+    /// - status, rascunho e completude.
+    ///
+    /// Observações importantes para o projeto:
+    /// - IdAnalistaMt representa a autoria do RASP na fase MT;
+    /// - IdStatusRasp controla a etapa atual do fluxo;
+    /// - IsRascunho indica se o RASP ainda está em construção;
+    /// - SppsNumero só passa a fazer sentido após evolução do fluxo;
+    /// - ResumoOcorrencia representa o resumo curto exibido na abertura;
+    /// - DescricaoProblema representa a descrição detalhada do problema.
+    /// </summary>
     public class RaspEntity
     {
-        // Identificador interno do RASP
+        // ==========================================================
+        // IDENTIFICAÇÃO DO RASP
+        // ==========================================================
+
+        /// <summary>
+        /// Identificador interno do RASP.
+        /// </summary>
         public int IdRasp { get; set; }
 
-        // Número do RASP no formato 000X/YY
+        /// <summary>
+        /// Número do RASP no formato 000X/YY.
+        /// </summary>
         public string NumeroRasp { get; set; } = string.Empty;
 
-        // Data e hora de criação do registro
+        /// <summary>
+        /// Data de criação do registro.
+        /// </summary>
         public DateOnly DataCriacao { get; set; }
+
+        /// <summary>
+        /// Hora de criação do registro.
+        /// </summary>
         public TimeOnly HoraCriacao { get; set; }
 
-        // Fornecedor vinculado ao RASP
+        // ==========================================================
+        // DADOS BÁSICOS DO RASP
+        // ==========================================================
+
+        /// <summary>
+        /// Fornecedor vinculado ao RASP.
+        /// </summary>
         public int IdFornecedorRasp { get; set; }
 
-        // Vínculos com tabelas auxiliares / domínios do processo
+        /// <summary>
+        /// Resumo curto da ocorrência.
+        /// Campo próprio da abertura, separado da descrição detalhada.
+        /// </summary>
+        [Column("resumo_ocorrencia")]
+        public string? ResumoOcorrencia { get; set; }
+
+        /// <summary>
+        /// Descrição principal e detalhada do problema levantado no RASP.
+        /// </summary>
+        public string DescricaoProblema { get; set; } = string.Empty;
+
+        // ==========================================================
+        // VÍNCULOS COM TABELAS AUXILIARES / DOMÍNIOS DO PROCESSO
+        // ==========================================================
+
         public int? IdModeloVeiculoRasp { get; set; }
         public int? IdSetorRasp { get; set; }
         public int? IdTurnoRasp { get; set; }
@@ -48,15 +89,19 @@ namespace Rasp.Api.Models
         public int? IdContaCrSubcontaRasp { get; set; }
         public int? IdGmAliadoRasp { get; set; }
         public int? IdPerfilRasp { get; set; }
+        public int? IdIndiceOperacionalRasp { get; set; }
 
-        // Número do SPPS e procedência do documento
+        // ==========================================================
+        // NÚMERO DO SPPS E PROCEDÊNCIA
+        // ==========================================================
+
         public string? SppsNumero { get; set; }
         public string? Procedencia { get; set; }
 
-        // Descrição principal do problema levantado no RASP
-        public string DescricaoProblema { get; set; } = string.Empty;
+        // ==========================================================
+        // INDICADORES / FLAGS DO PROCESSO
+        // ==========================================================
 
-        // Indicadores / flags do processo
         public bool? IniciativaFornecedor { get; set; }
         public bool? SupplierAlert { get; set; }
         public bool? Reversao { get; set; }
@@ -64,50 +109,71 @@ namespace Rasp.Api.Models
         public bool? EmitiuPrr { get; set; }
         public bool? AprovadoLg { get; set; }
 
-        // Informações relacionadas ao BP
+        // ==========================================================
+        // INFORMAÇÕES RELACIONADAS AO BP
+        // ==========================================================
+
         public string? BpTexto { get; set; }
         public string? BpSerie { get; set; }
         public DateTime? BpDatahora { get; set; }
 
-        // Responsáveis pelas etapas do fluxo
+        // ==========================================================
+        // RESPONSÁVEIS PELAS ETAPAS DO FLUXO
+        // ==========================================================
+
         public int? IdAnalista { get; set; }
         public int? IdAprovadorFt { get; set; }
         public int? IdAprovadorLg { get; set; }
 
-        // Status atual do RASP no fluxo
+        /// <summary>
+        /// Autor do RASP na fase MT.
+        /// </summary>
+        public int? IdAnalistaMt { get; set; }
+
+        // ==========================================================
+        // STATUS E FECHAMENTO
+        // ==========================================================
+
+        /// <summary>
+        /// Status atual do RASP no fluxo.
+        /// </summary>
         public int IdStatusRasp { get; set; }
 
-        // Informações complementares e de fechamento
         public short? AnoRasp { get; set; }
         public DateOnly? DataFechamento { get; set; }
 
-        // Autor do RASP na fase MT
-        public int? IdAnalistaMt { get; set; }
+        // ==========================================================
+        // INFORMAÇÕES RELACIONADAS AO BREAKPOINT
+        // ==========================================================
 
-        // Informações relacionadas ao breakpoint
         public string? BreakpointTexto { get; set; }
         public string? BreakpointCodigo { get; set; }
         public DateTime? BreakpointDatahora { get; set; }
 
-        // Flags alternativas / complementares do processo
+        // ==========================================================
+        // FLAGS ALTERNATIVAS / COMPLEMENTARES DO PROCESSO
+        // ==========================================================
+
         public bool? IsSupplierAlert { get; set; }
         public bool? IsSafety { get; set; }
         public bool? IsReversao { get; set; }
         public bool? GeraPrr { get; set; }
 
-        // Observações gerais do registro
+        // ==========================================================
+        // OBSERVAÇÕES E COMPLEMENTOS
+        // ==========================================================
+
         public string? ObservacaoGeral { get; set; }
-
-        // Controle de rascunho e nível de preenchimento
-        public bool IsRascunho { get; set; }
-        public short PercentualCompletude { get; set; }
-
-        // Índice operacional vinculado ao RASP
-        public int? IdIndiceOperacionalRasp { get; set; }
-
         public string? RdNumero { get; set; }
         public string? CampanhaNumero { get; set; }
         public string? NomeContato { get; set; }
         public DateOnly? DataContato { get; set; }
+
+        // ==========================================================
+        // CONTROLE DE RASCUNHO E COMPLETUDE
+        // ==========================================================
+
+        public bool IsRascunho { get; set; }
+        public short PercentualCompletude { get; set; }
     }
 }

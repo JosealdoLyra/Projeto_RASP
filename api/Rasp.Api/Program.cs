@@ -3180,7 +3180,6 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     AtualizarRaspRascunhoRequest req,
     RaspDbContext db) =>
 {
-   
     // -------------------------------------------------------------------------
     // 01. VALIDAÇÃO INICIAL DO RASP E DO EXECUTOR
     // -------------------------------------------------------------------------
@@ -3239,7 +3238,21 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 03. DESCRIÇÃO PRINCIPAL
+    // 03. RESUMO DA OCORRÊNCIA
+    // -------------------------------------------------------------------------
+    if (req.ResumoOcorrencia is not null)
+    {
+        var resumo = req.ResumoOcorrencia.Trim();
+
+        rasp.ResumoOcorrencia = string.IsNullOrWhiteSpace(resumo)
+            ? null
+            : resumo;
+
+        alterou = true;
+    }
+
+    // -------------------------------------------------------------------------
+    // 04. DESCRIÇÃO PRINCIPAL
     // -------------------------------------------------------------------------
     if (req.DescricaoProblema is not null)
     {
@@ -3253,7 +3266,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 04. DOMÍNIOS / FKs OPCIONAIS
+    // 05. DOMÍNIOS / FKs OPCIONAIS
     // null = não altera
     // 0    = limpa
     // >0   = valida e grava
@@ -3557,29 +3570,29 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
 
         alterou = true;
     }
-        if (req.IdOrigemFabricacaoRasp.HasValue)
-{
-    if (req.IdOrigemFabricacaoRasp.Value == 0)
+
+    if (req.IdOrigemFabricacaoRasp.HasValue)
     {
-        rasp.IdOrigemFabricacaoRasp = null;
+        if (req.IdOrigemFabricacaoRasp.Value == 0)
+        {
+            rasp.IdOrigemFabricacaoRasp = null;
+        }
+        else
+        {
+            var existe = await db.OrigemFabricacaoRasp
+                .AnyAsync(x => x.IdOrigemFabricacaoRasp == req.IdOrigemFabricacaoRasp.Value);
+
+            if (!existe)
+                return Results.BadRequest("IdOrigemFabricacaoRasp não existe.");
+
+            rasp.IdOrigemFabricacaoRasp = req.IdOrigemFabricacaoRasp.Value;
+        }
+
+        alterou = true;
     }
-    else
-    {
-        var existe = await db.OrigemFabricacaoRasp
-            .AnyAsync(x => x.IdOrigemFabricacaoRasp == req.IdOrigemFabricacaoRasp.Value);
-
-        if (!existe)
-            return Results.BadRequest("IdOrigemFabricacaoRasp não existe.");
-
-        rasp.IdOrigemFabricacaoRasp = req.IdOrigemFabricacaoRasp.Value;
-    }
-
-    alterou = true;
-}
-
 
     // -------------------------------------------------------------------------
-    // 05. CAMPOS LIVRES DE CONTATO / COMPLEMENTO
+    // 06. CAMPOS LIVRES DE CONTATO / COMPLEMENTO
     // -------------------------------------------------------------------------
     if (req.RdNumero is not null)
     {
@@ -3609,7 +3622,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 06. APROVADOR FT
+    // 07. APROVADOR FT
     // -------------------------------------------------------------------------
     if (req.IdAprovadorFt.HasValue || req.IdTurnoRasp.HasValue)
     {
@@ -3651,7 +3664,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 07. CAMPOS STRING OPCIONAIS
+    // 08. CAMPOS STRING OPCIONAIS
     // -------------------------------------------------------------------------
     if (req.SppsNumero is not null)
     {
@@ -3727,7 +3740,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 08. DATAS OPCIONAIS
+    // 09. DATAS OPCIONAIS
     // -------------------------------------------------------------------------
     if (req.BpDatahora.HasValue)
     {
@@ -3742,7 +3755,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 09. FLAGS OPCIONAIS
+    // 10. FLAGS OPCIONAIS
     // -------------------------------------------------------------------------
     if (req.IniciativaFornecedor.HasValue)
     {
@@ -3805,7 +3818,7 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 10. REGRA AUTOMÁTICA DE APROVADOR FT PELO TURNO JÁ DEFINIDO NO RASP
+    // 11. REGRA AUTOMÁTICA DE APROVADOR FT PELO TURNO JÁ DEFINIDO NO RASP
     // -------------------------------------------------------------------------
     if (!rasp.IdAprovadorFt.HasValue && rasp.IdTurnoRasp.HasValue)
     {
@@ -3825,14 +3838,14 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     }
 
     // -------------------------------------------------------------------------
-    // 11. ENCERRAMENTO
+    // 12. ENCERRAMENTO
     // -------------------------------------------------------------------------
     if (!alterou)
         return Results.BadRequest("Nenhum campo válido foi informado para atualização.");
 
+    Console.WriteLine($"ResumoOcorrencia recebido: {req.ResumoOcorrencia}");
     Console.WriteLine($"IdOrigemFabricacaoRasp recebido: {req.IdOrigemFabricacaoRasp}");
-Console.WriteLine($"IdOrigemFabricacaoRasp no rasp antes de salvar: {rasp.IdOrigemFabricacaoRasp}");
-
+    Console.WriteLine($"IdOrigemFabricacaoRasp no rasp antes de salvar: {rasp.IdOrigemFabricacaoRasp}");
 
     await db.SaveChangesAsync();
 
@@ -3843,8 +3856,6 @@ Console.WriteLine($"IdOrigemFabricacaoRasp no rasp antes de salvar: {rasp.IdOrig
     });
 })
 .WithName("AtualizarRaspRascunho");
-
-
 
 // -----------------------------------------------------------------------------
 // 21. DEBUG
@@ -3937,12 +3948,15 @@ public record AtualizarRaspRequest(
 // - 0 em campos FK opcionais = limpa o campo
 // - strings vazias podem ser interpretadas pela rota como limpeza, conforme regra
 //
-// Inclusão importante:
-// - IdAprovadorFt foi adicionado para permitir salvar o FT automático por turno
+// Inclusões importantes:
+// - ResumoOcorrencia foi adicionado para separar o resumo curto da descrição
+// - IdAprovadorFt foi mantido para permitir salvar o FT automático por turno
 // -----------------------------------------------------------------------------
 public record AtualizarRaspRascunhoRequest(
     int IdUsuarioExecutor,
     int? IdFornecedorRasp,
+
+    string? ResumoOcorrencia,
     string? DescricaoProblema,
 
     int? IdModeloVeiculoRasp,
@@ -3976,8 +3990,8 @@ public record AtualizarRaspRascunhoRequest(
     string? RdNumero,
     string? CampanhaNumero,
     string? NomeContato,
-    DateOnly? DataContato,
 
+    DateOnly? DataContato,
     DateTime? BpDatahora,
     DateTime? BreakpointDatahora,
 
@@ -3992,6 +4006,7 @@ public record AtualizarRaspRascunhoRequest(
     bool? IsReversao,
     bool? GeraPrr
 );
+
 
 
 // -----------------------------------------------------------------------------
