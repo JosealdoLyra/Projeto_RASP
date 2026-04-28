@@ -473,7 +473,7 @@ if (descricaoPnInput) {
       return (
         texto === "iniciado - fornecedor" ||
         texto === "iniciado-fornecedor" ||
-        texto.includes("iniciado") && texto.includes("fornecedor")
+        (texto.includes("iniciado") && texto.includes("fornecedor"))
       );
     });
 
@@ -484,12 +484,12 @@ if (descricaoPnInput) {
     impactoClienteSelect.disabled = true;
   } else {
     impactoClienteSelect.disabled = false;
-
-    if (impactoClienteSelect.value) {
-      impactoClienteSelect.value = "";
-    }
+    // IMPORTANTE:
+    // não limpar o valor aqui, senão ao carregar RASP em edição
+    // o Impacto Cliente volta para "Selecione".
   }
 }
+
 
 
 
@@ -1749,33 +1749,67 @@ aplicarRegraIniciativaFornecedor();
 
 
 
-  function coletarPns() {
-    const rows = obterRowsPn();
+ function coletarPns() {
+  const rows = obterRowsPn();
 
-    return rows
-      .map((row) => {
-        const principal = row.querySelector(".pn-principal").checked;
-        const pn = normalizarNumero(row.querySelector(".pn-input").value);
-        const idPn = row.querySelector(".pn-id")?.value
-          ? Number(row.querySelector(".pn-id").value)
-          : null;
-        const dataLoteInicial = row.querySelector(".data-lote-inicial").value.trim();
-        const qtdSuspeitaInicial = Number(row.querySelector(".qtd-suspeita").value || 0);
-        const qtdChecadaInicial = Number(row.querySelector(".qtd-checada").value || 0);
-        const qtdRejeitadaInicial = Number(row.querySelector(".qtd-rejeitada").value || 0);
+  return rows
+    .map((row) => {
+      const principal = row.querySelector(".pn-principal")?.checked ?? false;
+      const pn = normalizarNumero(row.querySelector(".pn-input")?.value || "");
 
-        return {
-          principal,
-          pn,
-          idPn,
-          dataLoteInicial,
-          qtdSuspeitaInicial,
-          qtdChecadaInicial,
-          qtdRejeitadaInicial
-        };
-      })
-      .filter((item) => item.pn !== "");
-  }
+      const idPn = row.querySelector(".pn-id")?.value
+        ? Number(row.querySelector(".pn-id").value)
+        : null;
+
+      const idRaspPn = row.dataset.idRaspPn
+        ? Number(row.dataset.idRaspPn)
+        : null;
+
+      const statusSelecao = Number(row.dataset.statusSelecao || 0);
+
+      const linhaDetalhe = row.nextElementSibling;
+
+      const chkSelecao = linhaDetalhe?.classList.contains("pn-detalhe-row")
+        ? linhaDetalhe.querySelector(".pn-entrou-selecao")
+        : null;
+
+      const chkTrava = linhaDetalhe?.classList.contains("pn-detalhe-row")
+        ? linhaDetalhe.querySelector(".pn-trava-ativa")
+        : null;
+
+      const entrouSelecao =
+        row.dataset.entrouSelecao === "true" ||
+        chkSelecao?.checked === true ||
+        statusSelecao === 1;
+
+      const travaAtiva =
+        row.dataset.travaAtiva === "true" ||
+        chkTrava?.checked === true;
+
+      const dataLoteInicial = row.querySelector(".data-lote-inicial")?.value.trim() || "";
+      const qtdSuspeitaInicial = Number(row.querySelector(".qtd-suspeita")?.value || 0);
+      const qtdChecadaInicial = Number(row.querySelector(".qtd-checada")?.value || 0);
+      const qtdRejeitadaInicial = Number(row.querySelector(".qtd-rejeitada")?.value || 0);
+
+      return {
+        principal,
+        pn,
+        idPn,
+        idRaspPn,
+        statusSelecao,
+        dataLoteInicial,
+        qtdSuspeitaInicial,
+        qtdChecadaInicial,
+        qtdRejeitadaInicial,
+        entrouSelecao,
+        travaAtiva
+      };
+    })
+    .filter((item) => item.pn !== "");
+}
+
+
+
 
   function limparPnDerivadoDaLinha(linha) {
     const pnIdInput = linha.querySelector(".pn-id");
@@ -2273,41 +2307,79 @@ aplicarRegraIniciativaFornecedor();
   }
 
   // ==========================================================
-  // 40. SALVA OS PNs VINCULADOS AO RASP
-  // ==========================================================
-  async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
-    const promises = pns.map(async (item, i) => {
-      const payloadPn = {
-        idRasp: idRasp,
-        pn: item.pn,
-        dataLoteInicial: item.dataLoteInicial || null,
-        quantidadeSuspeita: item.qtdSuspeitaInicial,
-        quantidadeChecada: item.qtdChecadaInicial,
-        quantidadeRejeitada: item.qtdRejeitadaInicial,
-        emContencao: false,
-        duns: dunsFornecedor,
-        ordemExibicao: i + 1
-      };
-
-      const response = await fetch(`${API_BASE_URL}/rasp-pn`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payloadPn)
-      });
-
-      if (!response.ok) {
-        const mensagemErro = await response.text();
-        console.error("Erro API PN:", mensagemErro);
-        throw new Error(`Erro ao salvar PN ${item.pn}. Detalhe: ${mensagemErro}`);
+// 40. SALVA OS PNs VINCULADOS AO RASP
+// ==========================================================
+async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
+  const promises = pns.map(async (item, i) => {
+    // ======================================================
+    // PN JÁ EXISTE NO RASP
+    // Não cadastra novamente. Apenas atualiza seleção/trava.
+    // ======================================================
+    if (item.idRaspPn) {
+      if (item.entrouSelecao && Number(item.statusSelecao || 0) === 0) {
+        await entrarSelecaoPn(item.idRaspPn, item.travaAtiva ?? false);
       }
 
-      return response.json();
+      return {
+        idRaspPn: item.idRaspPn,
+        pn: item.pn,
+        existente: true
+      };
+    }
+
+    // ======================================================
+    // PN NOVO NO RASP
+    // Cadastra primeiro em /rasp-pn.
+    // ======================================================
+    const payloadPn = {
+      idRasp: idRasp,
+      pn: item.pn,
+      dataLoteInicial: item.dataLoteInicial || null,
+      quantidadeSuspeita: item.qtdSuspeitaInicial,
+      quantidadeChecada: item.qtdChecadaInicial,
+      quantidadeRejeitada: item.qtdRejeitadaInicial,
+      emContencao: item.entrouSelecao ?? false,
+      duns: dunsFornecedor,
+      ordemExibicao: i + 1,
+
+      entrouSelecao: false,
+      statusSelecao: 0,
+      dataHoraEntradaSelecao: null,
+      dataHoraSaidaSelecao: null,
+      travaAtiva: false,
+      dataHoraSolicitacaoTrava: null,
+      dataHoraRemocaoTrava: null,
+      qhdAtivo: false,
+      dataHoraQhd: null
+    };
+
+    const responsePn = await fetch(`${API_BASE_URL}/rasp-pn`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payloadPn)
     });
 
-    return await Promise.all(promises);
-  }
+    if (!responsePn.ok) {
+      const erro = await responsePn.text();
+      throw new Error(`Erro ao salvar PN: ${erro}`);
+    }
+
+    const pnCriado = await responsePn.json();
+    const idRaspPn = pnCriado.idRaspPn;
+
+    if (item.entrouSelecao && idRaspPn) {
+      await entrarSelecaoPn(idRaspPn, item.travaAtiva ?? false);
+    }
+
+    return pnCriado;
+  });
+
+  return await Promise.all(promises);
+}
+
+
 
   // ==========================================================
   // 41. ATUALIZA CAMPOS COMPLEMENTARES NO RASCUNHO
@@ -2548,101 +2620,105 @@ aplicarRegraIniciativaFornecedor();
 
     try {
       // ======================================================
-      // MODO EDIÇÃO
-      // ======================================================
-      if (modoEdicao && idRaspEmEdicao) {
-        const payloadEdicao = {
-          idUsuarioExecutor: ID_USUARIO_LOGADO,
-          resumoOcorrencia: resumoInput?.value?.trim() || null,
-          descricaoProblema: validacao.descricaoInicial,
+// MODO EDIÇÃO
+// ======================================================
+if (modoEdicao && idRaspEmEdicao) {
+  const payloadEdicao = {
+    idUsuarioExecutor: ID_USUARIO_LOGADO,
+    resumoOcorrencia: resumoInput?.value?.trim() || null,
+    descricaoProblema: validacao.descricaoInicial,
 
-          idModeloVeiculoRasp: modeloVeiculoSelect?.value
-            ? Number(modeloVeiculoSelect.value)
-            : null,
-          idSetorRasp: setorSelect?.value
-            ? Number(setorSelect.value)
-            : null,
-          idTurnoRasp: turnoRaspSelect?.value
-            ? Number(turnoRaspSelect.value)
-            : null,
-          idIndiceOperacionalRasp: origemSelect?.value
-            ? Number(origemSelect.value)
-            : null,
-          idOrigemFabricacaoRasp:
-            tipoFornecedorInput?.value === "IMPORTADO"
-              ? 2
-              : tipoFornecedorInput?.value === "LOCAL"
-                ? 1
-                : null,
-          idPilotoRasp: pilotoRaspSelect?.value
-            ? Number(pilotoRaspSelect.value)
-            : null,
-          idMaiorImpactoRasp: maiorImpactoSelect?.value
-            ? Number(maiorImpactoSelect.value)
-            : null,
-          idImpactoQualidadeRasp: impactoQualidadeSelect?.value
-            ? Number(impactoQualidadeSelect.value)
-            : null,
-          idImpactoClienteRasp: impactoClienteSelect?.value
-            ? Number(impactoClienteSelect.value)
-            : null,
-          idMajorRasp: majorRaspSelect?.value
-            ? Number(majorRaspSelect.value)
-            : null,
-          idGmAliadoRasp: gmAliadoSelect?.value
-            ? Number(gmAliadoSelect.value)
-            : null,
+    idModeloVeiculoRasp: modeloVeiculoSelect?.value
+      ? Number(modeloVeiculoSelect.value)
+      : null,
+    idSetorRasp: setorSelect?.value
+      ? Number(setorSelect.value)
+      : null,
+    idTurnoRasp: turnoRaspSelect?.value
+      ? Number(turnoRaspSelect.value)
+      : null,
+    idIndiceOperacionalRasp: origemSelect?.value
+      ? Number(origemSelect.value)
+      : null,
+    idOrigemFabricacaoRasp:
+      tipoFornecedorInput?.value === "IMPORTADO"
+        ? 2
+        : tipoFornecedorInput?.value === "LOCAL"
+          ? 1
+          : null,
+    idPilotoRasp: pilotoRaspSelect?.value
+      ? Number(pilotoRaspSelect.value)
+      : null,
+    idMaiorImpactoRasp: maiorImpactoSelect?.value
+      ? Number(maiorImpactoSelect.value)
+      : null,
+    idImpactoQualidadeRasp: impactoQualidadeSelect?.value
+      ? Number(impactoQualidadeSelect.value)
+      : null,
+    idImpactoClienteRasp: impactoClienteSelect?.value
+      ? Number(impactoClienteSelect.value)
+      : null,
+    idMajorRasp: majorRaspSelect?.value
+      ? Number(majorRaspSelect.value)
+      : null,
+    idGmAliadoRasp: gmAliadoSelect?.value
+      ? Number(gmAliadoSelect.value)
+      : null,
 
-          rdNumero: rdNumeroInput?.value?.trim() || null,
-          campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
-          nomeContato: nomeContatoInput?.value?.trim() || null,
-          dataContato: dataContatoInput?.value || null,
+    rdNumero: rdNumeroInput?.value?.trim() || null,
+    campanhaNumero: campanhaNumeroInput?.value?.trim() || null,
+    nomeContato: nomeContatoInput?.value?.trim() || null,
+    dataContato: dataContatoInput?.value || null,
+    iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
 
-          iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
+    bpTexto: comoIdentificadoBp?.value?.trim() || null,
+    bpSerie: vinBp?.value?.trim() || null,
+    bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
+    breakpointCodigo: localCelulaBp?.value?.trim() || null
+  };
 
-          bpTexto: comoIdentificadoBp?.value?.trim() || null,
-          bpSerie: vinBp?.value?.trim() || null,
-          bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
-          breakpointCodigo: localCelulaBp?.value?.trim() || null
-        };
+  console.log("payloadEdicao =>", payloadEdicao);
 
-        console.log("payloadEdicao =>", payloadEdicao);
+  const responseEdicao = await fetch(`${API_BASE_URL}/rasp/${idRaspEmEdicao}/rascunho`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payloadEdicao)
+  });
 
-        const responseEdicao = await fetch(`${API_BASE_URL}/rasp/${idRaspEmEdicao}/rascunho`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payloadEdicao)
-        });
+  if (!responseEdicao.ok) {
+    const mensagemErro = await responseEdicao.text();
+    console.error("Erro ao atualizar RASP em edição:", mensagemErro);
+    throw new Error(`Erro ao atualizar RASP. Detalhe: ${mensagemErro}`);
+  }
 
-        if (!responseEdicao.ok) {
-          const mensagemErro = await responseEdicao.text();
-          console.error("Erro ao atualizar RASP em edição:", mensagemErro);
-          throw new Error(`Erro ao atualizar RASP. Detalhe: ${mensagemErro}`);
-        }
+  await responseEdicao.json();
 
-        await responseEdicao.json();
+  // 🔥 NOVO: salva PNs também na edição
+  await salvarPnsDoRasp(idRaspEmEdicao, validacao.pns, validacao.duns);
 
-        atualizarNumeroRaspDisplay(numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`);
-        mostrarMensagemRasp(
-          `RASP ${numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`} atualizado com sucesso.`
-        );
+  atualizarNumeroRaspDisplay(numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`);
 
-        if (btnCriarRasp) {
-          btnCriarRasp.textContent = "Salvar alterações";
-          btnCriarRasp.disabled = false;
-          btnCriarRasp.classList.remove("success-btn");
-          btnCriarRasp.classList.add("primary-btn");
-        }
+  mostrarMensagemRasp(
+    `RASP ${numeroRaspEmEdicao || `ID ${idRaspEmEdicao}`} atualizado com sucesso.`
+  );
 
-        window.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
+  if (btnCriarRasp) {
+    btnCriarRasp.textContent = "Salvar alterações";
+    btnCriarRasp.disabled = false;
+    btnCriarRasp.classList.remove("success-btn");
+    btnCriarRasp.classList.add("primary-btn");
+  }
 
-        return true;
-      }
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  return true;
+}
+
 
       // ======================================================
       // MODO CRIAÇÃO
@@ -3388,6 +3464,55 @@ function formatarDataHoraDetalhe(valor) {
 
   return data.toLocaleString("pt-BR");
 }
+
+function obterEstadoSelecaoDaLinha(linhaPrincipal) {
+  if (!linhaPrincipal) {
+    return {
+      entrouSelecao: false,
+      statusSelecao: 0,
+      travaAtiva: false,
+      qhdAtivo: false,
+      datahoraEntradaSelecao: null,
+      datahoraSaidaSelecao: null,
+      datahoraSolicitacaoTrava: null,
+      datahoraRemocaoTrava: null,
+      datahoraQhd: null
+    };
+  }
+
+  return {
+    entrouSelecao: linhaPrincipal.dataset.entrouSelecao === "true",
+    statusSelecao: Number(linhaPrincipal.dataset.statusSelecao || 0),
+    travaAtiva: linhaPrincipal.dataset.travaAtiva === "true",
+    qhdAtivo: linhaPrincipal.dataset.qhdAtivo === "true",
+
+    datahoraEntradaSelecao:
+      linhaPrincipal.dataset.dataHoraEntradaSelecao ||
+      linhaPrincipal.dataset.datahoraEntradaSelecao ||
+      null,
+
+    datahoraSaidaSelecao:
+      linhaPrincipal.dataset.dataHoraSaidaSelecao ||
+      linhaPrincipal.dataset.datahoraSaidaSelecao ||
+      null,
+
+    datahoraSolicitacaoTrava:
+      linhaPrincipal.dataset.dataHoraSolicitacaoTrava ||
+      linhaPrincipal.dataset.datahoraSolicitacaoTrava ||
+      null,
+
+    datahoraRemocaoTrava:
+      linhaPrincipal.dataset.dataHoraRemocaoTrava ||
+      linhaPrincipal.dataset.datahoraRemocaoTrava ||
+      null,
+
+    datahoraQhd:
+      linhaPrincipal.dataset.dataHoraQhd ||
+      linhaPrincipal.dataset.datahoraQhd ||
+      null
+  };
+}
+
 
 function aplicarEstadoVisualSelecaoNaLinha(linhaPrincipal, dados = {}) {
   if (!linhaPrincipal) return;

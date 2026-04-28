@@ -2558,7 +2558,7 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         join turnoJoin in db.TurnoRasp.AsNoTracking()
             on r.IdTurnoRasp equals turnoJoin.IdTurnoRasp into turnoLeft
         from turno in turnoLeft.DefaultIfEmpty()
-        where rp.EmContencao == true
+        where rp.StatusSelecao == 1
         select new
         {
             rp.IdRaspPn,
@@ -2568,8 +2568,11 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             Fornecedor = f.Nome,
             MtResponsavel = mt != null ? mt.Nome : null,
             Turno = turno != null ? turno.Descricao : null,
-            rp.DataLoteInicial
+            rp.DataHoraEntradaSelecao,
+            rp.TravaAtiva,
+            rp.StatusSelecao
         }
+
     )
     .OrderBy(x => x.NumeroRasp)
     .ThenBy(x => x.Pn)
@@ -2661,7 +2664,7 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
     {
         ultimoApontamentoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var ultimo);
 
-        DateTime? dataEntradaSelecao = itemBase.DataLoteInicial;
+        DateTime? dataEntradaSelecao = itemBase.DataHoraEntradaSelecao;
 int? duracaoEmSelecaoDias = null;
 
 if (dataEntradaSelecao.HasValue)
@@ -2674,6 +2677,7 @@ if (dataEntradaSelecao.HasValue)
     if (duracaoEmSelecaoDias < 0)
         duracaoEmSelecaoDias = 0;
 }
+
 
 
         string? nomeOperador = null;
@@ -2732,7 +2736,7 @@ if (dataEntradaSelecao.HasValue)
             // STATUS FIXO DA VISÃO OPERACIONAL
             // -----------------------------------------------------
             Status = "Em seleção",
-            Trava = itemBase.IdRaspPn > 0 ? "Ativa" : "Sem trava"
+            Trava = itemBase.TravaAtiva ? "Ativa" : "Sem trava"
         };
     })
     .OrderBy(x => x.NumeroRasp)

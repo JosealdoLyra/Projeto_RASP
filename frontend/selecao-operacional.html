@@ -194,7 +194,7 @@
     }
 
     /* =========================================================
-       SEÇÃO CSS 07: TABELA DE ITENS
+       SEÇÃO CSS 07: TABELA
        ========================================================= */
     .tabela-wrap {
       overflow: auto;
@@ -258,14 +258,6 @@
       background: var(--verde);
     }
 
-    .dot-amarelo {
-      background: var(--amarelo);
-    }
-
-    .dot-vermelho {
-      background: var(--vermelho);
-    }
-
     .badge {
       display: inline-block;
       padding: 5px 9px;
@@ -285,7 +277,7 @@
     }
 
     /* =========================================================
-       SEÇÃO CSS 08: PAINEL LATERAL / RESUMO
+       SEÇÃO CSS 08: PAINEL LATERAL
        ========================================================= */
     .bloco-info {
       border: 1px solid var(--cinza-200);
@@ -321,7 +313,7 @@
     }
 
     /* =========================================================
-       SEÇÃO CSS 09: FORMULÁRIO LATERAL
+       SEÇÃO CSS 09: FORMULÁRIO
        ========================================================= */
     .form-grid-card {
       display: grid;
@@ -394,6 +386,61 @@
       color: var(--cinza-500);
     }
 
+
+    /* =========================================================
+    SEÇÃO CSS: MODAL DE HISTÓRICO
+    ========================================================= */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 39, 71, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 9999;
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .modal-box {
+      width: min(1200px, 96vw);
+      max-height: 86vh;
+      overflow: auto;
+      background: var(--branco);
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      padding: 18px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--azul-900);
+      font-size: 20px;
+    }
+
+    .modal-header button {
+      width: 42px;
+      height: 42px;
+      padding: 0;
+      background: var(--cinza-100);
+      color: var(--cinza-900);
+      border: 1px solid var(--cinza-300);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+
     /* =========================================================
        SEÇÃO CSS 10: RESPONSIVIDADE
        ========================================================= */
@@ -424,7 +471,7 @@
 
 <body>
   <!-- =========================================================
-       SEÇÃO HTML 01: CABEÇALHO SUPERIOR
+       SEÇÃO HTML 01: CABEÇALHO
        ========================================================= -->
   <header class="topbar">
     <div class="topbar-inner">
@@ -443,10 +490,10 @@
 
   <main class="container">
     <!-- =========================================================
-         SEÇÃO HTML 02: FILTROS OPERACIONAIS
+         SEÇÃO HTML 02: FILTROS
          ========================================================= -->
-    <"section class="card" style="margin-bottom: 18px;">
-      <div class="section-title">"
+    <section class="card" style="margin-bottom: 18px;">
+      <div class="section-title">
         <h2>Filtros Operacionais</h2>
         <span>A tela exibe apenas itens em seleção ativa e aptos a receber apontamento.</span>
       </div>
@@ -473,9 +520,9 @@
           <label>Turno</label>
           <select>
             <option>Todos</option>
-            <option>A</option>
-            <option>B</option>
-            <option>C</option>
+            <option>1º Turno</option>
+            <option>2º Turno</option>
+            <option>3º Turno</option>
           </select>
         </div>
 
@@ -512,10 +559,10 @@
       </div>
     </section>
 
+    <!-- =========================================================
+         SEÇÃO HTML 03: GRID PRINCIPAL
+         ========================================================= -->
     <section class="grid-layout">
-      <!-- =========================================================
-           SEÇÃO HTML 03: COLUNA ESQUERDA / TABELA
-           ========================================================= -->
       <div class="coluna-esquerda">
         <section class="card">
           <div class="section-title">
@@ -537,16 +584,12 @@
                   <th>Hora Início</th>
                   <th>Hora Fim</th>
                   <th>Dias</th>
-                  <th>Status</th>
+                  <th>Dias s/ Apont.</th>
                   <th>Trava</th>
                 </tr>
               </thead>
 
-              <!-- =================================================
-                   CORPO DA TABELA
-                   ================================================= -->
-              <tbody id="tabela-itens-selecao">
-              </tbody>
+              <tbody id="tabela-itens-selecao"></tbody>
             </table>
           </div>
 
@@ -556,9 +599,6 @@
         </section>
       </div>
 
-      <!-- =========================================================
-           SEÇÃO HTML 04: COLUNA DIREITA / PAINEL DE APONTAMENTO
-           ========================================================= -->
       <aside class="coluna-direita">
         <section class="card card-acao">
           <div class="section-title">
@@ -571,7 +611,7 @@
           </div>
 
           <!-- =====================================================
-               SEÇÃO HTML 04A: RESUMO DO ITEM SELECIONADO
+               SEÇÃO HTML 04: RESUMO DO ITEM
                ===================================================== -->
           <div class="bloco-info">
             <h3>Resumo do Item</h3>
@@ -623,277 +663,674 @@
               </div>
             </div>
           </div>
-
+          
+                    
           <!-- =====================================================
-               SEÇÃO HTML 04B: FORMULÁRIO DE NOVO APONTAMENTO
-               ===================================================== -->
-          <div>
-            <div class="section-title" style="margin-bottom: 10px;">
-              <h2 style="font-size: 16px;">Novo Apontamento</h2>
-              <span>Registro operacional</span>
-            </div>
+     SEÇÃO HTML 05: FORMULÁRIO DE APONTAMENTO
+===================================================== -->
+<div>
+  <div class="section-title" style="margin-bottom: 10px;">
+    <h2 style="font-size: 16px;">Novo Apontamento</h2>
+    <span>Registro operacional</span>
+  </div>
 
-            <div class="form-grid-card">
-              <div class="campo">
-                <label>Data do Lote Verificada</label>
-                <input type="date" value="2026-04-15" />
-              </div>
+  <div class="form-grid-card">
+    <div class="campo">
+      <label>Data do Lote Verificada</label>
+      <input id="dataLote" type="date" />
+    </div>
 
-              <div class="campo">
-                <label>Lote</label>
-                <input type="text" placeholder="Ex: LT-2026-0415-A" />
-              </div>
+    <div class="campo">
+      <label>Lote</label>
+      <input id="lote" type="text" placeholder="Ex: LT-2026-0415-A" />
+    </div>
 
-              <div class="campo">
-                <label>Quantidade Verificada</label>
-                <input type="number" placeholder="0" />
-              </div>
+    <div class="campo">
+      <label>Quantidade Verificada</label>
+      <input id="qtdVerificada" type="number" min="0" placeholder="0" />
+    </div>
 
-              <div class="campo">
-                <label>Quantidade Rejeitada</label>
-                <input type="number" placeholder="0" />
-              </div>
+    <div class="campo">
+      <label>Quantidade Rejeitada</label>
+      <input id="qtdRejeitada" type="number" min="0" placeholder="0" />
+    </div>
 
-              <div class="campo">
-                <label>Turno do Apontamento</label>
-                <select>
-                  <option>A</option>
-                  <option>B</option>
-                  <option>C</option>
-                </select>
-              </div>
+    <div class="campo">
+      <label>Turno do Apontamento</label>
+      <select id="turnoApontamento">
+        <option value="1">1º Turno</option>
+        <option value="2">2º Turno</option>
+        <option value="3">3º Turno</option>
+      </select>
+    </div>
 
-              <div class="campo">
-                <label>Executor</label>
-                <select>
-                  <option>João Silva - Empresa A</option>
-                  <option>Maria Souza - Empresa A</option>
-                  <option>Carlos Lima - Empresa B</option>
-                </select>
-              </div>
+    <div class="campo">
+      <label>Executor</label>
+      <select id="executorApontamento">
+        <option value="1">MT / Usuário interno</option>
+      </select>
+    </div>
 
-              <div class="campo full">
-                <label>Observação</label>
-                <textarea placeholder="Digite uma observação, se necessário."></textarea>
-              </div>
-            </div>
+    <div class="campo full">
+      <label>Observação</label>
+      <textarea id="observacao" placeholder="Digite uma observação, se necessário."></textarea>
+    </div>
+  </div>
 
-            <div class="alerta" style="margin-top: 14px;">
-              Confirme com atenção. Após registrar este apontamento, a edição será permitida por até 1 hora.
-            </div>
+  <div class="alerta" style="margin-top: 14px;">
+    Confirme com atenção. Após registrar este apontamento, a edição será permitida por até 1 hora.
+  </div>
 
-            <div class="acoes" style="margin-top: 16px;">
-              <button class="btn-secundario" type="button">Limpar</button>
-              <button class="btn-primario" type="button">Registrar Apontamento</button>
-            </div>
-          </div>
-        </section>
-      </aside>
-    </section>
-  </main>
+  <div class="acoes" style="margin-top: 16px;">
+    <button id="btnLimparApontamento" class="btn-secundario" type="button">Limpar</button>
+    <button id="btnRegistrarApontamento" class="btn-primario" type="button">Registrar Apontamento</button>
+  </div>
+</div>
 
-  <!-- =========================================================
-       SEÇÃO JS 01: CARREGAMENTO DA TELA E INTEGRAÇÃO COM API
-       ========================================================= -->
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    /* =======================================================
-       FUNÇÃO 01: REFERÊNCIAS DO DOM
-       ======================================================= */
-    const tabela = document.querySelector("#tabela-itens-selecao");
+</section>
+</aside>
+</section>
+</main>
 
-    if (!tabela) {
-      console.error("Elemento #tabela-itens-selecao não encontrado.");
+<!-- =========================================================
+     MODAL: HISTÓRICO DE APONTAMENTOS DO PN
+========================================================= -->
+<div id="modal-historico" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Histórico de Apontamentos</h3>
+      <button id="btnFecharModalHistorico" type="button" >X</button>
+    </div>
+
+    <div class="modal-body">
+      <p id="subtitulo-modal">PN selecionado</p>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Lote</th>
+              <th>Verificada</th>
+              <th>Rejeitada</th>
+              <th>OK</th>
+              <th>Executor</th>
+              <th>Turno</th>
+              <th>Início</th>
+              <th>Fim</th>
+              <th>Obs</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabela-historico-modal">
+            <tr>
+              <td colspan="10">Selecione um item para visualizar o histórico.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  /* =======================================================
+     SEÇÃO JS 01: REFERÊNCIAS DO DOM
+  ======================================================= */
+  const tabela = document.querySelector("#tabela-itens-selecao");
+
+  const resumoPn = document.getElementById("resumo-pn");
+  const resumoRasp = document.getElementById("resumo-rasp");
+  const resumoFornecedor = document.getElementById("resumo-fornecedor");
+  const resumoMt = document.getElementById("resumo-mt");
+  const resumoExecutor = document.getElementById("resumo-executor");
+  const resumoTurno = document.getElementById("resumo-turno");
+  const resumoData = document.getElementById("resumo-data");
+  const resumoHoraInicio = document.getElementById("resumo-hora-inicio");
+  const resumoHoraFim = document.getElementById("resumo-hora-fim");
+
+  const tabelaHistoricoModal = document.getElementById("tabela-historico-modal");
+  const subtituloModal = document.getElementById("subtitulo-modal");
+  const btnFecharModalHistorico = document.getElementById("btnFecharModalHistorico");
+
+  const btnRegistrar = document.getElementById("btnRegistrarApontamento");
+  const btnLimpar = document.getElementById("btnLimparApontamento");
+
+  let itemSelecionado = null;
+  if (btnRegistrar) {
+    btnRegistrar.disabled = true;
+  }
+
+  /* =======================================================
+     SEÇÃO JS 02: FORMATADORES
+  ======================================================= */
+  function formatarData(dataIso) {
+    if (!dataIso) return "-";
+
+    const data = new Date(dataIso);
+    if (isNaN(data.getTime())) return "-";
+
+    return data.toLocaleDateString("pt-BR", {
+      timeZone: "America/Sao_Paulo"
+    });
+  }
+
+  function formatarHora(dataIso) {
+    if (!dataIso) return "-";
+
+    const data = new Date(dataIso);
+    if (isNaN(data.getTime())) return "-";
+
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "America/Sao_Paulo"
+    });
+  }
+
+  function mostrarMensagem(texto) {
+    alert(texto);
+  }
+
+  /* =======================================================
+     SEÇÃO JS 03: MODAL HISTÓRICO
+  ======================================================= */
+  function abrirModalHistorico() {
+    const modal = document.getElementById("modal-historico");
+
+    if (modal) {
+      modal.classList.remove("hidden");
+    }
+  }
+
+  function fecharModalHistorico() {
+    const modal = document.getElementById("modal-historico");
+
+    if (modal) {
+      modal.classList.add("hidden");
+    }
+  }
+
+  if (btnFecharModalHistorico) {
+    btnFecharModalHistorico.addEventListener("click", fecharModalHistorico);
+  }
+
+  /* =======================================================
+     SEÇÃO JS 04: CARREGAR HISTÓRICO NO MODAL
+  ======================================================= */
+  async function carregarHistoricoModal(idRaspPn) {
+    if (!tabelaHistoricoModal) return;
+
+    tabelaHistoricoModal.innerHTML = `
+      <tr>
+        <td colspan="10">Carregando...</td>
+      </tr>
+    `;
+
+    try {
+      const response = await fetch(`http://localhost:5050/rasp-pn/${idRaspPn}/contencoes`);
+
+      if (!response.ok) {
+        tabelaHistoricoModal.innerHTML = `
+          <tr>
+            <td colspan="10">Erro ao carregar histórico.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      const dados = await response.json();
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        tabelaHistoricoModal.innerHTML = `
+          <tr>
+            <td colspan="10">Nenhum apontamento encontrado.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tabelaHistoricoModal.innerHTML = "";
+
+      const grupos = {};
+
+      dados.forEach(item => {
+        const chave = `${item.dataLoteVerificada}_${item.lote || "-"}`;
+
+        if (!grupos[chave]) {
+          grupos[chave] = {
+            data: item.dataLoteVerificada,
+            lote: item.lote || "-",
+            totalVerificada: 0,
+            totalRejeitada: 0,
+            totalOk: 0,
+            itens: []
+          };
+        }
+
+        grupos[chave].totalVerificada += item.quantidadeVerificada || 0;
+        grupos[chave].totalRejeitada += item.quantidadeRejeitada || 0;
+        grupos[chave].totalOk += item.quantidadeOk || 0;
+
+        grupos[chave].itens.push(item);
+      });
+
+      tabelaHistoricoModal.innerHTML = "";
+
+      Object.values(grupos).forEach(grupo => {
+
+        const trHeader = document.createElement("tr");
+        trHeader.innerHTML = `
+          <td colspan="10" style="background:#eef5ff; font-weight:bold;">
+            📅 ${formatarData(grupo.data)} | Lote: ${grupo.lote}
+            | ✔ ${grupo.totalVerificada}
+            | ❌ ${grupo.totalRejeitada}
+            | 🟢 ${grupo.totalOk}
+          </td>
+        `;
+        tabelaHistoricoModal.appendChild(trHeader);
+
+        grupo.itens.forEach(item => {
+          const tr = document.createElement("tr");
+
+          tr.innerHTML = `
+            <td>${formatarData(item.dataLoteVerificada)}</td>
+            <td>${item.lote ?? "-"}</td>
+            <td>${item.quantidadeVerificada ?? 0}</td>
+            <td>${item.quantidadeRejeitada ?? 0}</td>
+            <td>${item.quantidadeOk ?? 0}</td>
+            <td>${item.idUsuarioExecucao ? "Interno" : "Terceiro"}</td>
+            <td>${item.idTurnoRasp ?? "-"}</td>
+            <td>${formatarHora(item.dataHoraInicioAtividade)}</td>
+            <td>${formatarHora(item.dataHoraFimAtividade)}</td>
+            <td>${item.observacao ?? "-"}</td>
+          `;
+
+          tabelaHistoricoModal.appendChild(tr);
+        });
+
+      });
+
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+
+      tabelaHistoricoModal.innerHTML = `
+        <tr>
+          <td colspan="10">Falha de comunicação com a API.</td>
+        </tr>
+      `;
+    }
+  }
+
+  /* =======================================================
+     SEÇÃO JS 05: HISTÓRICO LATERAL
+  ======================================================= */
+  async function carregarHistoricoItem(idRaspPn) {
+    const tabelaHistorico = document.getElementById("tabela-historico");
+
+    if (!tabelaHistorico) return;
+
+    if (!idRaspPn) {
+      tabelaHistorico.innerHTML = `
+        <tr>
+          <td colspan="9">Selecione um item</td>
+        </tr>
+      `;
       return;
     }
 
-    const resumoPn = document.getElementById("resumo-pn");
-    const resumoRasp = document.getElementById("resumo-rasp");
-    const resumoFornecedor = document.getElementById("resumo-fornecedor");
-    const resumoMt = document.getElementById("resumo-mt");
-    const resumoExecutor = document.getElementById("resumo-executor");
-    const resumoTurno = document.getElementById("resumo-turno");
-    const resumoData = document.getElementById("resumo-data");
-    const resumoHoraInicio = document.getElementById("resumo-hora-inicio");
-    const resumoHoraFim = document.getElementById("resumo-hora-fim");
+    try {
+      const response = await fetch(`http://localhost:5050/rasp-pn/${idRaspPn}/contencoes`);
 
-    /* =======================================================
-       FUNÇÃO 02: FORMATA DATA
-       ======================================================= */
-    function formatarData(dataIso) {
-      if (!dataIso) return "-";
-
-      const data = new Date(dataIso);
-      if (isNaN(data.getTime())) return "-";
-
-      return data.toLocaleDateString("pt-BR", {
-        timeZone: "America/Sao_Paulo"
-      });
-    }
-
-    /* =======================================================
-       FUNÇÃO 03: FORMATA HORA
-       ======================================================= */
-    function formatarHora(dataIso) {
-      if (!dataIso) return "-";
-
-      const data = new Date(dataIso);
-      if (isNaN(data.getTime())) return "-";
-
-      return data.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "America/Sao_Paulo"
-      });
-    }
-
-    /* =======================================================
-       FUNÇÃO 04: PREENCHE O RESUMO LATERAL
-       ======================================================= */
-    function preencherResumo(linha) {
-      if (!linha) return;
-
-      resumoPn.textContent = linha.dataset.pn || "-";
-      resumoRasp.textContent = linha.dataset.rasp || "-";
-      resumoFornecedor.textContent = linha.dataset.fornecedor || "-";
-      resumoMt.textContent = linha.dataset.mt || "-";
-      resumoExecutor.textContent = linha.dataset.executor || "-";
-      resumoTurno.textContent = linha.dataset.turno || "-";
-      resumoData.textContent = linha.dataset.data || "-";
-      resumoHoraInicio.textContent = linha.dataset.horaInicio || "-";
-      resumoHoraFim.textContent = linha.dataset.horaFim || "-";
-    }
-
-    /* =======================================================
-       FUNÇÃO 05: ATIVA CLIQUE DA LINHA
-       ======================================================= */
-    function adicionarEventoCliqueLinha(linha) {
-      linha.addEventListener("click", () => {
-        const linhas = document.querySelectorAll("#tabela-itens-selecao tr");
-
-        linhas.forEach((l) => l.classList.remove("ativo"));
-        linha.classList.add("ativo");
-
-        preencherResumo(linha);
-      });
-    }
-
-    /* =======================================================
-       FUNÇÃO 06: CARREGA ITENS DA TELA OPERACIONAL
-       Agora usando endpoint enriquecido:
-       GET /selecao-operacional/itens-ativos
-       ======================================================= */
-    async function carregarItensSelecao() {
-      try {
-        const response = await fetch("http://localhost:5050/selecao-operacional/itens-ativos");
-
-        if (!response.ok) {
-          tabela.innerHTML = `
-            <tr>
-              <td colspan="12">Erro ao carregar dados da API.</td>
-            </tr>
-          `;
-          return;
-        }
-
-        const itens = await response.json();
-        tabela.innerHTML = "";
-
-        if (!itens || itens.length === 0) {
-          tabela.innerHTML = `
-            <tr>
-              <td colspan="12">Nenhum item encontrado.</td>
-            </tr>
-          `;
-          return;
-        }
-
-        itens.forEach((item, index) => {
-          const tr = document.createElement("tr");
-
-          if (index === 0) {
-            tr.classList.add("ativo");
-          }
-
-          const pn = item.pn ?? "-";
-          const rasp = item.numeroRasp ?? "-";
-          const fornecedor = item.fornecedor ?? "-";
-          const mt = item.mtResponsavel ?? "-";
-
-          const executor =
-            item.nomeOperadorSelecaoTerceiro
-              ? `${item.nomeOperadorSelecaoTerceiro}${item.empresaOperadorSelecaoTerceiro ? " - " + item.empresaOperadorSelecaoTerceiro : ""}`
-              : "-";
-
-          const turno = item.turno ?? "-";
-          const data = formatarData(item.dataApontamento || item.horaInicio);
-          const horaInicio = formatarHora(item.horaInicio);
-          const horaFim = formatarHora(item.horaFim);
-          const duracao = item.duracaoEmSelecaoDias ?? "-";
-          const status = item.status ?? "Em seleção";
-          const trava = item.trava ?? "-";
-
-          tr.dataset.pn = pn;
-          tr.dataset.rasp = rasp;
-          tr.dataset.fornecedor = fornecedor;
-          tr.dataset.mt = mt;
-          tr.dataset.executor = executor;
-          tr.dataset.turno = turno;
-          tr.dataset.data = data;
-          tr.dataset.horaInicio = horaInicio;
-          tr.dataset.horaFim = horaFim;
-
-          tr.innerHTML = `
-            <td>${pn}</td>
-            <td>${rasp}</td>
-            <td>${fornecedor}</td>
-            <td>${mt}</td>
-            <td>${executor}</td>
-            <td>${turno}</td>
-            <td>${data}</td>
-            <td>${horaInicio}</td>
-            <td>${horaFim}</td>
-            <td>${duracao}</td>
-            <td>
-              <span class="status">
-                <span class="dot dot-verde"></span>
-                ${status}
-              </span>
-            </td>
-            <td>
-              <span class="badge ${trava === "Ativa" ? "badge-trava" : "badge-sem-trava"}">
-                ${trava}
-              </span>
-            </td>
-          `;
-
-          tabela.appendChild(tr);
-          adicionarEventoCliqueLinha(tr);
-        });
-
-        const primeiraLinha =
-          tabela.querySelector("tr.ativo") || tabela.querySelector("tr");
-
-        if (primeiraLinha) {
-          preencherResumo(primeiraLinha);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar itens de seleção:", error);
-
-        tabela.innerHTML = `
+      if (!response.ok) {
+        tabelaHistorico.innerHTML = `
           <tr>
-            <td colspan="12">Falha de comunicação com a API.</td>
+            <td colspan="9">Erro ao carregar histórico.</td>
           </tr>
         `;
+        return;
       }
+
+      const historico = await response.json();
+
+      if (!Array.isArray(historico) || historico.length === 0) {
+        tabelaHistorico.innerHTML = `
+          <tr>
+            <td colspan="9">Nenhum apontamento registrado.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tabelaHistorico.innerHTML = "";
+
+      historico.forEach((item) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${formatarData(item.dataLoteVerificada)}</td>
+          <td>${item.lote ?? "-"}</td>
+          <td>${item.quantidadeVerificada ?? 0}</td>
+          <td>${item.quantidadeRejeitada ?? 0}</td>
+          <td>${item.quantidadeOk ?? 0}</td>
+          <td>${item.idUsuarioExecucao ? "Interno" : "-"}</td>
+          <td>${item.idTurnoRasp ?? "-"}</td>
+          <td>${formatarHora(item.dataHoraInicioAtividade)}</td>
+          <td>${formatarHora(item.dataHoraFimAtividade)}</td>
+        `;
+
+        tabelaHistorico.appendChild(tr);
+      });
+    } catch (error) {
+      console.error("Erro ao carregar histórico lateral:", error);
+
+      tabelaHistorico.innerHTML = `
+        <tr>
+          <td colspan="9">Falha de comunicação com a API.</td>
+        </tr>
+      `;
+    }
+  }
+
+  /* =======================================================
+     SEÇÃO JS 06: RESUMO DO ITEM
+  ======================================================= */
+  function preencherResumo(linha) {
+    if (!linha) return;
+
+    itemSelecionado = linha;
+
+    if (btnRegistrar) {
+      btnRegistrar.disabled = false;
     }
 
-    /* =======================================================
-       FUNÇÃO 07: INICIALIZAÇÃO
-       ======================================================= */
-    carregarItensSelecao();
-  });
+    resumoPn.textContent = linha.dataset.pn || "-";
+    resumoRasp.textContent = linha.dataset.rasp || "-";
+    resumoFornecedor.textContent = linha.dataset.fornecedor || "-";
+    resumoMt.textContent = linha.dataset.mt || "-";
+    resumoExecutor.textContent = linha.dataset.executor || "-";
+    resumoTurno.textContent = linha.dataset.turno || "-";
+    resumoData.textContent = linha.dataset.data || "-";
+    resumoHoraInicio.textContent = linha.dataset.horaInicio || "-";
+    resumoHoraFim.textContent = linha.dataset.horaFim || "-";
+
+    carregarHistoricoItem(linha.dataset.idRaspPn);
+  }
+
+  /* =======================================================
+     SEÇÃO JS 07: CLIQUE NA LINHA
+  ======================================================= */
+  function adicionarEventoCliqueLinha(linha) {
+    linha.addEventListener("click", () => {
+      document
+        .querySelectorAll("#tabela-itens-selecao tr")
+        .forEach((l) => l.classList.remove("ativo"));
+
+      linha.classList.add("ativo");
+      preencherResumo(linha);
+    });
+  }
+
+  function calcularDiasSemApontamento(item) {
+  const dataBase = item.dataApontamento || item.horaFim || item.horaInicio;
+
+  if (!dataBase) {
+    return null;
+  }
+
+  const hoje = new Date();
+  const ultimaData = new Date(dataBase);
+
+  if (isNaN(ultimaData.getTime())) {
+    return null;
+  }
+
+  hoje.setHours(0, 0, 0, 0);
+  ultimaData.setHours(0, 0, 0, 0);
+
+  const diferencaMs = hoje - ultimaData;
+  const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
+
+  return dias < 0 ? 0 : dias;
+}
+
+function montarIndicadorDiasSemApontamento(dias) {
+  if (dias === null) {
+    return {
+      texto: "Não iniciado ⚪",
+      classe: "badge-neutro"
+    };
+  }
+
+  if (dias <= 2) {
+    return {
+      texto: `${dias}d 🟢`,
+      classe: "badge-ok"
+    };
+  }
+
+  if (dias === 3) {
+    return {
+      texto: "3d 🟡",
+      classe: "badge-atencao"
+    };
+  }
+
+  return {
+    texto: `${dias}d 🔴`,
+    classe: "badge-critico"
+  };
+}
+
+
+  /* =======================================================
+     SEÇÃO JS 08: CARREGAR ITENS ATIVOS
+  ======================================================= */
+  async function carregarItensSelecao() {
+    try {
+      const response = await fetch("http://localhost:5050/selecao-operacional/itens-ativos");
+
+      if (!response.ok) {
+        tabela.innerHTML = `<tr><td colspan="13">Erro ao carregar dados.</td></tr>`;
+        return;
+      }
+
+      const itens = await response.json();
+
+      tabela.innerHTML = "";
+
+      if (!Array.isArray(itens) || itens.length === 0) {
+        tabela.innerHTML = `<tr><td colspan="13">Nenhum item encontrado.</td></tr>`;
+        return;
+      }
+
+      itens.forEach((item, index) => {
+        const tr = document.createElement("tr");
+
+        tr.dataset.idRaspPn = item.idRaspPn ?? "";
+
+        const pn = item.pn ?? "-";
+        const rasp = item.numeroRasp ?? "-";
+        const fornecedor = item.fornecedor ?? "-";
+        const mt = item.mtResponsavel ?? "-";
+        const executor = item.nomeOperadorSelecaoTerceiro
+          ? item.nomeOperadorSelecaoTerceiro
+          : "Interno";
+        const turno = item.turno ?? "-";
+        const data = formatarData(item.dataApontamento || item.dataEntradaSelecao);
+        const horaInicio = formatarHora(item.horaInicio);
+        const horaFim = formatarHora(item.horaFim);
+        const duracao = item.duracaoEmSelecaoDias ?? "-";
+        const diasSemApontamento = calcularDiasSemApontamento(item);
+        const indicadorApontamento = montarIndicadorDiasSemApontamento(diasSemApontamento);
+        const trava = item.trava ?? "-";
+
+
+        tr.dataset.pn = pn;
+        tr.dataset.rasp = rasp;
+        tr.dataset.fornecedor = fornecedor;
+        tr.dataset.mt = mt;
+        tr.dataset.executor = executor;
+        tr.dataset.turno = turno;
+        tr.dataset.data = data;
+        tr.dataset.horaInicio = horaInicio;
+        tr.dataset.horaFim = horaFim;
+
+        tr.innerHTML = `
+          <td>${pn}</td>
+          <td>${rasp}</td>
+          <td>${fornecedor}</td>
+          <td>${mt}</td>
+          <td>${executor}</td>
+          <td>${turno}</td>
+          <td>${data}</td>
+          <td>${horaInicio}</td>
+          <td>${horaFim}</td>
+          <td>${duracao}</td>
+          <td>
+            <span class="status">
+              <span class="dot dot-verde"></span>
+              ${status}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${trava === "Ativa" ? "badge-trava" : "badge-sem-trava"}">
+              ${trava}
+            </span>
+          </td>
+          <td>
+            <button type="button" class="btn-secundario btn-historico">
+              Histórico
+            </button>
+          </td>
+        `;
+
+        tabela.appendChild(tr);
+        adicionarEventoCliqueLinha(tr);
+
+        const btnHistorico = tr.querySelector(".btn-historico");
+
+        if (btnHistorico) {
+          btnHistorico.addEventListener("click", (event) => {
+            event.stopPropagation();
+
+            if (subtituloModal) {
+              subtituloModal.textContent = `PN: ${pn} | RASP: ${rasp}`;
+            }
+
+            abrirModalHistorico();
+            carregarHistoricoModal(item.idRaspPn);
+          });
+        }
+
+       
+      });
+    } catch (error) {
+      console.error("Erro API:", error);
+      tabela.innerHTML = `<tr><td colspan="13">Erro de comunicação com API.</td></tr>`;
+    }
+  }
+
+  /* =======================================================
+     SEÇÃO JS 09: LIMPAR FORMULÁRIO
+  ======================================================= */
+  if (btnLimpar) {
+    btnLimpar.addEventListener("click", () => {
+      document.getElementById("dataLote").value = "";
+      document.getElementById("lote").value = "";
+      document.getElementById("qtdVerificada").value = "";
+      document.getElementById("qtdRejeitada").value = "";
+      document.getElementById("observacao").value = "";
+    });
+  }
+
+  /* =======================================================
+     SEÇÃO JS 10: REGISTRAR APONTAMENTO
+  ======================================================= */
+  if (btnRegistrar) {
+    btnRegistrar.addEventListener("click", async () => {
+      if (!itemSelecionado) {
+        mostrarMensagem("Selecione um item primeiro.");
+        return;
+      }
+
+      const dataLote = document.getElementById("dataLote").value;
+      const qtdVerificada = parseInt(document.getElementById("qtdVerificada").value || 0);
+      const qtdRejeitada = parseInt(document.getElementById("qtdRejeitada").value || 0);
+
+      if (!dataLote) {
+        mostrarMensagem("Informe a data do lote.");
+        return;
+      }
+
+      if (qtdVerificada <= 0) {
+        mostrarMensagem("Quantidade verificada deve ser maior que zero.");
+        return;
+      }
+
+      if (qtdRejeitada < 0) {
+        mostrarMensagem("Quantidade rejeitada inválida.");
+        return;
+      }
+
+      if (qtdRejeitada > qtdVerificada) {
+        mostrarMensagem("Quantidade rejeitada não pode ser maior que a verificada.");
+        return;
+      }
+      if (!confirm("Confirma o registro deste apontamento? Essa ação não poderá ser desfeita.")) {
+        return;
+      }
+
+      const payload = {
+        idRaspPn: parseInt(itemSelecionado.dataset.idRaspPn),
+        dataLoteVerificada: dataLote,
+        lote: document.getElementById("lote").value,
+        quantidadeVerificada: qtdVerificada,
+        quantidadeRejeitada: qtdRejeitada,
+        observacao: document.getElementById("observacao").value,
+        idTurnoRasp: parseInt(document.getElementById("turnoApontamento").value),
+        idUsuarioInterno: 1,
+        origemRegistro: 2,
+        dataHoraInicioAtividade: new Date().toISOString(),
+        dataHoraFimAtividade: new Date().toISOString()
+      };
+
+      try {
+        const response = await fetch("http://localhost:5050/rasp-contencao", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          mostrarMensagem("Erro ao registrar apontamento.");
+          return;
+        }
+
+        mostrarMensagem("Apontamento registrado com sucesso!");
+
+        document.getElementById("dataLote").value = "";
+        document.getElementById("lote").value = "";
+        document.getElementById("qtdVerificada").value = "";
+        document.getElementById("qtdRejeitada").value = "";
+        document.getElementById("observacao").value = "";
+
+        await carregarItensSelecao();
+      } catch (error) {
+        console.error("Erro POST:", error);
+        mostrarMensagem("Erro de comunicação com API.");
+      }
+    });
+  }
+
+  /* =======================================================
+     SEÇÃO JS 11: INICIALIZAÇÃO
+  ======================================================= */
+  carregarItensSelecao();
+});
 </script>
 
-</body>
-</html>
+
