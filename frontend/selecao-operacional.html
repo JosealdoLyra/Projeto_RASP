@@ -6,37 +6,22 @@
   <title>Seleção de Peças em Contenção</title>
 
   <style>
-    /* =========================================================
-       SEÇÃO CSS 01: VARIÁVEIS GLOBAIS
-       ========================================================= */
     :root {
       --azul-900: #0f2747;
-      --azul-800: #15365f;
       --azul-700: #1d4f86;
       --azul-100: #eaf2fb;
-
       --cinza-900: #1f2937;
       --cinza-700: #4b5563;
       --cinza-500: #6b7280;
       --cinza-300: #d1d5db;
       --cinza-200: #e5e7eb;
       --cinza-100: #f3f4f6;
-
       --branco: #ffffff;
-      --verde: #0f9d58;
-      --vermelho: #d93025;
-      --amarelo: #b7791f;
-
-      --sombra: 0 10px 24px rgba(0, 0, 0, 0.08);
+      --sombra: 0 10px 24px rgba(0,0,0,0.08);
       --radius: 14px;
     }
 
-    /* =========================================================
-       SEÇÃO CSS 02: RESET E BASE
-       ========================================================= */
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -45,12 +30,9 @@
       color: var(--cinza-900);
     }
 
-    /* =========================================================
-       SEÇÃO CSS 03: CABEÇALHO SUPERIOR
-       ========================================================= */
     .topbar {
       background: linear-gradient(90deg, var(--azul-900), var(--azul-700));
-      color: var(--branco);
+      color: white;
       padding: 18px 28px;
       box-shadow: var(--sombra);
     }
@@ -66,7 +48,6 @@
     .titulo-wrap h1 {
       margin: 0;
       font-size: 24px;
-      letter-spacing: 0.3px;
     }
 
     .titulo-wrap p {
@@ -82,32 +63,28 @@
     }
 
     .pill {
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
       border-radius: 999px;
       padding: 8px 14px;
       font-size: 13px;
     }
 
-    /* =========================================================
-       SEÇÃO CSS 04: CONTAINER E CARTÕES
-       ========================================================= */
     .container {
-      max-width: 1780px;
-      margin: 16px auto;
-      padding: 0 10px 20px;
+      max-width: 100%;
+      margin: 0;
+      padding: 0 8px 42mm 8px;
+      display: block;
+      min-height: auto;
     }
 
     .card {
-      background: var(--branco);
+      background: white;
       border-radius: var(--radius);
       box-shadow: var(--sombra);
       padding: 14px;
     }
 
-    /* =========================================================
-       SEÇÃO CSS 05: FILTROS SUPERIORES
-       ========================================================= */
     .filtros {
       display: grid;
       grid-template-columns: repeat(8, minmax(120px, 1fr));
@@ -126,7 +103,6 @@
       font-weight: 600;
       color: var(--cinza-700);
       text-transform: uppercase;
-      letter-spacing: 0.4px;
     }
 
     .campo input,
@@ -136,13 +112,10 @@
       border-radius: 10px;
       padding: 0 12px;
       font-size: 14px;
-      background: var(--branco);
+      background: white;
       color: var(--cinza-900);
     }
 
-    /* =========================================================
-       SEÇÃO CSS 06: GRID PRINCIPAL
-       ========================================================= */
     .grid-layout {
       display: grid;
       grid-template-columns: minmax(0, 2.7fr) minmax(260px, 0.8fr);
@@ -160,17 +133,6 @@
     .coluna-direita {
       position: sticky;
       top: 18px;
-    }
-
-    .card-acao {
-      border: 1px solid var(--cinza-200);
-    }
-
-    .subinfo-card {
-      font-size: 12px;
-      color: var(--cinza-500);
-      margin-top: -4px;
-      margin-bottom: 10px;
     }
 
     .section-title {
@@ -193,9 +155,6 @@
       color: var(--cinza-500);
     }
 
-    /* =========================================================
-       SEÇÃO CSS 07: TABELA
-       ========================================================= */
     .tabela-wrap {
       overflow: auto;
       border: 1px solid var(--cinza-200);
@@ -205,8 +164,8 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1020px;
-      background: var(--branco);
+      min-width: 1120px;
+      background: white;
     }
 
     thead th {
@@ -214,7 +173,6 @@
       color: var(--azul-900);
       font-size: 11px;
       text-transform: uppercase;
-      letter-spacing: 0.3px;
       padding: 10px 8px;
       text-align: left;
       border-bottom: 1px solid var(--cinza-200);
@@ -225,7 +183,6 @@
       padding: 10px 8px;
       border-bottom: 1px solid var(--cinza-200);
       font-size: 13px;
-      vertical-align: middle;
       white-space: nowrap;
     }
 
@@ -237,25 +194,6 @@
     tbody tr.ativo {
       background: #eef5ff;
       outline: 2px solid #b9d3f4;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 600;
-      font-size: 13px;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .dot-verde {
-      background: var(--verde);
     }
 
     .badge {
@@ -276,9 +214,11 @@
       color: #12467a;
     }
 
-    /* =========================================================
-       SEÇÃO CSS 08: PAINEL LATERAL
-       ========================================================= */
+    .badge-ok { background: #dcfce7; color: #166534; }
+    .badge-atencao { background: #fef3c7; color: #92400e; }
+    .badge-critico { background: #fee2e2; color: #991b1b; }
+    .badge-neutro { background: #e5e7eb; color: #374151; }
+
     .bloco-info {
       border: 1px solid var(--cinza-200);
       border-radius: 12px;
@@ -309,27 +249,12 @@
 
     .info-item strong {
       font-size: 14px;
-      color: var(--cinza-900);
     }
 
-    /* =========================================================
-       SEÇÃO CSS 09: FORMULÁRIO
-       ========================================================= */
     .form-grid-card {
       display: grid;
       grid-template-columns: 1fr;
       gap: 12px;
-    }
-
-    .form-grid-card .campo.full {
-      grid-column: 1;
-    }
-
-    .form-grid-card textarea,
-    .form-grid-card input,
-    .form-grid-card select {
-      width: 100%;
-      max-width: 100%;
     }
 
     textarea {
@@ -349,7 +274,6 @@
       border-radius: 12px;
       padding: 12px 14px;
       font-size: 13px;
-      line-height: 1.45;
     }
 
     .acoes {
@@ -377,7 +301,7 @@
 
     .btn-primario {
       background: var(--azul-700);
-      color: var(--branco);
+      color: white;
     }
 
     .rodape-nota {
@@ -386,14 +310,10 @@
       color: var(--cinza-500);
     }
 
-
-    /* =========================================================
-    SEÇÃO CSS: MODAL DE HISTÓRICO
-    ========================================================= */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 39, 71, 0.55);
+      background: rgba(15,39,71,0.55);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -409,9 +329,9 @@
       width: min(1200px, 96vw);
       max-height: 86vh;
       overflow: auto;
-      background: var(--branco);
+      background: white;
       border-radius: 16px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.25);
       padding: 18px;
     }
 
@@ -419,7 +339,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
       margin-bottom: 14px;
     }
 
@@ -437,42 +356,370 @@
       color: var(--cinza-900);
       border: 1px solid var(--cinza-300);
       font-size: 20px;
-      font-weight: 700;
     }
 
+    .print-only {
+      display: none;
+    }
 
-    /* =========================================================
-       SEÇÃO CSS 10: RESPONSIVIDADE
-       ========================================================= */
     @media (max-width: 1280px) {
-      .filtros {
-        grid-template-columns: repeat(4, minmax(140px, 1fr));
-      }
+      .filtros { grid-template-columns: repeat(4, minmax(140px, 1fr)); }
     }
 
     @media (max-width: 1200px) {
-      .grid-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .coluna-direita {
-        position: static;
-      }
+      .grid-layout { grid-template-columns: 1fr; }
+      .coluna-direita { position: static; }
     }
 
-    @media (max-width: 900px) {
-      .filtros,
-      .info-grid {
-        grid-template-columns: 1fr;
-      }
+    @page {
+      size: landscape;
+      margin: 6mm;
     }
+
+        /* =========================================================
+   IMPRESSÃO
+   ========================================================= */
+@media print {
+
+  /* =========================================================
+     1. ESCONDER ELEMENTOS DA TELA
+     ========================================================= */
+  .topbar,
+  #areaFiltrosOperacionais,
+  .coluna-direita,
+  #btnImprimirRelatorio,
+  .rodape-nota,
+  .action-cell,
+  .modal-overlay {
+    display: none !important;
+  }
+
+  /* =========================================================
+     2. MOSTRAR SOMENTE ÁREA DE IMPRESSÃO
+     ========================================================= */
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    background: white !important;
+    color: #111827 !important;
+  }
+
+  .container {
+    padding: 0 !important;
+    margin: 0 !important;
+
+    /* comportamento correto da página */
+    min-height: 100vh !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+
+  .grid-layout {
+    display: block !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .section-title {
+    display: none !important;
+  }
+
+  /* =========================================================
+     3. TABELA
+     ========================================================= */
+  .tabela-wrap {
+    overflow: visible !important;
+    border: none !important;
+  }
+
+  table {
+    width: 100% !important;
+    min-width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead th {
+    background: #0f2747 !important;
+    color: white !important;
+    padding: 7px 5px !important;
+    font-size: 9px !important;
+    text-align: center !important;
+    border: 1px solid #d1d5db !important;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tbody td {
+    padding: 7px 5px !important;
+    font-size: 10px !important;
+    text-align: center !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  /* =========================================================
+     4. BADGES
+     ========================================================= */
+  .badge {
+    background: transparent !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    font-size: 10px !important;
+  }
+
+  .badge-ok::before {
+    content: "✓ ";
+    font-weight: bold;
+  }
+
+  .badge-neutro::before {
+    content: "○ ";
+    font-weight: bold;
+  }
+
+  .badge-atencao::before {
+    content: "! ";
+    font-weight: bold;
+  }
+
+  .badge-critico::before {
+    content: "× ";
+    font-weight: bold;
+  }
+
+  /* =========================================================
+     5. CABEÇALHO
+     ========================================================= */
+  .print-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+    border-bottom: 3px solid #0f2747 !important;
+
+    padding-bottom: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .print-header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+
+  .print-logo-gm {
+    width: 58px;
+    height: 58px;
+
+    border: 3px solid #0f2747;
+    border-radius: 10px;
+
+    color: #0f2747;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 31px;
+    font-weight: 900;
+  }
+
+  .print-header h1 {
+    margin: 0;
+    font-size: 25px;
+    color: #0f2747;
+  }
+
+  .print-header p {
+    margin: 5px 0 0;
+    font-size: 12px;
+    color: #0f2747;
+  }
+
+  .print-header-right {
+    min-width: 235px;
+    font-size: 11px;
+    line-height: 1.7;
+  }
+
+  /* =========================================================
+     6. SUBHEADER
+     ========================================================= */
+  .print-subheader {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+    margin: 6px 0 20px !important;
+  }
+
+  .print-title-card {
+    background: #0f2747 !important;
+    color: white !important;
+
+    border-radius: 8px;
+
+    padding: 7px 13px;
+
+    width: 285px;
+
+    display: flex;
+    gap: 9px;
+    align-items: center;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-title-icon {
+    font-size: 19px;
+  }
+
+  .print-title-card h2 {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .print-title-card p {
+    display: none !important;
+  }
+
+  .print-filter-card {
+    border: 2px dashed #bbb;
+    border-radius: 10px;
+
+    padding: 7px 10px;
+
+    font-size: 10px;
+
+    width: 205px;
+    min-height: 52px;
+  }
+
+  .print-filter-card p {
+    margin: 4px 0 0;
+    font-size: 10px;
+  }
+
+    /* =========================================================
+   7. LEGENDA + OBSERVAÇÕES
+   ========================================================= */
+
+    /* 
+      FORÇA A LEGENDA PARA UMA NOVA PÁGINA
+      Isso garante que:
+      - a tabela cresça livremente
+      - a legenda nunca "brigue" com a tabela
+      - o rodapé fique sempre organizado
+    */
+    .print-lower-areasomente-print {
+
+      /* layout */
+      display: flex !important;
+      justify-content: space-between !important;
+      gap: 18px !important;
+
+      /* empurra para o final da página SOMENTE se houver espaço */
+      margin-top: auto !important;
+
+      /* visual */
+      padding-top: 8px !important;
+      border-top: 2px solid #0f2747 !important;
+
+      /* evita quebrar o bloco no meio */
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+
+
+    /* blocos laterais */
+    .print-legend,
+    .print-observacoes {
+      width: 48%;
+    }
+
+
+    /* títulos */
+    .print-legend h3,
+    .print-observacoes h3 {
+      margin: 0 0 5px;
+      font-size: 10px;
+    }
+
+
+    /* caixa da legenda */
+    .legend-box {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 5px 7px;
+      font-size: 9px;
+    }
+
+
+    /* linhas internas */
+    .legend-line {
+      display: grid;
+      grid-template-columns: 20px 100px 1fr;
+      gap: 6px;
+      align-items: center;
+      margin: 3px 0;
+    }
+
+
+    /* observações */
+    .print-observacoes ul {
+      margin: 0;
+      padding-left: 14px;
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+
+  /* =========================================================
+     8. RODAPÉ
+     ========================================================= */
+  .footer-assinatura {
+
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+
+    margin-top: 10px !important;
+
+    padding-top: 6px !important;
+
+    border-top: 1px solid #0f2747 !important;
+
+    font-size: 10px !important;
+    color: #0f2747 !important;
+
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* =========================================================
+     9. REMOVER ÁREA ANTIGA
+     ========================================================= */
+  .print-lower-area {
+    display: none !important;
+  }
+}
+
+
+    
   </style>
 </head>
 
 <body>
-  <!-- =========================================================
-       SEÇÃO HTML 01: CABEÇALHO
-       ========================================================= -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="titulo-wrap">
@@ -489,10 +736,41 @@
   </header>
 
   <main class="container">
-    <!-- =========================================================
-         SEÇÃO HTML 02: FILTROS
-         ========================================================= -->
-    <section class="card" style="margin-bottom: 18px;">
+    <section class="print-only print-header">
+      <div class="print-header-left">
+        <div class="print-logo-gm">gm</div>
+        <div>
+          <h1>SELEÇÃO DE PEÇAS EM CONTENÇÃO</h1>
+          <p>SAC - S10 SJC • Tela Operacional de Apontamento</p>
+        </div>
+      </div>
+
+      <div class="print-header-right">
+        <div>▣ Data do Relatório: <strong id="printDataRelatorio">-</strong></div>
+        <div>◷ Hora: <strong id="printHoraRelatorio">-</strong></div>
+        <div>● Usuário: <strong>Terminal Operacional</strong></div>
+      </div>
+    </section>
+
+    <section class="print-only print-subheader">
+      <div class="print-title-card">
+        <div class="print-title-icon">☷</div>
+        <div>
+          <h2>ITENS EM SELEÇÃO ATIVA</h2>
+          <p style="display: none;"></p>
+        </div>
+      </div>
+
+      <div class="print-filter-card">
+        <div class="print-filter-icon">▼</div>
+        <div>
+          <strong>FILTROS APLICADOS:</strong>
+          <p id="printFiltrosAplicados">Nenhum filtro aplicado</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="areaFiltrosOperacionais" class="card" style="margin-bottom: 18px;">
       <div class="section-title">
         <h2>Filtros Operacionais</h2>
         <span>A tela exibe apenas itens em seleção ativa e aptos a receber apontamento.</span>
@@ -501,73 +779,79 @@
       <div class="filtros">
         <div class="campo">
           <label>PN</label>
-          <input type="text" placeholder="Buscar PN" />
+          <input id="filtroPn" type="text" placeholder="Buscar PN" />
         </div>
 
         <div class="campo">
           <label>RASP</label>
-          <input type="text" placeholder="Ex: 0065/26" />
+          <input id="filtroRasp" type="text" placeholder="Ex: 0065/26" />
         </div>
 
         <div class="campo">
           <label>Fornecedor</label>
-          <select>
-            <option>Todos</option>
+          <select id="filtroFornecedor">
+            <option value="">Todos</option>
           </select>
         </div>
 
         <div class="campo">
           <label>Turno</label>
-          <select>
-            <option>Todos</option>
-            <option>1º Turno</option>
-            <option>2º Turno</option>
-            <option>3º Turno</option>
+          <select id="filtroTurno">
+            <option value="">Todos</option>
+            <option value="1º Turno">1º Turno</option>
+            <option value="2º Turno">2º Turno</option>
+            <option value="3º Turno">3º Turno</option>
           </select>
         </div>
 
         <div class="campo">
           <label>Executor da Seleção</label>
-          <select>
-            <option>Todos</option>
+          <select id="filtroExecutor">
+            <option value="">Todos</option>
           </select>
         </div>
 
         <div class="campo">
           <label>MT Responsável</label>
-          <select>
-            <option>Todos</option>
+          <select id="filtroMt">
+            <option value="">Todos</option>
           </select>
         </div>
 
         <div class="campo">
-          <label>Status</label>
-          <select>
-            <option>Em seleção</option>
+          <label>Dias s/ Apont.</label>
+          <select id="filtroDiasSemApontamento">
+            <option value="">Todos</option>
+            <option value="nao-iniciado">Não iniciado</option>
+            <option value="ok">0 a 2 dias</option>
+            <option value="atencao">3 dias</option>
+            <option value="critico">4 dias ou mais</option>
           </select>
         </div>
 
         <div class="campo">
-          <label>Prioridade</label>
-          <select>
-            <option>Todas</option>
-            <option>Normal</option>
-            <option>Atenção</option>
-            <option>Crítica</option>
+          <label>Trava</label>
+          <select id="filtroTrava">
+            <option value="">Todas</option>
+            <option value="Ativa">Ativa</option>
+            <option value="Sem trava">Sem trava</option>
           </select>
         </div>
       </div>
     </section>
 
-    <!-- =========================================================
-         SEÇÃO HTML 03: GRID PRINCIPAL
-         ========================================================= -->
     <section class="grid-layout">
       <div class="coluna-esquerda">
         <section class="card">
           <div class="section-title">
             <h2>Itens em Seleção Ativa</h2>
             <span>Selecione uma linha para registrar o apontamento.</span>
+          </div>
+
+          <div style="margin-bottom: 10px; display:flex; justify-content:flex-end;">
+            <button id="btnImprimirRelatorio" class="btn-secundario" type="button">
+              🖨️ Imprimir Itens em Seleção
+            </button>
           </div>
 
           <div class="tabela-wrap">
@@ -586,9 +870,9 @@
                   <th>Dias</th>
                   <th>Dias s/ Apont.</th>
                   <th>Trava</th>
+                  <th class="action-cell">Histórico</th>
                 </tr>
               </thead>
-
               <tbody id="tabela-itens-selecao"></tbody>
             </table>
           </div>
@@ -606,731 +890,714 @@
             <span>Registro rápido do item selecionado.</span>
           </div>
 
-          <div class="subinfo-card">
-            Selecione um item na tabela à esquerda. Os dados abaixo serão atualizados automaticamente.
-          </div>
-
-          <!-- =====================================================
-               SEÇÃO HTML 04: RESUMO DO ITEM
-               ===================================================== -->
           <div class="bloco-info">
             <h3>Resumo do Item</h3>
 
             <div class="info-grid">
-              <div class="info-item">
-                <small>PN</small>
-                <strong id="resumo-pn">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>RASP</small>
-                <strong id="resumo-rasp">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Fornecedor</small>
-                <strong id="resumo-fornecedor">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>MT Responsável</small>
-                <strong id="resumo-mt">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Executor Atual</small>
-                <strong id="resumo-executor">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Turno</small>
-                <strong id="resumo-turno">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Data</small>
-                <strong id="resumo-data">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Hora Início</small>
-                <strong id="resumo-hora-inicio">-</strong>
-              </div>
-
-              <div class="info-item">
-                <small>Hora Fim</small>
-                <strong id="resumo-hora-fim">-</strong>
-              </div>
+              <div class="info-item"><small>PN</small><strong id="resumo-pn">-</strong></div>
+              <div class="info-item"><small>RASP</small><strong id="resumo-rasp">-</strong></div>
+              <div class="info-item"><small>Fornecedor</small><strong id="resumo-fornecedor">-</strong></div>
+              <div class="info-item"><small>MT Responsável</small><strong id="resumo-mt">-</strong></div>
+              <div class="info-item"><small>Executor Atual</small><strong id="resumo-executor">-</strong></div>
+              <div class="info-item"><small>Turno</small><strong id="resumo-turno">-</strong></div>
+              <div class="info-item"><small>Data</small><strong id="resumo-data">-</strong></div>
+              <div class="info-item"><small>Hora Início</small><strong id="resumo-hora-inicio">-</strong></div>
+              <div class="info-item"><small>Hora Fim</small><strong id="resumo-hora-fim">-</strong></div>
             </div>
           </div>
-          
-                    
-          <!-- =====================================================
-     SEÇÃO HTML 05: FORMULÁRIO DE APONTAMENTO
-===================================================== -->
-<div>
-  <div class="section-title" style="margin-bottom: 10px;">
-    <h2 style="font-size: 16px;">Novo Apontamento</h2>
-    <span>Registro operacional</span>
-  </div>
 
-  <div class="form-grid-card">
-    <div class="campo">
-      <label>Data do Lote Verificada</label>
-      <input id="dataLote" type="date" />
-    </div>
+          <div>
+            <div class="section-title" style="margin-bottom: 10px;">
+              <h2 style="font-size: 16px;">Novo Apontamento</h2>
+              <span>Registro operacional</span>
+            </div>
 
-    <div class="campo">
-      <label>Lote</label>
-      <input id="lote" type="text" placeholder="Ex: LT-2026-0415-A" />
-    </div>
+            <div class="form-grid-card">
+              <div class="campo">
+                <label>Data do Lote Verificada</label>
+                <input id="dataLote" type="date" />
+              </div>
 
-    <div class="campo">
-      <label>Quantidade Verificada</label>
-      <input id="qtdVerificada" type="number" min="0" placeholder="0" />
-    </div>
+              <div class="campo">
+                <label>Lote</label>
+                <input id="lote" type="text" placeholder="Ex: LT-2026-0415-A" />
+              </div>
 
-    <div class="campo">
-      <label>Quantidade Rejeitada</label>
-      <input id="qtdRejeitada" type="number" min="0" placeholder="0" />
-    </div>
+              <div class="campo">
+                <label>Quantidade Verificada</label>
+                <input id="qtdVerificada" type="number" min="0" placeholder="0" />
+              </div>
 
-    <div class="campo">
-      <label>Turno do Apontamento</label>
-      <select id="turnoApontamento">
-        <option value="1">1º Turno</option>
-        <option value="2">2º Turno</option>
-        <option value="3">3º Turno</option>
-      </select>
-    </div>
+              <div class="campo">
+                <label>Quantidade Rejeitada</label>
+                <input id="qtdRejeitada" type="number" min="0" placeholder="0" />
+              </div>
 
-    <div class="campo">
-      <label>Executor</label>
-      <select id="executorApontamento">
-        <option value="1">MT / Usuário interno</option>
-      </select>
-    </div>
+              <div class="campo">
+                <label>Turno do Apontamento</label>
+                <select id="turnoApontamento">
+                  <option value="1">1º Turno</option>
+                  <option value="2">2º Turno</option>
+                  <option value="3">3º Turno</option>
+                </select>
+              </div>
 
-    <div class="campo full">
-      <label>Observação</label>
-      <textarea id="observacao" placeholder="Digite uma observação, se necessário."></textarea>
-    </div>
-  </div>
+              <div class="campo">
+                <label>Executor</label>
+                <select id="executorApontamento">
+                  <option value="1">MT / Usuário interno</option>
+                </select>
+              </div>
 
-  <div class="alerta" style="margin-top: 14px;">
-    Confirme com atenção. Após registrar este apontamento, a edição será permitida por até 1 hora.
-  </div>
+              <div class="campo full">
+                <label>Observação</label>
+                <textarea id="observacao" placeholder="Digite uma observação, se necessário."></textarea>
+              </div>
+            </div>
 
-  <div class="acoes" style="margin-top: 16px;">
-    <button id="btnLimparApontamento" class="btn-secundario" type="button">Limpar</button>
-    <button id="btnRegistrarApontamento" class="btn-primario" type="button">Registrar Apontamento</button>
-  </div>
-</div>
+            <div class="alerta" style="margin-top: 14px;">
+              Confirme com atenção. Após registrar este apontamento, a edição será permitida por até 1 hora.
+            </div>
 
-</section>
-</aside>
-</section>
-</main>
+            <div class="acoes" style="margin-top: 16px;">
+              <button id="btnLimparApontamento" class="btn-secundario" type="button">Limpar</button>
+              <button id="btnRegistrarApontamento" class="btn-primario" type="button">Registrar Apontamento</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
 
-<!-- =========================================================
-     MODAL: HISTÓRICO DE APONTAMENTOS DO PN
-========================================================= -->
-<div id="modal-historico" class="modal-overlay hidden">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3>Histórico de Apontamentos</h3>
-      <button id="btnFecharModalHistorico" type="button" >X</button>
-    </div>
+    <section class="print-only print-lower-areasomente-print">
+      <div class="print-legend">
+        <h3>LEGENDA - DIAS SEM APONTAMENTO</h3>
+        <div class="legend-box">
+          <div class="legend-line"><span>○</span><strong>Não iniciado</strong><span>Nenhum apontamento realizado ainda</span></div>
+          <div class="legend-line"><span>✓</span><strong>0 a 2 dias</strong><span>Dentro do prazo</span></div>
+          <div class="legend-line"><span>!</span><strong>3 dias</strong><span>Atenção - prazo próximo do limite</span></div>
+          <div class="legend-line"><span>×</span><strong>4 dias ou mais</strong><span>Crítico - prazo excedido</span></div>
+        </div>
+      </div>
 
-    <div class="modal-body">
-      <p id="subtitulo-modal">PN selecionado</p>
+      <div class="print-observacoes">
+        <h3>OBSERVAÇÕES</h3>
+        <ul>
+          <li>Este relatório exibe apenas itens em seleção ativa.</li>
+          <li>Itens finalizados não são exibidos neste relatório.</li>
+          <li>Dias sem apontamento calculados até a data do relatório.</li>
+        </ul>
+      </div>
+    </section>
 
-      <div class="tabela-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Lote</th>
-              <th>Verificada</th>
-              <th>Rejeitada</th>
-              <th>OK</th>
-              <th>Executor</th>
-              <th>Turno</th>
-              <th>Início</th>
-              <th>Fim</th>
-              <th>Obs</th>
-            </tr>
-          </thead>
+    <section class="print-only footer-assinatura">
+      <div>☑ Relatório gerado automaticamente pelo sistema <strong>RASP</strong></div>
+      <div>Desenvolvido por: <strong>Josealdo Lyra</strong> ●</div>
+    </section>
+  </main>
 
-          <tbody id="tabela-historico-modal">
-            <tr>
-              <td colspan="10">Selecione um item para visualizar o histórico.</td>
-            </tr>
-          </tbody>
-        </table>
+  <div id="modal-historico" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Histórico de Apontamentos</h3>
+        <button id="btnFecharModalHistorico" type="button">X</button>
+      </div>
+
+      <div class="modal-body">
+        <p id="subtitulo-modal">PN selecionado</p>
+
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Lote</th>
+                <th>Verificada</th>
+                <th>Rejeitada</th>
+                <th>OK</th>
+                <th>Executor</th>
+                <th>Turno</th>
+                <th>Início</th>
+                <th>Fim</th>
+                <th>Obs</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabela-historico-modal">
+              <tr>
+                <td colspan="10">Selecione um item para visualizar o histórico.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  /* =======================================================
-     SEÇÃO JS 01: REFERÊNCIAS DO DOM
-  ======================================================= */
-  const tabela = document.querySelector("#tabela-itens-selecao");
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const tabela = document.querySelector("#tabela-itens-selecao");
 
-  const resumoPn = document.getElementById("resumo-pn");
-  const resumoRasp = document.getElementById("resumo-rasp");
-  const resumoFornecedor = document.getElementById("resumo-fornecedor");
-  const resumoMt = document.getElementById("resumo-mt");
-  const resumoExecutor = document.getElementById("resumo-executor");
-  const resumoTurno = document.getElementById("resumo-turno");
-  const resumoData = document.getElementById("resumo-data");
-  const resumoHoraInicio = document.getElementById("resumo-hora-inicio");
-  const resumoHoraFim = document.getElementById("resumo-hora-fim");
+      const resumoPn = document.getElementById("resumo-pn");
+      const resumoRasp = document.getElementById("resumo-rasp");
+      const resumoFornecedor = document.getElementById("resumo-fornecedor");
+      const resumoMt = document.getElementById("resumo-mt");
+      const resumoExecutor = document.getElementById("resumo-executor");
+      const resumoTurno = document.getElementById("resumo-turno");
+      const resumoData = document.getElementById("resumo-data");
+      const resumoHoraInicio = document.getElementById("resumo-hora-inicio");
+      const resumoHoraFim = document.getElementById("resumo-hora-fim");
 
-  const tabelaHistoricoModal = document.getElementById("tabela-historico-modal");
-  const subtituloModal = document.getElementById("subtitulo-modal");
-  const btnFecharModalHistorico = document.getElementById("btnFecharModalHistorico");
+      const tabelaHistoricoModal = document.getElementById("tabela-historico-modal");
+      const subtituloModal = document.getElementById("subtitulo-modal");
+      const btnFecharModalHistorico = document.getElementById("btnFecharModalHistorico");
 
-  const btnRegistrar = document.getElementById("btnRegistrarApontamento");
-  const btnLimpar = document.getElementById("btnLimparApontamento");
+      const btnRegistrar = document.getElementById("btnRegistrarApontamento");
+      const btnLimpar = document.getElementById("btnLimparApontamento");
+      const btnImprimir = document.getElementById("btnImprimirRelatorio");
 
-  let itemSelecionado = null;
-  if (btnRegistrar) {
-    btnRegistrar.disabled = true;
-  }
+      const filtroPn = document.getElementById("filtroPn");
+      const filtroRasp = document.getElementById("filtroRasp");
+      const filtroFornecedor = document.getElementById("filtroFornecedor");
+      const filtroTurno = document.getElementById("filtroTurno");
+      const filtroExecutor = document.getElementById("filtroExecutor");
+      const filtroMt = document.getElementById("filtroMt");
+      const filtroDiasSemApontamento = document.getElementById("filtroDiasSemApontamento");
+      const filtroTrava = document.getElementById("filtroTrava");
 
-  /* =======================================================
-     SEÇÃO JS 02: FORMATADORES
-  ======================================================= */
-  function formatarData(dataIso) {
-    if (!dataIso) return "-";
+      let itemSelecionado = null;
+      let itensSelecao = [];
 
-    const data = new Date(dataIso);
-    if (isNaN(data.getTime())) return "-";
-
-    return data.toLocaleDateString("pt-BR", {
-      timeZone: "America/Sao_Paulo"
-    });
-  }
-
-  function formatarHora(dataIso) {
-    if (!dataIso) return "-";
-
-    const data = new Date(dataIso);
-    if (isNaN(data.getTime())) return "-";
-
-    return data.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "America/Sao_Paulo"
-    });
-  }
-
-  function mostrarMensagem(texto) {
-    alert(texto);
-  }
-
-  /* =======================================================
-     SEÇÃO JS 03: MODAL HISTÓRICO
-  ======================================================= */
-  function abrirModalHistorico() {
-    const modal = document.getElementById("modal-historico");
-
-    if (modal) {
-      modal.classList.remove("hidden");
-    }
-  }
-
-  function fecharModalHistorico() {
-    const modal = document.getElementById("modal-historico");
-
-    if (modal) {
-      modal.classList.add("hidden");
-    }
-  }
-
-  if (btnFecharModalHistorico) {
-    btnFecharModalHistorico.addEventListener("click", fecharModalHistorico);
-  }
-
-  /* =======================================================
-     SEÇÃO JS 04: CARREGAR HISTÓRICO NO MODAL
-  ======================================================= */
-  async function carregarHistoricoModal(idRaspPn) {
-    if (!tabelaHistoricoModal) return;
-
-    tabelaHistoricoModal.innerHTML = `
-      <tr>
-        <td colspan="10">Carregando...</td>
-      </tr>
-    `;
-
-    try {
-      const response = await fetch(`http://localhost:5050/rasp-pn/${idRaspPn}/contencoes`);
-
-      if (!response.ok) {
-        tabelaHistoricoModal.innerHTML = `
-          <tr>
-            <td colspan="10">Erro ao carregar histórico.</td>
-          </tr>
-        `;
-        return;
+      if (btnRegistrar) {
+        btnRegistrar.disabled = true;
       }
 
-      const dados = await response.json();
-
-      if (!Array.isArray(dados) || dados.length === 0) {
-        tabelaHistoricoModal.innerHTML = `
-          <tr>
-            <td colspan="10">Nenhum apontamento encontrado.</td>
-          </tr>
-        `;
-        return;
+      function formatarData(dataIso) {
+        if (!dataIso) return "-";
+        const data = new Date(dataIso);
+        if (isNaN(data.getTime())) return "-";
+        return data.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
       }
 
-      tabelaHistoricoModal.innerHTML = "";
+      function formatarHora(dataIso) {
+        if (!dataIso) return "-";
+        const data = new Date(dataIso);
+        if (isNaN(data.getTime())) return "-";
+        return data.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "America/Sao_Paulo"
+        });
+      }
 
-      const grupos = {};
+      function normalizarTexto(valor) {
+        return (valor ?? "").toString().trim().toLowerCase();
+      }
 
-      dados.forEach(item => {
-        const chave = `${item.dataLoteVerificada}_${item.lote || "-"}`;
+      function mostrarMensagem(texto) {
+        alert(texto);
+      }
 
-        if (!grupos[chave]) {
-          grupos[chave] = {
-            data: item.dataLoteVerificada,
-            lote: item.lote || "-",
-            totalVerificada: 0,
-            totalRejeitada: 0,
-            totalOk: 0,
-            itens: []
+      function abrirModalHistorico() {
+        const modal = document.getElementById("modal-historico");
+        if (modal) modal.classList.remove("hidden");
+      }
+
+      function fecharModalHistorico() {
+        const modal = document.getElementById("modal-historico");
+        if (modal) modal.classList.add("hidden");
+      }
+
+      if (btnFecharModalHistorico) {
+        btnFecharModalHistorico.addEventListener("click", fecharModalHistorico);
+      }
+
+      async function carregarHistoricoModal(idRaspPn) {
+        if (!tabelaHistoricoModal) return;
+
+        tabelaHistoricoModal.innerHTML = `<tr><td colspan="10">Carregando...</td></tr>`;
+
+        try {
+          const response = await fetch(`http://localhost:5050/rasp-pn/${idRaspPn}/contencoes`);
+
+          if (!response.ok) {
+            tabelaHistoricoModal.innerHTML = `<tr><td colspan="10">Erro ao carregar histórico.</td></tr>`;
+            return;
+          }
+
+          const dados = await response.json();
+
+          if (!Array.isArray(dados) || dados.length === 0) {
+            tabelaHistoricoModal.innerHTML = `<tr><td colspan="10">Nenhum apontamento encontrado.</td></tr>`;
+            return;
+          }
+
+          const grupos = {};
+
+          dados.forEach((item) => {
+            const chave = `${item.dataLoteVerificada}_${item.lote || "-"}`;
+
+            if (!grupos[chave]) {
+              grupos[chave] = {
+                data: item.dataLoteVerificada,
+                lote: item.lote || "-",
+                totalVerificada: 0,
+                totalRejeitada: 0,
+                totalOk: 0,
+                itens: []
+              };
+            }
+
+            grupos[chave].totalVerificada += item.quantidadeVerificada || 0;
+            grupos[chave].totalRejeitada += item.quantidadeRejeitada || 0;
+            grupos[chave].totalOk += item.quantidadeOk || 0;
+            grupos[chave].itens.push(item);
+          });
+
+          tabelaHistoricoModal.innerHTML = "";
+
+          Object.values(grupos).forEach((grupo) => {
+            const trHeader = document.createElement("tr");
+
+            trHeader.innerHTML = `
+              <td colspan="10" style="background:#eef5ff; font-weight:bold;">
+                📅 ${formatarData(grupo.data)} | Lote: ${grupo.lote}
+                | ✔ ${grupo.totalVerificada}
+                | ❌ ${grupo.totalRejeitada}
+                | 🟢 ${grupo.totalOk}
+              </td>
+            `;
+
+            tabelaHistoricoModal.appendChild(trHeader);
+
+            grupo.itens.forEach((item) => {
+              const tr = document.createElement("tr");
+
+              tr.innerHTML = `
+                <td>${formatarData(item.dataLoteVerificada)}</td>
+                <td>${item.lote ?? "-"}</td>
+                <td>${item.quantidadeVerificada ?? 0}</td>
+                <td>${item.quantidadeRejeitada ?? 0}</td>
+                <td>${item.quantidadeOk ?? 0}</td>
+                <td>${item.idUsuarioExecucao ? "Interno" : "Terceiro"}</td>
+                <td>${item.idTurnoRasp ?? "-"}</td>
+                <td>${formatarHora(item.dataHoraInicioAtividade)}</td>
+                <td>${formatarHora(item.dataHoraFimAtividade)}</td>
+                <td>${item.observacao ?? "-"}</td>
+              `;
+
+              tabelaHistoricoModal.appendChild(tr);
+            });
+          });
+        } catch (error) {
+          console.error("Erro ao carregar histórico:", error);
+          tabelaHistoricoModal.innerHTML = `<tr><td colspan="10">Falha de comunicação com a API.</td></tr>`;
+        }
+      }
+
+      function preencherResumo(linha) {
+        if (!linha) return;
+
+        itemSelecionado = linha;
+
+        if (btnRegistrar) btnRegistrar.disabled = false;
+
+        resumoPn.textContent = linha.dataset.pn || "-";
+        resumoRasp.textContent = linha.dataset.rasp || "-";
+        resumoFornecedor.textContent = linha.dataset.fornecedor || "-";
+        resumoMt.textContent = linha.dataset.mt || "-";
+        resumoExecutor.textContent = linha.dataset.executor || "-";
+        resumoTurno.textContent = linha.dataset.turno || "-";
+        resumoData.textContent = linha.dataset.data || "-";
+        resumoHoraInicio.textContent = linha.dataset.horaInicio || "-";
+        resumoHoraFim.textContent = linha.dataset.horaFim || "-";
+      }
+
+      function limparResumo() {
+        itemSelecionado = null;
+
+        if (btnRegistrar) btnRegistrar.disabled = true;
+
+        resumoPn.textContent = "-";
+        resumoRasp.textContent = "-";
+        resumoFornecedor.textContent = "-";
+        resumoMt.textContent = "-";
+        resumoExecutor.textContent = "-";
+        resumoTurno.textContent = "-";
+        resumoData.textContent = "-";
+        resumoHoraInicio.textContent = "-";
+        resumoHoraFim.textContent = "-";
+      }
+
+      function adicionarEventoCliqueLinha(linha) {
+        linha.addEventListener("click", () => {
+          document.querySelectorAll("#tabela-itens-selecao tr").forEach((l) => l.classList.remove("ativo"));
+          linha.classList.add("ativo");
+          preencherResumo(linha);
+        });
+      }
+
+      function montarIndicadorDiasSemApontamento(dias) {
+        if (dias === null || dias === undefined) {
+          return {
+            texto: "Não iniciado",
+            classe: "badge-neutro",
+            categoria: "nao-iniciado"
           };
         }
 
-        grupos[chave].totalVerificada += item.quantidadeVerificada || 0;
-        grupos[chave].totalRejeitada += item.quantidadeRejeitada || 0;
-        grupos[chave].totalOk += item.quantidadeOk || 0;
-
-        grupos[chave].itens.push(item);
-      });
-
-      tabelaHistoricoModal.innerHTML = "";
-
-      Object.values(grupos).forEach(grupo => {
-
-        const trHeader = document.createElement("tr");
-        trHeader.innerHTML = `
-          <td colspan="10" style="background:#eef5ff; font-weight:bold;">
-            📅 ${formatarData(grupo.data)} | Lote: ${grupo.lote}
-            | ✔ ${grupo.totalVerificada}
-            | ❌ ${grupo.totalRejeitada}
-            | 🟢 ${grupo.totalOk}
-          </td>
-        `;
-        tabelaHistoricoModal.appendChild(trHeader);
-
-        grupo.itens.forEach(item => {
-          const tr = document.createElement("tr");
-
-          tr.innerHTML = `
-            <td>${formatarData(item.dataLoteVerificada)}</td>
-            <td>${item.lote ?? "-"}</td>
-            <td>${item.quantidadeVerificada ?? 0}</td>
-            <td>${item.quantidadeRejeitada ?? 0}</td>
-            <td>${item.quantidadeOk ?? 0}</td>
-            <td>${item.idUsuarioExecucao ? "Interno" : "Terceiro"}</td>
-            <td>${item.idTurnoRasp ?? "-"}</td>
-            <td>${formatarHora(item.dataHoraInicioAtividade)}</td>
-            <td>${formatarHora(item.dataHoraFimAtividade)}</td>
-            <td>${item.observacao ?? "-"}</td>
-          `;
-
-          tabelaHistoricoModal.appendChild(tr);
-        });
-
-      });
-
-    } catch (error) {
-      console.error("Erro ao carregar histórico:", error);
-
-      tabelaHistoricoModal.innerHTML = `
-        <tr>
-          <td colspan="10">Falha de comunicação com a API.</td>
-        </tr>
-      `;
-    }
-  }
-
-  /* =======================================================
-     SEÇÃO JS 05: HISTÓRICO LATERAL
-  ======================================================= */
-  async function carregarHistoricoItem(idRaspPn) {
-    const tabelaHistorico = document.getElementById("tabela-historico");
-
-    if (!tabelaHistorico) return;
-
-    if (!idRaspPn) {
-      tabelaHistorico.innerHTML = `
-        <tr>
-          <td colspan="9">Selecione um item</td>
-        </tr>
-      `;
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:5050/rasp-pn/${idRaspPn}/contencoes`);
-
-      if (!response.ok) {
-        tabelaHistorico.innerHTML = `
-          <tr>
-            <td colspan="9">Erro ao carregar histórico.</td>
-          </tr>
-        `;
-        return;
-      }
-
-      const historico = await response.json();
-
-      if (!Array.isArray(historico) || historico.length === 0) {
-        tabelaHistorico.innerHTML = `
-          <tr>
-            <td colspan="9">Nenhum apontamento registrado.</td>
-          </tr>
-        `;
-        return;
-      }
-
-      tabelaHistorico.innerHTML = "";
-
-      historico.forEach((item) => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${formatarData(item.dataLoteVerificada)}</td>
-          <td>${item.lote ?? "-"}</td>
-          <td>${item.quantidadeVerificada ?? 0}</td>
-          <td>${item.quantidadeRejeitada ?? 0}</td>
-          <td>${item.quantidadeOk ?? 0}</td>
-          <td>${item.idUsuarioExecucao ? "Interno" : "-"}</td>
-          <td>${item.idTurnoRasp ?? "-"}</td>
-          <td>${formatarHora(item.dataHoraInicioAtividade)}</td>
-          <td>${formatarHora(item.dataHoraFimAtividade)}</td>
-        `;
-
-        tabelaHistorico.appendChild(tr);
-      });
-    } catch (error) {
-      console.error("Erro ao carregar histórico lateral:", error);
-
-      tabelaHistorico.innerHTML = `
-        <tr>
-          <td colspan="9">Falha de comunicação com a API.</td>
-        </tr>
-      `;
-    }
-  }
-
-  /* =======================================================
-     SEÇÃO JS 06: RESUMO DO ITEM
-  ======================================================= */
-  function preencherResumo(linha) {
-    if (!linha) return;
-
-    itemSelecionado = linha;
-
-    if (btnRegistrar) {
-      btnRegistrar.disabled = false;
-    }
-
-    resumoPn.textContent = linha.dataset.pn || "-";
-    resumoRasp.textContent = linha.dataset.rasp || "-";
-    resumoFornecedor.textContent = linha.dataset.fornecedor || "-";
-    resumoMt.textContent = linha.dataset.mt || "-";
-    resumoExecutor.textContent = linha.dataset.executor || "-";
-    resumoTurno.textContent = linha.dataset.turno || "-";
-    resumoData.textContent = linha.dataset.data || "-";
-    resumoHoraInicio.textContent = linha.dataset.horaInicio || "-";
-    resumoHoraFim.textContent = linha.dataset.horaFim || "-";
-
-    carregarHistoricoItem(linha.dataset.idRaspPn);
-  }
-
-  /* =======================================================
-     SEÇÃO JS 07: CLIQUE NA LINHA
-  ======================================================= */
-  function adicionarEventoCliqueLinha(linha) {
-    linha.addEventListener("click", () => {
-      document
-        .querySelectorAll("#tabela-itens-selecao tr")
-        .forEach((l) => l.classList.remove("ativo"));
-
-      linha.classList.add("ativo");
-      preencherResumo(linha);
-    });
-  }
-
-  function calcularDiasSemApontamento(item) {
-  const dataBase = item.dataApontamento || item.horaFim || item.horaInicio;
-
-  if (!dataBase) {
-    return null;
-  }
-
-  const hoje = new Date();
-  const ultimaData = new Date(dataBase);
-
-  if (isNaN(ultimaData.getTime())) {
-    return null;
-  }
-
-  hoje.setHours(0, 0, 0, 0);
-  ultimaData.setHours(0, 0, 0, 0);
-
-  const diferencaMs = hoje - ultimaData;
-  const dias = Math.floor(diferencaMs / (1000 * 60 * 60 * 24));
-
-  return dias < 0 ? 0 : dias;
-}
-
-function montarIndicadorDiasSemApontamento(dias) {
-  if (dias === null) {
-    return {
-      texto: "Não iniciado ⚪",
-      classe: "badge-neutro"
-    };
-  }
-
-  if (dias <= 2) {
-    return {
-      texto: `${dias}d 🟢`,
-      classe: "badge-ok"
-    };
-  }
-
-  if (dias === 3) {
-    return {
-      texto: "3d 🟡",
-      classe: "badge-atencao"
-    };
-  }
-
-  return {
-    texto: `${dias}d 🔴`,
-    classe: "badge-critico"
-  };
-}
-
-
-  /* =======================================================
-     SEÇÃO JS 08: CARREGAR ITENS ATIVOS
-  ======================================================= */
-  async function carregarItensSelecao() {
-    try {
-      const response = await fetch("http://localhost:5050/selecao-operacional/itens-ativos");
-
-      if (!response.ok) {
-        tabela.innerHTML = `<tr><td colspan="13">Erro ao carregar dados.</td></tr>`;
-        return;
-      }
-
-      const itens = await response.json();
-
-      tabela.innerHTML = "";
-
-      if (!Array.isArray(itens) || itens.length === 0) {
-        tabela.innerHTML = `<tr><td colspan="13">Nenhum item encontrado.</td></tr>`;
-        return;
-      }
-
-      itens.forEach((item, index) => {
-        const tr = document.createElement("tr");
-
-        tr.dataset.idRaspPn = item.idRaspPn ?? "";
-
-        const pn = item.pn ?? "-";
-        const rasp = item.numeroRasp ?? "-";
-        const fornecedor = item.fornecedor ?? "-";
-        const mt = item.mtResponsavel ?? "-";
-        const executor = item.nomeOperadorSelecaoTerceiro
-          ? item.nomeOperadorSelecaoTerceiro
-          : "Interno";
-        const turno = item.turno ?? "-";
-        const data = formatarData(item.dataApontamento || item.dataEntradaSelecao);
-        const horaInicio = formatarHora(item.horaInicio);
-        const horaFim = formatarHora(item.horaFim);
-        const duracao = item.duracaoEmSelecaoDias ?? "-";
-        const diasSemApontamento = calcularDiasSemApontamento(item);
-        const indicadorApontamento = montarIndicadorDiasSemApontamento(diasSemApontamento);
-        const trava = item.trava ?? "-";
-
-
-        tr.dataset.pn = pn;
-        tr.dataset.rasp = rasp;
-        tr.dataset.fornecedor = fornecedor;
-        tr.dataset.mt = mt;
-        tr.dataset.executor = executor;
-        tr.dataset.turno = turno;
-        tr.dataset.data = data;
-        tr.dataset.horaInicio = horaInicio;
-        tr.dataset.horaFim = horaFim;
-
-        tr.innerHTML = `
-          <td>${pn}</td>
-          <td>${rasp}</td>
-          <td>${fornecedor}</td>
-          <td>${mt}</td>
-          <td>${executor}</td>
-          <td>${turno}</td>
-          <td>${data}</td>
-          <td>${horaInicio}</td>
-          <td>${horaFim}</td>
-          <td>${duracao}</td>
-          <td>
-            <span class="status">
-              <span class="dot dot-verde"></span>
-              ${status}
-            </span>
-          </td>
-          <td>
-            <span class="badge ${trava === "Ativa" ? "badge-trava" : "badge-sem-trava"}">
-              ${trava}
-            </span>
-          </td>
-          <td>
-            <button type="button" class="btn-secundario btn-historico">
-              Histórico
-            </button>
-          </td>
-        `;
-
-        tabela.appendChild(tr);
-        adicionarEventoCliqueLinha(tr);
-
-        const btnHistorico = tr.querySelector(".btn-historico");
-
-        if (btnHistorico) {
-          btnHistorico.addEventListener("click", (event) => {
-            event.stopPropagation();
-
-            if (subtituloModal) {
-              subtituloModal.textContent = `PN: ${pn} | RASP: ${rasp}`;
-            }
-
-            abrirModalHistorico();
-            carregarHistoricoModal(item.idRaspPn);
-          });
+        if (dias <= 2) {
+          return {
+            texto: `${dias}d`,
+            classe: "badge-ok",
+            categoria: "ok"
+          };
         }
 
-       
-      });
-    } catch (error) {
-      console.error("Erro API:", error);
-      tabela.innerHTML = `<tr><td colspan="13">Erro de comunicação com API.</td></tr>`;
-    }
-  }
+        if (dias === 3) {
+          return {
+            texto: "3d",
+            classe: "badge-atencao",
+            categoria: "atencao"
+          };
+        }
 
-  /* =======================================================
-     SEÇÃO JS 09: LIMPAR FORMULÁRIO
-  ======================================================= */
-  if (btnLimpar) {
-    btnLimpar.addEventListener("click", () => {
-      document.getElementById("dataLote").value = "";
-      document.getElementById("lote").value = "";
-      document.getElementById("qtdVerificada").value = "";
-      document.getElementById("qtdRejeitada").value = "";
-      document.getElementById("observacao").value = "";
-    });
-  }
-
-  /* =======================================================
-     SEÇÃO JS 10: REGISTRAR APONTAMENTO
-  ======================================================= */
-  if (btnRegistrar) {
-    btnRegistrar.addEventListener("click", async () => {
-      if (!itemSelecionado) {
-        mostrarMensagem("Selecione um item primeiro.");
-        return;
+        return {
+          texto: `${dias}d`,
+          classe: "badge-critico",
+          categoria: "critico"
+        };
       }
 
-      const dataLote = document.getElementById("dataLote").value;
-      const qtdVerificada = parseInt(document.getElementById("qtdVerificada").value || 0);
-      const qtdRejeitada = parseInt(document.getElementById("qtdRejeitada").value || 0);
+      function preencherSelectUnico(select, valores) {
+        if (!select) return;
 
-      if (!dataLote) {
-        mostrarMensagem("Informe a data do lote.");
-        return;
+        const valorAtual = select.value;
+        select.innerHTML = `<option value="">Todos</option>`;
+
+        valores
+          .filter((valor) => valor && valor !== "-")
+          .sort((a, b) => a.localeCompare(b, "pt-BR"))
+          .forEach((valor) => {
+            const option = document.createElement("option");
+            option.value = valor;
+            option.textContent = valor;
+            select.appendChild(option);
+          });
+
+        select.value = valorAtual;
       }
 
-      if (qtdVerificada <= 0) {
-        mostrarMensagem("Quantidade verificada deve ser maior que zero.");
-        return;
+      function atualizarOpcoesDosFiltros(itens) {
+        const fornecedores = [...new Set(itens.map((item) => item.fornecedor ?? "-"))];
+        const executores = [...new Set(itens.map((item) => item.nomeOperadorSelecaoTerceiro || "Interno"))];
+        const mts = [...new Set(itens.map((item) => item.mtResponsavel ?? "-"))];
+
+        preencherSelectUnico(filtroFornecedor, fornecedores);
+        preencherSelectUnico(filtroExecutor, executores);
+        preencherSelectUnico(filtroMt, mts);
       }
 
-      if (qtdRejeitada < 0) {
-        mostrarMensagem("Quantidade rejeitada inválida.");
-        return;
-      }
+      function obterItensFiltrados() {
+        const pnFiltro = normalizarTexto(filtroPn?.value);
+        const raspFiltro = normalizarTexto(filtroRasp?.value);
+        const fornecedorFiltro = filtroFornecedor?.value || "";
+        const turnoFiltro = filtroTurno?.value || "";
+        const executorFiltro = filtroExecutor?.value || "";
+        const mtFiltro = filtroMt?.value || "";
+        const diasFiltro = filtroDiasSemApontamento?.value || "";
+        const travaFiltro = filtroTrava?.value || "";
 
-      if (qtdRejeitada > qtdVerificada) {
-        mostrarMensagem("Quantidade rejeitada não pode ser maior que a verificada.");
-        return;
-      }
-      if (!confirm("Confirma o registro deste apontamento? Essa ação não poderá ser desfeita.")) {
-        return;
-      }
+        return itensSelecao.filter((item) => {
+          const pn = normalizarTexto(item.pn);
+          const rasp = normalizarTexto(item.numeroRasp);
+          const fornecedor = item.fornecedor ?? "-";
+          const turno = item.turno ?? "-";
+          const executor = item.nomeOperadorSelecaoTerceiro || "Interno";
+          const mt = item.mtResponsavel ?? "-";
+          const trava = item.trava ?? "-";
+          const indicador = montarIndicadorDiasSemApontamento(item.diasSemApontamento ?? null);
 
-      const payload = {
-        idRaspPn: parseInt(itemSelecionado.dataset.idRaspPn),
-        dataLoteVerificada: dataLote,
-        lote: document.getElementById("lote").value,
-        quantidadeVerificada: qtdVerificada,
-        quantidadeRejeitada: qtdRejeitada,
-        observacao: document.getElementById("observacao").value,
-        idTurnoRasp: parseInt(document.getElementById("turnoApontamento").value),
-        idUsuarioInterno: 1,
-        origemRegistro: 2,
-        dataHoraInicioAtividade: new Date().toISOString(),
-        dataHoraFimAtividade: new Date().toISOString()
-      };
-
-      try {
-        const response = await fetch("http://localhost:5050/rasp-contencao", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
+          return (
+            (!pnFiltro || pn.includes(pnFiltro)) &&
+            (!raspFiltro || rasp.includes(raspFiltro)) &&
+            (!fornecedorFiltro || fornecedor === fornecedorFiltro) &&
+            (!turnoFiltro || turno === turnoFiltro) &&
+            (!executorFiltro || executor === executorFiltro) &&
+            (!mtFiltro || mt === mtFiltro) &&
+            (!diasFiltro || indicador.categoria === diasFiltro) &&
+            (!travaFiltro || trava === travaFiltro)
+          );
         });
+      }
 
-        if (!response.ok) {
-          mostrarMensagem("Erro ao registrar apontamento.");
+      function atualizarTextoFiltrosImpressao() {
+        const filtros = [];
+
+        if (filtroPn.value) filtros.push(`PN: ${filtroPn.value}`);
+        if (filtroRasp.value) filtros.push(`RASP: ${filtroRasp.value}`);
+        if (filtroFornecedor.value) filtros.push(`Fornecedor: ${filtroFornecedor.value}`);
+        if (filtroTurno.value) filtros.push(`Turno: ${filtroTurno.value}`);
+        if (filtroExecutor.value) filtros.push(`Executor: ${filtroExecutor.value}`);
+        if (filtroMt.value) filtros.push(`MT: ${filtroMt.value}`);
+        if (filtroDiasSemApontamento.value) filtros.push(`Dias s/ apont.: ${filtroDiasSemApontamento.options[filtroDiasSemApontamento.selectedIndex].text}`);
+        if (filtroTrava.value) filtros.push(`Trava: ${filtroTrava.value}`);
+
+        const printFiltros = document.getElementById("printFiltrosAplicados");
+        if (printFiltros) {
+          printFiltros.textContent = filtros.length > 0 ? filtros.join(" | ") : "Nenhum filtro aplicado";
+        }
+      }
+
+      function ativarEventosDosFiltros() {
+        const filtros = [
+          filtroPn,
+          filtroRasp,
+          filtroFornecedor,
+          filtroTurno,
+          filtroExecutor,
+          filtroMt,
+          filtroDiasSemApontamento,
+          filtroTrava
+        ];
+
+        filtros.forEach((filtro) => {
+          if (!filtro) return;
+
+          filtro.addEventListener("input", () => {
+            renderizarTabela(obterItensFiltrados());
+            atualizarTextoFiltrosImpressao();
+          });
+
+          filtro.addEventListener("change", () => {
+            renderizarTabela(obterItensFiltrados());
+            atualizarTextoFiltrosImpressao();
+          });
+        });
+      }
+
+      function renderizarTabela(itens) {
+        tabela.innerHTML = "";
+        limparResumo();
+
+        if (!Array.isArray(itens) || itens.length === 0) {
+          tabela.innerHTML = `<tr><td colspan="13">Nenhum item encontrado para os filtros selecionados.</td></tr>`;
           return;
         }
 
-        mostrarMensagem("Apontamento registrado com sucesso!");
+        itens.forEach((item) => {
+          const tr = document.createElement("tr");
 
-        document.getElementById("dataLote").value = "";
-        document.getElementById("lote").value = "";
-        document.getElementById("qtdVerificada").value = "";
-        document.getElementById("qtdRejeitada").value = "";
-        document.getElementById("observacao").value = "";
+          tr.dataset.idRaspPn = item.idRaspPn ?? "";
 
-        await carregarItensSelecao();
-      } catch (error) {
-        console.error("Erro POST:", error);
-        mostrarMensagem("Erro de comunicação com API.");
+          const pn = item.pn ?? "-";
+          const rasp = item.numeroRasp ?? "-";
+          const fornecedor = item.fornecedor ?? "-";
+          const mt = item.mtResponsavel ?? "-";
+          const executor = item.nomeOperadorSelecaoTerceiro ? item.nomeOperadorSelecaoTerceiro : "Interno";
+          const turno = item.turno ?? "-";
+          const data = formatarData(item.dataApontamento || item.dataEntradaSelecao);
+          const horaInicio = formatarHora(item.horaInicio);
+          const horaFim = formatarHora(item.horaFim);
+          const diasEmSelecao = item.duracaoEmSelecaoDias ?? "-";
+          const indicadorApontamento = montarIndicadorDiasSemApontamento(item.diasSemApontamento ?? null);
+          const trava = item.trava ?? "-";
+
+          tr.dataset.pn = pn;
+          tr.dataset.rasp = rasp;
+          tr.dataset.fornecedor = fornecedor;
+          tr.dataset.mt = mt;
+          tr.dataset.executor = executor;
+          tr.dataset.turno = turno;
+          tr.dataset.data = data;
+          tr.dataset.horaInicio = horaInicio;
+          tr.dataset.horaFim = horaFim;
+
+          tr.innerHTML = `
+            <td>${pn}</td>
+            <td>${rasp}</td>
+            <td>${fornecedor}</td>
+            <td>${mt}</td>
+            <td>${executor}</td>
+            <td>${turno}</td>
+            <td>${data}</td>
+            <td>${horaInicio}</td>
+            <td>${horaFim}</td>
+            <td>${diasEmSelecao}</td>
+            <td>
+              <span class="badge ${indicadorApontamento.classe}">
+                ${indicadorApontamento.texto}
+              </span>
+            </td>
+            <td>
+              <span class="badge ${trava === "Ativa" ? "badge-trava" : "badge-sem-trava"}">
+                ${trava}
+              </span>
+            </td>
+            <td class="action-cell">
+              <button type="button" class="btn-secundario btn-historico">Histórico</button>
+            </td>
+          `;
+
+          tabela.appendChild(tr);
+          adicionarEventoCliqueLinha(tr);
+
+          const btnHistorico = tr.querySelector(".btn-historico");
+
+          if (btnHistorico) {
+            btnHistorico.addEventListener("click", (event) => {
+              event.stopPropagation();
+
+              if (subtituloModal) {
+                subtituloModal.textContent = `PN: ${pn} | RASP: ${rasp}`;
+              }
+
+              abrirModalHistorico();
+              carregarHistoricoModal(item.idRaspPn);
+            });
+          }
+        });
       }
+
+      async function carregarItensSelecao() {
+        try {
+          const response = await fetch("http://localhost:5050/selecao-operacional/itens-ativos");
+
+          if (!response.ok) {
+            tabela.innerHTML = `<tr><td colspan="13">Erro ao carregar dados.</td></tr>`;
+            return;
+          }
+
+          const itens = await response.json();
+
+          itensSelecao = Array.isArray(itens) ? itens : [];
+
+          atualizarOpcoesDosFiltros(itensSelecao);
+          renderizarTabela(obterItensFiltrados());
+          atualizarTextoFiltrosImpressao();
+        } catch (error) {
+          console.error("Erro API:", error);
+          tabela.innerHTML = `<tr><td colspan="13">Erro de comunicação com API.</td></tr>`;
+        }
+      }
+
+      if (btnLimpar) {
+        btnLimpar.addEventListener("click", () => {
+          document.getElementById("dataLote").value = "";
+          document.getElementById("lote").value = "";
+          document.getElementById("qtdVerificada").value = "";
+          document.getElementById("qtdRejeitada").value = "";
+          document.getElementById("observacao").value = "";
+        });
+      }
+
+      if (btnRegistrar) {
+        btnRegistrar.addEventListener("click", async () => {
+          if (!itemSelecionado) {
+            mostrarMensagem("Selecione um item primeiro.");
+            return;
+          }
+
+          const dataLote = document.getElementById("dataLote").value;
+          const qtdVerificada = parseInt(document.getElementById("qtdVerificada").value || 0);
+          const qtdRejeitada = parseInt(document.getElementById("qtdRejeitada").value || 0);
+
+          if (!dataLote) {
+            mostrarMensagem("Informe a data do lote.");
+            return;
+          }
+
+          if (qtdVerificada <= 0) {
+            mostrarMensagem("Quantidade verificada deve ser maior que zero.");
+            return;
+          }
+
+          if (qtdRejeitada < 0) {
+            mostrarMensagem("Quantidade rejeitada inválida.");
+            return;
+          }
+
+          if (qtdRejeitada > qtdVerificada) {
+            mostrarMensagem("Quantidade rejeitada não pode ser maior que a verificada.");
+            return;
+          }
+
+          if (!confirm("Confirma o registro deste apontamento? Essa ação não poderá ser desfeita.")) {
+            return;
+          }
+
+          const payload = {
+            idRaspPn: parseInt(itemSelecionado.dataset.idRaspPn),
+            dataLoteVerificada: dataLote,
+            lote: document.getElementById("lote").value,
+            quantidadeVerificada: qtdVerificada,
+            quantidadeRejeitada: qtdRejeitada,
+            observacao: document.getElementById("observacao").value,
+            idTurnoRasp: parseInt(document.getElementById("turnoApontamento").value),
+            idUsuarioInterno: 1,
+            origemRegistro: 2,
+            dataHoraInicioAtividade: new Date().toISOString(),
+            dataHoraFimAtividade: new Date().toISOString()
+          };
+
+          try {
+            const response = await fetch("http://localhost:5050/rasp-contencao", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              mostrarMensagem("Erro ao registrar apontamento.");
+              return;
+            }
+
+            mostrarMensagem("Apontamento registrado com sucesso!");
+
+            document.getElementById("dataLote").value = "";
+            document.getElementById("lote").value = "";
+            document.getElementById("qtdVerificada").value = "";
+            document.getElementById("qtdRejeitada").value = "";
+            document.getElementById("observacao").value = "";
+
+            await carregarItensSelecao();
+          } catch (error) {
+            console.error("Erro POST:", error);
+            mostrarMensagem("Erro de comunicação com API.");
+          }
+        });
+      }
+
+      function atualizarCabecalhoImpressao() {
+        const agora = new Date();
+
+        const data = agora.toLocaleDateString("pt-BR");
+        const hora = agora.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+
+        const campoData = document.getElementById("printDataRelatorio");
+        const campoHora = document.getElementById("printHoraRelatorio");
+
+        if (campoData) campoData.textContent = data;
+        if (campoHora) campoHora.textContent = hora;
+
+        atualizarTextoFiltrosImpressao();
+      }
+
+      if (btnImprimir) {
+        btnImprimir.addEventListener("click", function () {
+          atualizarCabecalhoImpressao();
+          window.print();
+        });
+      }
+
+      atualizarCabecalhoImpressao();
+      ativarEventosDosFiltros();
+      carregarItensSelecao();
     });
-  }
-
-  /* =======================================================
-     SEÇÃO JS 11: INICIALIZAÇÃO
-  ======================================================= */
-  carregarItensSelecao();
-});
-</script>
-
-
+  </script>
+</body>
+</html>

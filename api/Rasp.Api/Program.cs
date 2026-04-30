@@ -2526,39 +2526,42 @@ app.MapDelete("/rasp-pn/{id:int}", async (int id, RaspDbContext db) =>
 //   • MT responsável
 //   • turno
 //   • data de entrada em seleção
-//   • duração em seleção
+//   • duração real em seleção
 //   • último apontamento operacional do item
+//   • dias sem apontamento
 //
 // Regras desta visão:
-// - considera ativo todo RASP_PN com EmContencao = true
-// - busca o último apontamento em rasp_contencao por IdRaspPn
-// - usa DataLoteInicial do RASP_PN como referência de entrada em seleção
-// - a duração é contada em dias corridos desde a entrada em seleção
-//
-// Observação:
-// - este endpoint não substitui /rasp-contencao
-// - ele existe para alimentar a tela operacional com dados mais ricos
+// - considera ativo todo RASP_PN com StatusSelecao = 1
+// - busca apontamentos em rasp_contencao por IdRaspPn
+// - duração em seleção:
+//     1º tenta usar a menor DataLoteVerificada do histórico
+//     2º se não houver histórico, usa DataHoraEntradaSelecao
+// - dias sem apontamento:
+//     usa o último apontamento registrado
 // -----------------------------------------------------------------------------
 app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
 {
     // -------------------------------------------------------------------------
     // 01. BUSCA BASE DOS ITENS EM SELEÇÃO ATIVA
-    // - parte fixa da linha operacional
-    // - vem do vínculo RASP_PN + RASP + FORNECEDOR + USUÁRIO + TURNO
     // -------------------------------------------------------------------------
     var itensBase = await (
         from rp in db.RaspPn.AsNoTracking()
         join r in db.Rasp.AsNoTracking()
             on rp.IdRasp equals r.IdRasp
+
         join f in db.FornecedorRasp.AsNoTracking()
             on r.IdFornecedorRasp equals f.IdFornecedor
+
         join mtJoin in db.Usuarios.AsNoTracking()
             on r.IdAnalistaMt equals mtJoin.IdUsuario into mtLeft
         from mt in mtLeft.DefaultIfEmpty()
+
         join turnoJoin in db.TurnoRasp.AsNoTracking()
             on r.IdTurnoRasp equals turnoJoin.IdTurnoRasp into turnoLeft
         from turno in turnoLeft.DefaultIfEmpty()
+
         where rp.StatusSelecao == 1
+
         select new
         {
             rp.IdRaspPn,
@@ -2572,7 +2575,6 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             rp.TravaAtiva,
             rp.StatusSelecao
         }
-
     )
     .OrderBy(x => x.NumeroRasp)
     .ThenBy(x => x.Pn)
@@ -2592,18 +2594,17 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         .ToList();
 
     // -------------------------------------------------------------------------
-    // 04. BUSCA TODOS OS APONTAMENTOS DESSES ITENS
-    // - ainda em memória vamos pegar o último de cada IdRaspPn
+    // 04. BUSCA TODOS OS APONTAMENTOS DOS ITENS ATIVOS
     // -------------------------------------------------------------------------
     var apontamentos = await db.Set<RaspContencao>()
         .AsNoTracking()
         .Where(x => idsRaspPn.Contains(x.IdRaspPn))
-        .OrderByDescending(x => x.DataAtualizacao)
         .Select(x => new
         {
             x.IdRaspContencao,
             x.IdRaspPn,
             x.DataAtualizacao,
+            x.DataLoteVerificada,
             x.DataHoraInicioAtividade,
             x.DataHoraFimAtividade,
             x.IdOperadorSelecaoTerceiro,
@@ -2616,19 +2617,33 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         .ToListAsync();
 
     // -------------------------------------------------------------------------
-    // 05. PEGA O ÚLTIMO APONTAMENTO DE CADA ITEM EM SELEÇÃO
+    // 05. PEGA O ÚLTIMO APONTAMENTO DE CADA ITEM
     // -------------------------------------------------------------------------
     var ultimoApontamentoPorRaspPn = apontamentos
         .GroupBy(x => x.IdRaspPn)
         .ToDictionary(
             g => g.Key,
             g => g
-                .OrderByDescending(x => x.DataAtualizacao)
+                .OrderByDescending(x => x.DataHoraFimAtividade ?? x.DataHoraInicioAtividade ?? x.DataAtualizacao)
                 .First()
         );
 
     // -------------------------------------------------------------------------
-    // 06. MONTA LISTA DE IDS DE OPERADORES TERCEIROS USADOS
+// 06. PEGA A PRIMEIRA DATA REAL DE SELEÇÃO DE CADA ITEM
+// - DataLoteVerificada é DateOnly?, por isso convertemos para DateTime
+// -------------------------------------------------------------------------
+var primeiraDataSelecaoPorRaspPn = apontamentos
+    .Where(x => x.DataLoteVerificada.HasValue)
+    .GroupBy(x => x.IdRaspPn)
+    .ToDictionary(
+        g => g.Key,
+        g => g
+            .Min(x => x.DataLoteVerificada!.Value.ToDateTime(TimeOnly.MinValue).Date)
+    );
+
+
+    // -------------------------------------------------------------------------
+    // 07. MONTA LISTA DE IDS DE OPERADORES TERCEIROS USADOS
     // -------------------------------------------------------------------------
     var idsOperadores = ultimoApontamentoPorRaspPn.Values
         .Where(x => x.IdOperadorSelecaoTerceiro.HasValue)
@@ -2637,7 +2652,7 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         .ToList();
 
     // -------------------------------------------------------------------------
-    // 07. BUSCA DADOS DOS OPERADORES TERCEIROS
+    // 08. BUSCA DADOS DOS OPERADORES TERCEIROS
     // -------------------------------------------------------------------------
     var operadores = await db.OperadorSelecaoTerceiro
         .AsNoTracking()
@@ -2656,30 +2671,71 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
     );
 
     // -------------------------------------------------------------------------
-    // 08. MONTA O RETORNO FINAL DA TELA OPERACIONAL
+    // 09. DATA BASE PARA CÁLCULOS
     // -------------------------------------------------------------------------
-    var agoraUtc = DateTime.UtcNow;
-
-    var resultado = itensBase.Select(itemBase =>
-    {
-        ultimoApontamentoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var ultimo);
-
-        DateTime? dataEntradaSelecao = itemBase.DataHoraEntradaSelecao;
-int? duracaoEmSelecaoDias = null;
-
-if (dataEntradaSelecao.HasValue)
-{
-    var dataEntrada = dataEntradaSelecao.Value.Date;
     var hoje = DateTime.UtcNow.Date;
 
-    duracaoEmSelecaoDias = (hoje - dataEntrada).Days;
+    // -------------------------------------------------------------------------
+    // 10. MONTA O RETORNO FINAL DA TELA OPERACIONAL
+    // -------------------------------------------------------------------------
+    var resultado = itensBase.Select(itemBase =>
+    {
+        // ---------------------------------------------------------------------
+        // 10.1. Recupera último apontamento do item
+        // ---------------------------------------------------------------------
+        ultimoApontamentoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var ultimo);
 
-    if (duracaoEmSelecaoDias < 0)
-        duracaoEmSelecaoDias = 0;
-}
+        // ---------------------------------------------------------------------
+        // 10.2. Define data real de entrada em seleção
+        // Regra:
+        // - Se houver histórico, usa a primeira DataLoteVerificada
+        // - Caso contrário, usa DataHoraEntradaSelecao
+        // ---------------------------------------------------------------------
+        DateTime? dataEntradaSelecao = null;
 
+        if (primeiraDataSelecaoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var primeiraDataHistorico))
+        {
+            dataEntradaSelecao = primeiraDataHistorico;
+        }
+        else if (itemBase.DataHoraEntradaSelecao.HasValue)
+        {
+            dataEntradaSelecao = itemBase.DataHoraEntradaSelecao.Value.Date;
+        }
 
+        // ---------------------------------------------------------------------
+        // 10.3. Calcula duração em seleção
+        // ---------------------------------------------------------------------
+        int? duracaoEmSelecaoDias = null;
 
+        if (dataEntradaSelecao.HasValue)
+        {
+            duracaoEmSelecaoDias = (hoje - dataEntradaSelecao.Value.Date).Days;
+
+            if (duracaoEmSelecaoDias < 0)
+                duracaoEmSelecaoDias = 0;
+        }
+
+        // ---------------------------------------------------------------------
+        // 10.4. Calcula dias sem apontamento
+        // ---------------------------------------------------------------------
+        DateTime? dataUltimoApontamento =
+            ultimo?.DataHoraFimAtividade ??
+            ultimo?.DataHoraInicioAtividade ??
+            ultimo?.DataAtualizacao;
+
+        int? diasSemApontamento = null;
+
+        if (dataUltimoApontamento.HasValue)
+        {
+            diasSemApontamento = (hoje - dataUltimoApontamento.Value.Date).Days;
+
+            if (diasSemApontamento < 0)
+                diasSemApontamento = 0;
+        }
+
+        // ---------------------------------------------------------------------
+        // 10.5. Recupera dados do operador terceiro, se houver
+        // ---------------------------------------------------------------------
         string? nomeOperador = null;
         string? empresaOperador = null;
 
@@ -2690,6 +2746,9 @@ if (dataEntradaSelecao.HasValue)
             empresaOperador = operador.Empresa;
         }
 
+        // ---------------------------------------------------------------------
+        // 10.6. Retorno final da linha operacional
+        // ---------------------------------------------------------------------
         return new
         {
             // -----------------------------------------------------
@@ -2708,15 +2767,15 @@ if (dataEntradaSelecao.HasValue)
             // -----------------------------------------------------
             DataEntradaSelecao = dataEntradaSelecao,
             DuracaoEmSelecaoDias = duracaoEmSelecaoDias,
+            DiasSemApontamento = diasSemApontamento,
 
             // -----------------------------------------------------
             // ÚLTIMO APONTAMENTO OPERACIONAL
             // -----------------------------------------------------
             IdRaspContencao = ultimo?.IdRaspContencao,
-            DataApontamento = ultimo?.DataHoraInicioAtividade.HasValue == true
-                ? ultimo.DataHoraInicioAtividade.Value.Date
+            DataApontamento = dataUltimoApontamento.HasValue
+                ? dataUltimoApontamento.Value.Date
                 : (DateTime?)null,
-
             HoraInicio = ultimo?.DataHoraInicioAtividade,
             HoraFim = ultimo?.DataHoraFimAtividade,
             ultimo?.OrigemRegistro,
@@ -2747,6 +2806,7 @@ if (dataEntradaSelecao.HasValue)
 })
 .WithName("ListarItensAtivosSelecaoOperacional")
 .WithTags("RASP Seleção");
+
 
 
 // -----------------------------------------------------------------------------
