@@ -104,7 +104,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.sidebar-nav ul {
+.sidebar-nav > ul {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -112,6 +112,7 @@ body {
   flex-direction: column;
   gap: 8px;
 }
+
 
 .sidebar-nav li {
   list-style: none;
@@ -144,6 +145,68 @@ body {
   font-weight: 700;
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.28);
 }
+
+  /* =========================================================
+   SUBMENU DO DASHBOARD
+   ========================================================= */
+      .sidebar-nav-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .sidebar-nav-title {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        padding: 8px 14px 2px;
+      }
+
+      .sidebar-submenu {
+        margin-left: 10px !important;
+        padding-left: 10px !important;
+        border-left: 2px solid rgba(255, 255, 255, 0.16);
+        gap: 6px !important;
+      }
+
+      .sidebar-submenu a {
+        font-size: 14px;
+        padding: 10px 12px;
+      }
+
+      .sidebar-submenu a.disabled-link {
+        opacity: 0.42;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+
+      .sidebar-dashboard-toggle {
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 16px;
+        font-weight: 700;
+        padding: 12px 14px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .sidebar-dashboard-toggle:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+      }
+
+      .sidebar-submenu.hidden {
+        display: none !important;
+      }
+
+
 
 /* ============================================================
    ÁREA PRINCIPAL

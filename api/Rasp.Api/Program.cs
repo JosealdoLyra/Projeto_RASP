@@ -2629,17 +2629,19 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         );
 
     // -------------------------------------------------------------------------
-// 06. PEGA A PRIMEIRA DATA REAL DE SELEÇÃO DE CADA ITEM
-// - DataLoteVerificada é DateOnly?, por isso convertemos para DateTime
-// -------------------------------------------------------------------------
-var primeiraDataSelecaoPorRaspPn = apontamentos
-    .Where(x => x.DataLoteVerificada.HasValue)
-    .GroupBy(x => x.IdRaspPn)
-    .ToDictionary(
-        g => g.Key,
-        g => g
-            .Min(x => x.DataLoteVerificada!.Value.ToDateTime(TimeOnly.MinValue).Date)
-    );
+    // 06. PEGA DATA OFICIAL DE ENTRADA EM SELEÇÃO
+    // REGRA:
+    // - Usa a data registrada quando o analista ativou a seleção
+    // - NÃO usa data do lote
+    // - NÃO usa apontamentos operacionais
+    // -------------------------------------------------------------------------
+    var dataEntradaSelecaoPorRaspPn = itensBase
+        .Where(x => x.DataHoraEntradaSelecao.HasValue)
+        .ToDictionary(
+            x => x.IdRaspPn,
+            x => x.DataHoraEntradaSelecao!.Value.Date
+        );
+
 
 
     // -------------------------------------------------------------------------
@@ -2693,14 +2695,11 @@ var primeiraDataSelecaoPorRaspPn = apontamentos
         // ---------------------------------------------------------------------
         DateTime? dataEntradaSelecao = null;
 
-        if (primeiraDataSelecaoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var primeiraDataHistorico))
+        if (dataEntradaSelecaoPorRaspPn.TryGetValue(itemBase.IdRaspPn, out var dataEntrada))
         {
-            dataEntradaSelecao = primeiraDataHistorico;
+            dataEntradaSelecao = dataEntrada;
         }
-        else if (itemBase.DataHoraEntradaSelecao.HasValue)
-        {
-            dataEntradaSelecao = itemBase.DataHoraEntradaSelecao.Value.Date;
-        }
+
 
         // ---------------------------------------------------------------------
         // 10.3. Calcula duração em seleção
@@ -2806,6 +2805,144 @@ var primeiraDataSelecaoPorRaspPn = apontamentos
 })
 .WithName("ListarItensAtivosSelecaoOperacional")
 .WithTags("RASP Seleção");
+
+    // -----------------------------------------------------------------------------
+// 18B. SELECAO OPERACIONAL - HISTÓRICO GERAL
+// Finalidade:
+// - devolver TODOS os itens que já passaram por seleção
+// - inclui:
+//   • itens ainda ativos
+//   • itens encerrados
+// - utilizado pela tela:
+//   historico-geral.html
+//
+// Regras:
+// - considera qualquer item que já entrou em seleção
+// - mantém histórico permanente
+// - NÃO remove itens encerrados
+// - permite auditoria/logística/evidência operacional
+// -----------------------------------------------------------------------------
+app.MapGet("/selecao-operacional/historico-geral", async (RaspDbContext db) =>
+{
+    // -------------------------------------------------------------------------
+    // 01. DATA BASE
+    // -------------------------------------------------------------------------
+    var hoje = DateTime.UtcNow.Date;
+
+    // -------------------------------------------------------------------------
+    // 02. BUSCA BASE
+    // -------------------------------------------------------------------------
+    var itens = await (
+        from rp in db.RaspPn.AsNoTracking()
+
+        join r in db.Rasp.AsNoTracking()
+            on rp.IdRasp equals r.IdRasp
+
+        join f in db.FornecedorRasp.AsNoTracking()
+            on r.IdFornecedorRasp equals f.IdFornecedor
+
+        join mtJoin in db.Usuarios.AsNoTracking()
+            on r.IdAnalistaMt equals mtJoin.IdUsuario into mtLeft
+
+        from mt in mtLeft.DefaultIfEmpty()
+
+        join turnoJoin in db.TurnoRasp.AsNoTracking()
+            on r.IdTurnoRasp equals turnoJoin.IdTurnoRasp into turnoLeft
+
+        from turno in turnoLeft.DefaultIfEmpty()
+
+        // -----------------------------------------------------
+        // SOMENTE ITENS QUE JÁ ENTRARAM EM SELEÇÃO
+        // -----------------------------------------------------
+        where rp.EntrouSelecao == true
+
+        select new
+        {
+            // -------------------------------------------------
+            // IDENTIFICAÇÃO
+            // -------------------------------------------------
+            rp.IdRaspPn,
+            Pn = rp.Pn,
+            rp.IdRasp,
+            r.NumeroRasp,
+
+            // -------------------------------------------------
+            // DADOS OPERACIONAIS
+            // -------------------------------------------------
+            Fornecedor = f.Nome,
+            MtResponsavel = mt != null ? mt.Nome : null,
+            Turno = turno != null ? turno.Descricao : null,
+
+            // -------------------------------------------------
+            // CONTROLE DE SELEÇÃO
+            // -------------------------------------------------
+            rp.StatusSelecao,
+            rp.EntrouSelecao,
+
+            rp.DataHoraEntradaSelecao,
+            rp.DataHoraSaidaSelecao,
+
+            // -------------------------------------------------
+            // TRAVA
+            // -------------------------------------------------
+            rp.TravaAtiva,
+            rp.DataHoraSolicitacaoTrava,
+            rp.DataHoraRemocaoTrava,
+
+            // -------------------------------------------------
+            // QHD
+            // -------------------------------------------------
+            rp.QhdAtivo,
+            rp.DataHoraQhd,
+
+            // -------------------------------------------------
+            // STATUS DESCRITIVO
+            // -------------------------------------------------
+            StatusDescricao =
+                rp.StatusSelecao == 1
+                    ? "Em seleção"
+
+                : rp.StatusSelecao == 2
+                    ? "Encerrado"
+
+                : "Fora da seleção",
+
+            // -------------------------------------------------
+            // DURAÇÃO TOTAL
+            // -------------------------------------------------
+            DuracaoTotalDias =
+                rp.DataHoraEntradaSelecao.HasValue
+
+                    ? (
+                        (
+                            rp.DataHoraSaidaSelecao.HasValue
+                                ? rp.DataHoraSaidaSelecao.Value.Date
+                                : hoje
+                        )
+
+                        - rp.DataHoraEntradaSelecao.Value.Date
+                      ).Days
+
+                    : (int?)null
+        }
+    )
+    // -------------------------------------------------------------------------
+    // 03. ORDENAÇÃO
+    // -------------------------------------------------------------------------
+    .OrderByDescending(x => x.DataHoraEntradaSelecao)
+    .ThenBy(x => x.NumeroRasp)
+    .ThenBy(x => x.Pn)
+
+    .ToListAsync();
+
+    // -------------------------------------------------------------------------
+    // 04. RETORNO
+    // -------------------------------------------------------------------------
+    return Results.Ok(itens);
+})
+.WithName("HistoricoGeralSelecaoOperacional")
+.WithTags("RASP Seleção");
+
 
 
 
@@ -2975,6 +3112,43 @@ app.MapPost("/rasp-contencao", async (
         return Results.BadRequest("RaspPn não encontrado.");
 
     // -------------------------------------------------------------------------
+    // 03.1. DEFINE A DATA REAL DA SELEÇÃO
+    // Regra:
+    // - usa a data da atividade executada
+    // - NÃO usa DataLoteVerificada
+    // -------------------------------------------------------------------------
+    DateOnly dataSelecao;
+
+    if (req.DataHoraInicioAtividade.HasValue)
+    {
+        dataSelecao = DateOnly.FromDateTime(
+            req.DataHoraInicioAtividade.Value);
+    }
+    else
+    {
+        dataSelecao = DateOnly.FromDateTime(DateTime.UtcNow);
+    }
+
+
+    // -------------------------------------------------------------------------
+    // 03.2. VALIDA SE O APONTAMENTO NÃO É ANTERIOR
+    // À ENTRADA OFICIAL EM SELEÇÃO DO PN
+    // -------------------------------------------------------------------------
+    if (raspPn.DataHoraEntradaSelecao.HasValue)
+    {
+        var dataEntradaSelecaoPn =
+            DateOnly.FromDateTime(
+                raspPn.DataHoraEntradaSelecao.Value);
+
+        if (dataSelecao < dataEntradaSelecaoPn)
+        {
+            return Results.BadRequest(
+                $"A data da seleção ({dataSelecao:dd/MM/yyyy}) não pode ser anterior à entrada oficial do item em seleção ({dataEntradaSelecaoPn:dd/MM/yyyy}).");
+        }
+    }
+
+
+    // -------------------------------------------------------------------------
     // 04. VALIDAÇÃO DO TURNO
     // -------------------------------------------------------------------------
     var turnoExiste = await db.TurnoRasp
@@ -3061,6 +3235,7 @@ if (req.DataHoraFimAtividade.HasValue)
 var item = new RaspContencao
 {
     IdRaspPn = req.IdRaspPn,
+    DataSelecao = dataSelecao,
     DataLoteVerificada = req.DataLoteVerificada,
     QuantidadeVerificada = req.QuantidadeVerificada,
     QuantidadeRejeitada = req.QuantidadeRejeitada,
@@ -3070,6 +3245,7 @@ var item = new RaspContencao
     IdOperadorSelecaoTerceiro = req.IdOperadorSelecaoTerceiro,
     IdUsuarioExecucao = req.IdUsuarioInterno,
     OrigemRegistro = req.OrigemRegistro,
+    
 
     // NOVOS CAMPOS DA ATIVIDADE REAL
     DataHoraInicioAtividade = dataHoraInicioUtc,

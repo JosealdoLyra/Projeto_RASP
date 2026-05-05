@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Histórico Geral - Seleção / Contenção</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul-950: #040b18;
+      --azul-900: #081426;
+      --azul-800: #11233f;
+      --azul-600: #2563eb;
+      --verde: #22c55e;
+      --amarelo: #f59e0b;
+      --vermelho: #ef4444;
+      --texto: #e5eefc;
+      --texto-secundario: #93a4c3;
+      --borda: rgba(255,255,255,0.08);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #13294b 0%, #081426 38%, #040b18 100%);
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--texto);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       03. LAYOUT
+       ========================================================= */
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr 340px;
+      min-height: 100vh;
+    }
+
+    /* =========================================================
+       04. SIDEBAR
+       ========================================================= */
+    .sidebar {
+      background: linear-gradient(180deg, rgba(8,20,38,0.96), rgba(4,11,24,0.98));
+      border-right: 1px solid var(--borda);
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .logo-title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo-subtitle {
+      font-size: 13px;
+      color: var(--texto-secundario);
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-item {
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: var(--texto);
+      font-size: 15px;
+      font-weight: 600;
+      transition: 0.22s ease;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
+    .menu-item.active {
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
+      box-shadow: 0 0 18px rgba(37,99,235,0.35);
+    }
+
+    .filtros-box {
+      margin-top: auto;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 18px;
+    }
+
+    .filtros-box h3 {
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .campo label {
+      font-size: 12px;
+      color: var(--texto-secundario);
+    }
+
+    .campo select {
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      padding: 0 12px;
+    }
+
+    .btn-filtro {
+      width: 100%;
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       05. CONTEÚDO CENTRAL
+       ========================================================= */
+    .content-area {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .topbar h1 {
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .topbar p {
+      margin-top: 4px;
+      color: var(--texto-secundario);
+    }
+
+    .usuario-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb, #9333ea);
+    }
+
+    /* =========================================================
+       06. KPIs
+       ========================================================= */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    }
+
+    .kpi-card h3 {
+      font-size: 13px;
+      color: var(--texto-secundario);
+      margin-bottom: 14px;
+    }
+
+    .kpi-value {
+      font-size: 44px;
+      font-weight: 900;
+    }
+
+    .kpi-footer {
+      margin-top: 10px;
+      color: var(--texto-secundario);
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       07. TABELA
+       ========================================================= */
+    .painel-tabela {
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .painel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .painel-header h2 {
+      font-size: 24px;
+    }
+
+    .painel-header p {
+      margin-top: 4px;
+      color: var(--texto-secundario);
+    }
+
+    .search-box input {
+      width: 320px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      padding: 0 16px;
+    }
+
+    .tabela-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: rgba(255,255,255,0.03);
+      color: var(--texto-secundario);
+      padding: 16px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      text-align: left;
+      border-top: 1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
+    }
+
+    tbody td {
+      padding: 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 14px;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    tbody tr.linha-ativa {
+      background: rgba(37,99,235,0.32) !important;
+      box-shadow: inset 7px 0 0 #60a5fa, 0 0 22px rgba(37,99,235,0.50);
+      outline: 1px solid rgba(96,165,250,0.75);
+    }
+
+    tbody tr.linha-ativa td {
+      color: #ffffff !important;
+      border-bottom: 1px solid rgba(96,165,250,0.60) !important;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-ok {
+      background: rgba(34,197,94,0.16);
+      color: #4ade80;
+    }
+
+    .badge-atencao {
+      background: rgba(245,158,11,0.16);
+      color: #fbbf24;
+    }
+
+    .badge-critico {
+      background: rgba(239,68,68,0.16);
+      color: #f87171;
+    }
+
+    .badge-neutro {
+      background: rgba(147,164,195,0.16);
+      color: #cbd5e1;
+    }
+
+    /* =========================================================
+       08. PAINEL DIREITO
+       ========================================================= */
+    .painel-direito {
+      background: linear-gradient(180deg, rgba(18,36,66,0.96), rgba(8,20,38,0.99));
+      border-left: 1px solid var(--borda);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .detalhe-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .detalhe-card h2 {
+      margin-bottom: 16px;
+      font-size: 28px;
+    }
+
+    .detalhe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .detalhe-item small {
+      display: block;
+      color: var(--texto-secundario);
+      margin-bottom: 4px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 0 0 18px 22px;
+      border-left: 2px solid rgba(96,165,250,0.35);
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -7px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: 0 0 12px rgba(96,165,250,0.65);
+    }
+
+    .timeline-item.critico::before {
+      background: #ef4444;
+      box-shadow: 0 0 14px rgba(239,68,68,0.75);
+    }
+
+    .timeline-item.atencao::before {
+      background: #f59e0b;
+      box-shadow: 0 0 14px rgba(245,158,11,0.75);
+    }
+
+    .timeline-item.ok::before {
+      background: #22c55e;
+      box-shadow: 0 0 14px rgba(34,197,94,0.75);
+    }
+
+    .timeline-item .data {
+      color: var(--texto-secundario);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .titulo {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .timeline-item .autor {
+      margin-top: 5px;
+      color: #60a5fa;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1500px) {
+      .layout {
+        grid-template-columns: 230px 1fr;
+      }
+
+      .painel-direito {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       09. LAYOUT PRINCIPAL
+       ========================================================= -->
+  <div class="layout">
+
+    <!-- =========================================================
+         10. SIDEBAR
+         ========================================================= -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">🛡️</div>
+
+        <div>
+          <div class="logo-title">RASP</div>
+          <div class="logo-subtitle">Sistema de Qualidade</div>
+        </div>
+      </div>
+
+       <nav class="menu">
+
+  <a href="dashboard-selecao.html" class="menu-item">
+    📋 Visão Geral
+  </a>
+
+  <a href="selecao-operacional.html" class="menu-item">
+    📦 Itens em Seleção
+  </a>
+
+  <a href="#" class="menu-item">
+    📝 Apontamentos
+  </a>
+
+  <a href="#" class="menu-item">
+    🔒 Travas
+  </a>
+
+  <a href="#" class="menu-item">
+    📊 Relatórios
+  </a>
+
+  <a href="historico-geral.html" class="menu-item active">
+    🕓 Histórico Geral
+  </a>
+
+  <a href="#" class="menu-item">
+    🏭 Fornecedores
+  </a>
+
+  <a href="#" class="menu-item">
+    ⚙️ Configurações
+  </a>
+
+</nav>
+
+
+
+      <div class="filtros-box">
+        <h3>FILTROS RÁPIDOS</h3>
+
+        <div class="campo">
+          <label>Fornecedor</label>
+          <select id="filtroFornecedor">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Turno</label>
+          <select id="filtroTurno">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Status</label>
+          <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="Em seleção">Em seleção</option>
+            <option value="Encerrado">Encerrado</option>
+          </select>
+        </div>
+
+        <button class="btn-filtro" id="btnAplicarFiltros">
+          Aplicar Filtros
+        </button>
+      </div>
+    </aside>
+
+    <!-- =========================================================
+         11. CONTEÚDO CENTRAL
+         ========================================================= -->
+    <main class="content-area">
+
+      <!-- =====================================================
+           11.01 TOPO
+           ===================================================== -->
+      <section class="topbar">
+        <div>
+          <h1>Histórico Geral</h1>
+          <p>Histórico permanente para auditoria operacional e logística</p>
+        </div>
+
+        <div class="usuario-box">
+          <div class="avatar"></div>
+
+          <div>
+            <strong>Josealdo Lyra</strong>
+            <div style="color:#93a4c3; font-size:13px;">MT - Inspetor</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           11.02 KPI HISTÓRICO
+           ===================================================== -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <h3>Total Histórico</h3>
+          <div class="kpi-value" id="kpiHistoricoTotal">0</div>
+          <div class="kpi-footer">Itens que já entraram em seleção</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Com Atrasos</h3>
+          <div class="kpi-value" id="kpiHistoricoAtrasos">0</div>
+          <div class="kpi-footer">Histórico de pendências</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Travas Utilizadas</h3>
+          <div class="kpi-value" id="kpiHistoricoTravas">0</div>
+          <div class="kpi-footer">Itens com trava</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Tempo Médio</h3>
+          <div class="kpi-value" id="kpiHistoricoTempo">0 dias</div>
+          <div class="kpi-footer">Média histórica</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Seleções Finalizadas</h3>
+          <div class="kpi-value" id="kpiHistoricoFinalizados">0</div>
+          <div class="kpi-footer">Encerradas no sistema</div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           11.03 TABELA HISTÓRICA
+           ===================================================== -->
+      <section class="painel-tabela">
+        <div class="painel-header">
+          <div>
+            <h2>Histórico Geral de Seleção</h2>
+            <p id="totalRegistrosTabela">0 registros encontrados</p>
+          </div>
+
+          <div class="search-box">
+            <input
+              type="text"
+              id="buscaDashboardSelecao"
+              placeholder="Buscar PN, RASP ou fornecedor..."
+            />
+          </div>
+        </div>
+
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PN</th>
+                <th>RASP</th>
+                <th>Fornecedor</th>
+                <th>Entrada</th>
+                <th>Saída</th>
+                <th>Dias</th>
+                <th>Trava</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabelaSelecaoBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           11.04 SCRIPT DO HISTÓRICO GERAL
+           ===================================================== -->
+      <script>
+        /* =====================================================
+           01. VARIÁVEL GLOBAL
+           ===================================================== */
+        let dadosDashboardSelecao = [];
+
+        /* =====================================================
+           02. CARREGAR HISTÓRICO GERAL
+           ===================================================== */
+        async function carregarDashboardSelecao() {
+          try {
+            const response = await fetch(
+              "http://localhost:5050/selecao-operacional/historico-geral"
+            );
+
+            if (!response.ok) {
+              throw new Error("Erro ao carregar API.");
+            }
+
+            dadosDashboardSelecao = await response.json();
+
+            atualizarFiltros(dadosDashboardSelecao);
+            renderizarDashboardSelecao(dadosDashboardSelecao);
+          }
+          catch (error) {
+            console.error(error);
+            alert("Erro ao carregar Histórico Geral.");
+          }
+        }
+
+        /* =====================================================
+           03. ATUALIZAR FILTROS
+           ===================================================== */
+        function atualizarFiltros(dados) {
+          preencherSelect("filtroFornecedor", [...new Set(dados.map(x => x.fornecedor).filter(Boolean))]);
+          preencherSelect("filtroTurno", [...new Set(dados.map(x => x.turno).filter(Boolean))]);
+        }
+
+        function preencherSelect(id, valores) {
+          const select = document.getElementById(id);
+
+          if (!select) return;
+
+          const valorAtual = select.value;
+
+          select.innerHTML = `<option value="">Todos</option>`;
+
+          valores
+            .sort((a, b) => a.localeCompare(b, "pt-BR"))
+            .forEach(valor => {
+              const option = document.createElement("option");
+              option.value = valor;
+              option.textContent = valor;
+              select.appendChild(option);
+            });
+
+          select.value = valorAtual;
+        }
+
+        /* =====================================================
+           04. RENDERIZAR TABELA E KPIs
+           ===================================================== */
+        function renderizarDashboardSelecao(dados) {
+          const tbody = document.getElementById("tabelaSelecaoBody");
+
+          tbody.innerHTML = "";
+
+          dados.sort((a, b) => {
+            const statusA = a.statusSelecao === 1 ? 1 : 0;
+            const statusB = b.statusSelecao === 1 ? 1 : 0;
+
+            if (statusA !== statusB) return statusB - statusA;
+
+            return (b.duracaoTotalDias ?? 0) - (a.duracaoTotalDias ?? 0);
+          });
+
+          let totalHistorico = 0;
+          let totalAtrasos = 0;
+          let totalTravas = 0;
+          let totalFinalizados = 0;
+          let somaDias = 0;
+
+          dados.forEach(item => {
+            totalHistorico++;
+
+            const duracao = item.duracaoTotalDias ?? 0;
+            const status = item.statusDescricao ?? "-";
+            const travaTexto = item.travaAtiva ? "Ativa" : "Sem trava";
+
+            somaDias += duracao;
+
+            if (duracao > 2) totalAtrasos++;
+            if (item.travaAtiva) totalTravas++;
+            if (item.statusSelecao === 2) totalFinalizados++;
+
+            const classeStatus =
+              item.statusSelecao === 1
+                ? "badge-atencao"
+                : item.statusSelecao === 2
+                  ? "badge-ok"
+                  : "badge-neutro";
+
+            const tr = document.createElement("tr");
+
+            tr.dataset.idrasppn = item.idRaspPn;
+
+            tr.innerHTML = `
+              <td>${item.pn ?? "-"}</td>
+              <td>${item.numeroRasp ?? "-"}</td>
+              <td>${item.fornecedor ?? "-"}</td>
+              <td>${formatarDataHora(item.dataHoraEntradaSelecao)}</td>
+              <td>${formatarDataHora(item.dataHoraSaidaSelecao)}</td>
+              <td>${duracao}</td>
+              <td>${travaTexto}</td>
+              <td>
+                <span class="badge ${classeStatus}">
+                  ${status}
+                </span>
+              </td>
+            `;
+
+            tr.addEventListener("click", () => {
+              document
+                .querySelectorAll("#tabelaSelecaoBody tr")
+                .forEach(linha => linha.classList.remove("linha-ativa"));
+
+              tr.classList.add("linha-ativa");
+
+              atualizarPainelDireito(item);
+            });
+
+            tbody.appendChild(tr);
+          });
+
+          const tempoMedio =
+            totalHistorico > 0
+              ? Math.round(somaDias / totalHistorico)
+              : 0;
+
+          document.getElementById("kpiHistoricoTotal").textContent = totalHistorico;
+          document.getElementById("kpiHistoricoAtrasos").textContent = totalAtrasos;
+          document.getElementById("kpiHistoricoTravas").textContent = totalTravas;
+          document.getElementById("kpiHistoricoTempo").textContent = `${tempoMedio} dias`;
+          document.getElementById("kpiHistoricoFinalizados").textContent = totalFinalizados;
+
+          document.getElementById("totalRegistrosTabela").textContent =
+            `${totalHistorico} registros encontrados`;
+        }
+
+        /* =====================================================
+           05. PAINEL DIREITO
+           ===================================================== */
+        async function atualizarPainelDireito(item) {
+          document.getElementById("painelPn").textContent =
+            `PN ${item.pn ?? "-"}`;
+
+          document.getElementById("painelRasp").textContent =
+            item.numeroRasp ?? "-";
+
+          document.getElementById("painelFornecedor").textContent =
+            item.fornecedor ?? "-";
+
+          document.getElementById("painelDiasSelecao").textContent =
+            `${item.duracaoTotalDias ?? 0} dias`;
+
+          document.getElementById("painelSemApontamento").textContent =
+            item.statusDescricao ?? "-";
+
+          const timeline = document.getElementById("timelineHistorico");
+
+          timeline.innerHTML = `
+            <div class="timeline-item ok">
+              <div class="data">
+                ${formatarDataHora(item.dataHoraEntradaSelecao)}
+              </div>
+
+              <div class="titulo">
+                ${obterIconeEvento("entrada")}
+                Item entrou em seleção
+              </div>
+
+              <div class="autor">
+                ${item.mtResponsavel ?? "-"}
+              </div>
+            </div>
+          `;
+
+          try {
+            const response = await fetch(
+              `http://localhost:5050/rasp-pn/${item.idRaspPn}/contencoes`
+            );
+
+            if (!response.ok) {
+              throw new Error("Erro ao carregar histórico.");
+            }
+
+            const historico = await response.json();
+
+            historico.sort((a, b) => {
+              const dataA = new Date(a.dataHoraInicioAtividade);
+              const dataB = new Date(b.dataHoraInicioAtividade);
+
+              return dataA - dataB;
+            });
+
+            let dataReferenciaAtraso =
+              item.dataHoraEntradaSelecao
+                ? new Date(item.dataHoraEntradaSelecao)
+                : null;
+
+            historico.forEach(registro => {
+              const dataAtualRegistro =
+                registro.dataHoraInicioAtividade
+                  ? new Date(registro.dataHoraInicioAtividade)
+                  : null;
+
+              if (dataReferenciaAtraso && dataAtualRegistro) {
+                const ref = new Date(dataReferenciaAtraso);
+                const atual = new Date(dataAtualRegistro);
+
+                ref.setHours(0, 0, 0, 0);
+                atual.setHours(0, 0, 0, 0);
+
+                const diferencaDias =
+                  Math.floor((atual - ref) / (1000 * 60 * 60 * 24));
+
+                if (diferencaDias === 3) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item atencao">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#fbbf24;">
+                        ${obterIconeEvento("atencao")}
+                        Atenção: ${diferencaDias} dias sem apontamento
+                      </div>
+
+                      <div class="autor">
+                        Período detectado automaticamente pelo RASP
+                      </div>
+                    </div>
+                  `;
+                }
+
+                if (diferencaDias >= 4) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item critico">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#f87171;">
+                        ${obterIconeEvento("critico")}
+                        Crítico: ${diferencaDias} dias sem apontamento
+                      </div>
+
+                      <div class="autor">
+                        Evidência histórica para auditoria operacional/logística
+                      </div>
+                    </div>
+                  `;
+                }
+              }
+
+              timeline.innerHTML += `
+                <div class="timeline-item ok">
+                  <div class="data">
+                    ${formatarDataHora(registro.dataHoraInicioAtividade)}
+                  </div>
+
+                  <div class="titulo">
+                    ${obterIconeEvento("apontamento")}
+                    Apontamento realizado
+                  </div>
+
+                  <div class="autor">
+                    Verif.: ${registro.quantidadeVerificada ?? 0}
+                    | Rej.: ${registro.quantidadeRejeitada ?? 0}
+                    | OK: ${registro.quantidadeOk ?? 0}
+                  </div>
+                </div>
+              `;
+
+              if (dataAtualRegistro) {
+                dataReferenciaAtraso = new Date(dataAtualRegistro);
+              }
+            });
+
+            if (item.dataHoraSaidaSelecao) {
+              timeline.innerHTML += `
+                <div class="timeline-item ok">
+                  <div class="data">
+                    ${formatarDataHora(item.dataHoraSaidaSelecao)}
+                  </div>
+
+                  <div class="titulo">
+                    ✅ Seleção encerrada
+                  </div>
+
+                  <div class="autor">
+                    Registro oficial de saída da seleção
+                  </div>
+                </div>
+              `;
+            }
+
+            if (item.travaAtiva) {
+              timeline.innerHTML += `
+                <div class="timeline-item critico">
+                  <div class="data">
+                    Sistema RASP
+                  </div>
+
+                  <div class="titulo" style="color:#f87171;">
+                    ${obterIconeEvento("trava")}
+                    Trava ativa neste item
+                  </div>
+
+                  <div class="autor">
+                    Item bloqueado
+                  </div>
+                </div>
+              `;
+            }
+          }
+          catch (error) {
+            console.error(error);
+
+            timeline.innerHTML += `
+              <div class="timeline-item critico">
+                <div class="titulo">
+                  Erro ao carregar histórico.
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        /* =====================================================
+           06. ÍCONES
+           ===================================================== */
+        function obterIconeEvento(tipo) {
+          switch (tipo) {
+            case "entrada":
+              return "🟢";
+
+            case "apontamento":
+              return "📝";
+
+            case "atencao":
+              return "⚠️";
+
+            case "critico":
+              return "🚨";
+
+            case "trava":
+              return "🔒";
+
+            default:
+              return "📌";
+          }
+        }
+
+        /* =====================================================
+           07. FORMATAR DATA/HORA
+           ===================================================== */
+        function formatarDataHora(data) {
+          if (!data) return "-";
+
+          const d = new Date(data);
+
+          if (isNaN(d.getTime())) return "-";
+
+          return d.toLocaleString("pt-BR");
+        }
+
+        /* =====================================================
+           08. BUSCA E FILTROS
+           ===================================================== */
+        function aplicarFiltrosHistorico() {
+          const termo =
+            document.getElementById("buscaDashboardSelecao").value.toLowerCase().trim();
+
+          const fornecedor =
+            document.getElementById("filtroFornecedor").value;
+
+          const turno =
+            document.getElementById("filtroTurno").value;
+
+          const status =
+            document.getElementById("filtroStatus").value;
+
+          const filtrados = dadosDashboardSelecao.filter(item => {
+            const atendeBusca =
+              (item.pn ?? "").toLowerCase().includes(termo) ||
+              (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
+              (item.fornecedor ?? "").toLowerCase().includes(termo);
+
+            const atendeFornecedor =
+              !fornecedor || item.fornecedor === fornecedor;
+
+            const atendeTurno =
+              !turno || item.turno === turno;
+
+            const atendeStatus =
+              !status || item.statusDescricao === status;
+
+            return atendeBusca && atendeFornecedor && atendeTurno && atendeStatus;
+          });
+
+          renderizarDashboardSelecao(filtrados);
+        }
+
+        document
+          .getElementById("buscaDashboardSelecao")
+          .addEventListener("input", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("btnAplicarFiltros")
+          .addEventListener("click", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroFornecedor")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroTurno")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroStatus")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        /* =====================================================
+           09. INICIALIZAÇÃO
+           ===================================================== */
+        carregarDashboardSelecao();
+      </script>
+    </main>
+
+    <!-- =========================================================
+         12. PAINEL DIREITO
+         ========================================================= -->
+    <aside class="painel-direito">
+      <section class="detalhe-card">
+        <h2 id="painelPn">PN -</h2>
+
+        <div class="detalhe-grid">
+          <div class="detalhe-item">
+            <small>RASP</small>
+            <strong id="painelRasp">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Fornecedor</small>
+            <strong id="painelFornecedor">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Dias no ciclo</small>
+            <strong id="painelDiasSelecao" style="color:#f87171;">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Status</small>
+            <strong id="painelSemApontamento" style="color:#f87171;">-</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="detalhe-card">
+        <h3 style="margin-bottom:20px;">
+          Histórico Operacional
+        </h3>
+
+        <div class="timeline" id="timelineHistorico">
+        </div>
+      </section>
+    </aside>
+  </div>
+</body>
+</html>

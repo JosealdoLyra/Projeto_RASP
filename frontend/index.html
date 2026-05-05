@@ -79,14 +79,50 @@
     </p>
   </section>
 
-  <nav class="sidebar-nav">
-    <ul>
-      <li><a href="#">Dashboard</a></li>
-      <li><a href="#" class="active">Novo RASP</a></li>
-      <li><a href="#">Consulta</a></li>
-      <li><a href="#">Cadastros</a></li>
-    </ul>
-  </nav>
+        <!-- =====================================================
+          MENU DE NAVEGAÇÃO
+          ===================================================== -->
+      <nav class="sidebar-nav">
+        <ul>
+          <!-- 01. DASHBOARDS -->
+          <li class="sidebar-nav-group">
+          <button type="button" class="sidebar-dashboard-toggle" id="btnDashboardMenu">
+            <span>Dashboard</span>
+            <span id="dashboardMenuIcon">▾</span>
+          </button>
+
+          <ul class="sidebar-submenu hidden" id="dashboardSubmenu">
+            <li>
+              <a href="dashboard-selecao.html">Seleção / Contenção</a>
+            </li>
+            <li>
+              <a href="#" class="disabled-link">RASP Geral</a>
+            </li>
+            <li>
+              <a href="#" class="disabled-link">Scrap</a>
+            </li>
+            <li>
+              <a href="#" class="disabled-link">Fornecedores</a>
+            </li>
+          </ul>
+        </li>
+
+
+          <!-- 02. OPERAÇÃO RASP -->
+          <li>
+            <a href="#" class="active">Novo RASP</a>
+          </li>
+
+          <li>
+            <a href="#">Consulta</a>
+          </li>
+
+          <li>
+            <a href="#">Cadastros</a>
+          </li>
+        </ul>
+      </nav>
+
 </aside>
 
 
@@ -726,5 +762,25 @@
        ARQUIVO JAVASCRIPT
        ========================================================= -->
   <script src="app.js"></script>
+
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const botao = document.querySelector(".sidebar-dashboard-toggle");
+    const submenu = document.querySelector(".sidebar-submenu");
+
+    if (!botao || !submenu) {
+      console.error("Menu dashboard não encontrado.");
+      return;
+    }
+
+    botao.addEventListener("click", () => {
+      submenu.classList.toggle("hidden");
+    });
+
+  });
+</script>
+
+
 </body>
 </html>

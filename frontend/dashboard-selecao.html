@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Dashboard Administrativo - Seleção</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+
+    /* =========================================================
+       02.01 VARIÁVEIS GLOBAIS
+       ========================================================= */
+    :root {
+
+      --azul-950: #040b18;
+      --azul-900: #081426;
+      --azul-850: #0d1b31;
+      --azul-800: #11233f;
+      --azul-700: #1d4f86;
+      --azul-600: #2563eb;
+
+      --verde: #22c55e;
+      --amarelo: #f59e0b;
+      --vermelho: #ef4444;
+      --roxo: #8b5cf6;
+
+      --texto: #e5eefc;
+      --texto-secundario: #93a4c3;
+
+      --borda: rgba(255,255,255,0.08);
+
+      --radius: 18px;
+
+      --shadow:
+        0 10px 30px rgba(0,0,0,0.35);
+
+    }
+
+    /* =========================================================
+       02.02 RESET
+       ========================================================= */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+
+      background:
+        radial-gradient(circle at top left, #13294b 0%, #081426 38%, #040b18 100%);
+
+      font-family:
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+      color: var(--texto);
+
+      min-height: 100vh;
+
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       02.03 LAYOUT PRINCIPAL
+       ========================================================= */
+    .layout {
+
+      display: grid;
+
+      grid-template-columns:
+        250px
+        1fr
+        340px;
+
+      min-height: 100vh;
+    }
+
+    /* =========================================================
+       03. SIDEBAR
+       ========================================================= */
+    .sidebar {
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(8,20,38,0.96),
+          rgba(4,11,24,0.98)
+        );
+
+      border-right:
+        1px solid var(--borda);
+
+      padding: 24px 18px;
+
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    /* =========================================================
+       03.01 LOGO
+       ========================================================= */
+    .logo-area {
+
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      padding-bottom: 20px;
+
+      border-bottom:
+        1px solid var(--borda);
+    }
+
+    .logo-icon {
+
+      width: 52px;
+      height: 52px;
+
+      border-radius: 14px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #0ea5e9
+        );
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 28px;
+    }
+
+    .logo-title {
+
+      font-size: 34px;
+      font-weight: 800;
+
+      letter-spacing: 1px;
+    }
+
+    .logo-subtitle {
+
+      font-size: 13px;
+
+      color: var(--texto-secundario);
+    }
+
+    /* =========================================================
+       03.02 MENU
+       ========================================================= */
+    .menu {
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 10px;
+    }
+
+    .menu-item {
+
+      padding:
+        14px
+        16px;
+
+      border-radius: 14px;
+
+      color: var(--texto);
+
+      font-size: 15px;
+      font-weight: 600;
+
+      transition:
+        0.22s ease;
+    }
+
+    .menu-item:hover {
+
+      background:
+        rgba(255,255,255,0.06);
+    }
+
+    .menu-item.active {
+
+      background:
+        linear-gradient(
+          90deg,
+          #2563eb,
+          #1d4f86
+        );
+
+      box-shadow:
+        0 0 18px rgba(37,99,235,0.35);
+    }
+
+    /* =========================================================
+       03.03 FILTROS
+       ========================================================= */
+    .filtros-box {
+
+      margin-top: auto;
+
+      background:
+        rgba(255,255,255,0.03);
+
+      border:
+        1px solid var(--borda);
+
+      border-radius:
+        var(--radius);
+
+      padding: 18px;
+    }
+
+    .filtros-box h3 {
+
+      margin-bottom: 16px;
+
+      font-size: 15px;
+    }
+
+    .campo {
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 6px;
+
+      margin-bottom: 14px;
+    }
+
+    .campo label {
+
+      font-size: 12px;
+
+      color: var(--texto-secundario);
+    }
+
+    .campo select {
+
+      height: 42px;
+
+      border-radius: 10px;
+
+      border:
+        1px solid rgba(255,255,255,0.10);
+
+      background:
+        rgba(255,255,255,0.04);
+
+      color: white;
+
+      padding: 0 12px;
+    }
+
+    .btn-filtro {
+
+      width: 100%;
+      height: 44px;
+
+      border: none;
+
+      border-radius: 12px;
+
+      background:
+        linear-gradient(
+          90deg,
+          #2563eb,
+          #1d4f86
+        );
+
+      color: white;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       04. ÁREA CENTRAL
+       ========================================================= */
+    .content-area {
+
+      padding: 24px;
+
+      display: flex;
+      flex-direction: column;
+
+      gap: 20px;
+    }
+
+    /* =========================================================
+       04.01 TOPBAR
+       ========================================================= */
+    .topbar {
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      padding-bottom: 18px;
+
+      border-bottom:
+        1px solid var(--borda);
+    }
+
+    .topbar h1 {
+
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .topbar p {
+
+      margin-top: 4px;
+
+      color: var(--texto-secundario);
+    }
+
+    .usuario-box {
+
+      display: flex;
+      align-items: center;
+
+      gap: 12px;
+    }
+
+    .avatar {
+
+      width: 48px;
+      height: 48px;
+
+      border-radius: 50%;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #9333ea
+        );
+    }
+
+    /* =========================================================
+       04.02 KPI GRID
+       ========================================================= */
+    .kpi-grid {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(5, 1fr);
+
+      gap: 18px;
+    }
+
+    .kpi-card {
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(18,36,66,0.95),
+          rgba(8,20,38,0.98)
+        );
+
+      border:
+        1px solid var(--borda);
+
+      border-radius:
+        var(--radius);
+
+      padding: 20px;
+
+      position: relative;
+
+      overflow: hidden;
+
+      box-shadow:
+        var(--shadow);
+    }
+
+    .kpi-card::after {
+
+      content: "";
+
+      position: absolute;
+
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      height: 3px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(255,255,255,0.55),
+          transparent
+        );
+    }
+
+    .kpi-card h3 {
+
+      font-size: 13px;
+
+      color: var(--texto-secundario);
+
+      margin-bottom: 14px;
+    }
+
+    .kpi-value {
+
+      font-size: 44px;
+      font-weight: 900;
+    }
+
+    .kpi-footer {
+
+      margin-top: 10px;
+
+      color: var(--texto-secundario);
+
+      font-size: 13px;
+    }
+
+    /* =========================================================
+        /* =========================================================
+        05. TABELA
+        ========================================================= */
+        .painel-tabela {
+        background:
+            linear-gradient(
+            180deg,
+            rgba(18, 36, 66, 0.95),
+            rgba(8, 20, 38, 0.98)
+            );
+
+        border:
+            1px solid var(--borda);
+
+        border-radius:
+            var(--radius);
+
+        box-shadow:
+            var(--shadow);
+
+        overflow: hidden;
+        }
+
+        .painel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        padding: 20px;
+        }
+
+        .painel-header h2 {
+        font-size: 24px;
+        }
+
+        .painel-header p {
+        margin-top: 4px;
+
+        color:
+            var(--texto-secundario);
+        }
+
+        .search-box input {
+        width: 320px;
+        height: 42px;
+
+        border-radius: 12px;
+
+        border:
+            1px solid rgba(255, 255, 255, 0.10);
+
+        background:
+            rgba(255, 255, 255, 0.04);
+
+        color: white;
+
+        padding: 0 16px;
+        }
+
+        .tabela-wrap {
+        overflow: auto;
+        }
+
+        table {
+        width: 100%;
+
+        border-collapse: collapse;
+        }
+
+        thead th {
+        background:
+            rgba(255, 255, 255, 0.03);
+
+        color:
+            var(--texto-secundario);
+
+        padding:
+            16px
+            14px;
+
+        font-size: 12px;
+
+        text-transform: uppercase;
+
+        text-align: left;
+
+        border-top:
+            1px solid var(--borda);
+
+        border-bottom:
+            1px solid var(--borda);
+        }
+
+        tbody td {
+        padding:
+            16px
+            14px;
+
+        border-bottom:
+            1px solid rgba(255, 255, 255, 0.04);
+
+        font-size: 14px;
+        }
+
+        tbody tr:hover {
+        background:
+            rgba(255, 255, 255, 0.05);
+        }
+
+        /* =========================================================
+        LINHA SELECIONADA - DASHBOARD
+        ========================================================= */
+        tbody tr.linha-ativa {
+        background:
+            rgba(37, 99, 235, 0.32) !important;
+
+        box-shadow:
+            inset 7px 0 0 #60a5fa,
+            0 0 22px rgba(37, 99, 235, 0.50);
+
+        outline:
+            1px solid rgba(96, 165, 250, 0.75);
+
+        position: relative;
+        }
+
+        tbody tr.linha-ativa td {
+        color:
+            #ffffff !important;
+
+        border-bottom:
+            1px solid rgba(96, 165, 250, 0.60) !important;
+        }
+
+        /* =========================================================
+        BADGES
+        ========================================================= */
+        .badge {
+        padding:
+            6px
+            10px;
+
+        border-radius: 999px;
+
+        font-size: 12px;
+        font-weight: 700;
+        }
+
+        .badge-ok {
+        background:
+            rgba(34, 197, 94, 0.16);
+
+        color:
+            #4ade80;
+        }
+
+        .badge-atencao {
+        background:
+            rgba(245, 158, 11, 0.16);
+
+        color:
+            #fbbf24;
+        }
+
+        .badge-critico {
+        background:
+            rgba(239, 68, 68, 0.16);
+
+        color:
+            #f87171;
+        }
+
+        /* =========================================================
+        06. PAINEL DIREITO
+        ========================================================= */
+        .painel-direito {
+        background:
+            linear-gradient(
+            180deg,
+            rgba(18, 36, 66, 0.96),
+            rgba(8, 20, 38, 0.99)
+            );
+
+        border-left:
+            1px solid var(--borda);
+
+        padding: 24px;
+
+        display: flex;
+        flex-direction: column;
+
+        gap: 22px;
+        }
+
+        .detalhe-card {
+        background:
+            rgba(255, 255, 255, 0.03);
+
+        border:
+            1px solid var(--borda);
+
+        border-radius:
+            var(--radius);
+
+        padding: 20px;
+        }
+
+        .detalhe-card h2 {
+        margin-bottom: 16px;
+
+        font-size: 28px;
+        }
+
+        .detalhe-grid {
+        display: grid;
+
+        grid-template-columns:
+            1fr
+            1fr;
+
+        gap: 14px;
+        }
+
+        .detalhe-item small {
+        display: block;
+
+        color:
+            var(--texto-secundario);
+
+        margin-bottom: 4px;
+        }
+
+        .timeline {
+        display: flex;
+        flex-direction: column;
+
+        gap: 18px;
+        }
+
+        /* =========================================================
+            TIMELINE ITEM
+            ========================================================= */
+            .timeline-item {
+
+            position: relative;
+
+            padding:
+                0 0 18px 22px;
+
+            border-left:
+                2px solid rgba(96,165,250,0.35);
+            }
+
+            /* =========================================================
+            BOLINHA DA TIMELINE
+            ========================================================= */
+            .timeline-item::before {
+
+            content: "";
+
+            position: absolute;
+
+            left: -7px;
+            top: 4px;
+
+            width: 12px;
+            height: 12px;
+
+            border-radius: 50%;
+
+            background:
+                #60a5fa;
+
+            box-shadow:
+                0 0 12px rgba(96,165,250,0.65);
+            }
+
+            /* =========================================================
+            EVENTO CRÍTICO
+            ========================================================= */
+            .timeline-item.critico::before {
+
+            background:
+                #ef4444;
+
+            box-shadow:
+                0 0 14px rgba(239,68,68,0.75);
+            }
+
+            /* =========================================================
+            EVENTO ATENÇÃO
+            ========================================================= */
+            .timeline-item.atencao::before {
+
+            background:
+                #f59e0b;
+
+            box-shadow:
+                0 0 14px rgba(245,158,11,0.75);
+            }
+
+            /* =========================================================
+            EVENTO OK
+            ========================================================= */
+            .timeline-item.ok::before {
+
+            background:
+                #22c55e;
+
+            box-shadow:
+                0 0 14px rgba(34,197,94,0.75);
+            }
+
+            .timeline-item .data {
+
+            color:
+                var(--texto-secundario);
+
+            font-size: 12px;
+
+            margin-bottom: 4px;
+            }
+
+            .timeline-item .titulo {
+
+            font-weight: 700;
+
+            font-size: 15px;
+            }
+
+            .timeline-item .autor {
+
+            margin-top: 5px;
+
+            color:
+                #60a5fa;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+            }
+
+
+
+    /* =========================================================
+       RESPONSIVO
+       ========================================================= */
+    @media (max-width: 1500px) {
+
+      .layout {
+
+        grid-template-columns:
+          230px
+          1fr;
+      }
+
+      .painel-direito {
+
+        display: none;
+      }
+    }
+
+    @media (max-width: 1200px) {
+
+      .kpi-grid {
+
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+
+      .layout {
+
+        grid-template-columns:
+          1fr;
+      }
+
+      .sidebar {
+
+        display: none;
+      }
+
+      .kpi-grid {
+
+        grid-template-columns:
+          1fr;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- =========================================================
+       03. LAYOUT PRINCIPAL
+       ========================================================= -->
+  <div class="layout">
+
+    <!-- =========================================================
+         04. SIDEBAR
+         ========================================================= -->
+    <aside class="sidebar">
+
+      <!-- =====================================================
+           04.01 LOGO
+           ===================================================== -->
+      <div class="logo-area">
+
+        <div class="logo-icon">
+          🛡️
+        </div>
+
+        <div>
+          <div class="logo-title">
+            RASP
+          </div>
+
+          <div class="logo-subtitle">
+            Sistema de Qualidade
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =====================================================
+           04.02 MENU
+           ===================================================== -->
+      <nav class="menu">
+
+        <a href="dashboard-selecao.html" 
+        class="menu-item active">
+          📋 Visão Geral
+        </a>
+
+        <a href="selecao-operacional.html" 
+        class="menu-item">
+          📦 Itens em Seleção
+        </a>
+
+        <a href="#" class="menu-item">
+          📝 Apontamentos
+        </a>
+
+        <a href="#" class="menu-item">
+          🔒 Travas
+        </a>
+
+        <a href="#" class="menu-item">
+          📊 Relatórios
+        </a>
+
+        <a href="historico-geral.html" 
+        class="menu-item">
+          🕓 Histórico Geral
+        </a>
+
+        <a href="#" class="menu-item">
+          🏭 Fornecedores
+        </a>
+
+        <a href="#" class="menu-item">
+          ⚙️ Configurações
+        </a>
+
+      </nav>
+
+      <!-- =====================================================
+           04.03 FILTROS
+           ===================================================== -->
+      <div class="filtros-box">
+
+        <h3>
+          FILTROS RÁPIDOS
+        </h3>
+
+        <div class="campo">
+
+          <label>
+            Fornecedor
+          </label>
+
+          <select>
+            <option>Todos</option>
+          </select>
+
+        </div>
+
+        <div class="campo">
+
+          <label>
+            Turno
+          </label>
+
+          <select>
+            <option>Todos</option>
+          </select>
+
+        </div>
+
+        <div class="campo">
+
+          <label>
+            Status
+          </label>
+
+          <select>
+            <option>Todos</option>
+          </select>
+
+        </div>
+
+        <button class="btn-filtro">
+          Aplicar Filtros
+        </button>
+
+      </div>
+
+    </aside>
+
+    <!-- =========================================================
+         05. CONTEÚDO CENTRAL
+         ========================================================= -->
+    <main class="content-area">
+
+      <!-- =====================================================
+           05.01 TOPBAR
+           ===================================================== -->
+      <section class="topbar">
+
+        <div>
+
+          <h1>
+            Seleção Operacional
+          </h1>
+
+          <p>
+            Gestão diária de itens em seleção
+          </p>
+
+        </div>
+
+        <div class="usuario-box">
+
+          <div class="avatar"></div>
+
+          <div>
+
+            <strong>
+              Josealdo Lyra
+            </strong>
+
+            <div style="color:#93a4c3; font-size:13px;">
+              MT - Inspetor
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+     05.02 KPI CARDS
+     ===================================================== -->
+<section class="kpi-grid">
+
+  <!-- KPI 01 - TOTAL DE ITENS EM SELEÇÃO -->
+  <div class="kpi-card">
+    <h3>Itens em Seleção</h3>
+
+    <div class="kpi-value" id="kpiTotalItens">
+      0
+    </div>
+
+    <div class="kpi-footer">
+      Em andamento
+    </div>
+  </div>
+
+  <!-- KPI 02 - ATRASADOS -->
+  <div class="kpi-card">
+    <h3>Atrasados</h3>
+
+    <div class="kpi-value" id="kpiAtrasados">
+      0
+    </div>
+
+    <div class="kpi-footer">
+      &gt; 2 dias sem apontamento
+    </div>
+  </div>
+
+  <!-- KPI 03 - ITENS COM TRAVA -->
+  <div class="kpi-card">
+    <h3>Itens com Trava</h3>
+
+    <div class="kpi-value" id="kpiComTrava">
+      0
+    </div>
+
+    <div class="kpi-footer">
+      Bloqueados
+    </div>
+  </div>
+
+  <!-- KPI 04 - SEM APONTAMENTO HOJE -->
+  <div class="kpi-card">
+    <h3>Sem apontamento hoje</h3>
+
+    <div class="kpi-value" id="kpiSemApontHoje">
+      0
+    </div>
+
+    <div class="kpi-footer">
+      Verificar
+    </div>
+  </div>
+
+  <!-- KPI 05 - TEMPO MÉDIO EM SELEÇÃO -->
+  <div class="kpi-card">
+    <h3>Tempo médio</h3>
+
+    <div class="kpi-value" id="kpiTempoMedio">
+      0 dias
+    </div>
+
+    <div class="kpi-footer">
+      Em seleção
+    </div>
+  </div>
+
+</section>
+
+<!-- =====================================================
+     05.03 TABELA
+     ===================================================== -->
+<section class="painel-tabela">
+
+  <!-- HEADER DA TABELA -->
+  <div class="painel-header">
+    <div>
+      <h2>Itens em Seleção Ativos</h2>
+
+      <p id="totalRegistrosTabela">
+        0 registros encontrados
+      </p>
+    </div>
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="buscaDashboardSelecao"
+        placeholder="Buscar PN, RASP ou fornecedor..."
+      />
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>PN</th>
+          <th>RASP</th>
+          <th>Fornecedor</th>
+          <th>Dias</th>
+          <th>Sem Apont.</th>
+          <th>Último Apontamento</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <!-- CORPO DINÂMICO DA TABELA -->
+      <tbody id="tabelaSelecaoBody">
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- =====================================================
+     05.04 SCRIPT DO DASHBOARD
+     IMPORTANTE:
+     Este script fica FORA do tbody.
+     ===================================================== -->
+<script>
+
+  /* =========================================================
+     01. VARIÁVEL GLOBAL DOS DADOS
+     ========================================================= */
+  let dadosDashboardSelecao = [];
+
+  /* =========================================================
+     02. CARREGAR ITENS EM SELEÇÃO
+     ========================================================= */
+  async function carregarDashboardSelecao() {
+    try {
+      const response = await fetch(
+        "http://localhost:5050/selecao-operacional/itens-ativos"
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao carregar API.");
+      }
+
+      dadosDashboardSelecao = await response.json();
+
+      renderizarDashboardSelecao(dadosDashboardSelecao);
+    }
+    catch (error) {
+      console.error(error);
+      alert("Erro ao carregar dashboard.");
+    }
+  }
+
+  /* =========================================================
+     03. RENDERIZAR DASHBOARD
+     ========================================================= */
+  function renderizarDashboardSelecao(dados) {
+    const tbody = document.getElementById("tabelaSelecaoBody");
+
+    tbody.innerHTML = "";
+
+            /* =====================================================
+        ORDENAÇÃO OPERACIONAL INTELIGENTE
+        PRIORIDADE:
+        1 - TRAVADOS
+        2 - MAIS DIAS SEM APONTAMENTO
+        3 - MAIS DIAS EM SELEÇÃO
+        ===================================================== */
+        dados.sort((a, b) => {
+
+        const travaA =
+            (a.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
+
+        const travaB =
+            (b.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
+
+        /* ===================================================
+            TRAVADOS PRIMEIRO
+            =================================================== */
+        if (travaA !== travaB) {
+            return travaB - travaA;
+        }
+
+        const atrasoA =
+            a.diasSemApontamento ?? -1;
+
+        const atrasoB =
+            b.diasSemApontamento ?? -1;
+
+        /* ===================================================
+            MAIOR ATRASO PRIMEIRO
+            =================================================== */
+        if (atrasoA !== atrasoB) {
+            return atrasoB - atrasoA;
+        }
+
+        const diasSelecaoA =
+            a.duracaoEmSelecaoDias ?? 0;
+
+        const diasSelecaoB =
+            b.duracaoEmSelecaoDias ?? 0;
+
+        /* ===================================================
+            MAIOR TEMPO EM SELEÇÃO
+            =================================================== */
+        return diasSelecaoB - diasSelecaoA;
+
+        });
+
+
+    let totalItens = 0;
+    let totalAtrasados = 0;
+    let totalComTrava = 0;
+    let totalSemApontHoje = 0;
+    let somaDiasSelecao = 0;
+
+    dados.forEach(item => {
+      totalItens++;
+
+      const diasSelecao = item.duracaoEmSelecaoDias ?? 0;
+      const diasSemApontamento = item.diasSemApontamento;
+
+      somaDiasSelecao += diasSelecao;
+
+      if ((diasSemApontamento ?? 0) > 2) {
+        totalAtrasados++;
+      }
+
+      if ((item.trava ?? "").toLowerCase() === "ativa") {
+        totalComTrava++;
+      }
+
+      if (diasSemApontamento === null || diasSemApontamento > 0) {
+        totalSemApontHoje++;
+      }
+
+      let classeBadge = "badge-ok";
+      let textoBadge = "OK";
+      let textoDiasSemApontamento = "0 dias";
+
+      if (diasSemApontamento === null || diasSemApontamento === undefined) {
+        classeBadge = "badge-atencao";
+        textoBadge = "Não iniciado";
+        textoDiasSemApontamento = "Não iniciado";
+      }
+      else if (diasSemApontamento >= 4) {
+        classeBadge = "badge-critico";
+        textoBadge = "Crítico";
+        textoDiasSemApontamento = `${diasSemApontamento} dias`;
+      }
+      else if (diasSemApontamento === 3) {
+        classeBadge = "badge-atencao";
+        textoBadge = "Atenção";
+        textoDiasSemApontamento = "3 dias";
+      }
+      else {
+        classeBadge = "badge-ok";
+        textoBadge = "OK";
+        textoDiasSemApontamento = `${diasSemApontamento} dias`;
+      }
+
+      const tr = document.createElement("tr");
+
+      /* =====================================================
+        GUARDAR ID DO ITEM NA LINHA
+        ===================================================== */
+            tr.dataset.idrasppn = item.idRaspPn;
+
+
+            tr.innerHTML = `
+                <td>${item.pn ?? "-"}</td>
+                <td>${item.numeroRasp ?? "-"}</td>
+                <td>${item.fornecedor ?? "-"}</td>
+                <td>${diasSelecao}</td>
+                <td>
+                <span class="badge ${classeBadge}">
+                    ${textoDiasSemApontamento}
+                </span>
+                </td>
+                <td>${formatarDataHora(item.dataApontamento)}</td>
+                <td>
+                <span class="badge ${classeBadge}">
+                    ${textoBadge}
+                </span>
+                </td>
+            `;
+
+            tr.addEventListener("click", () => {
+
+        /* =====================================================
+            REMOVE SELEÇÃO ANTERIOR
+            ===================================================== */
+        document
+            .querySelectorAll("#tabelaSelecaoBody tr")
+            .forEach(linha => {
+            linha.classList.remove("linha-ativa");
+            });
+
+        /* =====================================================
+            ATIVA LINHA ATUAL
+            ===================================================== */
+        tr.classList.add("linha-ativa");
+
+        /* =====================================================
+            ATUALIZA PAINEL DIREITO
+            ===================================================== */
+        atualizarPainelDireito(item);
+
+        });
+
+
+      tbody.appendChild(tr);
+    });
+
+    const tempoMedio =
+      totalItens > 0
+        ? Math.round(somaDiasSelecao / totalItens)
+        : 0;
+
+    document.getElementById("kpiTotalItens").textContent = totalItens;
+    document.getElementById("kpiAtrasados").textContent = totalAtrasados;
+    document.getElementById("kpiComTrava").textContent = totalComTrava;
+    document.getElementById("kpiSemApontHoje").textContent = totalSemApontHoje;
+    document.getElementById("kpiTempoMedio").textContent = `${tempoMedio} dias`;
+
+    document.getElementById("totalRegistrosTabela").textContent =
+      `${totalItens} registros encontrados`;
+  }
+
+  /* =========================================================
+     04. ATUALIZAR PAINEL DIREITO AO CLICAR NA LINHA
+     ========================================================= */
+    async function atualizarPainelDireito(item) {
+    document.getElementById("painelPn").textContent =
+      `PN ${item.pn ?? "-"}`;
+
+    document.getElementById("painelRasp").textContent =
+      item.numeroRasp ?? "-";
+
+    document.getElementById("painelFornecedor").textContent =
+      item.fornecedor ?? "-";
+
+    document.getElementById("painelDiasSelecao").textContent =
+      `${item.duracaoEmSelecaoDias ?? 0} dias`;
+
+    document.getElementById("painelSemApontamento").textContent =
+      item.diasSemApontamento === null || item.diasSemApontamento === undefined
+        ? "Não iniciado"
+        : `${item.diasSemApontamento} dias`;
+
+    
+    /* =====================================================
+   TIMELINE REAL DO ITEM
+   ===================================================== */
+const timeline =
+  document.getElementById("timelineHistorico");
+
+/* =====================================================
+   LIMPA TIMELINE
+   ===================================================== */
+timeline.innerHTML = `
+  <div class="timeline-item">
+    <div class="titulo">
+      Carregando histórico...
+    </div>
+  </div>
+`;
+
+try {
+
+  /* =====================================================
+     BUSCA HISTÓRICO REAL DA API
+     ===================================================== */
+  const response = await fetch(
+    `http://localhost:5050/rasp-pn/${item.idRaspPn}/contencoes`
+  );
+
+  if (!response.ok) {
+    throw new Error("Erro ao carregar histórico.");
+  }
+
+  const historico = await response.json();
+
+  /* =====================================================
+   ORDENAR HISTÓRICO POR DATA
+   ===================================================== */
+    historico.sort((a, b) => {
+
+    const dataA =
+        new Date(a.dataHoraInicioAtividade);
+
+    const dataB =
+        new Date(b.dataHoraInicioAtividade);
+
+    return dataA - dataB;
+
+    });
+
+
+  /* =====================================================
+     LIMPA TIMELINE
+     ===================================================== */
+  timeline.innerHTML = "";
+
+  /* =====================================================
+     EVENTO 01 - ENTRADA EM SELEÇÃO
+     ===================================================== */
+  timeline.innerHTML += `
+    <div class="timeline-item">
+      <div class="data">
+        ${formatarDataHora(item.dataEntradaSelecao)}
+      </div>
+
+      <div class="titulo">
+        ${obterIconeEvento("entrada")}
+        Item entrou em seleção  
+      </div>
+
+
+      <div class="autor">
+        ${item.mtResponsavel ?? "-"}
+      </div>
+    </div>
+  `;
+    /* =====================================================
+   CONTROLE DE ATRASOS HISTÓRICOS ENTRE APONTAMENTOS
+   Regra:
+   - 0 a 2 dias = OK
+   - 3 dias = Atenção
+   - 4 dias ou mais = Crítico
+   ===================================================== */
+let dataReferenciaAtraso = item.dataEntradaSelecao
+  ? new Date(item.dataEntradaSelecao)
+  : null;
+
+  /* =====================================================
+     APONTAMENTOS REAIS
+     ===================================================== */
+  historico.forEach(registro => {
+
+    const dataAtualRegistro = registro.dataHoraInicioAtividade
+  ? new Date(registro.dataHoraInicioAtividade)
+  : null;
+
+if (dataReferenciaAtraso && dataAtualRegistro) {
+  const diferencaDias = Math.floor(
+    (dataAtualRegistro.setHours(0, 0, 0, 0) - dataReferenciaAtraso.setHours(0, 0, 0, 0))
+    / (1000 * 60 * 60 * 24)
+  );
+
+  if (diferencaDias === 3) {
+    timeline.innerHTML += `
+      <div class="timeline-item">
+        <div class="data">
+          ${formatarDataHora(dataReferenciaAtraso)}
+        </div>
+
+        <div class="titulo" style="color:#fbbf24;">
+            ${obterIconeEvento("atencao")}
+            Atenção: ${diferencaDias} dias sem apontamento
+        </div>
+
+
+        <div class="autor">
+          Período entre apontamentos detectado automaticamente pelo RASP
+        </div>
+      </div>
+    `;
+  }
+
+  if (diferencaDias >= 4) {
+    timeline.innerHTML += `
+      <div class="timeline-item">
+        <div class="data">
+          ${formatarDataHora(dataReferenciaAtraso)}
+        </div>
+
+        <div class="titulo" style="color:#f87171;">
+            ${obterIconeEvento("critico")}
+            Crítico:
+        </div>
+
+        <div class="autor">
+          Evidência histórica para auditoria operacional/logística
+        </div>
+      </div>
+    `;
+  }
+}
+
+
+    timeline.innerHTML += `
+      <div class="timeline-item">
+
+        <div class="data">
+          ${formatarDataHora(registro.dataHoraInicioAtividade)}
+        </div>
+
+        <div class="titulo">
+        ${obterIconeEvento("apontamento")}
+        Apontamento realizado
+        </div>
+
+
+
+
+
+        <div class="autor">
+          Verif.: ${registro.quantidadeVerificada ?? 0}
+          |
+          Rej.: ${registro.quantidadeRejeitada ?? 0}
+          |
+          OK: ${registro.quantidadeOk ?? 0}
+        </div>
+
+      </div>
+    `;
+
+    if (dataAtualRegistro) {
+  dataReferenciaAtraso = new Date(dataAtualRegistro);
+}
+
+
+  });
+
+  /* =====================================================
+     ALERTA DE ATRASO
+     ===================================================== */
+  if ((item.diasSemApontamento ?? 0) >= 3) {
+
+    timeline.innerHTML += `
+      <div class="timeline-item">
+
+        <div class="data">
+          Sistema RASP
+        </div>
+
+        <div class="titulo" style="color:#fbbf24;">
+          Alerta:
+          ${item.diasSemApontamento} dias sem apontamento
+        </div>
+
+        <div class="autor">
+          Monitoramento automático
+        </div>
+
+      </div>
+    `;
+  }
+
+  /* =====================================================
+     TRAVA
+     ===================================================== */
+  if ((item.trava ?? "").toLowerCase() === "ativa") {
+
+    timeline.innerHTML += `
+      <div class="timeline-item">
+
+        <div class="data">
+          Sistema RASP
+        </div>
+
+        <div class="titulo" style="color:#f87171;">
+          ${obterIconeEvento("trava")}
+          Trava ativa neste item
+        </div>
+
+        <div class="autor">
+          Item bloqueado
+        </div>
+
+      </div>
+    `;
+  }
+
+}
+catch (error) {
+
+  console.error(error);
+
+  timeline.innerHTML = `
+    <div class="timeline-item">
+
+      <div class="titulo">
+        Erro ao carregar histórico.
+      </div>
+
+    </div>
+  `;
+}
+
+  }
+    /* =========================================================
+    OBTER ÍCONE DO EVENTO
+    ========================================================= */
+    function obterIconeEvento(tipo) {
+
+    switch (tipo) {
+
+        case "entrada":
+        return "🟢";
+
+        case "apontamento":
+        return "📝";
+
+        case "atencao":
+        return "⚠️";
+
+        case "critico":
+        return "🚨";
+
+        case "trava":
+        return "🔒";
+
+        default:
+        return "📌";
+    }
+    }
+
+  /* =========================================================
+     05. FORMATAR DATA/HORA
+     ========================================================= */
+  function formatarDataHora(data) {
+    if (!data) return "-";
+
+    const d = new Date(data);
+
+    if (isNaN(d.getTime())) return "-";
+
+    return d.toLocaleString("pt-BR");
+  }
+
+  /* =========================================================
+     06. BUSCA RÁPIDA NA TABELA
+     ========================================================= */
+  document
+    .getElementById("buscaDashboardSelecao")
+    .addEventListener("input", function () {
+      const termo = this.value.toLowerCase().trim();
+
+      const filtrados = dadosDashboardSelecao.filter(item => {
+        return (
+          (item.pn ?? "").toLowerCase().includes(termo) ||
+          (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
+          (item.fornecedor ?? "").toLowerCase().includes(termo)
+        );
+      });
+
+      renderizarDashboardSelecao(filtrados);
+    });
+
+  /* =========================================================
+     07. INICIALIZAÇÃO
+     ========================================================= */
+  carregarDashboardSelecao();
+
+    /* =========================================================
+    AUTO ATUALIZAÇÃO DO DASHBOARD
+    Atualiza a cada 30 segundos
+    ========================================================= */
+    setInterval(() => {
+
+    carregarDashboardSelecao();
+
+    }, 30000);
+
+
+</script>
+
+
+    </main>
+
+    <!-- =========================================================
+         06. PAINEL DIREITO
+         ========================================================= -->
+    <aside class="painel-direito">
+
+      <!-- =====================================================
+           06.01 DETALHES
+           ===================================================== -->
+      <section class="detalhe-card">
+
+        <h2 id="painelPn">
+          PN -
+        </h2>
+
+        <div class="detalhe-grid">
+
+          <div class="detalhe-item">
+
+            <small>
+              RASP
+            </small>
+
+            <strong id="painelRasp">
+              -
+            </strong>
+
+          </div>
+
+          <div class="detalhe-item">
+
+            <small>
+              Fornecedor
+            </small>
+
+            <strong id="painelFornecedor">
+              -
+            </strong>
+
+          </div>
+
+          <div class="detalhe-item">
+
+            <small>
+              Dias em Seleção
+            </small>
+
+            <strong
+                id="painelDiasSelecao"
+                style="color:#f87171;">
+              -
+            </strong>
+
+          </div>
+
+          <div class="detalhe-item">
+
+            <small>
+              Sem Apontamento
+            </small>
+
+            <strong 
+            id="painelSemApontamento"
+            style="color:#f87171;">
+              -
+            </strong>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =====================================================
+           06.02 TIMELINE
+           ===================================================== -->
+      <section class="detalhe-card">
+
+        <h3 style="margin-bottom:20px;">
+          Histórico Operacional
+        </h3>
+
+        <div class="timeline"
+            id="timelineHistorico">
+        </div>
+
+          
+
+        </div>
+
+      </section>
+
+    </aside>
+
+  </div>
+
+</body>
+</html>
