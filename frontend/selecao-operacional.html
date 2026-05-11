@@ -21,6 +21,25 @@
       --radius: 14px;
     }
 
+    .barra-navegacao{
+  display:flex;
+  gap:18px;
+  padding:12px 20px;
+  background:#0f172a;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.barra-navegacao a{
+  color:#cbd5e1;
+  font-weight:600;
+  text-decoration:none;
+}
+
+.barra-navegacao a:hover{
+  color:#60a5fa;
+}
+
+
     * { box-sizing: border-box; }
 
     body {
@@ -85,6 +104,11 @@
       padding: 14px;
     }
 
+    .card-acao {
+      min-width: 360px;
+    }
+
+
     .filtros {
       display: grid;
       grid-template-columns: repeat(8, minmax(120px, 1fr));
@@ -117,11 +141,12 @@
     }
 
     .grid-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2.7fr) minmax(260px, 0.8fr);
-      gap: 18px;
-      align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 18px;
+    align-items: start;
     }
+
 
     .coluna-esquerda,
     .coluna-direita {
@@ -131,9 +156,13 @@
     }
 
     .coluna-direita {
-      position: sticky;
-      top: 18px;
+    position: sticky;
+    top: 18px;
+    min-width: 360px;
+    width: 360px;
+    flex-shrink: 0;
     }
+
 
     .section-title {
       display: flex;
@@ -156,15 +185,18 @@
     }
 
     .tabela-wrap {
-      overflow: auto;
+      overflow-x: auto;
+      overflow-y: hidden;
       border: 1px solid var(--cinza-200);
       border-radius: 12px;
+      width: 100%;
     }
+
 
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1120px;
+      min-width: 1180px;
       background: white;
     }
 
@@ -392,6 +424,34 @@
       .grid-layout { grid-template-columns: 1fr; }
       .coluna-direita { position: static; }
     }
+
+    @media (max-width: 1500px) {
+
+  .grid-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .coluna-direita,
+  .card-acao {
+    min-width: 320px;
+    width: 320px;
+  }
+}
+
+@media (max-width: 1200px) {
+
+  .grid-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .coluna-direita,
+  .card-acao {
+    width: 100%;
+    min-width: 100%;
+    position: static;
+  }
+}
+
 
     @page {
       size: landscape;
@@ -736,18 +796,50 @@
   }
 }
 
+    .acoes-topo {
+  margin-top: 14px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-topo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-topo:hover {
+  background: #1d4ed8;
+}
 
     
   </style>
 </head>
 
 <body>
+  
+
   <header class="topbar">
     <div class="topbar-inner">
       <div class="titulo-wrap">
         <h1>Seleção de Peças em Contenção</h1>
         <p>SAC - S10 SJC • Tela Operacional de Apontamento</p>
       </div>
+
+      <div class="acoes-topo">
+        <a href="dashboard-selecao.html" class="btn-topo">← Dashboard Seleção Operacional</a>
+        <a href="historico-geral.html" class="btn-topo">Histórico Geral →</a>
+      </div>
+
 
       <div class="topbar-info">
         <div class="pill">Turno Atual: A</div>
@@ -870,8 +962,8 @@
             <span>Selecione uma linha para registrar o apontamento.</span>
           </div>
 
-          <div style="margin-bottom: 10px; display:flex; justify-content:flex-end;">
-            <button id="btnImprimirRelatorio" class="btn-secundario" type="button">
+          <div style="margin-bottom: 12px; display:flex; justify-content:flex-end;">
+            <button id="btnImprimirRelatorio" class="btn-primario" type="button">
               🖨️ Imprimir Itens em Seleção
             </button>
           </div>

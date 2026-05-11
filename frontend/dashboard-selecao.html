@@ -14,39 +14,24 @@
        02. ESTILOS
        ========================================================= -->
   <style>
-
-    /* =========================================================
-       02.01 VARIÁVEIS GLOBAIS
-       ========================================================= */
     :root {
-
       --azul-950: #040b18;
       --azul-900: #081426;
       --azul-850: #0d1b31;
       --azul-800: #11233f;
       --azul-700: #1d4f86;
       --azul-600: #2563eb;
-
       --verde: #22c55e;
       --amarelo: #f59e0b;
       --vermelho: #ef4444;
       --roxo: #8b5cf6;
-
       --texto: #e5eefc;
       --texto-secundario: #93a4c3;
-
       --borda: rgba(255,255,255,0.08);
-
       --radius: 18px;
-
-      --shadow:
-        0 10px 30px rgba(0,0,0,0.35);
-
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
 
-    /* =========================================================
-       02.02 RESET
-       ========================================================= */
     * {
       margin: 0;
       padding: 0;
@@ -54,19 +39,10 @@
     }
 
     body {
-
-      background:
-        radial-gradient(circle at top left, #13294b 0%, #081426 38%, #040b18 100%);
-
-      font-family:
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
+      background: radial-gradient(circle at top left, #13294b 0%, #081426 38%, #040b18 100%);
+      font-family: "Segoe UI", Arial, sans-serif;
       color: var(--texto);
-
       min-height: 100vh;
-
       overflow-x: hidden;
     }
 
@@ -74,761 +50,717 @@
       text-decoration: none;
     }
 
-    /* =========================================================
-       02.03 LAYOUT PRINCIPAL
-       ========================================================= */
     .layout {
-
       display: grid;
-
-      grid-template-columns:
-        250px
-        1fr
-        340px;
-
+      grid-template-columns: 250px 1fr 340px;
       min-height: 100vh;
     }
 
-    /* =========================================================
-       03. SIDEBAR
-       ========================================================= */
     .sidebar {
-
-      background:
-        linear-gradient(
-          180deg,
-          rgba(8,20,38,0.96),
-          rgba(4,11,24,0.98)
-        );
-
-      border-right:
-        1px solid var(--borda);
-
+      background: linear-gradient(180deg, rgba(8,20,38,0.96), rgba(4,11,24,0.98));
+      border-right: 1px solid var(--borda);
       padding: 24px 18px;
-
       display: flex;
       flex-direction: column;
       gap: 26px;
     }
 
-    /* =========================================================
-       03.01 LOGO
-       ========================================================= */
     .logo-area {
-
       display: flex;
       align-items: center;
       gap: 14px;
-
       padding-bottom: 20px;
-
-      border-bottom:
-        1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
     }
 
     .logo-icon {
-
       width: 52px;
       height: 52px;
-
       border-radius: 14px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #2563eb,
-          #0ea5e9
-        );
-
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
       display: flex;
       align-items: center;
       justify-content: center;
-
       font-size: 28px;
     }
 
     .logo-title {
-
       font-size: 34px;
       font-weight: 800;
-
       letter-spacing: 1px;
     }
 
     .logo-subtitle {
-
       font-size: 13px;
-
       color: var(--texto-secundario);
     }
 
-    /* =========================================================
-       03.02 MENU
-       ========================================================= */
     .menu {
-
       display: flex;
       flex-direction: column;
-
       gap: 10px;
     }
 
     .menu-item {
-
-      padding:
-        14px
-        16px;
-
+      padding: 14px 16px;
       border-radius: 14px;
-
       color: var(--texto);
-
       font-size: 15px;
       font-weight: 600;
-
-      transition:
-        0.22s ease;
+      transition: 0.22s ease;
     }
 
     .menu-item:hover {
-
-      background:
-        rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.06);
     }
 
     .menu-item.active {
-
-      background:
-        linear-gradient(
-          90deg,
-          #2563eb,
-          #1d4f86
-        );
-
-      box-shadow:
-        0 0 18px rgba(37,99,235,0.35);
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
+      box-shadow: 0 0 18px rgba(37,99,235,0.35);
     }
 
-    /* =========================================================
-       03.03 FILTROS
-       ========================================================= */
     .filtros-box {
-
       margin-top: auto;
-
-      background:
-        rgba(255,255,255,0.03);
-
-      border:
-        1px solid var(--borda);
-
-      border-radius:
-        var(--radius);
-
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
       padding: 18px;
     }
 
     .filtros-box h3 {
-
       margin-bottom: 16px;
-
       font-size: 15px;
     }
 
     .campo {
-
       display: flex;
       flex-direction: column;
-
       gap: 6px;
-
       margin-bottom: 14px;
     }
 
     .campo label {
-
       font-size: 12px;
-
       color: var(--texto-secundario);
     }
 
     .campo select {
-
       height: 42px;
-
+      width: 100%;
       border-radius: 10px;
-
-      border:
-        1px solid rgba(255,255,255,0.10);
-
-      background:
-        rgba(255,255,255,0.04);
-
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
       color: white;
-
       padding: 0 12px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .campo select option {
+      background: #0f172a;
+      color: white;
     }
 
     .btn-filtro {
-
       width: 100%;
       height: 44px;
-
       border: none;
-
       border-radius: 12px;
-
-      background:
-        linear-gradient(
-          90deg,
-          #2563eb,
-          #1d4f86
-        );
-
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
       color: white;
-
       font-weight: 700;
-
       cursor: pointer;
     }
 
-    /* =========================================================
-       04. ÁREA CENTRAL
-       ========================================================= */
     .content-area {
-
       padding: 24px;
-
       display: flex;
       flex-direction: column;
-
       gap: 20px;
     }
 
-    /* =========================================================
-       04.01 TOPBAR
-       ========================================================= */
     .topbar {
-
       display: flex;
       justify-content: space-between;
       align-items: center;
-
       padding-bottom: 18px;
-
-      border-bottom:
-        1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
     }
 
     .topbar h1 {
-
       font-size: 34px;
       font-weight: 800;
     }
 
     .topbar p {
-
       margin-top: 4px;
-
       color: var(--texto-secundario);
     }
 
     .usuario-box {
-
       display: flex;
       align-items: center;
-
       gap: 12px;
     }
 
     .avatar {
-
       width: 48px;
       height: 48px;
-
       border-radius: 50%;
-
-      background:
-        linear-gradient(
-          135deg,
-          #2563eb,
-          #9333ea
-        );
+      background: linear-gradient(135deg, #2563eb, #9333ea);
     }
 
-    /* =========================================================
-       04.02 KPI GRID
-       ========================================================= */
     .kpi-grid {
-
       display: grid;
-
-      grid-template-columns:
-        repeat(5, 1fr);
-
+      grid-template-columns: repeat(5, 1fr);
       gap: 18px;
     }
 
     .kpi-card {
-
-      background:
-        linear-gradient(
-          180deg,
-          rgba(18,36,66,0.95),
-          rgba(8,20,38,0.98)
-        );
-
-      border:
-        1px solid var(--borda);
-
-      border-radius:
-        var(--radius);
-
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
       padding: 20px;
-
       position: relative;
-
       overflow: hidden;
-
-      box-shadow:
-        var(--shadow);
+      box-shadow: var(--shadow);
     }
 
     .kpi-card::after {
-
       content: "";
-
       position: absolute;
-
       left: 0;
       right: 0;
       bottom: 0;
-
       height: 3px;
-
-      background:
-        linear-gradient(
-          90deg,
-          transparent,
-          rgba(255,255,255,0.55),
-          transparent
-        );
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
     }
 
     .kpi-card h3 {
-
       font-size: 13px;
-
       color: var(--texto-secundario);
-
       margin-bottom: 14px;
     }
 
     .kpi-value {
-
       font-size: 44px;
       font-weight: 900;
     }
 
     .kpi-footer {
-
       margin-top: 10px;
-
       color: var(--texto-secundario);
-
       font-size: 13px;
     }
 
-    /* =========================================================
-        /* =========================================================
-        05. TABELA
-        ========================================================= */
-        .painel-tabela {
-        background:
-            linear-gradient(
-            180deg,
-            rgba(18, 36, 66, 0.95),
-            rgba(8, 20, 38, 0.98)
-            );
+    .painel-tabela {
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .painel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .painel-header h2 {
+      font-size: 24px;
+    }
+
+    .painel-header p {
+      margin-top: 4px;
+      color: var(--texto-secundario);
+    }
+
+    .painel-acoes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .btn-imprimir-dashboard {
+      height: 42px;
+      padding: 0 18px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .search-box input {
+      width: 320px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      padding: 0 16px;
+    }
+
+    .tabela-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: rgba(255,255,255,0.03);
+      color: var(--texto-secundario);
+      padding: 16px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      text-align: left;
+      border-top: 1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
+    }
+
+    tbody td {
+      padding: 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 14px;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    tbody tr.linha-ativa {
+      background: rgba(37,99,235,0.32) !important;
+      box-shadow: inset 7px 0 0 #60a5fa, 0 0 22px rgba(37,99,235,0.50);
+      outline: 1px solid rgba(96,165,250,0.75);
+      position: relative;
+    }
+
+    tbody tr.linha-ativa td {
+      color: #ffffff !important;
+      border-bottom: 1px solid rgba(96,165,250,0.60) !important;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-ok {
+      background: rgba(34,197,94,0.16);
+      color: #4ade80;
+    }
+
+    .badge-atencao {
+      background: rgba(245,158,11,0.16);
+      color: #fbbf24;
+    }
+
+    .badge-critico {
+      background: rgba(239,68,68,0.16);
+      color: #f87171;
+    }
+
+    .painel-direito {
+      background: linear-gradient(180deg, rgba(18,36,66,0.96), rgba(8,20,38,0.99));
+      border-left: 1px solid var(--borda);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .detalhe-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .detalhe-card h2 {
+      margin-bottom: 16px;
+      font-size: 28px;
+    }
+
+    .detalhe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .detalhe-item small {
+      display: block;
+      color: var(--texto-secundario);
+      margin-bottom: 4px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 0 0 18px 22px;
+      border-left: 2px solid rgba(96,165,250,0.35);
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -7px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: 0 0 12px rgba(96,165,250,0.65);
+    }
+
+    .timeline-item .data {
+      color: var(--texto-secundario);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .titulo {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .timeline-item .autor {
+      margin-top: 5px;
+      color: #60a5fa;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .print-cabecalho-dashboard,
+    .print-rodape-dashboard,
+    .print-item-selecionado {
+      display: none;
+    }
+
+    .assinatura-amarela {
+      color: #facc15;
+      font-weight: 700;
+    }
 
-        border:
-            1px solid var(--borda);
-
-        border-radius:
-            var(--radius);
-
-        box-shadow:
-            var(--shadow);
-
-        overflow: hidden;
-        }
-
-        .painel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-
-        padding: 20px;
-        }
-
-        .painel-header h2 {
-        font-size: 24px;
-        }
-
-        .painel-header p {
-        margin-top: 4px;
-
-        color:
-            var(--texto-secundario);
-        }
-
-        .search-box input {
-        width: 320px;
-        height: 42px;
-
-        border-radius: 12px;
-
-        border:
-            1px solid rgba(255, 255, 255, 0.10);
-
-        background:
-            rgba(255, 255, 255, 0.04);
-
-        color: white;
-
-        padding: 0 16px;
-        }
-
-        .tabela-wrap {
-        overflow: auto;
-        }
-
-        table {
-        width: 100%;
-
-        border-collapse: collapse;
-        }
-
-        thead th {
-        background:
-            rgba(255, 255, 255, 0.03);
-
-        color:
-            var(--texto-secundario);
-
-        padding:
-            16px
-            14px;
-
-        font-size: 12px;
-
-        text-transform: uppercase;
-
-        text-align: left;
-
-        border-top:
-            1px solid var(--borda);
-
-        border-bottom:
-            1px solid var(--borda);
-        }
-
-        tbody td {
-        padding:
-            16px
-            14px;
-
-        border-bottom:
-            1px solid rgba(255, 255, 255, 0.04);
-
-        font-size: 14px;
-        }
-
-        tbody tr:hover {
-        background:
-            rgba(255, 255, 255, 0.05);
-        }
-
-        /* =========================================================
-        LINHA SELECIONADA - DASHBOARD
-        ========================================================= */
-        tbody tr.linha-ativa {
-        background:
-            rgba(37, 99, 235, 0.32) !important;
-
-        box-shadow:
-            inset 7px 0 0 #60a5fa,
-            0 0 22px rgba(37, 99, 235, 0.50);
-
-        outline:
-            1px solid rgba(96, 165, 250, 0.75);
-
-        position: relative;
-        }
-
-        tbody tr.linha-ativa td {
-        color:
-            #ffffff !important;
-
-        border-bottom:
-            1px solid rgba(96, 165, 250, 0.60) !important;
-        }
-
-        /* =========================================================
-        BADGES
-        ========================================================= */
-        .badge {
-        padding:
-            6px
-            10px;
-
-        border-radius: 999px;
-
-        font-size: 12px;
-        font-weight: 700;
-        }
-
-        .badge-ok {
-        background:
-            rgba(34, 197, 94, 0.16);
-
-        color:
-            #4ade80;
-        }
-
-        .badge-atencao {
-        background:
-            rgba(245, 158, 11, 0.16);
-
-        color:
-            #fbbf24;
-        }
-
-        .badge-critico {
-        background:
-            rgba(239, 68, 68, 0.16);
-
-        color:
-            #f87171;
-        }
-
-        /* =========================================================
-        06. PAINEL DIREITO
-        ========================================================= */
-        .painel-direito {
-        background:
-            linear-gradient(
-            180deg,
-            rgba(18, 36, 66, 0.96),
-            rgba(8, 20, 38, 0.99)
-            );
-
-        border-left:
-            1px solid var(--borda);
-
-        padding: 24px;
-
-        display: flex;
-        flex-direction: column;
-
-        gap: 22px;
-        }
-
-        .detalhe-card {
-        background:
-            rgba(255, 255, 255, 0.03);
-
-        border:
-            1px solid var(--borda);
-
-        border-radius:
-            var(--radius);
-
-        padding: 20px;
-        }
-
-        .detalhe-card h2 {
-        margin-bottom: 16px;
-
-        font-size: 28px;
-        }
-
-        .detalhe-grid {
-        display: grid;
-
-        grid-template-columns:
-            1fr
-            1fr;
-
-        gap: 14px;
-        }
-
-        .detalhe-item small {
-        display: block;
-
-        color:
-            var(--texto-secundario);
-
-        margin-bottom: 4px;
-        }
-
-        .timeline {
-        display: flex;
-        flex-direction: column;
-
-        gap: 18px;
-        }
-
-        /* =========================================================
-            TIMELINE ITEM
-            ========================================================= */
-            .timeline-item {
-
-            position: relative;
-
-            padding:
-                0 0 18px 22px;
-
-            border-left:
-                2px solid rgba(96,165,250,0.35);
-            }
-
-            /* =========================================================
-            BOLINHA DA TIMELINE
-            ========================================================= */
-            .timeline-item::before {
-
-            content: "";
-
-            position: absolute;
-
-            left: -7px;
-            top: 4px;
-
-            width: 12px;
-            height: 12px;
-
-            border-radius: 50%;
-
-            background:
-                #60a5fa;
-
-            box-shadow:
-                0 0 12px rgba(96,165,250,0.65);
-            }
-
-            /* =========================================================
-            EVENTO CRÍTICO
-            ========================================================= */
-            .timeline-item.critico::before {
-
-            background:
-                #ef4444;
-
-            box-shadow:
-                0 0 14px rgba(239,68,68,0.75);
-            }
-
-            /* =========================================================
-            EVENTO ATENÇÃO
-            ========================================================= */
-            .timeline-item.atencao::before {
-
-            background:
-                #f59e0b;
-
-            box-shadow:
-                0 0 14px rgba(245,158,11,0.75);
-            }
-
-            /* =========================================================
-            EVENTO OK
-            ========================================================= */
-            .timeline-item.ok::before {
-
-            background:
-                #22c55e;
-
-            box-shadow:
-                0 0 14px rgba(34,197,94,0.75);
-            }
-
-            .timeline-item .data {
-
-            color:
-                var(--texto-secundario);
-
-            font-size: 12px;
-
-            margin-bottom: 4px;
-            }
-
-            .timeline-item .titulo {
-
-            font-weight: 700;
-
-            font-size: 15px;
-            }
-
-            .timeline-item .autor {
-
-            margin-top: 5px;
-
-            color:
-                #60a5fa;
-
-            font-size: 13px;
-
-            line-height: 1.4;
-            }
-
-
-
-    /* =========================================================
-       RESPONSIVO
-       ========================================================= */
     @media (max-width: 1500px) {
-
       .layout {
-
-        grid-template-columns:
-          230px
-          1fr;
+        grid-template-columns: 230px 1fr;
       }
 
       .painel-direito {
-
         display: none;
       }
     }
 
     @media (max-width: 1200px) {
-
       .kpi-grid {
-
-        grid-template-columns:
-          repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media (max-width: 900px) {
-
       .layout {
-
-        grid-template-columns:
-          1fr;
+        grid-template-columns: 1fr;
       }
 
       .sidebar {
-
         display: none;
       }
 
       .kpi-grid {
-
-        grid-template-columns:
-          1fr;
+        grid-template-columns: 1fr;
       }
+    }
+
+    @media print {
+      @page {
+        size: landscape;
+        margin: 8mm;
+      }
+
+      body {
+        background: white !important;
+        color: #111827 !important;
+      }
+
+      .barra-navegacao,
+      .sidebar,
+      .painel-direito,
+      .topbar,
+      .search-box,
+      .btn-imprimir-dashboard {
+        display: none !important;
+      }
+
+      .layout {
+        display: block !important;
+      }
+
+      .content-area {
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 185mm !important;
+      }
+
+      .print-cabecalho-dashboard {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        border-bottom: 3px solid #0f2747 !important;
+        padding-bottom: 8px !important;
+        margin-bottom: 10px !important;
+        color: #0f2747 !important;
+      }
+
+      .print-cabecalho-dashboard h1 {
+        margin: 0 !important;
+        font-size: 24px !important;
+      }
+
+      tbody tr.linha-ativa {
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+      }
+
+      tbody tr.linha-ativa td {
+        color: #111827 !important;
+        border: 1px solid #d1d5db !important;
+      }
+
+      .print-cabecalho-dashboard p {
+        margin: 4px 0 0 !important;
+        font-size: 11px !important;
+      }
+
+      .print-cabecalho-direita {
+        font-size: 11px !important;
+        line-height: 1.7 !important;
+        color: #111827 !important;
+      }
+
+      .kpi-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 6px !important;
+        margin: 8px 0 10px !important;
+      }
+
+      .kpi-card {
+        background: #f8fafc !important;
+        color: #111827 !important;
+        box-shadow: none !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 8px !important;
+        padding: 6px 8px !important;
+      }
+
+      .kpi-card::after {
+        display: none !important;
+      }
+
+      .kpi-card h3 {
+        color: #374151 !important;
+        font-size: 9px !important;
+        margin-bottom: 2px !important;
+      }
+
+      .kpi-value {
+        color: #0f2747 !important;
+        font-size: 18px !important;
+      }
+
+      .kpi-footer {
+        color: #4b5563 !important;
+        font-size: 8px !important;
+      }
+
+      .painel-tabela {
+        background: white !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+
+      .painel-header {
+        border-bottom: 3px solid #0f2747 !important;
+        padding: 0 0 8px 0 !important;
+        margin-bottom: 10px !important;
+      }
+
+      .painel-header h2 {
+        color: #0f2747 !important;
+        font-size: 20px !important;
+      }
+
+      .painel-header p {
+        color: #374151 !important;
+        font-size: 12px !important;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+
+      thead th {
+        background: #e5e7eb !important;
+        color: #000 !important;
+        border: 1.5px solid #6b7280 !important;
+        padding: 6px 4px !important;
+        font-size: 8.8px !important;
+        font-weight: 900 !important;
+        text-align: center !important;
+      }
+
+      tbody td {
+        color: #111827 !important;
+        border: 1px solid #d1d5db !important;
+        padding: 6px 4px !important;
+        font-size: 9px !important;
+        text-align: center !important;
+      }
+
+      .badge {
+        background: transparent !important;
+        color: #111827 !important;
+        padding: 0 !important;
+        font-size: 9px !important;
+      }
+
+      .print-rodape-dashboard {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-top: auto !important;
+        padding-top: 10px !important;
+        border-top: 3px solid #0f2747 !important;
+        font-size: 11px !important;
+        color: #111827 !important;
+      }
+      .assinatura-sistema {
+          display: none !important;
+      }
+
+      .assinatura-amarela {
+        color: #111827 !important;
+        font-weight: 800 !important;
+      }
+
+      body.imprimir-item .kpi-grid,
+      body.imprimir-item .painel-tabela {
+        display: none !important;
+      }
+
+      body.imprimir-item .print-item-selecionado {
+        display: block !important;
+        color: #111827 !important;
+      }
+
+      .print-item-selecionado h2 {
+        color: #0f2747 !important;
+        font-size: 20px !important;
+        margin: 10px 0 12px !important;
+        border-bottom: 2px solid #0f2747 !important;
+        padding-bottom: 6px !important;
+      }
+
+      .print-item-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px 18px !important;
+        margin-bottom: 16px !important;
+        font-size: 11px !important;
+      }
+
+      .print-item-selecionado h3 {
+        color: #0f2747 !important;
+        font-size: 16px !important;
+        margin: 12px 0 8px !important;
+      }
+
+       .print-item-timeline {
+          position: relative !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 10px !important;
+          border-left: 2px solid #60a5fa !important;
+          padding-left: 22px !important;
+          margin-left: 12px !important;
+          font-size: 11px !important;
+        }
+
+        .print-item-timeline::before {
+          display: none !important;
+        }
+
+        .print-evento {
+          position: relative !important;
+          border: none !important;
+          border-radius: 0 !important;
+          margin-left: 0 !important;
+          padding: 3px 0 10px 8px !important;
+          background: transparent !important;
+          page-break-inside: avoid !important;
+          margin-bottom: 4px !important;
+        }
+
+        .print-evento::before {
+          content: "" !important;
+          position: absolute !important;
+          left: -29px !important;
+          top: 22px !important;
+          width: 11px !important;
+          height: 11px !important;
+          border-radius: 50% !important;
+          background: #60a5fa !important;
+          border: 2px solid #ffffff !important;
+        }
+
+
+      .print-evento-data {
+        font-size: 10px !important;
+        color: #374151 !important;
+        margin-bottom: 3px !important;
+      }
+
+      .print-evento-titulo {
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        color: #0f2747 !important;
+        margin-bottom: 3px !important;
+      }
+
+      .print-evento-detalhe {
+        font-size: 10.5px !important;
+        color: #111827 !important;
+      }
+
+    }
+
+    .assinatura-sistema {
+      margin-top: auto;
+      padding-top: 14px;
+      text-align: right;
+      color: #facc15;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
     }
 
   </style>
@@ -837,6 +769,7 @@
 
 <body>
 
+  
   <!-- =========================================================
        03. LAYOUT PRINCIPAL
        ========================================================= -->
@@ -871,95 +804,46 @@
       <!-- =====================================================
            04.02 MENU
            ===================================================== -->
-      <nav class="menu">
+      <nav class="menu"></nav>
 
-        <a href="dashboard-selecao.html" 
-        class="menu-item active">
-          📋 Visão Geral
-        </a>
-
-        <a href="selecao-operacional.html" 
-        class="menu-item">
-          📦 Itens em Seleção
-        </a>
-
-        <a href="#" class="menu-item">
-          📝 Apontamentos
-        </a>
-
-        <a href="#" class="menu-item">
-          🔒 Travas
-        </a>
-
-        <a href="#" class="menu-item">
-          📊 Relatórios
-        </a>
-
-        <a href="historico-geral.html" 
-        class="menu-item">
-          🕓 Histórico Geral
-        </a>
-
-        <a href="#" class="menu-item">
-          🏭 Fornecedores
-        </a>
-
-        <a href="#" class="menu-item">
-          ⚙️ Configurações
-        </a>
-
-      </nav>
-
-      <!-- =====================================================
-           04.03 FILTROS
-           ===================================================== -->
+        <!-- =====================================================
+      04.03 FILTROS
+      ===================================================== -->
       <div class="filtros-box">
 
-        <h3>
-          FILTROS RÁPIDOS
-        </h3>
+        <h3>FILTROS RÁPIDOS</h3>
 
         <div class="campo">
-
-          <label>
-            Fornecedor
-          </label>
-
-          <select>
-            <option>Todos</option>
+          <label for="filtroFornecedor">Fornecedor</label>
+          <select id="filtroFornecedor">
+            <option value="">Todos</option>
           </select>
-
         </div>
 
         <div class="campo">
-
-          <label>
-            Turno
-          </label>
-
-          <select>
-            <option>Todos</option>
+          <label for="filtroTurno">Turno</label>
+          <select id="filtroTurno">
+            <option value="">Todos</option>
           </select>
-
         </div>
 
         <div class="campo">
-
-          <label>
-            Status
-          </label>
-
-          <select>
-            <option>Todos</option>
+          <label for="filtroStatus">Status</label>
+          <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="OK">OK</option>
+            <option value="Atenção">Atenção</option>
+            <option value="Crítico">Crítico</option>
+            <option value="Não iniciado">Não iniciado</option>
           </select>
-
         </div>
 
-        <button class="btn-filtro">
+        <button class="btn-filtro" id="btnAplicarFiltros" type="button">
           Aplicar Filtros
         </button>
 
       </div>
+
 
     </aside>
 
@@ -967,6 +851,19 @@
          05. CONTEÚDO CENTRAL
          ========================================================= -->
     <main class="content-area">
+        <section class="print-cabecalho-dashboard">
+        <div>
+          <h1>Dashboard Administrativo - Seleção</h1>
+          <p>RASP • Sistema da Qualidade • Gestão diária de itens em seleção</p>
+        </div>
+
+        <div class="print-cabecalho-direita">
+          <div id="printDataDashboard">▣ Data do Relatório: -</div>
+          <div id="printHoraDashboard">◷ Hora: -</div>
+          <div>● Usuário: Terminal Operacional</div>
+        </div>
+      </section>
+
 
       <!-- =====================================================
            05.01 TOPBAR
@@ -1084,13 +981,18 @@
 
   <!-- HEADER DA TABELA -->
   <div class="painel-header">
-    <div>
-      <h2>Itens em Seleção Ativos</h2>
+  <div>
+    <h2>Itens em Seleção Ativos</h2>
 
-      <p id="totalRegistrosTabela">
-        0 registros encontrados
-      </p>
-    </div>
+    <p id="totalRegistrosTabela">
+      0 registros encontrados
+    </p>
+  </div>
+
+  <div class="painel-acoes">
+    <button class="btn-imprimir-dashboard" id="btnImprimirDashboardSelecao" type="button">
+      🖨️ Imprimir
+    </button>
 
     <div class="search-box">
       <input
@@ -1100,6 +1002,9 @@
       />
     </div>
   </div>
+</div>
+
+
 
   <!-- TABELA -->
   <div class="tabela-wrap">
@@ -1109,10 +1014,13 @@
           <th>PN</th>
           <th>RASP</th>
           <th>Fornecedor</th>
+          <th>Turno</th>
           <th>Dias</th>
           <th>Sem Apont.</th>
           <th>Último Apontamento</th>
           <th>Status</th>
+          <th>trava</th>
+          <th>QHD</th>
         </tr>
       </thead>
 
@@ -1150,6 +1058,7 @@
       }
 
       dadosDashboardSelecao = await response.json();
+      popularFiltrosDashboard();
 
       renderizarDashboardSelecao(dadosDashboardSelecao);
     }
@@ -1276,22 +1185,53 @@
 
 
             tr.innerHTML = `
-                <td>${item.pn ?? "-"}</td>
-                <td>${item.numeroRasp ?? "-"}</td>
-                <td>${item.fornecedor ?? "-"}</td>
-                <td>${diasSelecao}</td>
-                <td>
-                <span class="badge ${classeBadge}">
-                    ${textoDiasSemApontamento}
-                </span>
-                </td>
-                <td>${formatarDataHora(item.dataApontamento)}</td>
-                <td>
-                <span class="badge ${classeBadge}">
-                    ${textoBadge}
-                </span>
-                </td>
-            `;
+    <td>${item.pn ?? "-"}</td>
+    <td>${item.numeroRasp ?? "-"}</td>
+    <td>${item.fornecedor ?? "-"}</td>
+    <td>${item.turno ?? "-"}</td>
+    <td>${diasSelecao}</td>
+
+    <td>
+      <span class="badge ${classeBadge}">
+        ${textoDiasSemApontamento}
+      </span>
+    </td>
+
+    <td>${formatarData(item.dataApontamento)}</td>
+
+    <td>
+      <span class="badge ${classeBadge}">
+        ${textoBadge}
+      </span>
+    </td>
+
+    <td>
+      ${
+        (item.trava ?? "").toLowerCase() === "ativa"
+          ? `<span class="badge badge-critico">🔒 Trava</span>`
+          : "-"
+      }
+    </td>
+
+    <td>
+      ${
+        item.qhd === true ||
+        item.qhdAtivo === true ||
+        item.dataQhd
+          ? `
+            <span class="badge" style="
+              background: rgba(139,92,246,0.22);
+              color: #d8b4fe;
+              border: 1px solid rgba(216,180,254,0.35);
+            ">
+              ⛔ QHD
+            </span>
+          `
+          : "-"
+      }
+    </td>
+`;
+
 
             tr.addEventListener("click", () => {
 
@@ -1319,6 +1259,17 @@
 
       tbody.appendChild(tr);
     });
+
+    /* =====================================================
+    AUTO SELECIONAR PRIMEIRA LINHA
+    ===================================================== */
+    const primeiraLinha =
+      document.querySelector("#tabelaSelecaoBody tr");
+
+    if (primeiraLinha) {
+      primeiraLinha.click();
+    }
+
 
     const tempoMedio =
       totalItens > 0
@@ -1639,6 +1590,21 @@ catch (error) {
   }
 
   /* =========================================================
+   FORMATAR SOMENTE DATA
+   ========================================================= */
+function formatarData(data) {
+
+  if (!data) return "-";
+
+  const d = new Date(data);
+
+  if (isNaN(d.getTime())) return "-";
+
+  return d.toLocaleDateString("pt-BR");
+}
+
+
+  /* =========================================================
      06. BUSCA RÁPIDA NA TABELA
      ========================================================= */
   document
@@ -1661,6 +1627,8 @@ catch (error) {
      07. INICIALIZAÇÃO
      ========================================================= */
   carregarDashboardSelecao();
+  
+
 
     /* =========================================================
     AUTO ATUALIZAÇÃO DO DASHBOARD
@@ -1672,9 +1640,131 @@ catch (error) {
 
     }, 30000);
 
+    /* =========================================================
+   BOTÃO IMPRIMIR DASHBOARD
+   ========================================================= */
+const btnImprimirDashboardSelecao =
+  document.getElementById("btnImprimirDashboardSelecao");
+
+if (btnImprimirDashboardSelecao) {
+  btnImprimirDashboardSelecao.addEventListener("click", () => {
+    const agora = new Date();
+
+    document.getElementById("printDataDashboard").textContent =
+      `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
+
+    document.getElementById("printHoraDashboard").textContent =
+      `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })}`;
+
+    document.body.classList.remove("imprimir-item");
+
+    window.print();
+  });
+}
+
+
+/* =========================================================
+   BOTÃO IMPRIMIR ITEM SELECIONADO
+   ========================================================= */
+window.addEventListener("load", () => {
+  const btnImprimirItemSelecionado =
+    document.getElementById("btnImprimirItemSelecionado");
+
+  if (!btnImprimirItemSelecionado) return;
+
+  btnImprimirItemSelecionado.addEventListener("click", () => {
+    const pn = (document.getElementById("painelPn").textContent || "-").replace("PN ", "");
+    const rasp = document.getElementById("painelRasp").textContent || "-";
+    const fornecedor = document.getElementById("painelFornecedor").textContent || "-";
+    const diasSelecao = document.getElementById("painelDiasSelecao").textContent || "-";
+    const semApontamento = document.getElementById("painelSemApontamento").textContent || "-";
+    const timeline = document.getElementById("timelineHistorico").innerText || "-";
+
+    const agora = new Date();
+
+    document.getElementById("printDataDashboard").textContent =
+      `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
+
+    document.getElementById("printHoraDashboard").textContent =
+      `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+      })}`;
+
+    document.getElementById("printItemPn").textContent = pn;
+    document.getElementById("printItemRasp").textContent = rasp;
+    document.getElementById("printItemFornecedor").textContent = fornecedor;
+    document.getElementById("printItemDiasSelecao").textContent = diasSelecao;
+    document.getElementById("printItemSemApontamento").textContent = semApontamento;
+    
+    const eventos = [...document.querySelectorAll("#timelineHistorico .timeline-item")];
+
+const htmlEventos = eventos.map(evento => {
+  const data = evento.querySelector(".data")?.innerText || "-";
+  const titulo = evento.querySelector(".titulo")?.innerText || "-";
+  const autor = evento.querySelector(".autor")?.innerText || "-";
+
+  return `
+    <div class="print-evento">
+      <div class="print-evento-data">${data}</div>
+      <div class="print-evento-titulo">${titulo}</div>
+      <div class="print-evento-detalhe">${autor}</div>
+    </div>
+  `;
+}).join("");
+
+document.getElementById("printItemTimeline").innerHTML =
+  htmlEventos || "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
+
+    document.body.classList.add("imprimir-item");
+
+    window.print();
+
+    setTimeout(() => {
+      document.body.classList.remove("imprimir-item");
+    }, 500);
+  });
+});
+
+
+
 
 </script>
+    <section class="print-item-selecionado">
+    <h2>Detalhe do Item Selecionado</h2>
 
+    <div class="print-item-grid">
+      <div><strong>PN:</strong> <span id="printItemPn">-</span></div>
+      <div><strong>RASP:</strong> <span id="printItemRasp">-</span></div>
+      <div><strong>Fornecedor:</strong> <span id="printItemFornecedor">-</span></div>
+      <div><strong>Dias em Seleção:</strong> <span id="printItemDiasSelecao">-</span></div>
+      <div><strong>Sem Apontamento:</strong> <span id="printItemSemApontamento">-</span></div>
+    </div>
+
+    <h3>Histórico Operacional</h3>
+    <div id="printItemTimeline" class="print-item-timeline">
+      -
+    </div>
+  </section>
+
+
+    <section class="print-rodape-dashboard">
+    <div>
+      Relatório gerado automaticamente pelo sistema RASP
+    </div>
+
+    <div class="assinatura-amarela">
+      Developed by: Josealdo Lyra
+    </div>
+  </section>
+
+    <div class="assinatura-sistema">
+    Developed by: Josealdo Lyra
+    </div>
 
     </main>
 
@@ -1750,6 +1840,15 @@ catch (error) {
 
       </section>
 
+      <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
+          <button
+            class="btn-imprimir-dashboard"
+            id="btnImprimirItemSelecionado"
+            type="button">
+            🖨️ Imprimir Item
+           </button>
+          </div>
+
       <!-- =====================================================
            06.02 TIMELINE
            ===================================================== -->
@@ -1764,14 +1863,162 @@ catch (error) {
         </div>
 
           
-
-        </div>
+      
 
       </section>
 
     </aside>
 
   </div>
+
+  <script src="app.js"></script>
+  <script>
+  carregarMenuLateral("dashboard");
+  </script>
+  <script>
+          /* =========================================================
+            FILTROS RÁPIDOS - DASHBOARD SELEÇÃO
+            ========================================================= */
+
+          /* =========================================================
+            POPULAR COMBOS DOS FILTROS
+            ========================================================= */
+          function popularFiltrosDashboard() {
+
+            const selectFornecedor =
+              document.getElementById("filtroFornecedor");
+
+            const selectTurno =
+              document.getElementById("filtroTurno");
+
+            /* =====================================================
+              LIMPA COMBOS
+              ===================================================== */
+            selectFornecedor.innerHTML =
+              '<option value="">Todos</option>';
+
+            selectTurno.innerHTML =
+              '<option value="">Todos</option>';
+
+            /* =====================================================
+              LISTAS ÚNICAS
+              ===================================================== */
+            const fornecedores =
+              [...new Set(
+                dadosDashboardSelecao
+                  .map(x => x.fornecedor)
+                  .filter(Boolean)
+              )];
+
+            const turnos =
+              [...new Set(
+                dadosDashboardSelecao
+                  .map(x => x.turno)
+                  .filter(Boolean)
+              )];
+
+            /* =====================================================
+              FORNECEDORES
+              ===================================================== */
+            fornecedores.forEach(fornecedor => {
+
+              selectFornecedor.innerHTML += `
+                <option value="${fornecedor}">
+                  ${fornecedor}
+                </option>
+              `;
+            });
+
+            /* =====================================================
+              TURNOS
+              ===================================================== */
+            turnos.forEach(turno => {
+
+              selectTurno.innerHTML += `
+                <option value="${turno}">
+                  ${turno}
+                </option>
+              `;
+            });
+          }
+
+          /* =========================================================
+            APLICAR FILTROS
+            ========================================================= */
+          function aplicarFiltrosDashboardSelecao() {
+
+            const fornecedor =
+              document.getElementById("filtroFornecedor").value;
+
+            const turno =
+              document.getElementById("filtroTurno").value;
+
+            const status =
+              document.getElementById("filtroStatus").value;
+
+            const filtrados =
+              dadosDashboardSelecao.filter(item => {
+
+                /* ===================================================
+                  STATUS CALCULADO
+                  =================================================== */
+                let statusCalculado = "OK";
+
+                if (
+                  item.diasSemApontamento === null ||
+                  item.diasSemApontamento === undefined
+                ) {
+                  statusCalculado = "Não iniciado";
+                }
+                else if (item.diasSemApontamento >= 4) {
+                  statusCalculado = "Crítico";
+                }
+                else if (item.diasSemApontamento === 3) {
+                  statusCalculado = "Atenção";
+                }
+
+                const atendeFornecedor =
+                  !fornecedor ||
+                  item.fornecedor === fornecedor;
+
+                const atendeTurno =
+                  !turno ||
+                  item.turno === turno;
+
+                const atendeStatus =
+                  !status ||
+                  statusCalculado === status;
+
+                return (
+                  atendeFornecedor &&
+                  atendeTurno &&
+                  atendeStatus
+                );
+              });
+
+            renderizarDashboardSelecao(filtrados);
+          }
+
+          /* =========================================================
+            EVENTOS
+            ========================================================= */
+          document
+            .getElementById("filtroFornecedor")
+            .addEventListener("change", aplicarFiltrosDashboardSelecao);
+
+          document
+            .getElementById("filtroTurno")
+            .addEventListener("change", aplicarFiltrosDashboardSelecao);
+
+          document
+            .getElementById("filtroStatus")
+            .addEventListener("change", aplicarFiltrosDashboardSelecao);
+
+          document
+            .getElementById("btnAplicarFiltros")
+            .addEventListener("click", aplicarFiltrosDashboardSelecao);
+
+</script>
 
 </body>
 </html>

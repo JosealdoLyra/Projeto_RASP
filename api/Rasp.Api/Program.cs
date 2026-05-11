@@ -2573,7 +2573,13 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             Turno = turno != null ? turno.Descricao : null,
             rp.DataHoraEntradaSelecao,
             rp.TravaAtiva,
+
+            // QHD é uma condição separada da trava comum
+            rp.QhdAtivo,
+            rp.DataHoraQhd,
+
             rp.StatusSelecao
+
         }
     )
     .OrderBy(x => x.NumeroRasp)
@@ -2794,10 +2800,19 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             // STATUS FIXO DA VISÃO OPERACIONAL
             // -----------------------------------------------------
             Status = "Em seleção",
-            Trava = itemBase.TravaAtiva ? "Ativa" : "Sem trava"
+
+            // Trava operacional comum
+            Trava = itemBase.TravaAtiva ? "Ativa" : "Sem trava",
+
+            // QHD separado da trava
+            QhdAtivo = itemBase.QhdAtivo,
+            Qhd = itemBase.QhdAtivo ? "Sim" : "Não",
+            DataHoraQhd = itemBase.DataHoraQhd
+
         };
     })
-    .OrderBy(x => x.NumeroRasp)
+    .OrderBy(x => x.QhdAtivo ? 1:0)
+    .ThenBy(x => x.NumeroRasp)
     .ThenBy(x => x.Pn)
     .ToList();
 

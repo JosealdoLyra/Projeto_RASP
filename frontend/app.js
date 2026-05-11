@@ -3705,4 +3705,40 @@ function toggleDetalhePnLinha(botao) {
   }
 }
 
+/* =========================================================
+   MENU LATERAL PADRÃO
+   ========================================================= */
+function carregarMenuLateral(paginaAtiva) {
+  const menu = document.querySelector(".menu");
+
+  if (!menu) return;
+
+  menu.innerHTML = `
+    <a href="dashboard-selecao.html" class="menu-item ${paginaAtiva === "dashboard" ? "active" : ""}">
+      📋 Visão Geral
+    </a>
+
+    <a href="selecao-operacional.html" class="menu-item ${paginaAtiva === "selecao" ? "active" : ""}">
+      📦 Itens em Seleção
+    </a>
+
+    <a href="controle-operacional.html" class="menu-item ${paginaAtiva === "controle" ? "active" : ""}">
+      🔒 Controle Operacional
+    </a>
+
+    <a href="relatorios.html" class="menu-item ${paginaAtiva === "relatorios" ? "active" : ""}">
+      📊 Relatórios
+    </a>
+
+    <a href="historico-geral.html" class="menu-item ${paginaAtiva === "historico" ? "active" : ""}">
+      🕓 Histórico Geral
+    </a>
+
+    <a href="configuracoes.html" class="menu-item menu-admin ${paginaAtiva === "configuracoes" ? "active" : ""}">
+      ⚙️ Configurações
+    </a>
+  `;
+}
+
+
 

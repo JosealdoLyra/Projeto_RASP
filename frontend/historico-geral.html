@@ -121,50 +121,72 @@
       box-shadow: 0 0 18px rgba(37,99,235,0.35);
     }
 
+    /* =========================================================
+    MENU ADMINISTRATIVO
+    ========================================================= */
+    .menu-admin {
+    display: none;
+    }
+
+    body.usuario-admin .menu-admin {
+    display: block;
+    }
+
     .filtros-box {
-      margin-top: auto;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--borda);
-      border-radius: var(--radius);
-      padding: 18px;
+    margin-top: auto;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--borda);
+    border-radius: var(--radius);
+    padding: 18px;
     }
 
     .filtros-box h3 {
-      margin-bottom: 16px;
-      font-size: 15px;
+    margin-bottom: 16px;
+    font-size: 15px;
     }
 
     .campo {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
     }
 
     .campo label {
-      font-size: 12px;
-      color: var(--texto-secundario);
+    font-size: 12px;
+    color: var(--texto-secundario);
     }
 
     .campo select {
-      height: 42px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(255,255,255,0.04);
-      color: white;
-      padding: 0 12px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.04);
+    background-color: rgba(255,255,255,0.04);
+    color: white;
+    padding: 0 12px;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    }
+
+    .campo select option {
+    background: #0f172a;
+    color: white;
     }
 
     .btn-filtro {
-      width: 100%;
-      height: 44px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(90deg, #2563eb, #1d4f86);
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #2563eb, #1d4f86);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
     }
+
 
     /* =========================================================
        05. CONTEÚDO CENTRAL
@@ -358,6 +380,23 @@
       color: #cbd5e1;
     }
 
+    .badge-trava {
+    background: rgba(239,68,68,0.18);
+    color: #fca5a5;
+    }
+
+    .badge-qhd {
+    background: rgba(99,102,241,0.22);
+    color: #c4b5fd;
+    border: 1px solid rgba(196,181,253,0.35);
+    }
+
+    .badge-vazio {
+    background: rgba(147,164,195,0.12);
+    color: #94a3b8;
+    }
+
+
     /* =========================================================
        08. PAINEL DIREITO
        ========================================================= */
@@ -451,6 +490,467 @@
       line-height: 1.4;
     }
 
+        /* =========================================================
+        FILTRO DE PERÍODO - ESTILO POWER BI
+        ========================================================= */
+        /* =========================================================
+        FILTRO DE PERÍODO - PADRÃO POWER BI
+        ========================================================= */
+        .periodo-card {
+        background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+
+        padding: 18px 20px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+
+        flex-wrap: wrap;
+        }
+
+        .periodo-esquerda {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        }
+
+        .periodo-titulo {
+        font-size: 15px;
+        font-weight: 700;
+        margin-right: 8px;
+        }
+
+        .periodo-campo {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        }
+
+        .periodo-campo label {
+        font-size: 11px;
+        color: var(--texto-secundario);
+        }
+
+        .periodo-campo select,
+        .periodo-campo input {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.10);
+
+        background: rgba(255,255,255,0.04);
+        color: white;
+
+        padding: 0 12px;
+        }
+
+        .periodo-campo select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        background-color: rgba(255,255,255,0.04);
+        color: white;
+        }
+
+        .periodo-campo select option {
+        background: #0f172a;
+        color: white;
+        }
+
+
+        .periodo-campo
+        input::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .btn-periodo {
+        height: 42px;
+        padding: 0 22px;
+
+        border: none;
+        border-radius: 12px;
+
+        background: linear-gradient(90deg, #2563eb, #1d4f86);
+        color: white;
+
+        font-weight: 700;
+        cursor: pointer;
+        }
+
+        .periodo-atalhos {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        }
+
+        .atalho-btn {
+        height: 40px;
+        padding: 0 14px;
+
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.08);
+
+        background: rgba(255,255,255,0.04);
+        color: white;
+
+        cursor: pointer;
+        transition: 0.2s;
+        }
+
+        .atalho-btn:hover {
+        background: rgba(37,99,235,0.22);
+        border-color: rgba(96,165,250,0.35);
+        }
+
+
+        .periodo-info {
+        background: rgba(37,99,235,0.12);
+
+        border: 1px solid rgba(96,165,250,0.18);
+
+        border-radius: 14px;
+
+        padding: 12px 16px;
+
+        min-width: 240px;
+        }
+
+        .periodo-info small {
+        display: block;
+        color: var(--texto-secundario);
+        margin-bottom: 4px;
+        font-size: 11px;
+        }
+
+        .periodo-info strong {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        }
+
+        .periodo-info span {
+        color: #60a5fa;
+        font-size: 13px;
+        }
+
+
+        .assinatura-sistema {
+        margin-top: auto;
+        padding-top: 14px;
+        text-align: right;
+        color: rgba(229,238,252,0.58);
+        font-size: 11px;
+        letter-spacing: 0.4px;
+        }
+
+        .print-cabecalho-historico {
+        display: none;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 3px solid #0f2747;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        color: #0f2747;
+        }
+
+        .print-cabecalho-historico h1 {
+        margin: 0;
+        font-size: 24px;
+        }
+
+        .print-cabecalho-historico p {
+        margin: 4px 0 0;
+        font-size: 11px;
+        }
+
+        .print-cabecalho-direita {
+        min-width: 230px;
+        text-align: left;
+        font-size: 11px;
+        line-height: 1.7;
+        color: #111827;
+        }
+
+        .print-cabecalho-direita div {
+        display: grid;
+        grid-template-columns: 95px 1fr;
+        column-gap: 6px;
+        white-space: nowrap;
+        }
+
+
+
+        .print-rodape-historico {
+        display: none;
+        }
+
+        .print-item-selecionado {
+            display: none;
+        }
+
+        .print-info-esquerda,
+        .print-info-direita {
+        font-size: 11px;
+        color: #111827;
+        }
+
+        @media print {
+
+        .print-rodape-historico {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+
+            margin-top: auto !important;
+
+            padding-top: 12px !important;
+
+            border-top: 3px solid #0f2747 !important;
+        }
+
+        }
+
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 8mm;
+            }
+
+            body {
+                background: white !important;
+                color: #111827 !important;
+            }
+
+            .sidebar,
+            .painel-direito,
+            .topbar:not(.print-cabecalho-historico),
+            .periodo-card,
+            .search-box,
+            #btnImprimirHistorico,
+            .assinatura-sistema {
+                display: none !important;
+            }
+
+            .layout {
+                display: block !important;
+            }
+
+            .content-area {
+                padding: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 185mm !important;
+            }
+
+            .print-cabecalho-historico {
+                display: flex !important;
+            }
+
+            .kpi-grid {
+                display: grid !important;
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 6px !important;
+                margin: 8px 0 10px !important;
+            }
+
+            .kpi-card {
+                background: #f8fafc !important;
+                color: #111827 !important;
+                box-shadow: none !important;
+                border: 1px solid #d1d5db !important;
+                border-radius: 8px !important;
+                padding: 6px 8px !important;
+                min-height: 42px !important;
+            }
+
+            .kpi-card::after {
+                display: none !important;
+            }
+
+            .kpi-card h3 {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+                color: #374151 !important;
+            }
+
+            .kpi-value {
+                font-size: 18px !important;
+                line-height: 1.1 !important;
+                color: #0f2747 !important;
+            }
+
+            .kpi-footer {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+                color: #4b5563 !important;
+            }
+
+            .painel-tabela {
+                box-shadow: none !important;
+                border: none !important;
+                background: white !important;
+                flex: 1 !important;
+            }
+
+            .painel-header {
+                border-bottom: 3px solid #0f2747 !important;
+                padding: 0 0 8px 0 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .painel-header h2 {
+                color: #0f2747 !important;
+                font-size: 20px !important;
+            }
+
+            .painel-header p {
+                color: #374151 !important;
+                font-size: 12px !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+
+            thead th {
+            background: #e5e7eb !important;
+            color: #000000 !important;
+            border: 1.5px solid #6b7280 !important;
+            padding: 6px 4px !important;
+            font-size: 8.8px !important;
+            font-weight: 900 !important;
+            text-align: center !important;
+            letter-spacing: 0.2px !important;
+
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            }
+
+
+            tbody td {
+                color: #111827 !important;
+                border: 1px solid #d1d5db !important;
+                padding: 6px 4px !important;
+                font-size: 9px !important;
+                text-align: center !important;
+            }
+
+            tbody tr.linha-ativa {
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
+            }
+
+            tbody tr.linha-ativa td {
+            color: #111827 !important;
+            border: 1px solid #d1d5db !important;
+            }
+
+
+            .badge {
+                background: transparent !important;
+                color: #111827 !important;
+                padding: 0 !important;
+                font-size: 9px !important;
+            }
+
+            .print-rodape-historico {
+                display: flex !important;
+                margin-top: auto !important;
+            }
+
+                body.imprimir-item-historico .kpi-grid,
+                body.imprimir-item-historico .painel-tabela {
+                display: none !important;
+                }
+
+                body.imprimir-item-historico .print-item-selecionado {
+                display: block !important;
+                color: #111827 !important;
+                }
+
+                body.imprimir-item-historico .print-item-selecionado h2 {
+                color: #0f2747 !important;
+                font-size: 20px !important;
+                margin: 10px 0 12px !important;
+                border-bottom: 2px solid #0f2747 !important;
+                padding-bottom: 6px !important;
+                }
+
+                body.imprimir-item-historico .print-item-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px 18px !important;
+                margin-bottom: 16px !important;
+                font-size: 11px !important;
+                }
+
+                body.imprimir-item-historico .print-item-timeline {
+                display: block !important;
+                border: none !important;
+                padding-left: 28px !important;
+                margin-left: 18px !important;
+                }
+
+                body.imprimir-item-historico .print-evento {
+                position: relative !important;
+                border-left: 3px solid #60a5fa !important;
+                padding: 6px 0 14px 22px !important;
+                margin-bottom: 0 !important;
+                page-break-inside: avoid !important;
+                background: transparent !important;
+                }
+
+                body.imprimir-item-historico .print-evento::before {
+                content: "" !important;
+                position: absolute !important;
+                left: -8px !important;
+                top: 16px !important;
+                width: 12px !important;
+                height: 12px !important;
+                border-radius: 50% !important;
+                background: #60a5fa !important;
+                border: 2px solid white !important;
+                z-index: 2 !important;
+                }
+
+                body.imprimir-item-historico .print-evento-data {
+                font-size: 10px !important;
+                color: #374151 !important;
+                margin-bottom: 3px !important;
+                }
+
+                body.imprimir-item-historico .print-evento-titulo {
+                font-size: 12px !important;
+                font-weight: 800 !important;
+                color: #0f2747 !important;
+                margin-bottom: 3px !important;
+                }
+
+                body.imprimir-item-historico .print-evento-detalhe {
+                font-size: 10.5px !important;
+                color: #111827 !important;
+                }
+
+
+
+            }
+
+
+
+
     @media (max-width: 1500px) {
       .layout {
         grid-template-columns: 230px 1fr;
@@ -483,7 +983,7 @@
   </style>
 </head>
 
-<body>
+<body class="usuario-admin">
   <!-- =========================================================
        09. LAYOUT PRINCIPAL
        ========================================================= -->
@@ -502,41 +1002,8 @@
         </div>
       </div>
 
-       <nav class="menu">
+      <nav class="menu"></nav>
 
-  <a href="dashboard-selecao.html" class="menu-item">
-    📋 Visão Geral
-  </a>
-
-  <a href="selecao-operacional.html" class="menu-item">
-    📦 Itens em Seleção
-  </a>
-
-  <a href="#" class="menu-item">
-    📝 Apontamentos
-  </a>
-
-  <a href="#" class="menu-item">
-    🔒 Travas
-  </a>
-
-  <a href="#" class="menu-item">
-    📊 Relatórios
-  </a>
-
-  <a href="historico-geral.html" class="menu-item active">
-    🕓 Histórico Geral
-  </a>
-
-  <a href="#" class="menu-item">
-    🏭 Fornecedores
-  </a>
-
-  <a href="#" class="menu-item">
-    ⚙️ Configurações
-  </a>
-
-</nav>
 
 
 
@@ -544,7 +1011,7 @@
         <h3>FILTROS RÁPIDOS</h3>
 
         <div class="campo">
-          <label>Fornecedor</label>
+          <label>F ornecedor</label>
           <select id="filtroFornecedor">
             <option value="">Todos</option>
           </select>
@@ -577,6 +1044,23 @@
          ========================================================= -->
     <main class="content-area">
 
+        <section class="print-cabecalho-historico">
+        <div>
+            <h1>Histórico Geral de Seleção</h1>
+            <p>RASP • Sistema da Qualidade • Auditoria Operacional e Logística</p>
+        </div>
+
+        <div class="print-cabecalho-direita">
+            <div id="printDataRelatorio">📅 Data: ${info.data}; </div>
+            <div id="printHoraRelatorio">⏰ Hora: ${info.hora};</div>
+            <div id="printUsuarioRelatorio">👤 Usuário: ${USUARIO_RELATORIO};</div>
+        </div>
+        </section>
+
+        
+
+
+
       <!-- =====================================================
            11.01 TOPO
            ===================================================== -->
@@ -595,6 +1079,93 @@
           </div>
         </div>
       </section>
+
+      <!-- =====================================================
+            11.01A FILTRO DE PERÍODO
+            ===================================================== -->
+            <section class="periodo-card">
+
+            <div class="periodo-esquerda">
+
+                <div class="periodo-titulo">
+                Período do histórico
+                </div>
+
+                <div class="periodo-campo">
+                <label>Ano</label>
+
+                <select id="filtroAnoHistorico">
+                    <option value="corrente">Ano corrente</option>
+                    <option value="todos">Todos os anos</option>
+                </select>
+                </div>
+
+                <div class="periodo-campo">
+                <label>De</label>
+                <input id="filtroDataInicialHistorico" type="date" />
+                </div>
+
+                <div class="periodo-campo">
+                <label>Até</label>
+                <input id="filtroDataFinalHistorico" type="date" />
+                </div>
+
+                <button class="btn-periodo" id="btnAplicarPeriodoHistorico">
+                Aplicar
+                </button>
+
+            </div>
+
+            <!-- =====================================================
+                ATALHOS OPERACIONAIS
+                ===================================================== -->
+            <div class="periodo-atalhos">
+
+                <button class="atalho-btn" id="btn30Dias">
+                Últimos 30 dias
+                </button>
+
+                <button class="atalho-btn" id="btn60Dias">
+                Últimos 60 dias
+                </button>
+
+                <button class="atalho-btn" id="btn90Dias">
+                Últimos 90 dias
+                </button>
+
+                <button class="atalho-btn" id="btn180Dias">
+                Últimos 180 dias
+                </button>
+
+                <button class="atalho-btn" id="btnAnoAtual">
+                Ano atual
+                </button>
+
+                <button class="atalho-btn" id="btnTodos">
+                Todos
+                </button>
+
+            </div>
+
+            <!-- =====================================================
+                RESUMO DO PERÍODO
+                ===================================================== -->
+            <div class="periodo-info">
+
+                <small>Período aplicado</small>
+
+                <strong id="textoPeriodoAplicado">
+                01/01/2026 até 31/12/2026
+                </strong>
+
+                <span>(Ano corrente)</span>
+
+            </div>
+
+            </section>
+
+
+
 
       <!-- =====================================================
            11.02 KPI HISTÓRICO
@@ -641,13 +1212,20 @@
             <p id="totalRegistrosTabela">0 registros encontrados</p>
           </div>
 
-          <div class="search-box">
-            <input
-              type="text"
-              id="buscaDashboardSelecao"
-              placeholder="Buscar PN, RASP ou fornecedor..."
-            />
-          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button class="btn-periodo" id="btnImprimirHistorico" type="button">
+                🖨️ Imprimir Histórico
+            </button>
+
+            <div class="search-box">
+                <input
+                type="text"
+                id="buscaDashboardSelecao"
+                placeholder="Buscar PN, RASP ou fornecedor..."
+                />
+            </div>
+            </div>
+
         </div>
 
         <div class="tabela-wrap">
@@ -660,7 +1238,9 @@
                 <th>Entrada</th>
                 <th>Saída</th>
                 <th>Dias</th>
+                <th>Sem Apont.</th>
                 <th>Trava</th>
+                <th>QHD</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -678,7 +1258,23 @@
         /* =====================================================
            01. VARIÁVEL GLOBAL
            ===================================================== */
-        let dadosDashboardSelecao = [];
+        /* =====================================================
+            VARIÁVEIS GLOBAIS DO SISTEMA
+            ===================================================== */
+
+            const SISTEMA_NOME = "RASP";
+
+            const SISTEMA_SUBTITULO =
+            "Sistema da Qualidade";
+
+            const ASSINATURA_DESENVOLVEDOR =
+            "Developed by: Josealdo Lyra";
+
+            const USUARIO_RELATORIO =
+            "Terminal Operacional";
+
+            let dadosDashboardSelecao = [];
+
 
         /* =====================================================
            02. CARREGAR HISTÓRICO GERAL
@@ -696,7 +1292,9 @@
             dadosDashboardSelecao = await response.json();
 
             atualizarFiltros(dadosDashboardSelecao);
-            renderizarDashboardSelecao(dadosDashboardSelecao);
+            atualizarFiltroAnos(dadosDashboardSelecao);
+            aplicarFiltrosHistorico();
+
           }
           catch (error) {
             console.error(error);
@@ -742,13 +1340,19 @@
           tbody.innerHTML = "";
 
           dados.sort((a, b) => {
+            const qhdA = a.qhdAtivo ? 1 : 0;
+            const qhdB = b.qhdAtivo ? 1 : 0;
+
+            if (qhdA !== qhdB) return qhdA - qhdB;
+
             const statusA = a.statusSelecao === 1 ? 1 : 0;
             const statusB = b.statusSelecao === 1 ? 1 : 0;
 
             if (statusA !== statusB) return statusB - statusA;
 
             return (b.duracaoTotalDias ?? 0) - (a.duracaoTotalDias ?? 0);
-          });
+            });
+
 
           let totalHistorico = 0;
           let totalAtrasos = 0;
@@ -761,7 +1365,32 @@
 
             const duracao = item.duracaoTotalDias ?? 0;
             const status = item.statusDescricao ?? "-";
-            const travaTexto = item.travaAtiva ? "Ativa" : "Sem trava";
+            const travaTexto = item.travaAtiva ? "🔒 Trava" : "-";
+            const qhdTexto = item.qhdAtivo ? "⛔ QHD" : "-";
+
+            const classeTrava = item.travaAtiva ? "badge-trava" : "badge-vazio";
+            const classeQhd = item.qhdAtivo ? "badge-qhd" : "badge-vazio";
+
+            let diasSemApontamentoAtual = "-";
+
+            const dataReferenciaSemApontamento =
+            item.dataHoraUltimoApontamento ||
+            item.dataApontamento ||
+            item.ultimoApontamento ||
+            item.dataHoraEntradaSelecao;
+
+            if (!item.dataHoraSaidaSelecao && dataReferenciaSemApontamento) {
+            const hoje = new Date();
+            const referencia = new Date(dataReferenciaSemApontamento);
+
+            hoje.setHours(0, 0, 0, 0);
+            referencia.setHours(0, 0, 0, 0);
+
+            diasSemApontamentoAtual =
+                Math.floor((hoje - referencia) / (1000 * 60 * 60 * 24));
+            }
+
+
 
             somaDias += duracao;
 
@@ -787,12 +1416,36 @@
               <td>${formatarDataHora(item.dataHoraEntradaSelecao)}</td>
               <td>${formatarDataHora(item.dataHoraSaidaSelecao)}</td>
               <td>${duracao}</td>
-              <td>${travaTexto}</td>
-              <td>
-                <span class="badge ${classeStatus}">
-                  ${status}
+             
+             <td>
+                ${
+                    diasSemApontamentoAtual === "-"
+                    ? "-"
+                    : diasSemApontamentoAtual >= 4
+                        ? `<span class="badge badge-critico">${diasSemApontamentoAtual} dias</span>`
+                        : diasSemApontamentoAtual === 3
+                        ? `<span class="badge badge-atencao">3 dias</span>`
+                        : `<span class="badge badge-ok">${diasSemApontamentoAtual} dias</span>`
+                }
+                </td>
+                <td>
+                <span class="badge ${classeTrava}">
+
+                    ${travaTexto}
                 </span>
+                </td>
+                <td>
+                <span class="badge ${classeQhd}">
+                    ${qhdTexto}
+                </span>
+                </td>
+
+              <td>
+              <span class="badge ${classeStatus}">
+                    ${status}
+              </span>
               </td>
+
             `;
 
             tr.addEventListener("click", () => {
@@ -963,6 +1616,63 @@
               }
             });
 
+            /* =====================================================
+            VERIFICAR ATRASO ATUAL (ITEM AINDA EM SELEÇÃO)
+            ===================================================== */
+            if (!item.dataHoraSaidaSelecao && dataReferenciaAtraso) {
+
+            const hoje = new Date();
+
+            const referencia = new Date(dataReferenciaAtraso);
+
+            referencia.setHours(0,0,0,0);
+            hoje.setHours(0,0,0,0);
+
+            const diasSemApontamento =
+                Math.floor((hoje - referencia) / (1000 * 60 * 60 * 24));
+
+            if (diasSemApontamento === 3) {
+
+                timeline.innerHTML += `
+                <div class="timeline-item atencao">
+                    <div class="data">
+                    ${formatarDataHora(dataReferenciaAtraso)}
+                    </div>
+
+                    <div class="titulo" style="color:#fbbf24;">
+                    ${obterIconeEvento("atencao")}
+                    Atenção: ${diasSemApontamento} dias sem apontamento
+                    </div>
+
+                    <div class="autor">
+                    Item continua em seleção sem novos apontamentos
+                    </div>
+                </div>
+                `;
+            }
+
+            if (diasSemApontamento >= 4) {
+
+                timeline.innerHTML += `
+                <div class="timeline-item critico">
+                    <div class="data">
+                    ${formatarDataHora(dataReferenciaAtraso)}
+                    </div>
+
+                    <div class="titulo" style="color:#f87171;">
+                    ${obterIconeEvento("critico")}
+                    Crítico: ${diasSemApontamento} dias sem apontamento
+                    </div>
+
+                    <div class="autor">
+                    Item permanece ativo sem atualização operacional
+                    </div>
+                </div>
+                `;
+            }
+            }
+
+
             if (item.dataHoraSaidaSelecao) {
               timeline.innerHTML += `
                 <div class="timeline-item ok">
@@ -1039,6 +1749,32 @@
         }
 
         /* =====================================================
+            DATA/HORA PADRÃO RELATÓRIO
+            ===================================================== */
+            function obterDataHoraRelatorio() {
+
+            const agora = new Date();
+
+            const data =
+                agora.toLocaleDateString("pt-BR");
+
+            const hora =
+                agora.toLocaleTimeString(
+                "pt-BR",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+                );
+
+            return {
+                data,
+                hora
+            };
+            }
+
+
+        /* =====================================================
            07. FORMATAR DATA/HORA
            ===================================================== */
         function formatarDataHora(data) {
@@ -1055,38 +1791,98 @@
            08. BUSCA E FILTROS
            ===================================================== */
         function aplicarFiltrosHistorico() {
-          const termo =
+        const termo =
             document.getElementById("buscaDashboardSelecao").value.toLowerCase().trim();
 
-          const fornecedor =
+        const fornecedor =
             document.getElementById("filtroFornecedor").value;
 
-          const turno =
+        const turno =
             document.getElementById("filtroTurno").value;
 
-          const status =
+        const status =
             document.getElementById("filtroStatus").value;
 
-          const filtrados = dadosDashboardSelecao.filter(item => {
+        const anoFiltro =
+            document.getElementById("filtroAnoHistorico").value;
+
+        const dataInicialValor =
+            document.getElementById("filtroDataInicialHistorico").value;
+
+        const dataFinalValor =
+            document.getElementById("filtroDataFinalHistorico").value;
+
+        const dataInicial =
+            dataInicialValor ? new Date(dataInicialValor + "T00:00:00") : null;
+
+        const dataFinal =
+            dataFinalValor ? new Date(dataFinalValor + "T23:59:59") : null;
+
+        const anoAtual =
+            new Date().getFullYear();
+
+        const filtrados = dadosDashboardSelecao.filter(item => {
             const atendeBusca =
-              (item.pn ?? "").toLowerCase().includes(termo) ||
-              (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
-              (item.fornecedor ?? "").toLowerCase().includes(termo);
+            (item.pn ?? "").toLowerCase().includes(termo) ||
+            (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
+            (item.fornecedor ?? "").toLowerCase().includes(termo);
 
             const atendeFornecedor =
-              !fornecedor || item.fornecedor === fornecedor;
+            !fornecedor || item.fornecedor === fornecedor;
 
             const atendeTurno =
-              !turno || item.turno === turno;
+            !turno || item.turno === turno;
 
             const atendeStatus =
-              !status || item.statusDescricao === status;
+            !status || item.statusDescricao === status;
 
-            return atendeBusca && atendeFornecedor && atendeTurno && atendeStatus;
-          });
+            const dataBase =
+            item.dataHoraEntradaSelecao
+                ? new Date(item.dataHoraEntradaSelecao.replace(" ", "T"))
+                : null;
 
-          renderizarDashboardSelecao(filtrados);
+
+            let atendeAno = true;
+
+            if (dataBase && anoFiltro === "corrente") {
+            atendeAno = dataBase.getFullYear() === anoAtual;
+            }
+            else if (dataBase && anoFiltro !== "todos" && anoFiltro !== "corrente") {
+            atendeAno = dataBase.getFullYear() === Number(anoFiltro);
+            }
+
+            let atendePeriodo = true;
+
+            if (dataBase && dataInicial) {
+            atendePeriodo = atendePeriodo && dataBase >= dataInicial;
+            }
+
+            if (dataBase && dataFinal) {
+            atendePeriodo = atendePeriodo && dataBase <= dataFinal;
+            }
+
+            return (
+            atendeBusca &&
+            atendeFornecedor &&
+            atendeTurno &&
+            atendeStatus &&
+            atendeAno &&
+            atendePeriodo
+            );
+        });
+
+
+        const textoPeriodo =
+        document.getElementById("textoPeriodoAplicado");
+
+        if (textoPeriodo) {
+        textoPeriodo.textContent =
+            `${dataInicialValor || "-"} até ${dataFinalValor || "-"}`;
         }
+
+        renderizarDashboardSelecao(filtrados);
+        }
+
 
         document
           .getElementById("buscaDashboardSelecao")
@@ -1108,11 +1904,267 @@
           .getElementById("filtroStatus")
           .addEventListener("change", aplicarFiltrosHistorico);
 
+        document
+  .getElementById("btnAplicarPeriodoHistorico")
+  .addEventListener("click", aplicarFiltrosHistorico);
+
+        document
+        .getElementById("filtroAnoHistorico")
+        .addEventListener("change", aplicarFiltrosHistorico);
+
+
         /* =====================================================
            09. INICIALIZAÇÃO
            ===================================================== */
+            function configurarPeriodoPadrao() {
+            const anoAtual = new Date().getFullYear();
+
+            document.getElementById("filtroDataInicialHistorico").value =
+                `${anoAtual}-01-01`;
+
+            document.getElementById("filtroDataFinalHistorico").value =
+                `${anoAtual}-12-31`;
+            }
+
+            function atualizarFiltroAnos(dados) {
+            const selectAno = document.getElementById("filtroAnoHistorico");
+
+            if (!selectAno) return;
+
+            const anos = [...new Set(
+                dados
+                .map(item => item.dataHoraEntradaSelecao ? new Date(item.dataHoraEntradaSelecao).getFullYear() : null)
+                .filter(Boolean)
+            )].sort((a, b) => b - a);
+
+            anos.forEach(ano => {
+                if (![...selectAno.options].some(opt => opt.value === String(ano))) {
+                const option = document.createElement("option");
+                option.value = ano;
+                option.textContent = ano;
+                selectAno.appendChild(option);
+                }
+            });
+            }
+        
+
+        function aplicarAtalhoPeriodo(dias) {
+
+        const hoje = new Date();
+        const inicio = new Date();
+
+        inicio.setDate(hoje.getDate() - dias);
+
+        document.getElementById("filtroAnoHistorico").value =
+            "todos";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            inicio.toISOString().split("T")[0];
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            hoje.toISOString().split("T")[0];
+
+        aplicarFiltrosHistorico();
+        }
+
+        /* =====================================================
+        BOTÕES DE ATALHO
+        ===================================================== */
+
+        document.getElementById("btn30Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(30);
+        });
+
+        document.getElementById("btn60Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(60);
+        });
+
+        document.getElementById("btn90Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(90);
+        });
+
+        document.getElementById("btn180Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(180);
+        });
+
+        document.getElementById("btnAnoAtual")
+        .addEventListener("click", () => {
+
+        const ano = new Date().getFullYear();
+
+        document.getElementById("filtroAnoHistorico").value =
+            "corrente";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            `${ano}-01-01`;
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            `${ano}-12-31`;
+
+        aplicarFiltrosHistorico();
+        });
+
+        document.getElementById("btnTodos")
+        .addEventListener("click", () => {
+
+        document.getElementById("filtroAnoHistorico").value =
+            "todos";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            "";
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            "";
+
+        aplicarFiltrosHistorico();
+        });
+
+        document
+        .getElementById("btnImprimirHistorico")
+        .addEventListener("click", () => {
+
+            const info =
+            obterDataHoraRelatorio();
+
+            document.getElementById(
+            "printDataRelatorio"
+            ).textContent =
+            `▣ Data do Relatório: ${info.data}`;
+
+            document.getElementById(
+            "printHoraRelatorio"
+            ).textContent =
+            `◷ Hora: ${info.hora}`;
+
+            document.getElementById(
+            "printUsuarioRelatorio"
+            ).textContent =
+            `● Usuário: ${USUARIO_RELATORIO}`;
+
+            document.getElementById(
+            "printAssinaturaSistema"
+            ).textContent =
+            ASSINATURA_DESENVOLVEDOR;
+
+            window.print();
+        });
+        
+        
+        document.addEventListener("click", function (event) {
+        if (event.target.id !== "btnImprimirItemHistorico") return;
+
+        const info = obterDataHoraRelatorio();
+
+        document.getElementById("printDataRelatorio").textContent =
+            `▣ Data do Relatório: ${info.data}`;
+
+        document.getElementById("printHoraRelatorio").textContent =
+            `◷ Hora: ${info.hora}`;
+
+        document.getElementById("printUsuarioRelatorio").textContent =
+            `● Usuário: ${USUARIO_RELATORIO}`;
+
+        document.getElementById("printItemPnHistorico").textContent =
+            (document.getElementById("painelPn").textContent || "-").replace("PN ", "");
+
+        document.getElementById("printItemRaspHistorico").textContent =
+            document.getElementById("painelRasp").textContent || "-";
+
+        document.getElementById("printItemFornecedorHistorico").textContent =
+            document.getElementById("painelFornecedor").textContent || "-";
+
+        document.getElementById("printItemDiasHistorico").textContent =
+            document.getElementById("painelDiasSelecao").textContent || "-";
+
+        document.getElementById("printItemStatusHistorico").textContent =
+            document.getElementById("painelSemApontamento").textContent || "-";
+
+        const eventos =
+            [...document.querySelectorAll("#timelineHistorico .timeline-item")];
+
+        const htmlEventos = eventos.map(evento => {
+            const data = evento.querySelector(".data")?.innerText || "-";
+            const titulo = evento.querySelector(".titulo")?.innerText || "-";
+            const autor = evento.querySelector(".autor")?.innerText || "-";
+
+            return `
+            <div class="print-evento">
+                <div class="print-evento-data">${data}</div>
+                <div class="print-evento-titulo">${titulo}</div>
+                <div class="print-evento-detalhe">${autor}</div>
+            </div>
+            `;
+        }).join("");
+
+        document.getElementById("printItemTimelineHistorico").innerHTML =
+            htmlEventos || "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
+        document.body.classList.add("imprimir-item-historico");
+
+        window.print();
+
+        setTimeout(() => {
+            document.body.classList.remove("imprimir-item-historico");
+        }, 500);
+        });
+
+        
+        configurarPeriodoPadrao();
         carregarDashboardSelecao();
+
+        
+
       </script>
+
+      <!-- =====================================================
+            ASSINATURA DO SISTEMA
+            ===================================================== -->
+        <div class="assinatura-sistema">
+        Developed by: Josealdo Lyra
+        </div>
+
+        <section class="print-item-selecionado">
+        <h2>Detalhe do Item Selecionado</h2>
+
+        <div class="print-item-grid">
+            <div><strong>PN:</strong> <span id="printItemPnHistorico">-</span></div>
+            <div><strong>RASP:</strong> <span id="printItemRaspHistorico">-</span></div>
+            <div><strong>Fornecedor:</strong> <span id="printItemFornecedorHistorico">-</span></div>
+            <div><strong>Dias no ciclo:</strong> <span id="printItemDiasHistorico">-</span></div>
+            <div><strong>Status:</strong> <span id="printItemStatusHistorico">-</span></div>
+        </div>
+
+        <h3>Histórico Operacional</h3>
+
+        <div id="printItemTimelineHistorico" class="print-item-timeline">
+            -
+        </div>
+        </section>
+
+        <!-- =====================================================
+            RODAPÉ IMPRESSÃO
+            ===================================================== -->
+        <div class="print-rodape-historico">
+
+        <div class="print-info-esquerda">
+            Relatório gerado automaticamente pelo sistema RASP
+        </div>
+
+        <div
+            class="print-info-direita"
+            id="printAssinaturaSistema"
+        >
+            Developed by: Josealdo Lyra
+        </div>
+
+        </div>
+
+
+
     </main>
 
     <!-- =========================================================
@@ -1145,6 +2197,15 @@
         </div>
       </section>
 
+      <div style="display:flex; justify-content:flex-end;">
+        <button
+            class="btn-periodo"
+            id="btnImprimirItemHistorico"
+            type="button">
+            🖨️ Imprimir Item
+        </button>
+      </div>
+
       <section class="detalhe-card">
         <h3 style="margin-bottom:20px;">
           Histórico Operacional
@@ -1155,5 +2216,10 @@
       </section>
     </aside>
   </div>
+  <script src="app.js"></script>
+    <script>
+    carregarMenuLateral("dashboard");
+    </script>
+
 </body>
 </html>
