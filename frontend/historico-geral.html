@@ -1048,6 +1048,8 @@
         <div>
             <h1>Histórico Geral de Seleção</h1>
             <p>RASP • Sistema da Qualidade • Auditoria Operacional e Logística</p>
+<p id="printPeriodoRelatorio">Período filtrado: -</p>
+
         </div>
 
         <div class="print-cabecalho-direita">
@@ -1274,6 +1276,8 @@
             "Terminal Operacional";
 
             let dadosDashboardSelecao = [];
+            let itemHistoricoSelecionado = null;
+
 
 
         /* =====================================================
@@ -1480,6 +1484,8 @@
            05. PAINEL DIREITO
            ===================================================== */
         async function atualizarPainelDireito(item) {
+            itemHistoricoSelecionado = item;
+
           document.getElementById("painelPn").textContent =
             `PN ${item.pn ?? "-"}`;
 
@@ -2050,6 +2056,24 @@
             ).textContent =
             ASSINATURA_DESENVOLVEDOR;
 
+            const dataInicialPrint =
+            document.getElementById("filtroDataInicialHistorico").value;
+
+            const dataFinalPrint =
+            document.getElementById("filtroDataFinalHistorico").value;
+
+            function formatarDataFiltroPrint(data) {
+            if (!data) return "-";
+
+            const partes = data.split("-");
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+
+            document.getElementById("printPeriodoRelatorio").textContent =
+            `Período filtrado: ${formatarDataFiltroPrint(dataInicialPrint)} até ${formatarDataFiltroPrint(dataFinalPrint)}`;
+
+
+
             window.print();
         });
         
@@ -2084,9 +2108,61 @@
             document.getElementById("painelSemApontamento").textContent || "-";
 
         const eventos =
-            [...document.querySelectorAll("#timelineHistorico .timeline-item")];
+        [...document.querySelectorAll("#timelineHistorico .timeline-item")];
 
-        const htmlEventos = eventos.map(evento => {
+        let htmlEventosExtrasInicio = "";
+        let htmlEventosExtrasFim = "";
+
+        const item = itemHistoricoSelecionado;
+
+        /* =====================================================
+        EVENTOS INICIAIS - TRAVA / QHD
+        ===================================================== */
+        if (item?.travaAtiva) {
+        htmlEventosExtrasInicio += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(
+                item.dataHoraEntradaTrava ||
+                item.dataEntradaTrava ||
+                item.dataHoraEntradaSelecao
+                )}
+            </div>
+            <div class="print-evento-titulo">🔒 Trava entrou no item</div>
+            <div class="print-evento-detalhe">Registro de entrada da trava operacional</div>
+            </div>
+        `;
+        }
+
+        if (item?.qhdAtivo) {
+        htmlEventosExtrasInicio += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(
+                item.dataHoraEntradaQhd ||
+                item.dataEntradaQhd ||
+                item.dataHoraEntradaSelecao
+                )}
+            </div>
+            <div class="print-evento-titulo">⛔ QHD entrou no item</div>
+            <div class="print-evento-detalhe">Registro de entrada em QHD</div>
+            </div>
+        `;
+        }
+
+        /* =====================================================
+        HISTÓRICO NORMAL, REMOVENDO DUPLICADOS DE TRAVA/QHD
+        ===================================================== */
+        const htmlEventos = eventos
+        .filter(evento => {
+            const titulo = evento.querySelector(".titulo")?.innerText || "";
+
+            return (
+            !titulo.includes("Trava ativa neste item") &&
+            !titulo.includes("QHD ativo neste item")
+            );
+        })
+        .map(evento => {
             const data = evento.querySelector(".data")?.innerText || "-";
             const titulo = evento.querySelector(".titulo")?.innerText || "-";
             const autor = evento.querySelector(".autor")?.innerText || "-";
@@ -2098,10 +2174,43 @@
                 <div class="print-evento-detalhe">${autor}</div>
             </div>
             `;
-        }).join("");
+        })
+        .join("");
+
+        /* =====================================================
+        EVENTOS FINAIS - SAÍDA TRAVA / QHD
+        ===================================================== */
+        if (item?.dataHoraSaidaTrava || item?.dataSaidaTrava) {
+        htmlEventosExtrasFim += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(item.dataHoraSaidaTrava || item.dataSaidaTrava)}
+            </div>
+            <div class="print-evento-titulo">🔓 Trava saiu do item</div>
+            <div class="print-evento-detalhe">Registro de saída da trava operacional</div>
+            </div>
+        `;
+        }
+
+        if (item?.dataHoraSaidaQhd || item?.dataSaidaQhd) {
+        htmlEventosExtrasFim += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(item.dataHoraSaidaQhd || item.dataSaidaQhd)}
+            </div>
+            <div class="print-evento-titulo">✅ QHD saiu do item</div>
+            <div class="print-evento-detalhe">Registro de saída do QHD</div>
+            </div>
+        `;
+        }
 
         document.getElementById("printItemTimelineHistorico").innerHTML =
-            htmlEventos || "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+        htmlEventosExtrasInicio +
+        htmlEventos +
+        htmlEventosExtrasFim ||
+        "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
+
 
         document.body.classList.add("imprimir-item-historico");
 

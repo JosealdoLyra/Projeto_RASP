@@ -1043,6 +1043,7 @@
      01. VARIÁVEL GLOBAL DOS DADOS
      ========================================================= */
   let dadosDashboardSelecao = [];
+  let itemSelecionadoDashboard = null;
 
   /* =========================================================
      02. CARREGAR ITENS EM SELEÇÃO
@@ -1216,8 +1217,8 @@
     <td>
       ${
         item.qhd === true ||
-        item.qhdAtivo === true ||
-        item.dataQhd
+        item.qhd === "Sim" ||
+        item.dataHoraQhd
           ? `
             <span class="badge" style="
               background: rgba(139,92,246,0.22);
@@ -1290,6 +1291,7 @@
      04. ATUALIZAR PAINEL DIREITO AO CLICAR NA LINHA
      ========================================================= */
     async function atualizarPainelDireito(item) {
+      itemSelecionadoDashboard = item;
     document.getElementById("painelPn").textContent =
       `PN ${item.pn ?? "-"}`;
 
@@ -1360,6 +1362,31 @@ try {
      LIMPA TIMELINE
      ===================================================== */
   timeline.innerHTML = "";
+
+  /* =====================================================
+   EVENTO QHD - EXIBIR NO PAINEL DIREITO
+   ===================================================== */
+if (
+  item.qhdAtivo === true ||
+  item.qhd === "Sim" ||
+  item.dataHoraQhd
+) {
+  timeline.innerHTML += `
+    <div class="timeline-item">
+      <div class="data">
+        ${formatarDataHora(item.dataHoraQhd || item.dataEntradaSelecao)}
+      </div>
+
+      <div class="titulo" style="color:#d8b4fe;">
+        ⛔ QHD entrou no item
+      </div>
+
+      <div class="autor">
+        Registro de entrada do QHD
+      </div>
+    </div>
+  `;
+}
 
   /* =====================================================
      EVENTO 01 - ENTRADA EM SELEÇÃO
@@ -1700,9 +1727,37 @@ window.addEventListener("load", () => {
     document.getElementById("printItemDiasSelecao").textContent = diasSelecao;
     document.getElementById("printItemSemApontamento").textContent = semApontamento;
     
-    const eventos = [...document.querySelectorAll("#timelineHistorico .timeline-item")];
+    const eventos = [...document.querySelectorAll("#timelineHistorico .timeline-item")]
+    .filter(evento =>
+      !evento.innerText.toLowerCase().includes("trava ativa neste item")
+    );
 
-const htmlEventos = eventos.map(evento => {
+
+    const pnSelecionado = itemSelecionadoDashboard;
+
+
+  let eventosExtrasInicio = "";
+
+  if (pnSelecionado?.trava?.toLowerCase() === "ativa") {
+    eventosExtrasInicio += `
+      <div class="print-evento">
+        <div class="print-evento-data">
+          ${formatarDataHora(pnSelecionado.dataEntradaSelecao)}
+        </div>
+        <div class="print-evento-titulo">
+          🔒 Trava entrou no item
+        </div>
+        <div class="print-evento-detalhe">
+          Registro de entrada da trava operacional
+        </div>
+      </div>
+    `;
+  }
+
+  
+
+
+  const htmlEventos = eventos.map(evento => {
   const data = evento.querySelector(".data")?.innerText || "-";
   const titulo = evento.querySelector(".titulo")?.innerText || "-";
   const autor = evento.querySelector(".autor")?.innerText || "-";
@@ -1716,8 +1771,10 @@ const htmlEventos = eventos.map(evento => {
   `;
 }).join("");
 
-document.getElementById("printItemTimeline").innerHTML =
-  htmlEventos || "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+    document.getElementById("printItemTimeline").innerHTML =
+    (eventosExtrasInicio + htmlEventos) ||
+    "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
 
 
     document.body.classList.add("imprimir-item");
