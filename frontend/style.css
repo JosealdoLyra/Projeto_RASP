@@ -1982,3 +1982,26 @@ button.btn-detalhes-linha:focus {
 button.btn-detalhes-linha:disabled {
   opacity: 1 !important;
 }
+
+.rasp-indicadores-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rasp-topo-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.rasp-coluna-identificacao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rasp-data-chip {
+  margin-top: 0;
+}

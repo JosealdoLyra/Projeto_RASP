@@ -24,6 +24,8 @@ namespace Rasp.Api.Models
     /// </summary>
     public class RaspEntity
     {
+
+                
         // ==========================================================
         // IDENTIFICAÇÃO DO RASP
         // ==========================================================
@@ -32,6 +34,8 @@ namespace Rasp.Api.Models
         /// Identificador interno do RASP.
         /// </summary>
         public int IdRasp { get; set; }
+
+        
 
         /// <summary>
         /// Número do RASP no formato 000X/YY.
