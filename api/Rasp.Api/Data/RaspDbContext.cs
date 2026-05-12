@@ -405,6 +405,29 @@ namespace Rasp.Api.Data
                 entity.Property(e => e.IdAprovadorFt)
                     .HasColumnName("id_aprovador_ft");
 
+                    // ==========================================================
+                    // DATAS E JUSTIFICATIVAS DO FLUXO FT / LG
+                    // ==========================================================
+
+                    entity.Property(e => e.DataEnvioFt)
+                        .HasColumnName("data_envio_ft");
+
+                    entity.Property(e => e.DataAprovacaoFt)
+                        .HasColumnName("data_aprovacao_ft");
+
+                    entity.Property(e => e.DataEnvioLg)
+                        .HasColumnName("data_envio_lg");
+
+                    entity.Property(e => e.DataAprovacaoLg)
+                        .HasColumnName("data_aprovacao_lg");
+
+                    entity.Property(e => e.JustificativaFt)
+                        .HasColumnName("justificativa_ft");
+
+                    entity.Property(e => e.JustificativaLg)
+                        .HasColumnName("justificativa_lg");
+
+
                 entity.Property(e => e.IdAprovadorLg)
                     .HasColumnName("id_aprovador_lg");
 
