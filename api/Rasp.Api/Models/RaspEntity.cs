@@ -120,8 +120,6 @@ namespace Rasp.Api.Models
 
         public DateTime? DataEnvioLg { get; set; }
 
-        public DateTime? DataAprovacaoLg { get; set; }
-
         public string? JustificativaFt { get; set; }
 
         public string? JustificativaLg { get; set; }
@@ -131,6 +129,19 @@ namespace Rasp.Api.Models
 
         [Column("id_usuario_aprovacao_ft")]
         public int? IdUsuarioAprovacaoFt { get; set; }
+
+        // ----------------------------------------------------------
+        // Aprovação / decisão LG
+        // ----------------------------------------------------------
+        [Column("data_aprovacao_lg")]
+        public DateTime? DataAprovacaoLg { get; set; }
+
+        [Column("id_usuario_aprovacao_lg")]
+        public int? IdUsuarioAprovacaoLg { get; set; }
+
+        [Column("observacao_lg")]
+        public string? ObservacaoLg { get; set; }
+
 
 
 

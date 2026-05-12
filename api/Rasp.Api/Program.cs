@@ -3818,6 +3818,415 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
             });
         });
 
+// ==========================================================
+// 20B. RASP - DECISÃO / APROVAÇÃO LG
+// ==========================================================
+app.MapPost("/rasp/{id:int}/aprovar-lg", async (
+    int id,
+    AprovarLgRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (request.DecisaoLg < 1 || request.DecisaoLg > 3)
+        return Results.BadRequest("Decisão LG inválida. Use: 1 = Não emitir SPPS, 2 = Supplier Alert, 3 = SPPS.");
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode ser aprovado pelo LG." });
+
+    if (rasp.IdStatusRasp != 3)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP aprovado pelo FT e aguardando análise LG pode receber decisão do LG.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    string resultadoLg;
+
+    switch (request.DecisaoLg)
+    {
+        case 1:
+            rasp.IdStatusRasp = 6;
+            resultadoLg = "Não emitir SPPS";
+            break;
+
+        case 2:
+            rasp.IdStatusRasp = 5;
+            resultadoLg = "Emitir Supplier Alert";
+            break;
+
+        case 3:
+            rasp.IdStatusRasp = 4;
+            resultadoLg = "Emitir SPPS";
+            break;
+
+        default:
+            return Results.BadRequest("Decisão LG inválida.");
+    }
+
+    rasp.DataAprovacaoLg = DateTime.UtcNow;
+    rasp.IdUsuarioAprovacaoLg = request.IdUsuarioExecutor;
+    rasp.ObservacaoLg = request.ObservacaoLg;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Decisão do LG registrada com sucesso.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        resultadoLg,
+        rasp.DataAprovacaoLg,
+        rasp.IdUsuarioAprovacaoLg,
+        rasp.ObservacaoLg
+    });
+})
+.WithName("AprovarRaspLg");
+
+// ==========================================================
+// 20C. RASP - FT SOLICITAR COMPLEMENTO
+// ==========================================================
+app.MapPost("/rasp/{id:int}/solicitar-complemento-ft", async (
+    int id,
+    SolicitarComplementoFtRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (string.IsNullOrWhiteSpace(request.MotivoComplemento))
+        return Results.BadRequest(new { mensagem = "Motivo do complemento é obrigatório." });
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode receber análise FT." });
+
+    if (rasp.IdStatusRasp != 2)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP aguardando FT pode receber solicitação de complemento.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    rasp.IdStatusRasp = 7;
+    rasp.ObservacaoFt = request.MotivoComplemento;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "FT solicitou complemento do RASP.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        motivo = request.MotivoComplemento
+    });
+})
+.WithName("SolicitarComplementoFt");
+
+// ==========================================================
+// 20D. RASP - REENVIAR COMPLEMENTO AO FT
+// ==========================================================
+app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
+    int id,
+    ReenviarComplementoFtRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode ser reenviado ao FT." });
+
+    if (rasp.IdStatusRasp != 7)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP com complemento solicitado pelo FT pode ser reenviado ao FT.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+    {
+        if (!rasp.IdAnalistaMt.HasValue)
+            return Results.BadRequest("Este RASP não possui MT responsável vinculado.");
+
+        if (rasp.IdAnalistaMt.Value != request.IdUsuarioExecutor)
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
+
+    rasp.IdStatusRasp = 2;
+    rasp.DataEnvioFt = DateTime.UtcNow;
+
+    if (!string.IsNullOrWhiteSpace(request.ObservacaoReenvio))
+    {
+        rasp.ObservacaoGeral = request.ObservacaoReenvio.Trim();
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Complemento reenviado ao FT com sucesso.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        rasp.DataEnvioFt,
+        observacaoReenvio = request.ObservacaoReenvio
+    });
+})
+.WithName("ReenviarComplementoFt");
+
+// ==========================================================
+// 20E. RASP - LG SOLICITAR COMPLEMENTO AO FT
+// ==========================================================
+app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
+    int id,
+    SolicitarComplementoLgRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (string.IsNullOrWhiteSpace(request.MotivoComplemento))
+        return Results.BadRequest(new { mensagem = "Motivo do complemento é obrigatório." });
+
+    var rasp = await db.Rasp.FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode receber análise LG." });
+
+    if (rasp.IdStatusRasp != 3)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP aguardando análise LG pode receber solicitação de complemento.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    rasp.IdStatusRasp = 8;
+    rasp.ObservacaoLg = request.MotivoComplemento;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "LG solicitou complemento ao FT.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        motivo = request.MotivoComplemento
+    });
+})
+.WithName("SolicitarComplementoLg");
+
+// ==========================================================
+// 20F. RASP - FT REENVIAR COMPLEMENTO AO LG
+// ==========================================================
+app.MapPost("/rasp/{id:int}/reenviar-complemento-lg", async (
+    int id,
+    ReenviarComplementoLgRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var rasp = await db.Rasp.FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode ser reenviado ao LG." });
+
+    if (rasp.IdStatusRasp != 8)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP com complemento solicitado pelo LG pode ser reenviado ao LG.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isFt = usuarioExecutor.IdPerfil == 3;
+
+    if (!isAdmin && !isFt)
+        return Results.BadRequest("Somente FT ou ADMIN pode reenviar complemento ao LG.");
+
+    rasp.IdStatusRasp = 3;
+    rasp.DataEnvioLg = DateTime.UtcNow;
+
+    if (!string.IsNullOrWhiteSpace(request.ObservacaoReenvio))
+        rasp.ObservacaoFt = request.ObservacaoReenvio.Trim();
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Complemento reenviado ao LG com sucesso.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        rasp.DataEnvioLg,
+        observacaoReenvio = request.ObservacaoReenvio
+    });
+})
+.WithName("ReenviarComplementoLg");
+
+    // ==========================================================
+// 20G. RASP - FT DEVOLVER COMPLEMENTO AO MT
+// ==========================================================
+app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
+    int id,
+    FtDevolverComplementoMtRequest request,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (request.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    if (string.IsNullOrWhiteSpace(request.MotivoComplemento))
+        return Results.BadRequest(new { mensagem = "Motivo do complemento é obrigatório." });
+
+    var rasp = await db.Rasp.FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound(new { mensagem = "RASP não encontrado." });
+
+    if (rasp.IsRascunho)
+        return Results.BadRequest(new { mensagem = "Rascunho não pode receber devolução do FT." });
+
+    if (rasp.IdStatusRasp != 8)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Somente RASP com complemento solicitado pelo LG ao FT pode ser devolvido ao MT.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isFt = usuarioExecutor.IdPerfil == 3;
+
+    if (!isAdmin && !isFt)
+        return Results.BadRequest("Somente FT ou ADMIN pode devolver complemento ao MT.");
+
+    rasp.IdStatusRasp = 7;
+    rasp.ObservacaoFt = request.MotivoComplemento.Trim();
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "FT devolveu complemento ao MT com sucesso.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        motivo = request.MotivoComplemento
+    });
+})
+.WithName("FtDevolverComplementoMt");
+
+
 
 // -----------------------------------------------------------------------------
 // 21. DEBUG
@@ -3982,6 +4391,54 @@ public record AprovarFtRequest(
     int IdUsuarioExecutor,
     string? ObservacaoFt
 );
+
+public class AprovarLgRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    // 1 = Não emitir SPPS
+    // 2 = Emitir Supplier Alert
+    // 3 = Emitir SPPS
+    public int DecisaoLg { get; set; }
+
+    public string? ObservacaoLg { get; set; }
+}
+
+    public class SolicitarComplementoFtRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    public string MotivoComplemento { get; set; } = string.Empty;
+}
+
+    public class ReenviarComplementoFtRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    public string? ObservacaoReenvio { get; set; }
+}
+
+    public class SolicitarComplementoLgRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    public string MotivoComplemento { get; set; } = string.Empty;
+}
+
+    public class ReenviarComplementoLgRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    public string? ObservacaoReenvio { get; set; }
+}
+
+    public class FtDevolverComplementoMtRequest
+{
+    public int IdUsuarioExecutor { get; set; }
+
+    public string MotivoComplemento { get; set; } = string.Empty;
+}
+
 
 
 // -----------------------------------------------------------------------------
