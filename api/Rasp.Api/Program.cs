@@ -3635,6 +3635,191 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
 .WithName("AtualizarRaspRascunho");
 
 // -----------------------------------------------------------------------------
+// 20A. RASP - SUBMETER PARA ANÁLISE FT
+//
+// Regra:
+// - Rascunho NÃO pode ir para o FT incompleto.
+// - Somente RASP com campos mínimos preenchidos pode ser submetido.
+// - Ao submeter:
+//   • is_rascunho = false
+//   • id_status_rasp = 2
+//   • data_envio_ft = agora
+//   • percentual_completude = 100
+// -----------------------------------------------------------------------------
+app.MapPost("/rasp/{id:int}/submeter-ft", async (
+    int id,
+    AcaoFluxoRaspRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do RASP inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor inválido.");
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (rasp.IdStatusRasp != 1)
+        return Results.BadRequest("Somente RASP em rascunho/em preenchimento pode ser submetido ao FT.");
+
+    if (!rasp.IsRascunho)
+        return Results.BadRequest("Este RASP já não está mais como rascunho.");
+
+    var usuarioExecutor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuarioExecutor is null)
+        return Results.BadRequest("Usuário executor não existe.");
+
+    if (!usuarioExecutor.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+
+    if (!isAdmin)
+    {
+        if (!rasp.IdAnalistaMt.HasValue)
+            return Results.BadRequest("Este RASP não possui MT responsável vinculado.");
+
+        if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
+            return Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
+
+    // -------------------------------------------------------------------------
+    // VALIDAÇÃO DOS CAMPOS MÍNIMOS PARA SUBMISSÃO AO FT
+    // -------------------------------------------------------------------------
+    var pendencias = new List<string>();
+
+    if (rasp.IdFornecedorRasp <= 0)
+        pendencias.Add("Fornecedor");
+
+    if (string.IsNullOrWhiteSpace(rasp.ResumoOcorrencia))
+        pendencias.Add("Resumo da ocorrência");
+
+    if (string.IsNullOrWhiteSpace(rasp.DescricaoProblema))
+        pendencias.Add("Descrição do problema");
+
+    if (!rasp.IdSetorRasp.HasValue)
+        pendencias.Add("Setor");
+
+    if (!rasp.IdTurnoRasp.HasValue)
+        pendencias.Add("Turno");
+
+    if (!rasp.IdOrigemFabricacaoRasp.HasValue)
+        pendencias.Add("Origem de fabricação");
+
+    if (!rasp.IdImpactoClienteRasp.HasValue)
+        pendencias.Add("Impacto cliente");
+
+    if (!rasp.IdImpactoQualidadeRasp.HasValue)
+        pendencias.Add("Impacto qualidade");
+
+    if (!rasp.IdMaiorImpactoRasp.HasValue)
+        pendencias.Add("Maior impacto");
+
+    if (!rasp.IdAprovadorFt.HasValue)
+        pendencias.Add("Aprovador FT");
+
+    var possuiPn = await db.RaspPn
+        .AnyAsync(rp => rp.IdRasp == id);
+
+    if (!possuiPn)
+        pendencias.Add("Pelo menos um PN vinculado ao RASP");
+
+    if (pendencias.Count > 0)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "RASP ainda não possui os requisitos mínimos para submissão ao FT.",
+            pendencias
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // SUBMISSÃO AO FT
+    // -------------------------------------------------------------------------
+    rasp.IsRascunho = false;
+    rasp.IdStatusRasp = 2;
+    rasp.DataEnvioFt = DateTime.UtcNow;
+    rasp.PercentualCompletude = 100;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "RASP submetido ao FT com sucesso.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        rasp.IsRascunho,
+        rasp.DataEnvioFt,
+        rasp.IdAprovadorFt
+    });
+})
+.WithName("SubmeterRaspAoFt");
+
+        // ==========================================================
+        // APROVAÇÃO FT
+        // ==========================================================
+        app.MapPost("/rasp/{id:int}/aprovar-ft", async (
+            int id,
+            AprovarFtRequest request,
+            RaspDbContext db) =>
+        {
+            var rasp = await db.Rasp
+                .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+            if (rasp == null)
+            {
+                return Results.NotFound(new
+                {
+                    mensagem = "RASP não encontrado."
+                });
+            }
+
+            // ------------------------------------------------------
+            // VALIDAÇÃO
+            // ------------------------------------------------------
+            if (rasp.IsRascunho)
+            {
+                return Results.BadRequest(new
+                {
+                    mensagem = "Rascunho não pode ser aprovado pelo FT."
+                });
+            }
+
+            // ------------------------------------------------------
+            // APROVAÇÃO FT
+            // ------------------------------------------------------
+            rasp.DataAprovacaoFt = DateTime.UtcNow;
+            rasp.DataEnvioLg = DateTime.UtcNow;
+
+            rasp.IdUsuarioAprovacaoFt = request.IdUsuarioExecutor;
+
+            rasp.ObservacaoFt = request.ObservacaoFt;
+
+            // STATUS:
+            // 3 = Aguardando análise LG
+            rasp.IdStatusRasp = 3;
+
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new
+            {
+                mensagem = "RASP aprovado pelo FT com sucesso.",
+                rasp.IdRasp,
+                rasp.NumeroRasp,
+                rasp.DataAprovacaoFt,
+                rasp.IdStatusRasp
+            });
+        });
+
+
+// -----------------------------------------------------------------------------
 // 21. DEBUG
 // -----------------------------------------------------------------------------
 
@@ -3792,6 +3977,12 @@ public record AtualizarRaspRascunhoRequest(
 public record AcaoFluxoRaspRequest(
     int IdUsuarioExecutor
 );
+
+public record AprovarFtRequest(
+    int IdUsuarioExecutor,
+    string? ObservacaoFt
+);
+
 
 // -----------------------------------------------------------------------------
 // Criação de vínculo RASP x PN

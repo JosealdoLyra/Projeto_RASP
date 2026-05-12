@@ -126,6 +126,14 @@ namespace Rasp.Api.Models
 
         public string? JustificativaLg { get; set; }
 
+        [Column("observacao_ft")]
+        public string? ObservacaoFt { get; set; }
+
+        [Column("id_usuario_aprovacao_ft")]
+        public int? IdUsuarioAprovacaoFt { get; set; }
+
+
+
 
         // ==========================================================
         // STATUS E FECHAMENTO
