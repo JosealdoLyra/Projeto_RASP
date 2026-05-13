@@ -34,6 +34,79 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<RaspDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ============================================================================
+// MÉTODO AUXILIAR - HISTÓRICO DE FLUXO RASP
+// ============================================================================
+async Task RegistrarHistoricoFluxoAsync(
+    RaspDbContext db,
+    int idRasp,
+    int idUsuario,
+    string acao,
+    int? statusAnterior,
+    int? statusNovo,
+    string? observacao,
+    string origemEvento,
+    string? tipoComplemento = null)
+{
+    // ------------------------------------------------------------------------
+    // BUSCA ÚLTIMO HISTÓRICO DO RASP
+    // ------------------------------------------------------------------------
+    var ultimoHistorico = await db.Set<RaspHistoricoFluxoEntity>()
+
+        .Where(x => x.IdRasp == idRasp)
+        .OrderByDescending(x => x.DataHora)
+        .FirstOrDefaultAsync();
+
+    // ------------------------------------------------------------------------
+    // DEFINE DATA INICIAL DA FASE
+    // ------------------------------------------------------------------------
+    DateTime? dataHoraAnterior = null;
+
+    if (ultimoHistorico?.DataHora is DateTime dtAnterior)
+    {
+        dataHoraAnterior = DateTime.SpecifyKind(dtAnterior, DateTimeKind.Utc);
+    }
+
+
+    // ------------------------------------------------------------------------
+    // CALCULA TEMPO DA FASE EM MINUTOS
+    // ------------------------------------------------------------------------
+    int? tempoFaseMinutos = null;
+
+    if (dataHoraAnterior.HasValue)
+    {
+        tempoFaseMinutos =
+        (int)(DateTime.UtcNow - dataHoraAnterior.Value).TotalMinutes;
+
+if (tempoFaseMinutos < 0)
+    tempoFaseMinutos = 0;
+
+    }
+
+    // ------------------------------------------------------------------------
+    // CRIA HISTÓRICO
+    // ------------------------------------------------------------------------
+    var historico = new RaspHistoricoFluxoEntity
+    {
+        IdRasp = idRasp,
+        IdUsuario = idUsuario,
+        Acao = acao,
+        StatusAnterior = statusAnterior,
+        StatusNovo = statusNovo,
+        Observacao = observacao,
+        DataHora = DateTime.UtcNow,
+        DataHoraAnterior = dataHoraAnterior,
+        TempoFaseMinutos = tempoFaseMinutos,
+        OrigemEvento = origemEvento,
+        TipoComplemento = tipoComplemento
+    };
+
+    db.Set<RaspHistoricoFluxoEntity>().Add(historico);
+
+    await db.SaveChangesAsync();
+}
+
+
 var app = builder.Build();
 
 app.UseCors("PermitirFront");
@@ -2343,142 +2416,100 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
 .WithName("ListarItensAtivosSelecaoOperacional")
 .WithTags("RASP Seleção");
 
-    // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // 18B. SELECAO OPERACIONAL - HISTÓRICO GERAL
-// Finalidade:
-// - devolver TODOS os itens que já passaram por seleção
-// - inclui:
-//   • itens ainda ativos
-//   • itens encerrados
-// - utilizado pela tela:
-//   historico-geral.html
-//
-// Regras:
-// - considera qualquer item que já entrou em seleção
-// - mantém histórico permanente
-// - NÃO remove itens encerrados
-// - permite auditoria/logística/evidência operacional
 // -----------------------------------------------------------------------------
 app.MapGet("/selecao-operacional/historico-geral", async (RaspDbContext db) =>
 {
-    // -------------------------------------------------------------------------
-    // 01. DATA BASE
-    // -------------------------------------------------------------------------
     var hoje = DateTime.UtcNow.Date;
 
-    // -------------------------------------------------------------------------
-    // 02. BUSCA BASE
-    // -------------------------------------------------------------------------
-    var itens = await (
+    var itensBase = await (
         from rp in db.RaspPn.AsNoTracking()
-
         join r in db.Rasp.AsNoTracking()
             on rp.IdRasp equals r.IdRasp
-
         join f in db.FornecedorRasp.AsNoTracking()
             on r.IdFornecedorRasp equals f.IdFornecedor
-
         join mtJoin in db.Usuarios.AsNoTracking()
             on r.IdAnalistaMt equals mtJoin.IdUsuario into mtLeft
-
         from mt in mtLeft.DefaultIfEmpty()
-
         join turnoJoin in db.TurnoRasp.AsNoTracking()
             on r.IdTurnoRasp equals turnoJoin.IdTurnoRasp into turnoLeft
-
         from turno in turnoLeft.DefaultIfEmpty()
-
-        // -----------------------------------------------------
-        // SOMENTE ITENS QUE JÁ ENTRARAM EM SELEÇÃO
-        // -----------------------------------------------------
         where rp.EntrouSelecao == true
-
         select new
         {
-            // -------------------------------------------------
-            // IDENTIFICAÇÃO
-            // -------------------------------------------------
             rp.IdRaspPn,
             Pn = rp.Pn,
             rp.IdRasp,
             r.NumeroRasp,
-
-            // -------------------------------------------------
-            // DADOS OPERACIONAIS
-            // -------------------------------------------------
             Fornecedor = f.Nome,
             MtResponsavel = mt != null ? mt.Nome : null,
             Turno = turno != null ? turno.Descricao : null,
-
-            // -------------------------------------------------
-            // CONTROLE DE SELEÇÃO
-            // -------------------------------------------------
             rp.StatusSelecao,
             rp.EntrouSelecao,
-
             rp.DataHoraEntradaSelecao,
             rp.DataHoraSaidaSelecao,
-
-            // -------------------------------------------------
-            // TRAVA
-            // -------------------------------------------------
             rp.TravaAtiva,
             rp.DataHoraSolicitacaoTrava,
             rp.DataHoraRemocaoTrava,
-
-            // -------------------------------------------------
-            // QHD
-            // -------------------------------------------------
             rp.QhdAtivo,
-            rp.DataHoraQhd,
-
-            // -------------------------------------------------
-            // STATUS DESCRITIVO
-            // -------------------------------------------------
-            StatusDescricao =
-                rp.StatusSelecao == 1
-                    ? "Em seleção"
-
-                : rp.StatusSelecao == 2
-                    ? "Encerrado"
-
-                : "Fora da seleção",
-
-            // -------------------------------------------------
-            // DURAÇÃO TOTAL
-            // -------------------------------------------------
-            DuracaoTotalDias =
-                rp.DataHoraEntradaSelecao.HasValue
-
-                    ? (
-                        (
-                            rp.DataHoraSaidaSelecao.HasValue
-                                ? rp.DataHoraSaidaSelecao.Value.Date
-                                : hoje
-                        )
-
-                        - rp.DataHoraEntradaSelecao.Value.Date
-                      ).Days
-
-                    : (int?)null
+            rp.DataHoraQhd
         }
     )
-    // -------------------------------------------------------------------------
-    // 03. ORDENAÇÃO
-    // -------------------------------------------------------------------------
     .OrderByDescending(x => x.DataHoraEntradaSelecao)
     .ThenBy(x => x.NumeroRasp)
     .ThenBy(x => x.Pn)
-
     .ToListAsync();
 
-    // -------------------------------------------------------------------------
-    // 04. RETORNO
-    // -------------------------------------------------------------------------
+    var itens = itensBase.Select(x =>
+    {
+        int? duracaoTotalDias = null;
+
+        if (x.DataHoraEntradaSelecao.HasValue)
+        {
+            var dataFim = x.DataHoraSaidaSelecao.HasValue
+                ? x.DataHoraSaidaSelecao.Value.Date
+                : hoje;
+
+            duracaoTotalDias = (dataFim - x.DataHoraEntradaSelecao.Value.Date).Days;
+
+            if (duracaoTotalDias < 0)
+                duracaoTotalDias = 0;
+        }
+
+        return new
+        {
+            x.IdRaspPn,
+            x.Pn,
+            x.IdRasp,
+            x.NumeroRasp,
+            x.Fornecedor,
+            x.MtResponsavel,
+            x.Turno,
+            x.StatusSelecao,
+            x.EntrouSelecao,
+            x.DataHoraEntradaSelecao,
+            x.DataHoraSaidaSelecao,
+            x.TravaAtiva,
+            x.DataHoraSolicitacaoTrava,
+            x.DataHoraRemocaoTrava,
+            x.QhdAtivo,
+            x.DataHoraQhd,
+            StatusDescricao =
+                x.StatusSelecao == 1
+                    ? "Em seleção"
+                    : x.StatusSelecao == 2
+                        ? "Encerrado"
+                        : "Fora da seleção",
+            DuracaoTotalDias = duracaoTotalDias
+        };
+    }).ToList();
+
     return Results.Ok(itens);
 })
 .WithName("HistoricoGeralSelecaoOperacional")
 .WithTags("RASP Seleção");
+
 
 
 
@@ -3664,10 +3695,10 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
         return Results.NotFound("RASP não encontrado.");
 
     if (rasp.IdStatusRasp != 1)
-        return Results.BadRequest("Somente RASP em rascunho/em preenchimento pode ser submetido ao FT.");
+        return Results.BadRequest("Somente RASP em preenchimento e ainda não submetido pode ser enviado ao FT.");
 
     if (!rasp.IsRascunho)
-        return Results.BadRequest("Este RASP já não está mais como rascunho.");
+        return Results.BadRequest("Este RASP já foi submetido ao fluxo de aprovação e não pode ser reenviado ao FT por esta rota.");
 
     var usuarioExecutor = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
@@ -3694,38 +3725,82 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
     // -------------------------------------------------------------------------
     var pendencias = new List<string>();
 
-    if (rasp.IdFornecedorRasp <= 0)
-        pendencias.Add("Fornecedor");
+// ------------------------------------------------------
+// SEÇÕES 1 A 4 - OBRIGATÓRIAS
+// Exceção: iniciativa_fornecedor não é obrigatória,
+// pois representa uma condição.
+// ------------------------------------------------------
 
-    if (string.IsNullOrWhiteSpace(rasp.ResumoOcorrencia))
-        pendencias.Add("Resumo da ocorrência");
+if (rasp.IdFornecedorRasp <= 0)
+    pendencias.Add("Fornecedor");
 
-    if (string.IsNullOrWhiteSpace(rasp.DescricaoProblema))
-        pendencias.Add("Descrição do problema");
+if (string.IsNullOrWhiteSpace(rasp.ResumoOcorrencia))
+    pendencias.Add("Resumo da ocorrência");
 
-    if (!rasp.IdSetorRasp.HasValue)
-        pendencias.Add("Setor");
+if (string.IsNullOrWhiteSpace(rasp.DescricaoProblema))
+    pendencias.Add("Descrição do problema");
 
-    if (!rasp.IdTurnoRasp.HasValue)
-        pendencias.Add("Turno");
+if (!rasp.IdModeloVeiculoRasp.HasValue)
+    pendencias.Add("Modelo de veículo");
 
-    if (!rasp.IdOrigemFabricacaoRasp.HasValue)
-        pendencias.Add("Origem de fabricação");
+if (!rasp.IdSetorRasp.HasValue)
+    pendencias.Add("Setor");
 
-    if (!rasp.IdImpactoClienteRasp.HasValue)
-        pendencias.Add("Impacto cliente");
+if (!rasp.IdTurnoRasp.HasValue)
+    pendencias.Add("Turno");
 
-    if (!rasp.IdImpactoQualidadeRasp.HasValue)
-        pendencias.Add("Impacto qualidade");
+if (!rasp.IdOrigemFabricacaoRasp.HasValue)
+    pendencias.Add("Origem de fabricação");
 
-    if (!rasp.IdMaiorImpactoRasp.HasValue)
-        pendencias.Add("Maior impacto");
+if (!rasp.IdPilotoRasp.HasValue)
+    pendencias.Add("Piloto");
 
-    if (!rasp.IdAprovadorFt.HasValue)
-        pendencias.Add("Aprovador FT");
+if (!rasp.IdImpactoClienteRasp.HasValue)
+    pendencias.Add("Impacto cliente");
 
-    var possuiPn = await db.RaspPn
-        .AnyAsync(rp => rp.IdRasp == id);
+if (!rasp.IdImpactoQualidadeRasp.HasValue)
+    pendencias.Add("Impacto qualidade");
+
+if (!rasp.IdMaiorImpactoRasp.HasValue)
+    pendencias.Add("Maior impacto");
+
+if (!rasp.IdMajorRasp.HasValue)
+    pendencias.Add("Major");
+
+if (!rasp.IdIndiceOperacionalRasp.HasValue)
+    pendencias.Add("Índice operacional");
+
+if (!rasp.IdGmAliadoRasp.HasValue)
+    pendencias.Add("GM aliado");
+
+// ------------------------------------------------------
+// SEÇÃO 5 - OBRIGATÓRIA COM EXCEÇÕES
+// Exceções: RD Nº e Campanha Nº não são obrigatórios.
+// ------------------------------------------------------
+
+if (string.IsNullOrWhiteSpace(rasp.NomeContato))
+    pendencias.Add("Nome da pessoa contatada");
+
+if (!rasp.DataContato.HasValue)
+    pendencias.Add("Data do contato");
+
+// RD Nº opcional
+// Campanha Nº opcional
+
+// ------------------------------------------------------
+// SEÇÃO 6 - OBRIGATÓRIA
+// ------------------------------------------------------
+
+
+if (!rasp.IdAprovadorFt.HasValue)
+    pendencias.Add("Aprovador FT");
+
+// ------------------------------------------------------
+// PN obrigatório
+// ------------------------------------------------------
+
+var possuiPn = await db.RaspPn
+    .AnyAsync(rp => rp.IdRasp == id);
 
     if (!possuiPn)
         pendencias.Add("Pelo menos um PN vinculado ao RASP");
@@ -3739,15 +3814,29 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
         });
     }
 
+
     // -------------------------------------------------------------------------
     // SUBMISSÃO AO FT
     // -------------------------------------------------------------------------
+    var statusAnterior = rasp.IdStatusRasp;
     rasp.IsRascunho = false;
-    rasp.IdStatusRasp = 2;
+    rasp.IdStatusRasp = StatusRaspConstantes.AguardandoFt;
     rasp.DataEnvioFt = DateTime.UtcNow;
     rasp.PercentualCompletude = 100;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+    db,
+    rasp.IdRasp,
+    req.IdUsuarioExecutor,
+    "SUBMETIDO_FT",
+    statusAnterior,
+    rasp.IdStatusRasp,
+    "RASP submetido pelo MT para análise do FT.",
+    "MT"
+);
+
 
     return Results.Ok(new
     {
@@ -3791,6 +3880,14 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
                     mensagem = "Rascunho não pode ser aprovado pelo FT."
                 });
             }
+            if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoFt)
+{
+    return Results.BadRequest(new
+    {
+        mensagem = "Somente RASP aguardando análise FT pode ser aprovado pelo FT.",
+        statusAtual = rasp.IdStatusRasp
+    });
+}
 
             // ------------------------------------------------------
             // APROVAÇÃO FT
@@ -3802,11 +3899,25 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
 
             rasp.ObservacaoFt = request.ObservacaoFt;
 
+
             // STATUS:
             // 3 = Aguardando análise LG
-            rasp.IdStatusRasp = 3;
+           var statusAnterior = rasp.IdStatusRasp;
+           rasp.IdStatusRasp = StatusRaspConstantes.AguardandoLg;
 
             await db.SaveChangesAsync();
+
+            await RegistrarHistoricoFluxoAsync(
+            db,
+            rasp.IdRasp,
+            request.IdUsuarioExecutor,
+            "APROVADO_FT",
+            statusAnterior,
+            rasp.IdStatusRasp,
+            request.ObservacaoFt,
+            "FT"
+        );
+
 
             return Results.Ok(new
             {
@@ -3835,6 +3946,14 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     if (request.DecisaoLg < 1 || request.DecisaoLg > 3)
         return Results.BadRequest("Decisão LG inválida. Use: 1 = Não emitir SPPS, 2 = Supplier Alert, 3 = SPPS.");
 
+    if (request.DecisaoLg == 2 && string.IsNullOrWhiteSpace(request.ObservacaoLg))
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Para aprovar Supplier Alert, a justificativa do LG é obrigatória."
+        });
+    }
+
     var rasp = await db.Rasp
         .FirstOrDefaultAsync(r => r.IdRasp == id);
 
@@ -3844,7 +3963,7 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode ser aprovado pelo LG." });
 
-    if (rasp.IdStatusRasp != 3)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoLg)
     {
         return Results.BadRequest(new
         {
@@ -3852,6 +3971,8 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
@@ -3867,21 +3988,29 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     switch (request.DecisaoLg)
     {
         case 1:
-            rasp.IdStatusRasp = 6;
+
+            rasp.IdStatusRasp = StatusRaspConstantes.SppsNaoEmitido;
             resultadoLg = "Não emitir SPPS";
             break;
 
         case 2:
-            rasp.IdStatusRasp = 5;
+
+            rasp.IdStatusRasp = StatusRaspConstantes.SupplierAlertEmitido;
+            rasp.SupplierAlert = true;
+            rasp.IsSupplierAlert = true;
+            rasp.AprovadoLg = true;
+
             resultadoLg = "Emitir Supplier Alert";
             break;
 
         case 3:
-            rasp.IdStatusRasp = 4;
+
+            rasp.IdStatusRasp = StatusRaspConstantes.SppsEmitido;
             resultadoLg = "Emitir SPPS";
             break;
 
         default:
+
             return Results.BadRequest("Decisão LG inválida.");
     }
 
@@ -3890,6 +4019,17 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     rasp.ObservacaoLg = request.ObservacaoLg;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "DECISAO_LG",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        request.ObservacaoLg,
+        "LG"
+    );
 
     return Results.Ok(new
     {
@@ -3904,6 +4044,7 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     });
 })
 .WithName("AprovarRaspLg");
+
 
 // ==========================================================
 // 20C. RASP - FT SOLICITAR COMPLEMENTO
@@ -3931,7 +4072,7 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-ft", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode receber análise FT." });
 
-    if (rasp.IdStatusRasp != 2)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoFt)
     {
         return Results.BadRequest(new
         {
@@ -3939,6 +4080,7 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-ft", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
@@ -3949,10 +4091,23 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-ft", async (
     if (!usuarioExecutor.Ativo)
         return Results.BadRequest("Usuário executor está inativo.");
 
-    rasp.IdStatusRasp = 7;
+    rasp.IdStatusRasp = StatusRaspConstantes.ComplementoSolicitadoFt;
     rasp.ObservacaoFt = request.MotivoComplemento;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+    db,
+    rasp.IdRasp,
+    request.IdUsuarioExecutor,
+    "COMPLEMENTO_SOLICITADO_FT",
+    statusAnterior,
+    rasp.IdStatusRasp,
+    request.MotivoComplemento,
+    "FT",
+    "FT_PARA_MT"
+    );
+
 
     return Results.Ok(new
     {
@@ -3988,7 +4143,7 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode ser reenviado ao FT." });
 
-    if (rasp.IdStatusRasp != 7)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.ComplementoSolicitadoFt)
     {
         return Results.BadRequest(new
         {
@@ -3996,6 +4151,8 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
@@ -4017,15 +4174,31 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
             return Results.StatusCode(StatusCodes.Status403Forbidden);
     }
 
-    rasp.IdStatusRasp = 2;
+    var observacaoReenvio = string.IsNullOrWhiteSpace(request.ObservacaoReenvio)
+        ? null
+        : request.ObservacaoReenvio.Trim();
+
+    rasp.IdStatusRasp = StatusRaspConstantes.AguardandoFt;
     rasp.DataEnvioFt = DateTime.UtcNow;
 
-    if (!string.IsNullOrWhiteSpace(request.ObservacaoReenvio))
+    if (!string.IsNullOrWhiteSpace(observacaoReenvio))
     {
-        rasp.ObservacaoGeral = request.ObservacaoReenvio.Trim();
+        rasp.ObservacaoGeral = observacaoReenvio;
     }
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "REENVIO_COMPLEMENTO_FT",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        observacaoReenvio,
+        "MT",
+        "MT_PARA_FT"
+    );
 
     return Results.Ok(new
     {
@@ -4034,10 +4207,11 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
         rasp.NumeroRasp,
         rasp.IdStatusRasp,
         rasp.DataEnvioFt,
-        observacaoReenvio = request.ObservacaoReenvio
+        observacaoReenvio
     });
 })
 .WithName("ReenviarComplementoFt");
+
 
 // ==========================================================
 // 20E. RASP - LG SOLICITAR COMPLEMENTO AO FT
@@ -4064,7 +4238,7 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode receber análise LG." });
 
-    if (rasp.IdStatusRasp != 3)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoLg)
     {
         return Results.BadRequest(new
         {
@@ -4072,6 +4246,8 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
 
@@ -4081,10 +4257,22 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
     if (!usuarioExecutor.Ativo)
         return Results.BadRequest("Usuário executor está inativo.");
 
-    rasp.IdStatusRasp = 8;
+    rasp.IdStatusRasp = StatusRaspConstantes.ComplementoSolicitadoLg;
     rasp.ObservacaoLg = request.MotivoComplemento;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "COMPLEMENTO_SOLICITADO_LG",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        request.MotivoComplemento,
+        "LG",
+        "LG_PARA_FT"
+    );
 
     return Results.Ok(new
     {
@@ -4096,6 +4284,7 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
     });
 })
 .WithName("SolicitarComplementoLg");
+
 
 // ==========================================================
 // 20F. RASP - FT REENVIAR COMPLEMENTO AO LG
@@ -4119,7 +4308,7 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-lg", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode ser reenviado ao LG." });
 
-    if (rasp.IdStatusRasp != 8)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.ComplementoSolicitadoLg)
     {
         return Results.BadRequest(new
         {
@@ -4127,6 +4316,8 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-lg", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
 
@@ -4142,13 +4333,29 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-lg", async (
     if (!isAdmin && !isFt)
         return Results.BadRequest("Somente FT ou ADMIN pode reenviar complemento ao LG.");
 
-    rasp.IdStatusRasp = 3;
+    var observacaoReenvio = string.IsNullOrWhiteSpace(request.ObservacaoReenvio)
+        ? null
+        : request.ObservacaoReenvio.Trim();
+
+    rasp.IdStatusRasp = StatusRaspConstantes.AguardandoLg;
     rasp.DataEnvioLg = DateTime.UtcNow;
 
-    if (!string.IsNullOrWhiteSpace(request.ObservacaoReenvio))
-        rasp.ObservacaoFt = request.ObservacaoReenvio.Trim();
+    if (!string.IsNullOrWhiteSpace(observacaoReenvio))
+        rasp.ObservacaoFt = observacaoReenvio;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "REENVIO_COMPLEMENTO_LG",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        observacaoReenvio,
+        "FT",
+        "FT_PARA_LG"
+    );
 
     return Results.Ok(new
     {
@@ -4157,12 +4364,13 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-lg", async (
         rasp.NumeroRasp,
         rasp.IdStatusRasp,
         rasp.DataEnvioLg,
-        observacaoReenvio = request.ObservacaoReenvio
+        observacaoReenvio
     });
 })
 .WithName("ReenviarComplementoLg");
 
-    // ==========================================================
+
+// ==========================================================
 // 20G. RASP - FT DEVOLVER COMPLEMENTO AO MT
 // ==========================================================
 app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
@@ -4187,7 +4395,7 @@ app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
     if (rasp.IsRascunho)
         return Results.BadRequest(new { mensagem = "Rascunho não pode receber devolução do FT." });
 
-    if (rasp.IdStatusRasp != 8)
+    if (rasp.IdStatusRasp != StatusRaspConstantes.ComplementoSolicitadoLg)
     {
         return Results.BadRequest(new
         {
@@ -4195,6 +4403,8 @@ app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
             statusAtual = rasp.IdStatusRasp
         });
     }
+
+    var statusAnterior = rasp.IdStatusRasp;
 
     var usuarioExecutor = await db.Usuarios.FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
 
@@ -4210,10 +4420,24 @@ app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
     if (!isAdmin && !isFt)
         return Results.BadRequest("Somente FT ou ADMIN pode devolver complemento ao MT.");
 
-    rasp.IdStatusRasp = 7;
-    rasp.ObservacaoFt = request.MotivoComplemento.Trim();
+    var motivoComplemento = request.MotivoComplemento.Trim();
+
+    rasp.IdStatusRasp = StatusRaspConstantes.ComplementoSolicitadoFt;
+    rasp.ObservacaoFt = motivoComplemento;
 
     await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "FT_DEVOLVEU_COMPLEMENTO_MT",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        motivoComplemento,
+        "FT",
+        "FT_PARA_MT"
+    );
 
     return Results.Ok(new
     {
@@ -4221,10 +4445,11 @@ app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
         rasp.IdRasp,
         rasp.NumeroRasp,
         rasp.IdStatusRasp,
-        motivo = request.MotivoComplemento
+        motivo = motivoComplemento
     });
 })
 .WithName("FtDevolverComplementoMt");
+
 
 
 

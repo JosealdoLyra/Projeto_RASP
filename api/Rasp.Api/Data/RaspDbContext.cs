@@ -22,6 +22,9 @@ namespace Rasp.Api.Data
         public DbSet<Usuario> Usuarios => Set<Usuario>();
         public DbSet<RaspArquivo> RaspArquivo => Set<RaspArquivo>();
         public DbSet<RaspEntity> Rasp => Set<RaspEntity>();
+
+        public DbSet<RaspHistoricoFluxoEntity> RaspHistoricoFluxo => Set<RaspHistoricoFluxoEntity>();
+
         public DbSet<RaspPnEntity> RaspPn => Set<RaspPnEntity>();
         public DbSet<RaspAnotacao> RaspAnotacao => Set<RaspAnotacao>();
         public DbSet<ModeloVeiculoRasp> ModeloVeiculoRasp => Set<ModeloVeiculoRasp>();
@@ -404,6 +407,28 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.IdAprovadorFt)
                     .HasColumnName("id_aprovador_ft");
+
+
+                modelBuilder.Entity<RaspHistoricoFluxoEntity>(entity =>
+                {
+                    entity.ToTable("rasp_historico_fluxo");
+
+                    entity.HasKey(e => e.IdHistoricoFluxo);
+
+                    entity.Property(e => e.IdHistoricoFluxo).HasColumnName("id_historico_fluxo");
+                    entity.Property(e => e.IdRasp).HasColumnName("id_rasp");
+                    entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
+                    entity.Property(e => e.Acao).HasColumnName("acao");
+                    entity.Property(e => e.StatusAnterior).HasColumnName("status_anterior");
+                    entity.Property(e => e.StatusNovo).HasColumnName("status_novo");
+                    entity.Property(e => e.Observacao).HasColumnName("observacao");
+                    entity.Property(e => e.DataHora).HasColumnName("data_hora");
+                    entity.Property(e => e.DataHoraAnterior).HasColumnName("data_hora_anterior");
+                    entity.Property(e => e.TempoFaseMinutos).HasColumnName("tempo_fase_minutos");
+                    entity.Property(e => e.OrigemEvento).HasColumnName("origem_evento");
+                    entity.Property(e => e.TipoComplemento).HasColumnName("tipo_complemento");
+                });
+
 
                     // ==========================================================
                     // DATAS E JUSTIFICATIVAS DO FLUXO FT / LG
