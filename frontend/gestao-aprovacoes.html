@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Gestão de Aprovações RASP</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    /* =========================================================
+       02.01 VARIÁVEIS GLOBAIS
+       ========================================================= */
+    :root {
+      --azul-950: #06152d;
+      --azul-900: #082046;
+      --azul-800: #0d2d63;
+      --azul-700: #0f3f8f;
+      --azul-600: #2563eb;
+      --azul-100: #dbeafe;
+
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --texto: #111827;
+      --muted: #6b7280;
+      --borda: #e5e7eb;
+
+      --verde: #16a34a;
+      --verde-bg: #dcfce7;
+      --amarelo: #d97706;
+      --amarelo-bg: #fef3c7;
+      --vermelho: #dc2626;
+      --vermelho-bg: #fee2e2;
+      --roxo: #7c3aed;
+
+      --sombra: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    /* =========================================================
+       02.02 RESET GERAL
+       ========================================================= */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--texto);
+      min-height: 100vh;
+      overflow: auto;
+    }
+
+    /* =========================================================
+       02.03 ESTRUTURA PRINCIPAL
+       ========================================================= */
+    .app {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .main {
+      display: grid;
+      grid-template-rows: 76px auto;
+      min-height: 100vh;
+      overflow: visible;
+    }
+
+    .content {
+      padding: 22px 22px 70px 22px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 420px;
+      gap: 18px;
+      align-items: start;
+      overflow: visible;
+    }
+
+    .left-area {
+      display: grid;
+      grid-template-rows: auto auto;
+      gap: 18px;
+      overflow: visible;
+    }
+
+    /* =========================================================
+       02.04 SIDEBAR
+       ========================================================= */
+    .sidebar {
+      background: linear-gradient(180deg, var(--azul-950), #031022);
+      color: white;
+      padding: 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 100vh;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .brand h1 {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .brand span {
+      font-size: 12px;
+      opacity: 0.75;
+    }
+
+    .diamond-logo {
+      width: 42px;
+      height: 42px;
+      position: relative;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, #0b63ff, #003b9e);
+      border-radius: 8px;
+      box-shadow: 0 0 18px rgba(37, 99, 235, 0.45);
+      flex-shrink: 0;
+    }
+
+    .diamond-logo::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      background: #031022;
+      border-radius: 4px;
+    }
+
+    .diamond-logo::after {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      right: 6px;
+      top: 6px;
+      background: #7dd3fc;
+      border-radius: 50%;
+      box-shadow: 0 0 14px #7dd3fc;
+    }
+
+    .diamond-logo span {
+      position: absolute;
+      inset: 15px;
+      background: #2563eb;
+      border-radius: 3px;
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 14px;
+    }
+
+    .menu a {
+      text-decoration: none;
+      color: rgba(255, 255, 255, 0.86);
+      padding: 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu a.active {
+      background: #1263ff;
+      color: white;
+      box-shadow: 0 8px 18px rgba(18, 99, 255, 0.25);
+    }
+
+    .menu-group {
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 12px;
+      padding: 8px;
+    }
+
+    .menu-sub {
+      margin-left: 20px;
+      margin-top: 5px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .footer-menu {
+      margin-top: auto;
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .footer-menu a {
+      color: rgba(255, 255, 255, 0.86);
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       02.05 CABEÇALHO SUPERIOR
+       ========================================================= */
+    .topbar {
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .title h2 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .title p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .bell {
+      position: relative;
+      font-size: 22px;
+    }
+
+    .badge-alert {
+      position: absolute;
+      top: -7px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      border-radius: 999px;
+      padding: 2px 6px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #e5e7eb;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .user-info strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .user-info span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* =========================================================
+       02.06 CARDS / TABELA
+       ========================================================= */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      box-shadow: var(--sombra);
+    }
+
+    .table-card {
+      padding: 16px;
+      overflow: visible;
+      display: grid;
+      grid-template-rows: auto auto auto auto;
+      gap: 14px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .tab {
+      text-align: center;
+      padding: 12px 6px;
+      font-size: 13px;
+      color: var(--muted);
+      position: relative;
+    }
+
+    .tab.active {
+      color: var(--azul-600);
+      font-weight: 700;
+    }
+
+    .tab.active::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      left: 20%;
+      width: 60%;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--azul-600);
+    }
+
+    .tab span {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: #eef2ff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    /* =========================================================
+    ABAS SUPERIORES CLICÁVEIS
+    ========================================================= */
+    .tab {
+    cursor: pointer;
+    }
+
+    .tab:hover {
+    background: #f8fbff;
+    }
+
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr auto;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input,
+    select,
+    textarea {
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 11px 12px;
+      outline: none;
+      background: white;
+      font-size: 13px;
+    }
+
+    textarea {
+      resize: none;
+      min-height: 74px;
+    }
+
+    .btn-light {
+      align-self: end;
+      border: 1px solid var(--borda);
+      background: white;
+      border-radius: 10px;
+      padding: 11px 14px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 10px;
+    }
+
+    td {
+      padding: 14px 10px;
+      border-top: 1px solid var(--borda);
+      color: #374151;
+    }
+
+    tr.selected {
+      background: #eff6ff;
+      outline: 1px solid #bfdbfe;
+    }
+
+    /* =========================================================
+    LINHA CLICÁVEL DA TABELA
+    ========================================================= */
+    #tbodyRaspAprovacoes tr {
+    cursor: pointer;
+    }
+
+    #tbodyRaspAprovacoes tr:hover {
+    background: #f8fbff;
+    }
+
+
+    .rasp-link {
+      color: var(--azul-600);
+      font-weight: 700;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .pill-blue { background: var(--azul-100); color: #1d4ed8; }
+    .pill-green { background: var(--verde-bg); color: var(--verde); }
+    .pill-yellow { background: var(--amarelo-bg); color: var(--amarelo); }
+    .pill-red { background: var(--vermelho-bg); color: var(--vermelho); }
+
+    .days-red {
+      color: var(--vermelho);
+      font-weight: 800;
+    }
+
+    .circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-grid;
+      place-items: center;
+      color: white;
+      font-size: 11px;
+      font-weight: 800;
+      margin-right: 7px;
+    }
+
+    .ft { background: #8b5cf6; }
+    .lg { background: #2563eb; }
+    .mt { background: #0ea5e9; }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pages {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pages button {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--borda);
+      background: white;
+      border-radius: 8px;
+    }
+
+    .pages button.active {
+      border-color: var(--azul-600);
+      color: var(--azul-600);
+      font-weight: 800;
+    }
+
+    /* =========================================================
+       02.07 KPIS INFERIORES
+       ========================================================= */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 4px;
+      margin-bottom: 70px;
+    }
+
+    .kpi {
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 118px;
+    }
+
+    .kpi-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 24px;
+      margin-top: 4px;
+    }
+
+    .kpi span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kpi a {
+      color: var(--azul-600);
+      font-size: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       02.08 PAINEL LATERAL DIREITO
+       ========================================================= */
+    .panel {
+      padding: 18px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      position: sticky;
+      top: 22px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .panel-title strong {
+      color: var(--azul-600);
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+      padding: 7px 10px;
+      border-radius: 8px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .meta small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .panel-tabs {
+      display: flex;
+      gap: 26px;
+      border-bottom: 1px solid var(--borda);
+      margin-bottom: 18px;
+    }
+
+    .panel-tabs button {
+      background: none;
+      border: none;
+      padding: 12px 0;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .panel-tabs button.active {
+      color: var(--azul-600);
+      border-bottom: 3px solid var(--azul-600);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 26px;
+      display: grid;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 8px;
+      top: 4px;
+      bottom: 4px;
+      width: 2px;
+      background: #d1d5db;
+    }
+
+    .event {
+      position: relative;
+    }
+
+    .dot {
+      position: absolute;
+      left: -24px;
+      top: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--azul-600);
+    }
+
+    .dot.yellow { background: #f59e0b; }
+    .dot.green { background: #22c55e; }
+    .dot.gray { background: #9ca3af; }
+
+    .event strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .event p {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .actions {
+      border-top: 1px solid var(--borda);
+      padding-top: 16px;
+    }
+
+    .actions h3 {
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .action-btn {
+      width: 100%;
+      text-align: left;
+      padding: 13px 14px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: white;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .action-btn strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 13px;
+    }
+
+    .action-btn span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .action-btn.primary {
+      border-color: #fbbf24;
+      background: #fffbeb;
+      color: var(--amarelo);
+    }
+
+    .action-btn.blue {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+      color: var(--azul-600);
+    }
+
+    .confirm {
+      margin-top: 12px;
+    }
+
+    .confirm label {
+      font-size: 13px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .confirm-row {
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .btn-confirm {
+      height: 44px;
+      background: var(--azul-600);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       02.09 ASSINATURA PADRÃO DISCRETA
+       ========================================================= */
+    .developer-signature {
+      position: fixed;
+      right: 26px;
+      bottom: 18px;
+      z-index: 50;
+      font-size: 11px;
+      font-weight: 800;
+      color: #f4b23c;
+      letter-spacing: .2px;
+      text-shadow: 0 0 8px rgba(244, 178, 60, 0.28);
+      pointer-events: none;
+    }
+
+    @media (max-height: 850px) {
+      .kpis {
+        grid-template-columns: repeat(4, minmax(150px, 1fr));
+        margin-bottom: 90px;
+      }
+
+      .kpi {
+        min-height: 105px;
+        padding: 14px;
+      }
+
+      .kpi strong {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       03. CONTAINER GERAL
+       ========================================================= -->
+  <div class="app">
+
+    <!-- =========================================================
+         04. SIDEBAR
+         ========================================================= -->
+    <aside class="sidebar">
+
+      <!-- 04.01 LOGO -->
+      <div class="brand">
+        <div class="diamond-logo">
+          <span></span>
+        </div>
+
+        <div>
+          <h1>RASP</h1>
+          <span>Sistema de Qualidade</span>
+        </div>
+      </div>
+
+      <!-- 04.02 MENU -->
+      <nav class="menu">
+        <a href="#">⌂ Dashboard</a>
+        <a href="#">👥 Fornecedores</a>
+
+        <div class="menu-group">
+          <a href="#">◎ RASP</a>
+          <div class="menu-sub">
+            <a href="#">• Novo RASP</a>
+            <a href="#">• Meus RASPs</a>
+            <a class="active" href="#">• Gestão de Aprovações</a>
+            <a href="#">• Histórico</a>
+            <a href="#">• Relatórios</a>
+          </div>
+        </div>
+
+        <a href="#">🛡 Não Conformidades</a>
+        <a href="#">▣ Ações</a>
+        <a href="#">□ Documentos</a>
+        <a href="#">▤ Cadastros</a>
+        <a href="#">⚙ Configurações</a>
+        <a href="#">👤 Usuários</a>
+      </nav>
+
+      <!-- 04.03 RODAPÉ MENU -->
+      <div class="footer-menu">
+        <a>❔ Ajuda</a>
+        <a>⇱ Sair</a>
+      </div>
+    </aside>
+
+    <!-- =========================================================
+         05. ÁREA PRINCIPAL
+         ========================================================= -->
+    <main class="main">
+
+      <!-- 05.01 TOPO -->
+      <header class="topbar">
+        <div class="title">
+          <h2>Gestão de Aprovações RASP</h2>
+          <p>Acompanhe, analise e execute as ações do fluxo de aprovação.</p>
+        </div>
+
+        <div class="user">
+          <div class="bell">🔔<span class="badge-alert">3</span></div>
+          <div class="avatar" id="avatarUsuario">JS</div>
+
+            <div class="user-info">
+            <strong id="nomeUsuarioLogado">Josealdo Lyra</strong>
+            <span id="perfilUsuarioLogado">Perfil: ADMIN</span>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- 05.02 CONTEÚDO -->
+      <section class="content">
+
+        <!-- =====================================================
+             06. COLUNA ESQUERDA
+             ===================================================== -->
+        <div class="left-area">
+
+          <!-- 06.01 TABELA PRINCIPAL -->
+          <section class="card table-card">
+
+            <div class="tabs">
+            <div class="tab active" data-filtro="todos" onclick="ativarAba('todos')">
+                Todos<br><span id="tabTodos">0</span>
+            </div>
+
+            <div class="tab" data-filtro="rascunhos" onclick="ativarAba('rascunhos')">
+                Rascunhos<br><span id="tabRascunhos">0</span>
+            </div>
+
+            <div class="tab" data-filtro="aguardandoMt" onclick="ativarAba('aguardandoMt')">
+                Aguardando MT<br><span id="tabAguardandoMt">0</span>
+            </div>
+
+            <div class="tab" data-filtro="aguardandoFt" onclick="ativarAba('aguardandoFt')">
+                Aguardando FT<br><span id="tabAguardandoFt">0</span>
+            </div>
+
+            <div class="tab" data-filtro="aguardandoLg" onclick="ativarAba('aguardandoLg')">
+                Aguardando LG<br><span id="tabAguardandoLg">0</span>
+            </div>
+
+            <div class="tab" data-filtro="concluidos" onclick="ativarAba('concluidos')">
+                Concluídos<br><span id="tabConcluidos">0</span>
+            </div>
+            </div>
+
+
+            <div class="filters">
+              <div class="field">
+                <label>&nbsp;</label>
+                <input type="text" placeholder="🔍 Buscar por RASP, fornecedor, MT..." />
+              </div>
+
+              <div class="field">
+                <label>Status</label>
+                <select><option>Todos</option></select>
+              </div>
+
+              <div class="field">
+                <label>Responsável atual</label>
+                <select><option>Todos</option></select>
+              </div>
+
+              <div class="field">
+                <label>Período</label>
+                <input type="text" placeholder="📅 Selecione" />
+              </div>
+
+              <button class="btn-light">↻ Limpar filtros</button>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>RASP</th>
+                  <th>Fornecedor</th>
+                  <th>MT</th>
+                  <th>Status</th>
+                  <th>Dias na fase</th>
+                  <th>Responsável atual</th>
+                  <th>Atualizado em</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="tbodyRaspAprovacoes">
+              </tbody>
+            </table>
+
+            <div class="pagination">
+              <span id="totalRegistros">Carregando registros...</span>
+
+              <div class="pages">
+                <button>‹</button>
+                <button class="active">1</button>
+                <button>›</button>
+              </div>
+
+              <span>Registros por página: 10</span>
+            </div>
+          </section>
+
+          <!-- 06.02 KPIS -->
+            <section class="kpis">
+            <div class="card kpi">
+                <div class="kpi-icon" style="background:#dbeafe;color:#2563eb;">◷</div>
+                <div>
+                <span>Aguardando FT</span>
+                <strong id="kpiAguardandoFt">0</strong>
+                <a onclick="ativarAba('aguardandoFt')">Ver todos →</a>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-icon" style="background:#fef3c7;color:#d97706;">⌛</div>
+                <div>
+                <span>Complementos pendentes</span>
+                <strong id="kpiComplementos">0</strong>
+                <a onclick="ativarAba('aguardandoMt')">Ver todos →</a>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-icon" style="background:#dcfce7;color:#16a34a;">✓</div>
+                <div>
+                <span>Aguardando LG</span>
+                <strong id="kpiAguardandoLg">0</strong>
+                <a onclick="ativarAba('aguardandoLg')">Ver todos →</a>
+                </div>
+            </div>
+
+            <div class="card kpi">
+                <div class="kpi-icon" style="background:#ede9fe;color:#7c3aed;">▥</div>
+                <div>
+                <span>Rascunhos</span>
+                <strong id="kpiRascunhos">0</strong>
+                <a onclick="ativarAba('rascunhos')">Ver relatório →</a>
+                </div>
+            </div>
+            </section>
+            </div>
+
+            <!-- =====================================================
+            07. PAINEL LATERAL
+            ===================================================== -->
+        <aside class="card panel">
+
+        <!-- 07.01 CABEÇALHO DO PAINEL -->
+        <div class="panel-header">
+            <div class="panel-title">
+            <strong id="painelNumeroRasp">Selecione um RASP</strong>
+            <span id="painelStatusRasp" class="pill pill-blue">Aguardando seleção</span>
+            </div>
+
+            <button class="btn-light">×</button>
+        </div>
+
+        <!-- 07.02 METADADOS DO RASP -->
+        <div class="meta">
+            <div>
+            <small>Fornecedor</small>
+            <strong id="painelFornecedor">-</strong>
+            </div>
+
+            <div>
+            <small>MT Responsável</small>
+            <strong id="painelMt">-</strong>
+            </div>
+
+            <div>
+            <small>Data de criação</small>
+            <strong id="painelDataCriacao">-</strong>
+            </div>
+        </div>
+
+        <!-- 07.03 ABAS DO PAINEL -->
+        <div class="panel-tabs">
+            <button>Resumo</button>
+            <button class="active">Histórico do fluxo</button>
+            <button>Anexos</button>
+        </div>
+
+        <!-- 07.04 HISTÓRICO DO FLUXO -->
+        <div id="painelTimeline" class="timeline">
+            <div class="event">
+            <span class="dot gray"></span>
+            <strong>Sem RASP selecionado</strong>
+            <p>Clique em uma linha da tabela para visualizar os detalhes do fluxo.</p>
+            </div>
+        </div>
+
+        <!-- 07.05 AÇÕES DISPONÍVEIS -->
+        <div class="actions">
+            <h3>Ações disponíveis para este RASP</h3>
+
+            <div id="painelAcoes">
+            <button class="action-btn">
+                <strong>Nenhuma ação selecionada</strong>
+                <span>Selecione um RASP na tabela para carregar as ações disponíveis.</span>
+            </button>
+            </div>
+
+            <div class="confirm">
+            <label>Observação / Justificativa</label>
+
+            <div class="confirm-row">
+                <textarea id="painelObservacao" placeholder="Digite aqui sua observação..."></textarea>
+                <button id="btnConfirmarAcao" class="btn-confirm">
+                Confirmar ação
+                </button>
+            </div>
+            </div>
+        </div>
+        </aside>
+
+
+      </section>
+    </main>
+  </div>
+
+  <!-- =========================================================
+       08. ASSINATURA PADRÃO
+       ========================================================= -->
+  <div class="developer-signature">
+    Developed by: Josealdo Lyra
+  </div>
+
+    <script>
+  // =========================================================
+  // 09.01 CONFIGURAÇÃO API
+  // =========================================================
+  const API_URL = "http://localhost:5050";
+
+    // =========================================================
+    // 09.02 USUÁRIO LOGADO PROVISÓRIO / PERFIS
+    // =========================================================
+    const PERFIS = {
+    ADMIN: 1,
+    MT: 2,
+    FT: 3,
+    LG: 4,
+    SA: 5,
+    GERENTE: 6,
+    EQF: 7
+    };
+
+    // =========================================================
+    // 09.02 USUÁRIO LOGADO / PERFIS
+    // =========================================================
+    // 1 = ADMIN
+    // 2 = MT
+    // 3 = FT
+    // 4 = LG
+    // 5 = SA
+    // 6 = GERENTE
+    // 7 = EQF
+    // =========================================================
+
+    const USUARIO_LOGADO = {
+    idUsuario: 1,
+    nome: "Josealdo Lyra",
+    idPerfil: 1
+    };
+
+    // =========================================================
+    // PERFIS COM VISUALIZAÇÃO TOTAL
+    // =========================================================
+    const PERFIS_GESTAO_TOTAL = [1, 3, 4, 5, 6];
+
+    // =========================================================
+    // PERFIS COM PODER DE EXECUTAR FLUXO
+    // =========================================================
+    const PERFIS_FLUXO = [1, 3, 4];
+
+    // =========================================================
+    // CONTROLE PAGINAÇÃO
+    // =========================================================
+    let paginaAtual = 1;
+    const registrosPorPagina = 10;
+
+
+    const PERFIS_VEEM_TUDO = [
+    PERFIS.ADMIN,
+    PERFIS.FT,
+    PERFIS.LG,
+    PERFIS.SA,
+    PERFIS.GERENTE
+    ];
+
+
+  // =========================================================
+  // 09.03 ELEMENTOS HTML / ESTADO DA TELA
+  // =========================================================
+  const tbody = document.getElementById("tbodyRaspAprovacoes");
+  const totalRegistros = document.getElementById("totalRegistros");
+
+  let raspsCarregados = [];
+  let fornecedoresCarregados = [];
+  let usuariosCarregados = [];
+  let filtroAtual = "todos";
+  
+  let raspSelecionado = null;
+  let acaoSelecionada = null;
+
+  // =========================================================
+  // 09.04 FUNÇÕES AUXILIARES
+  // =========================================================
+  function buscarFornecedorNome(idFornecedor, fornecedores) {
+    const fornecedor = fornecedores.find(f => f.idFornecedor === idFornecedor);
+    return fornecedor ? fornecedor.nome : "-";
+  }
+
+  function buscarUsuarioNome(idUsuario, usuarios) {
+    const usuario = usuarios.find(u => u.idUsuario === idUsuario);
+    return usuario ? usuario.nome : "-";
+  }
+
+  function formatarData(data) {
+    if (!data) return "-";
+    return new Date(data).toLocaleDateString("pt-BR");
+  }
+
+  function obterDataBase(rasp) {
+    return rasp.dataAprovacaoLg ||
+           rasp.dataEnvioLg ||
+           rasp.dataAprovacaoFt ||
+           rasp.dataEnvioFt ||
+           rasp.dataCriacao;
+  }
+
+  function obterObservacaoDigitada() {
+    const campo = document.getElementById("painelObservacao");
+    return campo ? campo.value.trim() : "";
+  }
+
+
+  function limparObservacao() {
+    const campo = document.getElementById("painelObservacao");
+    if (campo) campo.value = "";
+  }
+
+     // =========================================================
+    // 09.04A CONTROLE DE PERFIL
+    // =========================================================
+    function perfilPodeVerTudo() {
+    return PERFIS_GESTAO_TOTAL.includes(USUARIO_LOGADO.idPerfil);
+    }
+
+    function perfilPodeExecutarFluxo() {
+    return PERFIS_FLUXO.includes(USUARIO_LOGADO.idPerfil);
+    }
+
+    // =========================================================
+    // 09.04B FILTRAR RASPS POR PERFIL
+    // =========================================================
+    function aplicarPermissaoPerfil(rasps) {
+
+    // EQF NÃO ACESSA
+    if (USUARIO_LOGADO.idPerfil === 7) {
+        return [];
+    }
+
+    // ADMIN / FT / LG / SA / GERENTE
+    if (perfilPodeVerTudo()) {
+        return rasps;
+    }
+
+    // MT VE APENAS OS PRÓPRIOS
+    if (USUARIO_LOGADO.idPerfil === 2) {
+        return rasps.filter(r =>
+        r.idAnalistaMt === USUARIO_LOGADO.idUsuario
+        );
+    }
+
+    return [];
+    }
+
+
+  // =========================================================
+  // 09.05 FILTRO DAS ABAS
+  // =========================================================
+  function aplicarFiltroAbas(rasps) {
+    switch (filtroAtual) {
+      case "rascunhos":
+        return rasps.filter(r => r.isRascunho === true);
+
+      case "aguardandoMt":
+        return rasps.filter(r => r.idStatusRasp === 7);
+
+      case "aguardandoFt":
+        return rasps.filter(r => r.idStatusRasp === 2 || r.idStatusRasp === 8);
+
+      case "aguardandoLg":
+        return rasps.filter(r => r.idStatusRasp === 3);
+
+      case "concluidos":
+        return rasps.filter(r =>
+          r.idStatusRasp === 4 ||
+          r.idStatusRasp === 5 ||
+          r.idStatusRasp === 6
+        );
+
+      default:
+        return rasps;
+    }
+  }
+
+        function ativarAba(nomeFiltro) {
+        filtroAtual = nomeFiltro;
+        paginaAtual = 1;
+
+        document.querySelectorAll(".table-card .tab").forEach(tab => {
+            tab.classList.remove("active");
+        });
+
+        const aba = document.querySelector(`.table-card .tab[data-filtro="${nomeFiltro}"]`);
+
+        if (aba) {
+            aba.classList.add("active");
+        }
+
+        atualizarTela();
+
+        setTimeout(() => {
+            document.querySelector(".table-card").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+            });
+        }, 50);
+        }
+
+
+  // =========================================================
+  // 09.06 ATUALIZAR KPIS E ABAS
+  // =========================================================
+  function atualizarIndicadores(rasps) {
+    document.getElementById("kpiAguardandoFt").innerText =
+      rasps.filter(r => r.idStatusRasp === 2).length;
+
+    document.getElementById("kpiComplementos").innerText =
+      rasps.filter(r => r.idStatusRasp === 7 || r.idStatusRasp === 8).length;
+
+    document.getElementById("kpiAguardandoLg").innerText =
+      rasps.filter(r => r.idStatusRasp === 3).length;
+
+    document.getElementById("kpiRascunhos").innerText =
+      rasps.filter(r => r.isRascunho === true).length;
+
+    document.getElementById("tabTodos").innerText = rasps.length;
+
+    document.getElementById("tabRascunhos").innerText =
+      rasps.filter(r => r.isRascunho === true).length;
+
+    document.getElementById("tabAguardandoMt").innerText =
+      rasps.filter(r => r.idStatusRasp === 7).length;
+
+    document.getElementById("tabAguardandoFt").innerText =
+      rasps.filter(r => r.idStatusRasp === 2 || r.idStatusRasp === 8).length;
+
+    document.getElementById("tabAguardandoLg").innerText =
+      rasps.filter(r => r.idStatusRasp === 3).length;
+
+    document.getElementById("tabConcluidos").innerText =
+      rasps.filter(r =>
+        r.idStatusRasp === 4 ||
+        r.idStatusRasp === 5 ||
+        r.idStatusRasp === 6
+      ).length;
+  }
+
+  // =========================================================
+  // 09.07 STATUS VISUAL
+  // =========================================================
+  function obterStatusVisual(rasp) {
+    switch (rasp.idStatusRasp) {
+      case 1:
+        return { texto: "Em preenchimento", classe: "pill-red" };
+
+      case 2:
+        return { texto: "Submetido ao FT", classe: "pill-blue" };
+
+      case 3:
+        return { texto: "Aguardando LG", classe: "pill-green" };
+
+      case 4:
+        return { texto: "SPPS emitido", classe: "pill-green" };
+
+      case 5:
+        return { texto: "Supplier Alert", classe: "pill-green" };
+
+      case 6:
+        return { texto: "SPPS não emitido", classe: "pill-green" };
+
+      case 7:
+        return { texto: "Complemento solicitado ao MT", classe: "pill-yellow" };
+
+      case 8:
+        return { texto: "Complemento solicitado ao FT", classe: "pill-yellow" };
+
+      default:
+        return { texto: "Em análise", classe: "pill-red" };
+    }
+  }
+
+  // =========================================================
+// 09.08 RENDERIZAR TABELA PAGINADA
+// =========================================================
+function renderizarTabela(rasps, fornecedores, usuarios) {
+
+  tbody.innerHTML = "";
+
+  // =====================================================
+  // PAGINAÇÃO
+  // =====================================================
+  const inicio = (paginaAtual - 1) * registrosPorPagina;
+  const fim = inicio + registrosPorPagina;
+
+  const raspsPaginados = rasps.slice(inicio, fim);
+
+  totalRegistros.innerHTML =
+    `Mostrando ${raspsPaginados.length} de ${rasps.length} registros`;
+
+  // =====================================================
+  // SEM REGISTROS
+  // =====================================================
+  if (raspsPaginados.length === 0) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8"
+            style="padding: 24px;
+                   color: #6b7280;
+                   font-weight: 700;">
+          Nenhum RASP encontrado.
+        </td>
+      </tr>
+    `;
+
+    renderizarPaginacao(0);
+    return;
+  }
+
+  // =====================================================
+  // LINHAS
+  // =====================================================
+  raspsPaginados.forEach(rasp => {
+
+    const status = obterStatusVisual(rasp);
+
+    let responsavelHtml = "-";
+
+    switch (rasp.idStatusRasp) {
+
+      case 1:
+      case 7:
+
+        responsavelHtml =
+          `<span class="circle mt">MT</span>
+           ${buscarUsuarioNome(rasp.idAnalistaMt, usuarios)}`;
+
+        break;
+
+      case 2:
+      case 8:
+
+        responsavelHtml =
+          `<span class="circle ft">FT</span>
+           ${buscarUsuarioNome(rasp.idAprovadorFt, usuarios)}`;
+
+        break;
+
+      case 3:
+
+        responsavelHtml =
+          `<span class="circle lg">LG</span> Liderança`;
+
+        break;
+    }
+
+    const fornecedorNome =
+      buscarFornecedorNome(rasp.idFornecedorRasp, fornecedores);
+
+    const mtNome =
+      buscarUsuarioNome(rasp.idAnalistaMt, usuarios);
+
+    const tr = document.createElement("tr");
+
+    tr.addEventListener("click", () => {
+
+    // Remove seleção anterior
+    document.querySelectorAll("#tbodyRaspAprovacoes tr").forEach(linha => {
+        linha.classList.remove("selected");
+    });
+
+    // Marca a linha clicada
+    tr.classList.add("selected");
+
+    // Carrega painel lateral
+    selecionarRaspPainel(rasp);
+    });
+
+
+    tr.innerHTML = `
+      <td>
+        <span class="rasp-link">
+          ${rasp.numeroRasp}
+        </span>
+      </td>
+
+      <td>${fornecedorNome}</td>
+
+      <td>${mtNome}</td>
+
+      <td>
+        <span class="pill ${status.classe}">
+          ${status.texto}
+        </span>
+      </td>
+
+      <td>-</td>
+
+      <td>${responsavelHtml}</td>
+
+      <td>${formatarData(obterDataBase(rasp))}</td>
+
+      <td>›</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  renderizarPaginacao(rasps.length);
+}
+
+// =========================================================
+// 09.08A PAGINAÇÃO REAL
+// =========================================================
+function renderizarPaginacao(totalRegistrosTabela) {
+
+  const totalPaginas =
+    Math.ceil(totalRegistrosTabela / registrosPorPagina);
+
+  const container =
+    document.querySelector(".pages");
+
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // =====================================================
+  // BOTÃO ANTERIOR
+  // =====================================================
+  const btnAnterior = document.createElement("button");
+
+  btnAnterior.innerHTML = "‹";
+
+  btnAnterior.disabled = paginaAtual === 1;
+
+  btnAnterior.onclick = () => {
+
+    if (paginaAtual > 1) {
+      paginaAtual--;
+      atualizarTela();
+    }
+  };
+
+  container.appendChild(btnAnterior);
+
+  // =====================================================
+  // PÁGINAS
+  // =====================================================
+  for (let i = 1; i <= totalPaginas; i++) {
+
+    const btn = document.createElement("button");
+
+    btn.innerText = i;
+
+    if (i === paginaAtual) {
+      btn.classList.add("active");
+    }
+
+    btn.onclick = () => {
+      paginaAtual = i;
+      atualizarTela();
+    };
+
+    container.appendChild(btn);
+  }
+
+  // =====================================================
+  // BOTÃO PRÓXIMO
+  // =====================================================
+  const btnProximo = document.createElement("button");
+
+  btnProximo.innerHTML = "›";
+
+  btnProximo.disabled = paginaAtual >= totalPaginas;
+
+  btnProximo.onclick = () => {
+
+    if (paginaAtual < totalPaginas) {
+      paginaAtual++;
+      atualizarTela();
+    }
+  };
+
+  container.appendChild(btnProximo);
+}
+
+
+  // =========================================================
+  // 09.09 PAINEL LATERAL - SELEÇÃO DO RASP
+  // =========================================================
+  function selecionarRaspPainel(rasp) {
+    raspSelecionado = rasp;
+    acaoSelecionada = null;
+
+    const fornecedor = buscarFornecedorNome(rasp.idFornecedorRasp, fornecedoresCarregados);
+    const mt = buscarUsuarioNome(rasp.idAnalistaMt, usuariosCarregados);
+    const status = obterStatusVisual(rasp);
+
+    document.getElementById("painelNumeroRasp").innerText = rasp.numeroRasp;
+    document.getElementById("painelFornecedor").innerText = fornecedor;
+    document.getElementById("painelMt").innerText = mt;
+    document.getElementById("painelDataCriacao").innerText = formatarData(rasp.dataCriacao);
+
+    const statusEl = document.getElementById("painelStatusRasp");
+    statusEl.className = `pill ${status.classe}`;
+    statusEl.innerText = status.texto;
+
+    limparObservacao();
+    renderizarTimelineBasica(rasp);
+    renderizarAcoesBasicas(rasp);
+  }
+
+  function renderizarTimelineBasica(rasp) {
+    const timeline = document.getElementById("painelTimeline");
+
+    timeline.innerHTML = `
+      <div class="event">
+        <span class="dot gray"></span>
+        <strong>RASP criado</strong>
+        <p>
+          Data: ${formatarData(rasp.dataCriacao)}<br>
+          Status atual: ${obterStatusVisual(rasp).texto}
+        </p>
+      </div>
+
+      ${rasp.dataEnvioFt ? `
+        <div class="event">
+          <span class="dot"></span>
+          <strong style="color:#2563eb;">Submetido ao FT</strong>
+          <p>Data: ${formatarData(rasp.dataEnvioFt)}</p>
+        </div>
+      ` : ""}
+
+      ${rasp.dataAprovacaoFt ? `
+        <div class="event">
+          <span class="dot green"></span>
+          <strong style="color:#16a34a;">Aprovado pelo FT</strong>
+          <p>Data: ${formatarData(rasp.dataAprovacaoFt)}</p>
+        </div>
+      ` : ""}
+
+      ${rasp.dataEnvioLg ? `
+        <div class="event">
+          <span class="dot"></span>
+          <strong style="color:#2563eb;">Enviado ao LG</strong>
+          <p>Data: ${formatarData(rasp.dataEnvioLg)}</p>
+        </div>
+      ` : ""}
+
+      ${rasp.dataAprovacaoLg ? `
+        <div class="event">
+          <span class="dot green"></span>
+          <strong style="color:#16a34a;">Decisão LG registrada</strong>
+          <p>Data: ${formatarData(rasp.dataAprovacaoLg)}</p>
+        </div>
+      ` : ""}
+    `;
+  }
+
+  // =========================================================
+  // 09.10 PAINEL LATERAL - AÇÕES DISPONÍVEIS
+  // =========================================================
+  function criarBotaoAcao(tipo, classe, titulo, descricao) {
+    return `
+      <button class="action-btn ${classe}"
+              onclick="selecionarAcao('${tipo}')">
+        <strong>${titulo}</strong>
+        <span>${descricao}</span>
+      </button>
+    `;
+  }
+
+  function selecionarAcao(tipo) {
+  acaoSelecionada = tipo;
+
+  document.querySelectorAll("#painelAcoes .action-btn").forEach(btn => {
+    btn.classList.remove("acao-selecionada");
+  });
+
+  const botao = Array.from(document.querySelectorAll("#painelAcoes .action-btn"))
+    .find(btn => btn.getAttribute("onclick")?.includes(tipo));
+
+  if (botao) {
+    botao.classList.add("acao-selecionada");
+  }
+}
+
+
+  function renderizarAcoesBasicas(rasp) {
+
+  const acoes = document.getElementById("painelAcoes");
+
+  // =====================================================
+  // PERFIL SOMENTE LEITURA
+  // =====================================================
+  if (!perfilPodeExecutarFluxo()) {
+
+    acoes.innerHTML = `
+      <button class="action-btn">
+        <strong>Modo consulta</strong>
+        <span>
+          Este perfil possui acesso somente leitura.
+        </span>
+      </button>
+    `;
+
+    return;
+  }
+
+  if (rasp.idStatusRasp === 1) {
+    acoes.innerHTML = criarBotaoAcao(
+      "submeter-ft",
+      "blue",
+      "Submeter ao FT",
+      "Enviar RASP preenchido para análise do FT."
+    );
+    return;
+  }
+
+  if (rasp.idStatusRasp === 2) {
+    acoes.innerHTML =
+      criarBotaoAcao(
+        "aprovar-ft",
+        "blue",
+        "Aprovar procedência FT",
+        "Confirmar procedência técnica e enviar ao LG."
+      ) +
+      criarBotaoAcao(
+        "solicitar-complemento-ft",
+        "primary",
+        "Solicitar complemento ao MT",
+        "Devolver para complemento do analista MT."
+      );
+    return;
+  }
+
+  if (rasp.idStatusRasp === 3) {
+    acoes.innerHTML =
+      criarBotaoAcao(
+        "aprovar-lg",
+        "blue",
+        "Registrar decisão LG",
+        "Decidir: não emitir SPPS, Supplier Alert ou SPPS."
+      ) +
+      criarBotaoAcao(
+        "solicitar-complemento-lg",
+        "primary",
+        "Solicitar complemento ao FT",
+        "Solicitar análise complementar do FT."
+      );
+    return;
+  }
+
+  if (rasp.idStatusRasp === 7) {
+    acoes.innerHTML = criarBotaoAcao(
+      "reenviar-complemento-ft",
+      "blue",
+      "Reenviar complemento ao FT",
+      "MT complementou e reenviará ao FT."
+    );
+    return;
+  }
+
+  if (rasp.idStatusRasp === 8) {
+    acoes.innerHTML =
+      criarBotaoAcao(
+        "reenviar-complemento-lg",
+        "blue",
+        "Reenviar complemento ao LG",
+        "FT complementou e reenviará ao LG."
+      ) +
+      criarBotaoAcao(
+        "ft-devolver-complemento-mt",
+        "primary",
+        "Devolver complemento ao MT",
+        "FT precisa de novos dados do MT."
+      );
+    return;
+  }
+
+  acoes.innerHTML = `
+    <button class="action-btn">
+      <strong>Fluxo concluído</strong>
+      <span>Não há ações pendentes para este status.</span>
+    </button>
+  `;
+}
+
+
+  // =========================================================
+  // 09.11 EXECUTAR AÇÃO - CHAMADA API
+  // =========================================================
+  async function executarAcaoFluxo() {
+    if (!raspSelecionado) {
+      alert("Selecione um RASP antes de confirmar.");
+      return;
+    }
+
+    if (!acaoSelecionada) {
+      alert("Selecione uma ação antes de confirmar.");
+      return;
+    }
+
+    const obs = obterObservacaoDigitada();
+
+    let endpoint = "";
+    let body = {};
+
+    switch (acaoSelecionada) {
+      case "submeter-ft":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/submeter-ft`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario
+        };
+        break;
+
+      case "aprovar-ft":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/aprovar-ft`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          observacaoFt: obs || "Procedência técnica aprovada pelo FT."
+        };
+        break;
+
+      case "solicitar-complemento-ft":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/solicitar-complemento-ft`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          motivoComplemento: obs
+        };
+        break;
+
+      case "reenviar-complemento-ft":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/reenviar-complemento-ft`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          observacaoReenvio: obs
+        };
+        break;
+
+      case "aprovar-lg":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/aprovar-lg`;
+
+        const decisaoLgTexto = prompt(
+          "Decisão LG:\n1 = Não emitir SPPS\n2 = Supplier Alert\n3 = SPPS",
+          "2"
+        );
+
+        const decisaoLg = Number(decisaoLgTexto);
+
+        if (![1, 2, 3].includes(decisaoLg)) {
+          alert("Decisão LG inválida.");
+          return;
+        }
+
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          decisaoLg,
+          observacaoLg: obs || "Decisão registrada pelo LG."
+        };
+        break;
+
+      case "solicitar-complemento-lg":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/solicitar-complemento-lg`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          motivoComplemento: obs
+        };
+        break;
+
+      case "reenviar-complemento-lg":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/reenviar-complemento-lg`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          observacaoReenvio: obs
+        };
+        break;
+
+      case "ft-devolver-complemento-mt":
+        endpoint = `/rasp/${raspSelecionado.idRasp}/ft-devolver-complemento-mt`;
+        body = {
+          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
+          motivoComplemento: obs
+        };
+        break;
+
+      default:
+        alert("Ação não reconhecida.");
+        return;
+    }
+
+    try {
+      const resposta = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!resposta.ok) {
+        const erroTexto = await resposta.text();
+        alert(`Erro ao executar ação:\n${erroTexto}`);
+        return;
+      }
+
+      alert("Ação executada com sucesso.");
+
+      limparObservacao();
+      await carregarRasps();
+
+    } catch (erro) {
+      console.error(erro);
+      alert("Erro de comunicação com a API.");
+    }
+  }
+
+    // =========================================================
+    // 09.11A ATUALIZAÇÃO CENTRAL DA TELA
+    // =========================================================
+    function atualizarTela() {
+
+    const raspsPerfil =     
+        aplicarPermissaoPerfil(raspsCarregados);
+
+    atualizarIndicadores(raspsPerfil);
+
+    const raspsFiltrados =
+        aplicarFiltroAbas(raspsPerfil);
+
+    renderizarTabela(
+        raspsFiltrados,
+        fornecedoresCarregados,
+        usuariosCarregados
+    );
+    }
+
+
+    // =========================================================
+    // 09.12 CARREGAR DADOS DA API
+    // =========================================================
+    async function carregarRasps() {
+
+    try {
+
+        const [
+        respRasps,
+        respFornecedores,
+        respUsuarios
+        ] = await Promise.all([
+
+        fetch(`${API_URL}/rasp`),
+        fetch(`${API_URL}/fornecedor-rasp`),
+        fetch(`${API_URL}/usuarios`)
+
+        ]);
+
+
+        // =====================================================
+        // CONVERTER JSON
+        // =====================================================
+        const rasps = await respRasps.json();
+
+        const fornecedores =
+        await respFornecedores.json();
+
+        const usuarios =
+        await respUsuarios.json();
+
+
+        // =====================================================
+        // ARMAZENAR EM MEMÓRIA
+        // =====================================================
+        raspsCarregados = rasps;
+
+        fornecedoresCarregados =
+        fornecedores;
+
+        usuariosCarregados =
+        usuarios;
+
+
+        // =====================================================
+        // ATUALIZAR TELA
+        // =====================================================
+        atualizarTela();
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        tbody.innerHTML = `
+        <tr>
+            <td colspan="8"
+                style="
+                padding:24px;
+                color:#dc2626;
+                font-weight:700;
+                ">
+            Erro ao carregar dados.
+            Verifique se a API está rodando.
+            </td>
+        </tr>
+        `;
+    }
+    }
+
+
+    // =========================================================
+    // 09.13 USUÁRIO LOGADO - TOPO DA TELA
+    // =========================================================
+    function obterNomePerfil(idPerfil) {
+    switch (idPerfil) {
+        case 1: return "ADMIN";
+        case 2: return "MT";
+        case 3: return "FT";
+        case 4: return "LG";
+        case 5: return "SA";
+        case 6: return "GERENTE";
+        case 7: return "EQF";
+        default: return "NÃO DEFINIDO";
+    }
+    }
+
+    function atualizarUsuarioTopo() {
+    document.getElementById("nomeUsuarioLogado").innerText =
+        USUARIO_LOGADO.nome;
+
+    document.getElementById("perfilUsuarioLogado").innerText =
+        `Perfil: ${obterNomePerfil(USUARIO_LOGADO.idPerfil)}`;
+
+    document.getElementById("avatarUsuario").innerText =
+        USUARIO_LOGADO.nome
+        .split(" ")
+        .map(parte => parte[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
+    }
+
+
+    // =========================================================
+    // 09.14 INICIALIZAÇÃO
+    // =========================================================
+    document.getElementById("btnConfirmarAcao")
+    .addEventListener("click", executarAcaoFluxo);
+
+    atualizarUsuarioTopo();
+    carregarRasps();
+
+</script>
+
+
+</body>
+</html>
