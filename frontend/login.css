@@ -493,3 +493,64 @@ body {
   }
 
 }
+
+/* =========================================================
+   MENSAGEM DO SISTEMA
+   ========================================================= */
+.mensagem-sistema {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(2, 8, 22, 0.72);
+    backdrop-filter: blur(6px);
+}
+
+.mensagem-sistema.oculto {
+    display: none;
+}
+
+.mensagem-caixa {
+    width: 90%;
+    max-width: 420px;
+    padding: 32px;
+    border-radius: 22px;
+    background: rgba(8, 14, 28, 0.98);
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.25);
+    text-align: center;
+}
+
+.mensagem-icone {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #38bdf8);
+    font-size: 26px;
+    font-weight: bold;
+}
+
+#mensagemTexto {
+    color: #e5eefc;
+    font-size: 17px;
+    line-height: 1.45;
+    margin-bottom: 24px;
+}
+
+#mensagemOk {
+    width: 140px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #2563eb, #38bdf8);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}

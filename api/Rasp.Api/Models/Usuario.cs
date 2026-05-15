@@ -3,45 +3,80 @@ using System.Text.Json.Serialization;
 
 namespace Rasp.Api.Models
 {
-    // Entidade de usuário do sistema RASP.
+    // =========================================================
+    // 01. ENTIDADE USUÁRIO GM
+    // =========================================================
+    // Representa usuários internos GM que acessam o sistema RASP.
     //
-    // Esta classe representa os usuários que acessam o sistema e participam
-    // do fluxo do processo, como:
+    // Exemplos de perfis:
     // - ADMIN
     // - ANALISTA
     // - FT
     // - LG
     //
-    // O vínculo com o perfil é feito por IdPerfil.
-    // O vínculo com o turno é feito por IdTurnoRasp.
+    // A autenticação será feita usando:
+    // - GMIN
+    // - SenhaHash
+    //
+    // A troca obrigatória de senha será controlada por:
+    // - PrimeiroAcesso
+    // =========================================================
     public class Usuario
     {
-        // Identificador interno do usuário
+        // =====================================================
+        // 01.01 IDENTIFICAÇÃO
+        // =====================================================
         public int IdUsuario { get; set; }
 
-        // Nome do usuário
         public string Nome { get; set; } = string.Empty;
 
-        // Identificação corporativa / matrícula / GMIN
+        public string? Sobrenome { get; set; }
+
         public string Gmin { get; set; } = string.Empty;
 
-        // E-mail do usuário
+
+        // =====================================================
+        // 01.02 DADOS CORPORATIVOS
+        // =====================================================
         public string Email { get; set; } = string.Empty;
 
-        // Cargo do usuário
         public string Cargo { get; set; } = string.Empty;
 
-        // Indica se o usuário está ativo no sistema
+
+        // =====================================================
+        // 01.03 CONTROLE DE ACESSO
+        // =====================================================
         public bool Ativo { get; set; }
 
-        // Perfil de acesso do usuário
+        public bool Administrador { get; set; }
+
+        public bool PrimeiroAcesso { get; set; }
+
         public int? IdPerfil { get; set; }
 
-        // Turno vinculado ao usuário
         public int? IdTurnoRasp { get; set; }
 
-        // Campo auxiliar não mapeado no banco e não exposto no JSON.
-        // Mantido fora do persistido para evitar gravação indevida e exposição na API.
+
+        // =====================================================
+        // 01.04 SENHA
+        // =====================================================
+        [JsonIgnore]
+        public string? SenhaHash { get; set; }
+
+
+        // =====================================================
+        // 01.05 AUDITORIA
+        // =====================================================
+        public DateTime DataCriacao { get; set; }
+
+        public DateTime? UltimoLogin { get; set; }
+
+
+        // =====================================================
+        // 01.06 CAMPO AUXILIAR NÃO MAPEADO
+        // =====================================================
+        // Usado apenas para entrada temporária de senha, quando necessário.
+        // Não é salvo no banco e não é exposto no JSON.
         [NotMapped]
         [JsonIgnore]
         public string Senha { get; set; } = string.Empty;

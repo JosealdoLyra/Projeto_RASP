@@ -121,6 +121,26 @@
       box-shadow: 0 0 18px rgba(37,99,235,0.35);
     }
 
+    .btn-sair-lateral {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.btn-sair-lateral:hover {
+  background: rgba(239,68,68,0.16);
+  color: #fecaca;
+}
+
+
     /* =========================================================
     MENU ADMINISTRATIVO
     ========================================================= */
@@ -199,12 +219,27 @@
     }
 
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--borda);
-    }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.topbar > div:first-child {
+  min-width: 0;
+}
+
+.usuario-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 210px;
+  justify-content: flex-end;
+}
+
 
     .topbar h1 {
       font-size: 34px;
@@ -214,12 +249,6 @@
     .topbar p {
       margin-top: 4px;
       color: var(--texto-secundario);
-    }
-
-    .usuario-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
     }
 
     .avatar {
@@ -1004,6 +1033,14 @@
 
       <nav class="menu"></nav>
 
+<button
+  type="button"
+  class="btn-sair-lateral"
+  onclick="sairDoSistema()">
+  ⇱ Sair
+</button>
+
+
 
 
 
@@ -1011,7 +1048,7 @@
         <h3>FILTROS RÁPIDOS</h3>
 
         <div class="campo">
-          <label>F ornecedor</label>
+          <label>Fornecedor</label>
           <select id="filtroFornecedor">
             <option value="">Todos</option>
           </select>
@@ -1073,11 +1110,19 @@
         </div>
 
         <div class="usuario-box">
-          <div class="avatar"></div>
+          <div class="avatar" id="avatarUsuario"></div>
 
           <div>
-            <strong>Josealdo Lyra</strong>
-            <div style="color:#93a4c3; font-size:13px;">MT - Inspetor</div>
+            <strong id="nomeUsuarioLogado">
+  -
+</strong>
+
+<div
+  id="perfilUsuarioLogado"
+  style="color:#93a4c3; font-size:13px;">
+  -
+</div>
+
           </div>
         </div>
       </section>
@@ -2329,6 +2374,18 @@
     <script>
     carregarMenuLateral("dashboard");
     </script>
+
+<script src="./sessao.js"></script>
+
+<script>
+  protegerPagina();
+
+  window.addEventListener("load", function () {
+    preencherUsuarioLogadoNaTela();
+  });
+</script>
+
+
 
 </body>
 </html>

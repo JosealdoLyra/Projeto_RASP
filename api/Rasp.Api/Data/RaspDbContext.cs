@@ -20,6 +20,8 @@ namespace Rasp.Api.Data
         public DbSet<FornecedorRasp> FornecedorRasp => Set<FornecedorRasp>();
         public DbSet<PerfilRasp> PerfilRasp => Set<PerfilRasp>();
         public DbSet<Usuario> Usuarios => Set<Usuario>();
+        public DbSet<UsuarioTerceiro> UsuariosTerceiros => Set<UsuarioTerceiro>();
+
         public DbSet<RaspArquivo> RaspArquivo => Set<RaspArquivo>();
         public DbSet<RaspEntity> Rasp => Set<RaspEntity>();
 
@@ -259,40 +261,151 @@ namespace Rasp.Api.Data
                     .HasColumnName("ordem_exibicao");
             });
 
-            // -----------------------------------------------------------------
-            // USUÁRIOS
-            // -----------------------------------------------------------------
-            modelBuilder.Entity<Usuario>(entity =>
-            {
-                entity.ToTable("usuarios");
+// -----------------------------------------------------------------
+// USUÁRIOS GM
+// -----------------------------------------------------------------
+modelBuilder.Entity<Usuario>(entity =>
+{
+    entity.ToTable("usuarios");
 
-                entity.HasKey(e => e.IdUsuario);
 
-                entity.Property(e => e.IdUsuario)
-                    .HasColumnName("id_usuario");
+    entity.HasKey(e => e.IdUsuario);
 
-                entity.Property(e => e.Nome)
-                    .HasColumnName("nome");
 
-                entity.Property(e => e.Gmin)
-                    .HasColumnName("gmin");
+    // =============================================================
+    // IDENTIFICAÇÃO
+    // =============================================================
+    entity.Property(e => e.IdUsuario)
+        .HasColumnName("id_usuario");
 
-                entity.Property(e => e.Email)
-                    .HasColumnName("email");
 
-                entity.Property(e => e.Cargo)
-                    .HasColumnName("cargo");
+    entity.Property(e => e.Nome)
+        .HasColumnName("nome");
 
-                entity.Property(e => e.Ativo)
-                    .HasColumnName("ativo");
 
-                entity.Property(e => e.IdPerfil)
-                    .HasColumnName("id_perfil");
-                entity.Property(e => e.IdTurnoRasp)
-                    .HasColumnName("id_turno_rasp");
-                entity.Property(e => e.Ativo)
-                    .HasColumnName("ativo");
-            });
+    entity.Property(e => e.Sobrenome)
+        .HasColumnName("sobrenome");
+
+
+    entity.Property(e => e.Gmin)
+        .HasColumnName("gmin");
+
+
+    // =============================================================
+    // DADOS CORPORATIVOS
+    // =============================================================
+    entity.Property(e => e.Email)
+        .HasColumnName("email");
+
+
+    entity.Property(e => e.Cargo)
+        .HasColumnName("cargo");
+
+
+    // =============================================================
+    // CONTROLE DE ACESSO
+    // =============================================================
+    entity.Property(e => e.Ativo)
+        .HasColumnName("ativo");
+
+
+    entity.Property(e => e.Administrador)
+        .HasColumnName("administrador");
+
+
+    entity.Property(e => e.PrimeiroAcesso)
+        .HasColumnName("primeiro_acesso");
+
+
+    entity.Property(e => e.IdPerfil)
+        .HasColumnName("id_perfil");
+
+
+    entity.Property(e => e.IdTurnoRasp)
+        .HasColumnName("id_turno_rasp");
+
+
+    // =============================================================
+    // SENHA
+    // =============================================================
+    entity.Property(e => e.SenhaHash)
+        .HasColumnName("senha_hash");
+
+
+    // =============================================================
+    // AUDITORIA
+    // =============================================================
+    entity.Property(e => e.DataCriacao)
+        .HasColumnName("data_criacao");
+
+
+    entity.Property(e => e.UltimoLogin)
+        .HasColumnName("ultimo_login");
+});
+
+// -----------------------------------------------------------------
+// USUÁRIOS TERCEIROS
+// -----------------------------------------------------------------
+modelBuilder.Entity<UsuarioTerceiro>(entity =>
+{
+    entity.ToTable("usuarios_terceiros");
+
+
+    entity.HasKey(e => e.IdUsuarioTerceiro);
+
+
+    // =============================================================
+    // IDENTIFICAÇÃO
+    // =============================================================
+    entity.Property(e => e.IdUsuarioTerceiro)
+        .HasColumnName("id_usuario_terceiro");
+
+
+    entity.Property(e => e.Nome)
+        .HasColumnName("nome");
+
+
+    entity.Property(e => e.Sobrenome)
+        .HasColumnName("sobrenome");
+
+
+    entity.Property(e => e.Gmid)
+        .HasColumnName("gmid");
+
+
+    // =============================================================
+    // EMPRESA
+    // =============================================================
+    entity.Property(e => e.IdEmpresaSelecao)
+        .HasColumnName("id_empresa_selecao");
+
+
+    // =============================================================
+    // CONTROLE DE ACESSO
+    // =============================================================
+    entity.Property(e => e.Ativo)
+        .HasColumnName("ativo");
+
+
+    entity.Property(e => e.PrimeiroAcesso)
+        .HasColumnName("primeiro_acesso");
+
+
+    // =============================================================
+    // SENHA
+    // =============================================================
+    entity.Property(e => e.SenhaHash)
+        .HasColumnName("senha_hash");
+
+
+    // =============================================================
+    // AUDITORIA
+    // =============================================================
+    entity.Property(e => e.DataCriacao)
+        .HasColumnName("data_criacao");
+});
+
+
 
             // -----------------------------------------------------------------
             // RASP

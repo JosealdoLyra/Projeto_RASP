@@ -5,6 +5,8 @@ using Npgsql;
 using Rasp.Api.Data;
 using Rasp.Api.Models;
 using Rasp.Api.Models.Requests;
+using Rasp.Api.Models.Auth;
+using Rasp.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -109,6 +111,10 @@ if (tempoFaseMinutos < 0)
 
 var app = builder.Build();
 
+//Console.WriteLine(SenhaService.GerarHash("123456"));
+
+
+
 app.UseCors("PermitirFront");
 
 // -----------------------------------------------------------------------------
@@ -119,6 +125,207 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// -----------------------------------------------------------------------------
+// 04. LOGIN DO SISTEMA
+// -----------------------------------------------------------------------------
+
+app.MapPost("/login", async (
+    LoginRequest request,
+    RaspDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Login))
+        return Results.BadRequest("Login obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(request.Senha))
+        return Results.BadRequest("Senha obrigatória.");
+
+    var loginNormalizado = request.Login.Trim().ToLower();
+
+    var usuarioGm = await db.Usuarios
+    .FirstOrDefaultAsync(u =>
+        u.Ativo &&
+        (
+            u.Gmin.ToLower() == loginNormalizado ||
+            (u.Nome + " " + (u.Sobrenome ?? "")).Trim().ToLower() == loginNormalizado
+        ));
+
+
+    if (usuarioGm is not null)
+    {
+        if (string.IsNullOrWhiteSpace(usuarioGm.SenhaHash))
+            return Results.BadRequest("Usuário sem senha cadastrada.");
+
+        var senhaValida = SenhaService.ValidarSenha(
+            request.Senha,
+            usuarioGm.SenhaHash
+        );
+
+        if (!senhaValida)
+            return Results.BadRequest("Usuário ou senha inválidos.");
+
+        usuarioGm.UltimoLogin = DateTime.UtcNow;
+
+        await db.SaveChangesAsync();
+
+        var perfil = await db.PerfilRasp
+            .Where(p => p.IdPerfil == usuarioGm.IdPerfil)
+            .Select(p => p.Nome)
+            .FirstOrDefaultAsync();
+
+        return Results.Ok(new LoginResponse
+        {
+            Sucesso = true,
+            Mensagem = "Login realizado com sucesso.",
+            TipoUsuario = "GM",
+            IdUsuario = usuarioGm.IdUsuario,
+            NomeCompleto = $"{usuarioGm.Nome} {usuarioGm.Sobrenome}".Trim(),
+            Gmid = usuarioGm.Gmin,
+            Perfil = perfil ?? "",
+            Administrador = usuarioGm.Administrador,
+            PrimeiroAcesso = usuarioGm.PrimeiroAcesso,
+            TelaInicial = usuarioGm.Administrador ? "admin" : "dashboard"
+        });
+    }
+
+    var usuarioTerceiro = await db.UsuariosTerceiros
+        .FirstOrDefaultAsync(u =>
+            u.Gmid.ToLower() == loginNormalizado &&
+            u.Ativo);
+
+    if (usuarioTerceiro is not null)
+    {
+        var senhaValida = SenhaService.ValidarSenha(
+            request.Senha,
+            usuarioTerceiro.SenhaHash
+        );
+
+        if (!senhaValida)
+            return Results.BadRequest("Usuário ou senha inválidos.");
+
+        return Results.Ok(new LoginResponse
+        {
+            Sucesso = true,
+            Mensagem = "Login realizado com sucesso.",
+            TipoUsuario = "TERCEIRO",
+            IdUsuario = usuarioTerceiro.IdUsuarioTerceiro,
+            NomeCompleto = $"{usuarioTerceiro.Nome} {usuarioTerceiro.Sobrenome}".Trim(),
+            Gmid = usuarioTerceiro.Gmid,
+            Perfil = "TERCEIRO_SELECAO",
+            Administrador = false,
+            PrimeiroAcesso = usuarioTerceiro.PrimeiroAcesso,
+            TelaInicial = "selecao-operacional"
+        });
+    }
+
+    return Results.BadRequest("Usuário ou senha inválidos.");
+})
+.WithName("LoginSistema");
+
+
+// -----------------------------------------------------------------------------
+// 04A. TROCA DE SENHA
+// -----------------------------------------------------------------------------
+
+app.MapPost("/login/trocar-senha", async (
+    TrocarSenhaRequest request,
+    RaspDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Login))
+        return Results.BadRequest("Login obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(request.SenhaAtual))
+        return Results.BadRequest("Senha atual obrigatória.");
+
+    if (string.IsNullOrWhiteSpace(request.NovaSenha))
+        return Results.BadRequest("Nova senha obrigatória.");
+
+    if (string.IsNullOrWhiteSpace(request.ConfirmarNovaSenha))
+        return Results.BadRequest("Confirmação da nova senha obrigatória.");
+
+    if (request.NovaSenha != request.ConfirmarNovaSenha)
+        return Results.BadRequest("Nova senha e confirmação não conferem.");
+
+    if (request.NovaSenha.Length < 8)
+        return Results.BadRequest("A nova senha deve ter no mínimo 8 caracteres.");
+
+    if (!request.NovaSenha.Any(char.IsLetter))
+        return Results.BadRequest("A nova senha deve conter pelo menos uma letra.");
+
+    if (!request.NovaSenha.Any(char.IsDigit))
+        return Results.BadRequest("A nova senha deve conter pelo menos um número.");
+
+    var loginNormalizado = request.Login.Trim().ToLower();
+
+    var usuarioGm = await db.Usuarios
+    .FirstOrDefaultAsync(u =>
+        u.Ativo &&
+        (
+            u.Gmin.ToLower() == loginNormalizado ||
+            (u.Nome + " " + (u.Sobrenome ?? "")).Trim().ToLower() == loginNormalizado
+        ));
+
+
+    if (usuarioGm is not null)
+    {
+        if (string.IsNullOrWhiteSpace(usuarioGm.SenhaHash))
+            return Results.BadRequest("Usuário sem senha cadastrada.");
+
+        var senhaAtualValida = SenhaService.ValidarSenha(
+            request.SenhaAtual,
+            usuarioGm.SenhaHash
+        );
+
+        if (!senhaAtualValida)
+            return Results.BadRequest("Senha atual inválida.");
+
+        usuarioGm.SenhaHash = SenhaService.GerarHash(request.NovaSenha);
+        usuarioGm.PrimeiroAcesso = false;
+        usuarioGm.UltimoLogin = DateTime.UtcNow;
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new
+        {
+            sucesso = true,
+            mensagem = "Senha alterada com sucesso.",
+            tipoUsuario = "GM",
+            primeiroAcesso = usuarioGm.PrimeiroAcesso
+        });
+    }
+
+    var usuarioTerceiro = await db.UsuariosTerceiros
+        .FirstOrDefaultAsync(u =>
+            u.Gmid.ToLower() == loginNormalizado &&
+            u.Ativo);
+
+    if (usuarioTerceiro is not null)
+    {
+        var senhaAtualValida = SenhaService.ValidarSenha(
+            request.SenhaAtual,
+            usuarioTerceiro.SenhaHash
+        );
+
+        if (!senhaAtualValida)
+            return Results.BadRequest("Senha atual inválida.");
+
+        usuarioTerceiro.SenhaHash = SenhaService.GerarHash(request.NovaSenha);
+        usuarioTerceiro.PrimeiroAcesso = false;
+
+        await db.SaveChangesAsync();
+
+        return Results.Ok(new
+        {
+            sucesso = true,
+            mensagem = "Senha alterada com sucesso.",
+            tipoUsuario = "TERCEIRO",
+            primeiroAcesso = usuarioTerceiro.PrimeiroAcesso
+        });
+    }
+
+    return Results.BadRequest("Usuário não encontrado.");
+})
+.WithName("TrocarSenhaLogin");
 
 // -----------------------------------------------------------------------------
 // 04. RASP ANOTACAO

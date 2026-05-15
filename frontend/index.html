@@ -140,7 +140,14 @@
           <p>Cadastro inicial para nascimento do RASP em rascunho.</p>
         </div>
 
-        <button type="button" class="ghost-btn">Salvar rascunho</button>
+        <div class="topbar-actions">
+    <button type="button" class="ghost-btn">Salvar rascunho</button>
+
+    <button type="button" class="ghost-btn" onclick="sairDoSistema()">
+        Sair
+    </button>
+</div>
+
       </header>
 
       <!-- =====================================================
@@ -797,6 +804,14 @@
   });
 </script>
 
+
+<script src="./sessao.js"></script>
+
+<script>
+  protegerPagina();
+  preencherUsuarioLogadoNaTela();
+
+</script>
 
 </body>
 </html>

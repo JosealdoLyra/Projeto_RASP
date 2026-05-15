@@ -208,6 +208,22 @@
       text-decoration: none;
     }
 
+    .footer-menu button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.86);
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-menu button:hover {
+  color: #fecaca;
+}
+
+
     /* =========================================================
        02.05 CABEÇALHO SUPERIOR
        ========================================================= */
@@ -805,9 +821,13 @@
 
       <!-- 04.03 RODAPÉ MENU -->
       <div class="footer-menu">
-        <a>❔ Ajuda</a>
-        <a>⇱ Sair</a>
-      </div>
+      <a>❔ Ajuda</a>
+
+      <button type="button" onclick="sairDoSistema()">
+        ⇱ Sair
+      </button>
+    </div>
+
     </aside>
 
     <!-- =========================================================
@@ -827,9 +847,16 @@
           <div class="avatar" id="avatarUsuario">JS</div>
 
             <div class="user-info">
-            <strong id="nomeUsuarioLogado">Josealdo Lyra</strong>
-            <span id="perfilUsuarioLogado">Perfil: ADMIN</span>
-          </div>
+            <strong id="nomeUsuarioLogado">
+  -
+</strong>
+
+<div
+  id="perfilUsuarioLogado"
+  style="color:#93a4c3; font-size:13px;">
+  -
+</div>
+
 
         </div>
       </header>
@@ -2001,6 +2028,14 @@ function renderizarPaginacao(totalRegistrosTabela) {
     carregarRasps();
 
 </script>
+
+<script src="./sessao.js"></script>
+
+<script>
+  protegerPagina();
+  preencherUsuarioLogadoNaTela();
+</script>
+
 
 
 </body>

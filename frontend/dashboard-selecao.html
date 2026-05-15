@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
   <!-- =========================================================
        01. CONFIGURAÇÕES BÁSICAS
        ========================================================= -->
@@ -204,11 +203,35 @@
       gap: 12px;
     }
 
+    .btn-sair {
+      margin-left: 8px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      color: #e5eefc;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-sair:hover {
+      background: rgba(239,68,68,0.18);
+      border-color: rgba(239,68,68,0.45);
+      color: #fecaca;
+    }
+
     .avatar {
       width: 48px;
       height: 48px;
       border-radius: 50%;
       background: linear-gradient(135deg, #2563eb, #9333ea);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
     }
 
     .kpi-grid {
@@ -457,6 +480,16 @@
       font-weight: 700;
     }
 
+    .assinatura-sistema {
+      margin-top: auto;
+      padding-top: 14px;
+      text-align: right;
+      color: #facc15;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
     @media (max-width: 1500px) {
       .layout {
         grid-template-columns: 230px 1fr;
@@ -534,9 +567,9 @@
       }
 
       tbody tr.linha-ativa {
-      background: transparent !important;
-      box-shadow: none !important;
-      outline: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
       }
 
       tbody tr.linha-ativa td {
@@ -653,8 +686,9 @@
         font-size: 11px !important;
         color: #111827 !important;
       }
+
       .assinatura-sistema {
-          display: none !important;
+        display: none !important;
       }
 
       .assinatura-amarela {
@@ -694,44 +728,43 @@
         margin: 12px 0 8px !important;
       }
 
-       .print-item-timeline {
-          position: relative !important;
-          display: flex !important;
-          flex-direction: column !important;
-          gap: 10px !important;
-          border-left: 2px solid #60a5fa !important;
-          padding-left: 22px !important;
-          margin-left: 12px !important;
-          font-size: 11px !important;
-        }
+      .print-item-timeline {
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        border-left: 2px solid #60a5fa !important;
+        padding-left: 22px !important;
+        margin-left: 12px !important;
+        font-size: 11px !important;
+      }
 
-        .print-item-timeline::before {
-          display: none !important;
-        }
+      .print-item-timeline::before {
+        display: none !important;
+      }
 
-        .print-evento {
-          position: relative !important;
-          border: none !important;
-          border-radius: 0 !important;
-          margin-left: 0 !important;
-          padding: 3px 0 10px 8px !important;
-          background: transparent !important;
-          page-break-inside: avoid !important;
-          margin-bottom: 4px !important;
-        }
+      .print-evento {
+        position: relative !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin-left: 0 !important;
+        padding: 3px 0 10px 8px !important;
+        background: transparent !important;
+        page-break-inside: avoid !important;
+        margin-bottom: 4px !important;
+      }
 
-        .print-evento::before {
-          content: "" !important;
-          position: absolute !important;
-          left: -29px !important;
-          top: 22px !important;
-          width: 11px !important;
-          height: 11px !important;
-          border-radius: 50% !important;
-          background: #60a5fa !important;
-          border: 2px solid #ffffff !important;
-        }
-
+      .print-evento::before {
+        content: "" !important;
+        position: absolute !important;
+        left: -29px !important;
+        top: 22px !important;
+        width: 11px !important;
+        height: 11px !important;
+        border-radius: 50% !important;
+        background: #60a5fa !important;
+        border: 2px solid #ffffff !important;
+      }
 
       .print-evento-data {
         font-size: 10px !important;
@@ -750,26 +783,11 @@
         font-size: 10.5px !important;
         color: #111827 !important;
       }
-
     }
-
-    .assinatura-sistema {
-      margin-top: auto;
-      padding-top: 14px;
-      text-align: right;
-      color: #facc15;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-    }
-
   </style>
-
 </head>
 
 <body>
-
-  
   <!-- =========================================================
        03. LAYOUT PRINCIPAL
        ========================================================= -->
@@ -784,7 +802,6 @@
            04.01 LOGO
            ===================================================== -->
       <div class="logo-area">
-
         <div class="logo-icon">
           🛡️
         </div>
@@ -798,7 +815,6 @@
             Sistema de Qualidade
           </div>
         </div>
-
       </div>
 
       <!-- =====================================================
@@ -806,11 +822,10 @@
            ===================================================== -->
       <nav class="menu"></nav>
 
-        <!-- =====================================================
-      04.03 FILTROS
-      ===================================================== -->
+      <!-- =====================================================
+           04.03 FILTROS
+           ===================================================== -->
       <div class="filtros-box">
-
         <h3>FILTROS RÁPIDOS</h3>
 
         <div class="campo">
@@ -841,9 +856,7 @@
         <button class="btn-filtro" id="btnAplicarFiltros" type="button">
           Aplicar Filtros
         </button>
-
       </div>
-
 
     </aside>
 
@@ -851,7 +864,8 @@
          05. CONTEÚDO CENTRAL
          ========================================================= -->
     <main class="content-area">
-        <section class="print-cabecalho-dashboard">
+
+      <section class="print-cabecalho-dashboard">
         <div>
           <h1>Dashboard Administrativo - Seleção</h1>
           <p>RASP • Sistema da Qualidade • Gestão diária de itens em seleção</p>
@@ -864,14 +878,11 @@
         </div>
       </section>
 
-
       <!-- =====================================================
            05.01 TOPBAR
            ===================================================== -->
       <section class="topbar">
-
         <div>
-
           <h1>
             Seleção Operacional
           </h1>
@@ -879,949 +890,744 @@
           <p>
             Gestão diária de itens em seleção
           </p>
-
         </div>
 
         <div class="usuario-box">
-
-          <div class="avatar"></div>
+          <div class="avatar" id="avatarUsuario"></div>
 
           <div>
-
-            <strong>
-              Josealdo Lyra
+            <strong id="nomeUsuarioLogado">
+              -
             </strong>
 
-            <div style="color:#93a4c3; font-size:13px;">
-              MT - Inspetor
+            <div
+              id="perfilUsuarioLogado"
+              style="color:#93a4c3; font-size:13px;">
+              -
             </div>
-
           </div>
 
+          <button type="button" class="btn-sair" onclick="sairDoSistema()">
+            Sair
+          </button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           05.02 KPI CARDS
+           ===================================================== -->
+      <section class="kpi-grid">
+
+        <div class="kpi-card">
+          <h3>Itens em Seleção</h3>
+          <div class="kpi-value" id="kpiTotalItens">0</div>
+          <div class="kpi-footer">Em andamento</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Atrasados</h3>
+          <div class="kpi-value" id="kpiAtrasados">0</div>
+          <div class="kpi-footer">&gt; 2 dias sem apontamento</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Itens com Trava</h3>
+          <div class="kpi-value" id="kpiComTrava">0</div>
+          <div class="kpi-footer">Bloqueados</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Sem apontamento hoje</h3>
+          <div class="kpi-value" id="kpiSemApontHoje">0</div>
+          <div class="kpi-footer">Verificar</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Tempo médio</h3>
+          <div class="kpi-value" id="kpiTempoMedio">0 dias</div>
+          <div class="kpi-footer">Em seleção</div>
         </div>
 
       </section>
 
       <!-- =====================================================
-     05.02 KPI CARDS
-     ===================================================== -->
-<section class="kpi-grid">
+           05.03 TABELA
+           ===================================================== -->
+      <section class="painel-tabela">
 
-  <!-- KPI 01 - TOTAL DE ITENS EM SELEÇÃO -->
-  <div class="kpi-card">
-    <h3>Itens em Seleção</h3>
+        <div class="painel-header">
+          <div>
+            <h2>Itens em Seleção Ativos</h2>
+            <p id="totalRegistrosTabela">
+              0 registros encontrados
+            </p>
+          </div>
 
-    <div class="kpi-value" id="kpiTotalItens">
-      0
-    </div>
+          <div class="painel-acoes">
+            <button class="btn-imprimir-dashboard" id="btnImprimirDashboardSelecao" type="button">
+              🖨️ Imprimir
+            </button>
 
-    <div class="kpi-footer">
-      Em andamento
-    </div>
-  </div>
+            <div class="search-box">
+              <input
+                type="text"
+                id="buscaDashboardSelecao"
+                placeholder="Buscar PN, RASP ou fornecedor..."
+              />
+            </div>
+          </div>
+        </div>
 
-  <!-- KPI 02 - ATRASADOS -->
-  <div class="kpi-card">
-    <h3>Atrasados</h3>
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PN</th>
+                <th>RASP</th>
+                <th>Fornecedor</th>
+                <th>Turno</th>
+                <th>Dias</th>
+                <th>Sem Apont.</th>
+                <th>Último Apontamento</th>
+                <th>Status</th>
+                <th>Trava</th>
+                <th>QHD</th>
+              </tr>
+            </thead>
 
-    <div class="kpi-value" id="kpiAtrasados">
-      0
-    </div>
+            <tbody id="tabelaSelecaoBody">
+            </tbody>
+          </table>
+        </div>
 
-    <div class="kpi-footer">
-      &gt; 2 dias sem apontamento
-    </div>
-  </div>
+      </section>
 
-  <!-- KPI 03 - ITENS COM TRAVA -->
-  <div class="kpi-card">
-    <h3>Itens com Trava</h3>
+      <!-- =====================================================
+           05.04 SCRIPT DO DASHBOARD
+           ===================================================== -->
+      <script>
+        let dadosDashboardSelecao = [];
+        let itemSelecionadoDashboard = null;
 
-    <div class="kpi-value" id="kpiComTrava">
-      0
-    </div>
+        async function carregarDashboardSelecao() {
+          try {
+            const response = await fetch(
+              "http://localhost:5050/selecao-operacional/itens-ativos"
+            );
 
-    <div class="kpi-footer">
-      Bloqueados
-    </div>
-  </div>
+            if (!response.ok) {
+              throw new Error("Erro ao carregar API.");
+            }
 
-  <!-- KPI 04 - SEM APONTAMENTO HOJE -->
-  <div class="kpi-card">
-    <h3>Sem apontamento hoje</h3>
-
-    <div class="kpi-value" id="kpiSemApontHoje">
-      0
-    </div>
-
-    <div class="kpi-footer">
-      Verificar
-    </div>
-  </div>
-
-  <!-- KPI 05 - TEMPO MÉDIO EM SELEÇÃO -->
-  <div class="kpi-card">
-    <h3>Tempo médio</h3>
-
-    <div class="kpi-value" id="kpiTempoMedio">
-      0 dias
-    </div>
-
-    <div class="kpi-footer">
-      Em seleção
-    </div>
-  </div>
-
-</section>
-
-<!-- =====================================================
-     05.03 TABELA
-     ===================================================== -->
-<section class="painel-tabela">
-
-  <!-- HEADER DA TABELA -->
-  <div class="painel-header">
-  <div>
-    <h2>Itens em Seleção Ativos</h2>
-
-    <p id="totalRegistrosTabela">
-      0 registros encontrados
-    </p>
-  </div>
-
-  <div class="painel-acoes">
-    <button class="btn-imprimir-dashboard" id="btnImprimirDashboardSelecao" type="button">
-      🖨️ Imprimir
-    </button>
-
-    <div class="search-box">
-      <input
-        type="text"
-        id="buscaDashboardSelecao"
-        placeholder="Buscar PN, RASP ou fornecedor..."
-      />
-    </div>
-  </div>
-</div>
-
-
-
-  <!-- TABELA -->
-  <div class="tabela-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>PN</th>
-          <th>RASP</th>
-          <th>Fornecedor</th>
-          <th>Turno</th>
-          <th>Dias</th>
-          <th>Sem Apont.</th>
-          <th>Último Apontamento</th>
-          <th>Status</th>
-          <th>trava</th>
-          <th>QHD</th>
-        </tr>
-      </thead>
-
-      <!-- CORPO DINÂMICO DA TABELA -->
-      <tbody id="tabelaSelecaoBody">
-      </tbody>
-    </table>
-  </div>
-
-</section>
-
-<!-- =====================================================
-     05.04 SCRIPT DO DASHBOARD
-     IMPORTANTE:
-     Este script fica FORA do tbody.
-     ===================================================== -->
-<script>
-
-  /* =========================================================
-     01. VARIÁVEL GLOBAL DOS DADOS
-     ========================================================= */
-  let dadosDashboardSelecao = [];
-  let itemSelecionadoDashboard = null;
-
-  /* =========================================================
-     02. CARREGAR ITENS EM SELEÇÃO
-     ========================================================= */
-  async function carregarDashboardSelecao() {
-    try {
-      const response = await fetch(
-        "http://localhost:5050/selecao-operacional/itens-ativos"
-      );
-
-      if (!response.ok) {
-        throw new Error("Erro ao carregar API.");
-      }
-
-      dadosDashboardSelecao = await response.json();
-      popularFiltrosDashboard();
-
-      renderizarDashboardSelecao(dadosDashboardSelecao);
-    }
-    catch (error) {
-      console.error(error);
-      alert("Erro ao carregar dashboard.");
-    }
-  }
-
-  /* =========================================================
-     03. RENDERIZAR DASHBOARD
-     ========================================================= */
-  function renderizarDashboardSelecao(dados) {
-    const tbody = document.getElementById("tabelaSelecaoBody");
-
-    tbody.innerHTML = "";
-
-            /* =====================================================
-        ORDENAÇÃO OPERACIONAL INTELIGENTE
-        PRIORIDADE:
-        1 - TRAVADOS
-        2 - MAIS DIAS SEM APONTAMENTO
-        3 - MAIS DIAS EM SELEÇÃO
-        ===================================================== */
-        dados.sort((a, b) => {
-
-        const travaA =
-            (a.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
-
-        const travaB =
-            (b.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
-
-        /* ===================================================
-            TRAVADOS PRIMEIRO
-            =================================================== */
-        if (travaA !== travaB) {
-            return travaB - travaA;
+            dadosDashboardSelecao = await response.json();
+            popularFiltrosDashboard();
+            renderizarDashboardSelecao(dadosDashboardSelecao);
+          }
+          catch (error) {
+            console.error(error);
+            alert("Erro ao carregar dashboard.");
+          }
         }
 
-        const atrasoA =
-            a.diasSemApontamento ?? -1;
+        function renderizarDashboardSelecao(dados) {
+          const tbody = document.getElementById("tabelaSelecaoBody");
 
-        const atrasoB =
-            b.diasSemApontamento ?? -1;
+          tbody.innerHTML = "";
 
-        /* ===================================================
-            MAIOR ATRASO PRIMEIRO
-            =================================================== */
-        if (atrasoA !== atrasoB) {
-            return atrasoB - atrasoA;
-        }
+          dados.sort((a, b) => {
+            const travaA =
+              (a.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
 
-        const diasSelecaoA =
-            a.duracaoEmSelecaoDias ?? 0;
+            const travaB =
+              (b.trava ?? "").toLowerCase() === "ativa" ? 1 : 0;
 
-        const diasSelecaoB =
-            b.duracaoEmSelecaoDias ?? 0;
+            if (travaA !== travaB) {
+              return travaB - travaA;
+            }
 
-        /* ===================================================
-            MAIOR TEMPO EM SELEÇÃO
-            =================================================== */
-        return diasSelecaoB - diasSelecaoA;
+            const atrasoA =
+              a.diasSemApontamento ?? -1;
 
-        });
+            const atrasoB =
+              b.diasSemApontamento ?? -1;
 
+            if (atrasoA !== atrasoB) {
+              return atrasoB - atrasoA;
+            }
 
-    let totalItens = 0;
-    let totalAtrasados = 0;
-    let totalComTrava = 0;
-    let totalSemApontHoje = 0;
-    let somaDiasSelecao = 0;
+            const diasSelecaoA =
+              a.duracaoEmSelecaoDias ?? 0;
 
-    dados.forEach(item => {
-      totalItens++;
+            const diasSelecaoB =
+              b.duracaoEmSelecaoDias ?? 0;
 
-      const diasSelecao = item.duracaoEmSelecaoDias ?? 0;
-      const diasSemApontamento = item.diasSemApontamento;
+            return diasSelecaoB - diasSelecaoA;
+          });
 
-      somaDiasSelecao += diasSelecao;
+          let totalItens = 0;
+          let totalAtrasados = 0;
+          let totalComTrava = 0;
+          let totalSemApontHoje = 0;
+          let somaDiasSelecao = 0;
 
-      if ((diasSemApontamento ?? 0) > 2) {
-        totalAtrasados++;
-      }
+          dados.forEach(item => {
+            totalItens++;
 
-      if ((item.trava ?? "").toLowerCase() === "ativa") {
-        totalComTrava++;
-      }
+            const diasSelecao = item.duracaoEmSelecaoDias ?? 0;
+            const diasSemApontamento = item.diasSemApontamento;
 
-      if (diasSemApontamento === null || diasSemApontamento > 0) {
-        totalSemApontHoje++;
-      }
+            somaDiasSelecao += diasSelecao;
 
-      let classeBadge = "badge-ok";
-      let textoBadge = "OK";
-      let textoDiasSemApontamento = "0 dias";
+            if ((diasSemApontamento ?? 0) > 2) {
+              totalAtrasados++;
+            }
 
-      if (diasSemApontamento === null || diasSemApontamento === undefined) {
-        classeBadge = "badge-atencao";
-        textoBadge = "Não iniciado";
-        textoDiasSemApontamento = "Não iniciado";
-      }
-      else if (diasSemApontamento >= 4) {
-        classeBadge = "badge-critico";
-        textoBadge = "Crítico";
-        textoDiasSemApontamento = `${diasSemApontamento} dias`;
-      }
-      else if (diasSemApontamento === 3) {
-        classeBadge = "badge-atencao";
-        textoBadge = "Atenção";
-        textoDiasSemApontamento = "3 dias";
-      }
-      else {
-        classeBadge = "badge-ok";
-        textoBadge = "OK";
-        textoDiasSemApontamento = `${diasSemApontamento} dias`;
-      }
+            if ((item.trava ?? "").toLowerCase() === "ativa") {
+              totalComTrava++;
+            }
 
-      const tr = document.createElement("tr");
+            if (diasSemApontamento === null || diasSemApontamento > 0) {
+              totalSemApontHoje++;
+            }
 
-      /* =====================================================
-        GUARDAR ID DO ITEM NA LINHA
-        ===================================================== */
+            let classeBadge = "badge-ok";
+            let textoBadge = "OK";
+            let textoDiasSemApontamento = "0 dias";
+
+            if (diasSemApontamento === null || diasSemApontamento === undefined) {
+              classeBadge = "badge-atencao";
+              textoBadge = "Não iniciado";
+              textoDiasSemApontamento = "Não iniciado";
+            }
+            else if (diasSemApontamento >= 4) {
+              classeBadge = "badge-critico";
+              textoBadge = "Crítico";
+              textoDiasSemApontamento = `${diasSemApontamento} dias`;
+            }
+            else if (diasSemApontamento === 3) {
+              classeBadge = "badge-atencao";
+              textoBadge = "Atenção";
+              textoDiasSemApontamento = "3 dias";
+            }
+            else {
+              classeBadge = "badge-ok";
+              textoBadge = "OK";
+              textoDiasSemApontamento = `${diasSemApontamento} dias`;
+            }
+
+            const tr = document.createElement("tr");
+
             tr.dataset.idrasppn = item.idRaspPn;
 
-
             tr.innerHTML = `
-    <td>${item.pn ?? "-"}</td>
-    <td>${item.numeroRasp ?? "-"}</td>
-    <td>${item.fornecedor ?? "-"}</td>
-    <td>${item.turno ?? "-"}</td>
-    <td>${diasSelecao}</td>
+              <td>${item.pn ?? "-"}</td>
+              <td>${item.numeroRasp ?? "-"}</td>
+              <td>${item.fornecedor ?? "-"}</td>
+              <td>${item.turno ?? "-"}</td>
+              <td>${diasSelecao}</td>
 
-    <td>
-      <span class="badge ${classeBadge}">
-        ${textoDiasSemApontamento}
-      </span>
-    </td>
+              <td>
+                <span class="badge ${classeBadge}">
+                  ${textoDiasSemApontamento}
+                </span>
+              </td>
 
-    <td>${formatarData(item.dataApontamento)}</td>
+              <td>${formatarData(item.dataApontamento)}</td>
 
-    <td>
-      <span class="badge ${classeBadge}">
-        ${textoBadge}
-      </span>
-    </td>
+              <td>
+                <span class="badge ${classeBadge}">
+                  ${textoBadge}
+                </span>
+              </td>
 
-    <td>
-      ${
-        (item.trava ?? "").toLowerCase() === "ativa"
-          ? `<span class="badge badge-critico">🔒 Trava</span>`
-          : "-"
-      }
-    </td>
+              <td>
+                ${
+                  (item.trava ?? "").toLowerCase() === "ativa"
+                    ? `<span class="badge badge-critico">🔒 Trava</span>`
+                    : "-"
+                }
+              </td>
 
-    <td>
-      ${
-        item.qhd === true ||
-        item.qhd === "Sim" ||
-        item.dataHoraQhd
-          ? `
-            <span class="badge" style="
-              background: rgba(139,92,246,0.22);
-              color: #d8b4fe;
-              border: 1px solid rgba(216,180,254,0.35);
-            ">
-              ⛔ QHD
-            </span>
-          `
-          : "-"
-      }
-    </td>
-`;
-
+              <td>
+                ${
+                  item.qhd === true ||
+                  item.qhd === "Sim" ||
+                  item.dataHoraQhd
+                    ? `
+                      <span class="badge" style="
+                        background: rgba(139,92,246,0.22);
+                        color: #d8b4fe;
+                        border: 1px solid rgba(216,180,254,0.35);
+                      ">
+                        ⛔ QHD
+                      </span>
+                    `
+                    : "-"
+                }
+              </td>
+            `;
 
             tr.addEventListener("click", () => {
+              document
+                .querySelectorAll("#tabelaSelecaoBody tr")
+                .forEach(linha => {
+                  linha.classList.remove("linha-ativa");
+                });
 
-        /* =====================================================
-            REMOVE SELEÇÃO ANTERIOR
-            ===================================================== */
-        document
-            .querySelectorAll("#tabelaSelecaoBody tr")
-            .forEach(linha => {
-            linha.classList.remove("linha-ativa");
+              tr.classList.add("linha-ativa");
+
+              atualizarPainelDireito(item);
             });
 
-        /* =====================================================
-            ATIVA LINHA ATUAL
-            ===================================================== */
-        tr.classList.add("linha-ativa");
+            tbody.appendChild(tr);
+          });
 
-        /* =====================================================
-            ATUALIZA PAINEL DIREITO
-            ===================================================== */
-        atualizarPainelDireito(item);
+          const primeiraLinha =
+            document.querySelector("#tabelaSelecaoBody tr");
 
+          if (primeiraLinha) {
+            primeiraLinha.click();
+          }
+
+          const tempoMedio =
+            totalItens > 0
+              ? Math.round(somaDiasSelecao / totalItens)
+              : 0;
+
+          document.getElementById("kpiTotalItens").textContent = totalItens;
+          document.getElementById("kpiAtrasados").textContent = totalAtrasados;
+          document.getElementById("kpiComTrava").textContent = totalComTrava;
+          document.getElementById("kpiSemApontHoje").textContent = totalSemApontHoje;
+          document.getElementById("kpiTempoMedio").textContent = `${tempoMedio} dias`;
+
+          document.getElementById("totalRegistrosTabela").textContent =
+            `${totalItens} registros encontrados`;
+        }
+
+        async function atualizarPainelDireito(item) {
+          itemSelecionadoDashboard = item;
+
+          document.getElementById("painelPn").textContent =
+            `PN ${item.pn ?? "-"}`;
+
+          document.getElementById("painelRasp").textContent =
+            item.numeroRasp ?? "-";
+
+          document.getElementById("painelFornecedor").textContent =
+            item.fornecedor ?? "-";
+
+          document.getElementById("painelDiasSelecao").textContent =
+            `${item.duracaoEmSelecaoDias ?? 0} dias`;
+
+          document.getElementById("painelSemApontamento").textContent =
+            item.diasSemApontamento === null || item.diasSemApontamento === undefined
+              ? "Não iniciado"
+              : `${item.diasSemApontamento} dias`;
+
+          const timeline =
+            document.getElementById("timelineHistorico");
+
+          timeline.innerHTML = `
+            <div class="timeline-item">
+              <div class="titulo">
+                Carregando histórico...
+              </div>
+            </div>
+          `;
+
+          try {
+            const response = await fetch(
+              `http://localhost:5050/rasp-pn/${item.idRaspPn}/contencoes`
+            );
+
+            if (!response.ok) {
+              throw new Error("Erro ao carregar histórico.");
+            }
+
+            const historico = await response.json();
+
+            historico.sort((a, b) => {
+              const dataA =
+                new Date(a.dataHoraInicioAtividade);
+
+              const dataB =
+                new Date(b.dataHoraInicioAtividade);
+
+              return dataA - dataB;
+            });
+
+            timeline.innerHTML = "";
+
+            if (
+              item.qhdAtivo === true ||
+              item.qhd === "Sim" ||
+              item.dataHoraQhd
+            ) {
+              timeline.innerHTML += `
+                <div class="timeline-item">
+                  <div class="data">
+                    ${formatarDataHora(item.dataHoraQhd || item.dataEntradaSelecao)}
+                  </div>
+
+                  <div class="titulo" style="color:#d8b4fe;">
+                    ⛔ QHD entrou no item
+                  </div>
+
+                  <div class="autor">
+                    Registro de entrada do QHD
+                  </div>
+                </div>
+              `;
+            }
+
+            timeline.innerHTML += `
+              <div class="timeline-item">
+                <div class="data">
+                  ${formatarDataHora(item.dataEntradaSelecao)}
+                </div>
+
+                <div class="titulo">
+                  ${obterIconeEvento("entrada")}
+                  Item entrou em seleção
+                </div>
+
+                <div class="autor">
+                  ${item.mtResponsavel ?? "-"}
+                </div>
+              </div>
+            `;
+
+            let dataReferenciaAtraso = item.dataEntradaSelecao
+              ? new Date(item.dataEntradaSelecao)
+              : null;
+
+            historico.forEach(registro => {
+              const dataAtualRegistro = registro.dataHoraInicioAtividade
+                ? new Date(registro.dataHoraInicioAtividade)
+                : null;
+
+              if (dataReferenciaAtraso && dataAtualRegistro) {
+                const diferencaDias = Math.floor(
+                  (dataAtualRegistro.setHours(0, 0, 0, 0) - dataReferenciaAtraso.setHours(0, 0, 0, 0))
+                  / (1000 * 60 * 60 * 24)
+                );
+
+                if (diferencaDias === 3) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#fbbf24;">
+                        ${obterIconeEvento("atencao")}
+                        Atenção: ${diferencaDias} dias sem apontamento
+                      </div>
+
+                      <div class="autor">
+                        Período entre apontamentos detectado automaticamente pelo RASP
+                      </div>
+                    </div>
+                  `;
+                }
+
+                if (diferencaDias >= 4) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#f87171;">
+                        ${obterIconeEvento("critico")}
+                        Crítico:
+                      </div>
+
+                      <div class="autor">
+                        Evidência histórica para auditoria operacional/logística
+                      </div>
+                    </div>
+                  `;
+                }
+              }
+
+              timeline.innerHTML += `
+                <div class="timeline-item">
+                  <div class="data">
+                    ${formatarDataHora(registro.dataHoraInicioAtividade)}
+                  </div>
+
+                  <div class="titulo">
+                    ${obterIconeEvento("apontamento")}
+                    Apontamento realizado
+                  </div>
+
+                  <div class="autor">
+                    Verif.: ${registro.quantidadeVerificada ?? 0}
+                    |
+                    Rej.: ${registro.quantidadeRejeitada ?? 0}
+                    |
+                    OK: ${registro.quantidadeOk ?? 0}
+                  </div>
+                </div>
+              `;
+
+              if (dataAtualRegistro) {
+                dataReferenciaAtraso = new Date(dataAtualRegistro);
+              }
+            });
+
+            if ((item.diasSemApontamento ?? 0) >= 3) {
+              timeline.innerHTML += `
+                <div class="timeline-item">
+                  <div class="data">
+                    Sistema RASP
+                  </div>
+
+                  <div class="titulo" style="color:#fbbf24;">
+                    Alerta:
+                    ${item.diasSemApontamento} dias sem apontamento
+                  </div>
+
+                  <div class="autor">
+                    Monitoramento automático
+                  </div>
+                </div>
+              `;
+            }
+
+            if ((item.trava ?? "").toLowerCase() === "ativa") {
+              timeline.innerHTML += `
+                <div class="timeline-item">
+                  <div class="data">
+                    Sistema RASP
+                  </div>
+
+                  <div class="titulo" style="color:#f87171;">
+                    ${obterIconeEvento("trava")}
+                    Trava ativa neste item
+                  </div>
+
+                  <div class="autor">
+                    Item bloqueado
+                  </div>
+                </div>
+              `;
+            }
+          }
+          catch (error) {
+            console.error(error);
+
+            timeline.innerHTML = `
+              <div class="timeline-item">
+                <div class="titulo">
+                  Erro ao carregar histórico.
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        function obterIconeEvento(tipo) {
+          switch (tipo) {
+            case "entrada":
+              return "🟢";
+
+            case "apontamento":
+              return "📝";
+
+            case "atencao":
+              return "⚠️";
+
+            case "critico":
+              return "🚨";
+
+            case "trava":
+              return "🔒";
+
+            default:
+              return "📌";
+          }
+        }
+
+        function formatarDataHora(data) {
+          if (!data) return "-";
+
+          const d = new Date(data);
+
+          if (isNaN(d.getTime())) return "-";
+
+          return d.toLocaleString("pt-BR");
+        }
+
+        function formatarData(data) {
+          if (!data) return "-";
+
+          const d = new Date(data);
+
+          if (isNaN(d.getTime())) return "-";
+
+          return d.toLocaleDateString("pt-BR");
+        }
+
+        document
+          .getElementById("buscaDashboardSelecao")
+          .addEventListener("input", function () {
+            const termo = this.value.toLowerCase().trim();
+
+            const filtrados = dadosDashboardSelecao.filter(item => {
+              return (
+                (item.pn ?? "").toLowerCase().includes(termo) ||
+                (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
+                (item.fornecedor ?? "").toLowerCase().includes(termo)
+              );
+            });
+
+            renderizarDashboardSelecao(filtrados);
+          });
+
+        carregarDashboardSelecao();
+
+        setInterval(() => {
+          carregarDashboardSelecao();
+        }, 30000);
+
+        const btnImprimirDashboardSelecao =
+          document.getElementById("btnImprimirDashboardSelecao");
+
+        if (btnImprimirDashboardSelecao) {
+          btnImprimirDashboardSelecao.addEventListener("click", () => {
+            const agora = new Date();
+
+            document.getElementById("printDataDashboard").textContent =
+              `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
+
+            document.getElementById("printHoraDashboard").textContent =
+              `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit"
+              })}`;
+
+            document.body.classList.remove("imprimir-item");
+
+            window.print();
+          });
+        }
+
+        window.addEventListener("load", () => {
+          const btnImprimirItemSelecionado =
+            document.getElementById("btnImprimirItemSelecionado");
+
+          if (!btnImprimirItemSelecionado) return;
+
+          btnImprimirItemSelecionado.addEventListener("click", () => {
+            const pn = (document.getElementById("painelPn").textContent || "-").replace("PN ", "");
+            const rasp = document.getElementById("painelRasp").textContent || "-";
+            const fornecedor = document.getElementById("painelFornecedor").textContent || "-";
+            const diasSelecao = document.getElementById("painelDiasSelecao").textContent || "-";
+            const semApontamento = document.getElementById("painelSemApontamento").textContent || "-";
+
+            const agora = new Date();
+
+            document.getElementById("printDataDashboard").textContent =
+              `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
+
+            document.getElementById("printHoraDashboard").textContent =
+              `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit"
+              })}`;
+
+            document.getElementById("printItemPn").textContent = pn;
+            document.getElementById("printItemRasp").textContent = rasp;
+            document.getElementById("printItemFornecedor").textContent = fornecedor;
+            document.getElementById("printItemDiasSelecao").textContent = diasSelecao;
+            document.getElementById("printItemSemApontamento").textContent = semApontamento;
+
+            const eventos = [...document.querySelectorAll("#timelineHistorico .timeline-item")]
+              .filter(evento =>
+                !evento.innerText.toLowerCase().includes("trava ativa neste item")
+              );
+
+            const pnSelecionado = itemSelecionadoDashboard;
+
+            let eventosExtrasInicio = "";
+
+            if (pnSelecionado?.trava?.toLowerCase() === "ativa") {
+              eventosExtrasInicio += `
+                <div class="print-evento">
+                  <div class="print-evento-data">
+                    ${formatarDataHora(pnSelecionado.dataEntradaSelecao)}
+                  </div>
+                  <div class="print-evento-titulo">
+                    🔒 Trava entrou no item
+                  </div>
+                  <div class="print-evento-detalhe">
+                    Registro de entrada da trava operacional
+                  </div>
+                </div>
+              `;
+            }
+
+            const htmlEventos = eventos.map(evento => {
+              const data = evento.querySelector(".data")?.innerText || "-";
+              const titulo = evento.querySelector(".titulo")?.innerText || "-";
+              const autor = evento.querySelector(".autor")?.innerText || "-";
+
+              return `
+                <div class="print-evento">
+                  <div class="print-evento-data">${data}</div>
+                  <div class="print-evento-titulo">${titulo}</div>
+                  <div class="print-evento-detalhe">${autor}</div>
+                </div>
+              `;
+            }).join("");
+
+            document.getElementById("printItemTimeline").innerHTML =
+              (eventosExtrasInicio + htmlEventos) ||
+              "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
+            document.body.classList.add("imprimir-item");
+
+            window.print();
+
+            setTimeout(() => {
+              document.body.classList.remove("imprimir-item");
+            }, 500);
+          });
         });
+      </script>
 
+      <section class="print-item-selecionado">
+        <h2>Detalhe do Item Selecionado</h2>
 
-      tbody.appendChild(tr);
-    });
+        <div class="print-item-grid">
+          <div><strong>PN:</strong> <span id="printItemPn">-</span></div>
+          <div><strong>RASP:</strong> <span id="printItemRasp">-</span></div>
+          <div><strong>Fornecedor:</strong> <span id="printItemFornecedor">-</span></div>
+          <div><strong>Dias em Seleção:</strong> <span id="printItemDiasSelecao">-</span></div>
+          <div><strong>Sem Apontamento:</strong> <span id="printItemSemApontamento">-</span></div>
+        </div>
 
-    /* =====================================================
-    AUTO SELECIONAR PRIMEIRA LINHA
-    ===================================================== */
-    const primeiraLinha =
-      document.querySelector("#tabelaSelecaoBody tr");
+        <h3>Histórico Operacional</h3>
+        <div id="printItemTimeline" class="print-item-timeline">
+          -
+        </div>
+      </section>
 
-    if (primeiraLinha) {
-      primeiraLinha.click();
-    }
+      <section class="print-rodape-dashboard">
+        <div>
+          Relatório gerado automaticamente pelo sistema RASP
+        </div>
 
+        <div class="assinatura-amarela">
+          Developed by: Josealdo Lyra
+        </div>
+      </section>
 
-    const tempoMedio =
-      totalItens > 0
-        ? Math.round(somaDiasSelecao / totalItens)
-        : 0;
-
-    document.getElementById("kpiTotalItens").textContent = totalItens;
-    document.getElementById("kpiAtrasados").textContent = totalAtrasados;
-    document.getElementById("kpiComTrava").textContent = totalComTrava;
-    document.getElementById("kpiSemApontHoje").textContent = totalSemApontHoje;
-    document.getElementById("kpiTempoMedio").textContent = `${tempoMedio} dias`;
-
-    document.getElementById("totalRegistrosTabela").textContent =
-      `${totalItens} registros encontrados`;
-  }
-
-  /* =========================================================
-     04. ATUALIZAR PAINEL DIREITO AO CLICAR NA LINHA
-     ========================================================= */
-    async function atualizarPainelDireito(item) {
-      itemSelecionadoDashboard = item;
-    document.getElementById("painelPn").textContent =
-      `PN ${item.pn ?? "-"}`;
-
-    document.getElementById("painelRasp").textContent =
-      item.numeroRasp ?? "-";
-
-    document.getElementById("painelFornecedor").textContent =
-      item.fornecedor ?? "-";
-
-    document.getElementById("painelDiasSelecao").textContent =
-      `${item.duracaoEmSelecaoDias ?? 0} dias`;
-
-    document.getElementById("painelSemApontamento").textContent =
-      item.diasSemApontamento === null || item.diasSemApontamento === undefined
-        ? "Não iniciado"
-        : `${item.diasSemApontamento} dias`;
-
-    
-    /* =====================================================
-   TIMELINE REAL DO ITEM
-   ===================================================== */
-const timeline =
-  document.getElementById("timelineHistorico");
-
-/* =====================================================
-   LIMPA TIMELINE
-   ===================================================== */
-timeline.innerHTML = `
-  <div class="timeline-item">
-    <div class="titulo">
-      Carregando histórico...
-    </div>
-  </div>
-`;
-
-try {
-
-  /* =====================================================
-     BUSCA HISTÓRICO REAL DA API
-     ===================================================== */
-  const response = await fetch(
-    `http://localhost:5050/rasp-pn/${item.idRaspPn}/contencoes`
-  );
-
-  if (!response.ok) {
-    throw new Error("Erro ao carregar histórico.");
-  }
-
-  const historico = await response.json();
-
-  /* =====================================================
-   ORDENAR HISTÓRICO POR DATA
-   ===================================================== */
-    historico.sort((a, b) => {
-
-    const dataA =
-        new Date(a.dataHoraInicioAtividade);
-
-    const dataB =
-        new Date(b.dataHoraInicioAtividade);
-
-    return dataA - dataB;
-
-    });
-
-
-  /* =====================================================
-     LIMPA TIMELINE
-     ===================================================== */
-  timeline.innerHTML = "";
-
-  /* =====================================================
-   EVENTO QHD - EXIBIR NO PAINEL DIREITO
-   ===================================================== */
-if (
-  item.qhdAtivo === true ||
-  item.qhd === "Sim" ||
-  item.dataHoraQhd
-) {
-  timeline.innerHTML += `
-    <div class="timeline-item">
-      <div class="data">
-        ${formatarDataHora(item.dataHoraQhd || item.dataEntradaSelecao)}
+      <div class="assinatura-sistema">
+        Developed by: Josealdo Lyra
       </div>
-
-      <div class="titulo" style="color:#d8b4fe;">
-        ⛔ QHD entrou no item
-      </div>
-
-      <div class="autor">
-        Registro de entrada do QHD
-      </div>
-    </div>
-  `;
-}
-
-  /* =====================================================
-     EVENTO 01 - ENTRADA EM SELEÇÃO
-     ===================================================== */
-  timeline.innerHTML += `
-    <div class="timeline-item">
-      <div class="data">
-        ${formatarDataHora(item.dataEntradaSelecao)}
-      </div>
-
-      <div class="titulo">
-        ${obterIconeEvento("entrada")}
-        Item entrou em seleção  
-      </div>
-
-
-      <div class="autor">
-        ${item.mtResponsavel ?? "-"}
-      </div>
-    </div>
-  `;
-    /* =====================================================
-   CONTROLE DE ATRASOS HISTÓRICOS ENTRE APONTAMENTOS
-   Regra:
-   - 0 a 2 dias = OK
-   - 3 dias = Atenção
-   - 4 dias ou mais = Crítico
-   ===================================================== */
-let dataReferenciaAtraso = item.dataEntradaSelecao
-  ? new Date(item.dataEntradaSelecao)
-  : null;
-
-  /* =====================================================
-     APONTAMENTOS REAIS
-     ===================================================== */
-  historico.forEach(registro => {
-
-    const dataAtualRegistro = registro.dataHoraInicioAtividade
-  ? new Date(registro.dataHoraInicioAtividade)
-  : null;
-
-if (dataReferenciaAtraso && dataAtualRegistro) {
-  const diferencaDias = Math.floor(
-    (dataAtualRegistro.setHours(0, 0, 0, 0) - dataReferenciaAtraso.setHours(0, 0, 0, 0))
-    / (1000 * 60 * 60 * 24)
-  );
-
-  if (diferencaDias === 3) {
-    timeline.innerHTML += `
-      <div class="timeline-item">
-        <div class="data">
-          ${formatarDataHora(dataReferenciaAtraso)}
-        </div>
-
-        <div class="titulo" style="color:#fbbf24;">
-            ${obterIconeEvento("atencao")}
-            Atenção: ${diferencaDias} dias sem apontamento
-        </div>
-
-
-        <div class="autor">
-          Período entre apontamentos detectado automaticamente pelo RASP
-        </div>
-      </div>
-    `;
-  }
-
-  if (diferencaDias >= 4) {
-    timeline.innerHTML += `
-      <div class="timeline-item">
-        <div class="data">
-          ${formatarDataHora(dataReferenciaAtraso)}
-        </div>
-
-        <div class="titulo" style="color:#f87171;">
-            ${obterIconeEvento("critico")}
-            Crítico:
-        </div>
-
-        <div class="autor">
-          Evidência histórica para auditoria operacional/logística
-        </div>
-      </div>
-    `;
-  }
-}
-
-
-    timeline.innerHTML += `
-      <div class="timeline-item">
-
-        <div class="data">
-          ${formatarDataHora(registro.dataHoraInicioAtividade)}
-        </div>
-
-        <div class="titulo">
-        ${obterIconeEvento("apontamento")}
-        Apontamento realizado
-        </div>
-
-
-
-
-
-        <div class="autor">
-          Verif.: ${registro.quantidadeVerificada ?? 0}
-          |
-          Rej.: ${registro.quantidadeRejeitada ?? 0}
-          |
-          OK: ${registro.quantidadeOk ?? 0}
-        </div>
-
-      </div>
-    `;
-
-    if (dataAtualRegistro) {
-  dataReferenciaAtraso = new Date(dataAtualRegistro);
-}
-
-
-  });
-
-  /* =====================================================
-     ALERTA DE ATRASO
-     ===================================================== */
-  if ((item.diasSemApontamento ?? 0) >= 3) {
-
-    timeline.innerHTML += `
-      <div class="timeline-item">
-
-        <div class="data">
-          Sistema RASP
-        </div>
-
-        <div class="titulo" style="color:#fbbf24;">
-          Alerta:
-          ${item.diasSemApontamento} dias sem apontamento
-        </div>
-
-        <div class="autor">
-          Monitoramento automático
-        </div>
-
-      </div>
-    `;
-  }
-
-  /* =====================================================
-     TRAVA
-     ===================================================== */
-  if ((item.trava ?? "").toLowerCase() === "ativa") {
-
-    timeline.innerHTML += `
-      <div class="timeline-item">
-
-        <div class="data">
-          Sistema RASP
-        </div>
-
-        <div class="titulo" style="color:#f87171;">
-          ${obterIconeEvento("trava")}
-          Trava ativa neste item
-        </div>
-
-        <div class="autor">
-          Item bloqueado
-        </div>
-
-      </div>
-    `;
-  }
-
-}
-catch (error) {
-
-  console.error(error);
-
-  timeline.innerHTML = `
-    <div class="timeline-item">
-
-      <div class="titulo">
-        Erro ao carregar histórico.
-      </div>
-
-    </div>
-  `;
-}
-
-  }
-    /* =========================================================
-    OBTER ÍCONE DO EVENTO
-    ========================================================= */
-    function obterIconeEvento(tipo) {
-
-    switch (tipo) {
-
-        case "entrada":
-        return "🟢";
-
-        case "apontamento":
-        return "📝";
-
-        case "atencao":
-        return "⚠️";
-
-        case "critico":
-        return "🚨";
-
-        case "trava":
-        return "🔒";
-
-        default:
-        return "📌";
-    }
-    }
-
-  /* =========================================================
-     05. FORMATAR DATA/HORA
-     ========================================================= */
-  function formatarDataHora(data) {
-    if (!data) return "-";
-
-    const d = new Date(data);
-
-    if (isNaN(d.getTime())) return "-";
-
-    return d.toLocaleString("pt-BR");
-  }
-
-  /* =========================================================
-   FORMATAR SOMENTE DATA
-   ========================================================= */
-function formatarData(data) {
-
-  if (!data) return "-";
-
-  const d = new Date(data);
-
-  if (isNaN(d.getTime())) return "-";
-
-  return d.toLocaleDateString("pt-BR");
-}
-
-
-  /* =========================================================
-     06. BUSCA RÁPIDA NA TABELA
-     ========================================================= */
-  document
-    .getElementById("buscaDashboardSelecao")
-    .addEventListener("input", function () {
-      const termo = this.value.toLowerCase().trim();
-
-      const filtrados = dadosDashboardSelecao.filter(item => {
-        return (
-          (item.pn ?? "").toLowerCase().includes(termo) ||
-          (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
-          (item.fornecedor ?? "").toLowerCase().includes(termo)
-        );
-      });
-
-      renderizarDashboardSelecao(filtrados);
-    });
-
-  /* =========================================================
-     07. INICIALIZAÇÃO
-     ========================================================= */
-  carregarDashboardSelecao();
-  
-
-
-    /* =========================================================
-    AUTO ATUALIZAÇÃO DO DASHBOARD
-    Atualiza a cada 30 segundos
-    ========================================================= */
-    setInterval(() => {
-
-    carregarDashboardSelecao();
-
-    }, 30000);
-
-    /* =========================================================
-   BOTÃO IMPRIMIR DASHBOARD
-   ========================================================= */
-const btnImprimirDashboardSelecao =
-  document.getElementById("btnImprimirDashboardSelecao");
-
-if (btnImprimirDashboardSelecao) {
-  btnImprimirDashboardSelecao.addEventListener("click", () => {
-    const agora = new Date();
-
-    document.getElementById("printDataDashboard").textContent =
-      `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
-
-    document.getElementById("printHoraDashboard").textContent =
-      `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })}`;
-
-    document.body.classList.remove("imprimir-item");
-
-    window.print();
-  });
-}
-
-
-/* =========================================================
-   BOTÃO IMPRIMIR ITEM SELECIONADO
-   ========================================================= */
-window.addEventListener("load", () => {
-  const btnImprimirItemSelecionado =
-    document.getElementById("btnImprimirItemSelecionado");
-
-  if (!btnImprimirItemSelecionado) return;
-
-  btnImprimirItemSelecionado.addEventListener("click", () => {
-    const pn = (document.getElementById("painelPn").textContent || "-").replace("PN ", "");
-    const rasp = document.getElementById("painelRasp").textContent || "-";
-    const fornecedor = document.getElementById("painelFornecedor").textContent || "-";
-    const diasSelecao = document.getElementById("painelDiasSelecao").textContent || "-";
-    const semApontamento = document.getElementById("painelSemApontamento").textContent || "-";
-    const timeline = document.getElementById("timelineHistorico").innerText || "-";
-
-    const agora = new Date();
-
-    document.getElementById("printDataDashboard").textContent =
-      `▣ Data do Relatório: ${agora.toLocaleDateString("pt-BR")}`;
-
-    document.getElementById("printHoraDashboard").textContent =
-      `◷ Hora: ${agora.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      })}`;
-
-    document.getElementById("printItemPn").textContent = pn;
-    document.getElementById("printItemRasp").textContent = rasp;
-    document.getElementById("printItemFornecedor").textContent = fornecedor;
-    document.getElementById("printItemDiasSelecao").textContent = diasSelecao;
-    document.getElementById("printItemSemApontamento").textContent = semApontamento;
-    
-    const eventos = [...document.querySelectorAll("#timelineHistorico .timeline-item")]
-    .filter(evento =>
-      !evento.innerText.toLowerCase().includes("trava ativa neste item")
-    );
-
-
-    const pnSelecionado = itemSelecionadoDashboard;
-
-
-  let eventosExtrasInicio = "";
-
-  if (pnSelecionado?.trava?.toLowerCase() === "ativa") {
-    eventosExtrasInicio += `
-      <div class="print-evento">
-        <div class="print-evento-data">
-          ${formatarDataHora(pnSelecionado.dataEntradaSelecao)}
-        </div>
-        <div class="print-evento-titulo">
-          🔒 Trava entrou no item
-        </div>
-        <div class="print-evento-detalhe">
-          Registro de entrada da trava operacional
-        </div>
-      </div>
-    `;
-  }
-
-  
-
-
-  const htmlEventos = eventos.map(evento => {
-  const data = evento.querySelector(".data")?.innerText || "-";
-  const titulo = evento.querySelector(".titulo")?.innerText || "-";
-  const autor = evento.querySelector(".autor")?.innerText || "-";
-
-  return `
-    <div class="print-evento">
-      <div class="print-evento-data">${data}</div>
-      <div class="print-evento-titulo">${titulo}</div>
-      <div class="print-evento-detalhe">${autor}</div>
-    </div>
-  `;
-}).join("");
-
-    document.getElementById("printItemTimeline").innerHTML =
-    (eventosExtrasInicio + htmlEventos) ||
-    "<div class='print-evento'>Nenhum histórico encontrado.</div>";
-
-
-
-    document.body.classList.add("imprimir-item");
-
-    window.print();
-
-    setTimeout(() => {
-      document.body.classList.remove("imprimir-item");
-    }, 500);
-  });
-});
-
-
-
-
-</script>
-    <section class="print-item-selecionado">
-    <h2>Detalhe do Item Selecionado</h2>
-
-    <div class="print-item-grid">
-      <div><strong>PN:</strong> <span id="printItemPn">-</span></div>
-      <div><strong>RASP:</strong> <span id="printItemRasp">-</span></div>
-      <div><strong>Fornecedor:</strong> <span id="printItemFornecedor">-</span></div>
-      <div><strong>Dias em Seleção:</strong> <span id="printItemDiasSelecao">-</span></div>
-      <div><strong>Sem Apontamento:</strong> <span id="printItemSemApontamento">-</span></div>
-    </div>
-
-    <h3>Histórico Operacional</h3>
-    <div id="printItemTimeline" class="print-item-timeline">
-      -
-    </div>
-  </section>
-
-
-    <section class="print-rodape-dashboard">
-    <div>
-      Relatório gerado automaticamente pelo sistema RASP
-    </div>
-
-    <div class="assinatura-amarela">
-      Developed by: Josealdo Lyra
-    </div>
-  </section>
-
-    <div class="assinatura-sistema">
-    Developed by: Josealdo Lyra
-    </div>
 
     </main>
 
@@ -1830,98 +1636,50 @@ window.addEventListener("load", () => {
          ========================================================= -->
     <aside class="painel-direito">
 
-      <!-- =====================================================
-           06.01 DETALHES
-           ===================================================== -->
       <section class="detalhe-card">
-
         <h2 id="painelPn">
           PN -
         </h2>
 
         <div class="detalhe-grid">
-
           <div class="detalhe-item">
-
-            <small>
-              RASP
-            </small>
-
-            <strong id="painelRasp">
-              -
-            </strong>
-
+            <small>RASP</small>
+            <strong id="painelRasp">-</strong>
           </div>
 
           <div class="detalhe-item">
-
-            <small>
-              Fornecedor
-            </small>
-
-            <strong id="painelFornecedor">
-              -
-            </strong>
-
+            <small>Fornecedor</small>
+            <strong id="painelFornecedor">-</strong>
           </div>
 
           <div class="detalhe-item">
-
-            <small>
-              Dias em Seleção
-            </small>
-
-            <strong
-                id="painelDiasSelecao"
-                style="color:#f87171;">
-              -
-            </strong>
-
+            <small>Dias em Seleção</small>
+            <strong id="painelDiasSelecao" style="color:#f87171;">-</strong>
           </div>
 
           <div class="detalhe-item">
-
-            <small>
-              Sem Apontamento
-            </small>
-
-            <strong 
-            id="painelSemApontamento"
-            style="color:#f87171;">
-              -
-            </strong>
-
+            <small>Sem Apontamento</small>
+            <strong id="painelSemApontamento" style="color:#f87171;">-</strong>
           </div>
-
         </div>
-
       </section>
 
       <div style="display:flex; justify-content:flex-end; margin-bottom:16px;">
-          <button
-            class="btn-imprimir-dashboard"
-            id="btnImprimirItemSelecionado"
-            type="button">
-            🖨️ Imprimir Item
-           </button>
-          </div>
+        <button
+          class="btn-imprimir-dashboard"
+          id="btnImprimirItemSelecionado"
+          type="button">
+          🖨️ Imprimir Item
+        </button>
+      </div>
 
-      <!-- =====================================================
-           06.02 TIMELINE
-           ===================================================== -->
       <section class="detalhe-card">
-
         <h3 style="margin-bottom:20px;">
           Histórico Operacional
         </h3>
 
-        <div class="timeline"
-            id="timelineHistorico">
+        <div class="timeline" id="timelineHistorico">
         </div>
-
-          
-      
-
       </section>
 
     </aside>
@@ -1929,153 +1687,128 @@ window.addEventListener("load", () => {
   </div>
 
   <script src="app.js"></script>
+
   <script>
-  carregarMenuLateral("dashboard");
+    carregarMenuLateral("dashboard");
   </script>
+
   <script>
-          /* =========================================================
-            FILTROS RÁPIDOS - DASHBOARD SELEÇÃO
-            ========================================================= */
+    function popularFiltrosDashboard() {
+      const selectFornecedor =
+        document.getElementById("filtroFornecedor");
 
-          /* =========================================================
-            POPULAR COMBOS DOS FILTROS
-            ========================================================= */
-          function popularFiltrosDashboard() {
+      const selectTurno =
+        document.getElementById("filtroTurno");
 
-            const selectFornecedor =
-              document.getElementById("filtroFornecedor");
+      selectFornecedor.innerHTML =
+        '<option value="">Todos</option>';
 
-            const selectTurno =
-              document.getElementById("filtroTurno");
+      selectTurno.innerHTML =
+        '<option value="">Todos</option>';
 
-            /* =====================================================
-              LIMPA COMBOS
-              ===================================================== */
-            selectFornecedor.innerHTML =
-              '<option value="">Todos</option>';
+      const fornecedores =
+        [...new Set(
+          dadosDashboardSelecao
+            .map(x => x.fornecedor)
+            .filter(Boolean)
+        )];
 
-            selectTurno.innerHTML =
-              '<option value="">Todos</option>';
+      const turnos =
+        [...new Set(
+          dadosDashboardSelecao
+            .map(x => x.turno)
+            .filter(Boolean)
+        )];
 
-            /* =====================================================
-              LISTAS ÚNICAS
-              ===================================================== */
-            const fornecedores =
-              [...new Set(
-                dadosDashboardSelecao
-                  .map(x => x.fornecedor)
-                  .filter(Boolean)
-              )];
+      fornecedores.forEach(fornecedor => {
+        selectFornecedor.innerHTML += `
+          <option value="${fornecedor}">
+            ${fornecedor}
+          </option>
+        `;
+      });
 
-            const turnos =
-              [...new Set(
-                dadosDashboardSelecao
-                  .map(x => x.turno)
-                  .filter(Boolean)
-              )];
+      turnos.forEach(turno => {
+        selectTurno.innerHTML += `
+          <option value="${turno}">
+            ${turno}
+          </option>
+        `;
+      });
+    }
 
-            /* =====================================================
-              FORNECEDORES
-              ===================================================== */
-            fornecedores.forEach(fornecedor => {
+    function aplicarFiltrosDashboardSelecao() {
+      const fornecedor =
+        document.getElementById("filtroFornecedor").value;
 
-              selectFornecedor.innerHTML += `
-                <option value="${fornecedor}">
-                  ${fornecedor}
-                </option>
-              `;
-            });
+      const turno =
+        document.getElementById("filtroTurno").value;
 
-            /* =====================================================
-              TURNOS
-              ===================================================== */
-            turnos.forEach(turno => {
+      const status =
+        document.getElementById("filtroStatus").value;
 
-              selectTurno.innerHTML += `
-                <option value="${turno}">
-                  ${turno}
-                </option>
-              `;
-            });
+      const filtrados =
+        dadosDashboardSelecao.filter(item => {
+          let statusCalculado = "OK";
+
+          if (
+            item.diasSemApontamento === null ||
+            item.diasSemApontamento === undefined
+          ) {
+            statusCalculado = "Não iniciado";
+          }
+          else if (item.diasSemApontamento >= 4) {
+            statusCalculado = "Crítico";
+          }
+          else if (item.diasSemApontamento === 3) {
+            statusCalculado = "Atenção";
           }
 
-          /* =========================================================
-            APLICAR FILTROS
-            ========================================================= */
-          function aplicarFiltrosDashboardSelecao() {
+          const atendeFornecedor =
+            !fornecedor ||
+            item.fornecedor === fornecedor;
 
-            const fornecedor =
-              document.getElementById("filtroFornecedor").value;
+          const atendeTurno =
+            !turno ||
+            item.turno === turno;
 
-            const turno =
-              document.getElementById("filtroTurno").value;
+          const atendeStatus =
+            !status ||
+            statusCalculado === status;
 
-            const status =
-              document.getElementById("filtroStatus").value;
+          return (
+            atendeFornecedor &&
+            atendeTurno &&
+            atendeStatus
+          );
+        });
 
-            const filtrados =
-              dadosDashboardSelecao.filter(item => {
+      renderizarDashboardSelecao(filtrados);
+    }
 
-                /* ===================================================
-                  STATUS CALCULADO
-                  =================================================== */
-                let statusCalculado = "OK";
+    document
+      .getElementById("filtroFornecedor")
+      .addEventListener("change", aplicarFiltrosDashboardSelecao);
 
-                if (
-                  item.diasSemApontamento === null ||
-                  item.diasSemApontamento === undefined
-                ) {
-                  statusCalculado = "Não iniciado";
-                }
-                else if (item.diasSemApontamento >= 4) {
-                  statusCalculado = "Crítico";
-                }
-                else if (item.diasSemApontamento === 3) {
-                  statusCalculado = "Atenção";
-                }
+    document
+      .getElementById("filtroTurno")
+      .addEventListener("change", aplicarFiltrosDashboardSelecao);
 
-                const atendeFornecedor =
-                  !fornecedor ||
-                  item.fornecedor === fornecedor;
+    document
+      .getElementById("filtroStatus")
+      .addEventListener("change", aplicarFiltrosDashboardSelecao);
 
-                const atendeTurno =
-                  !turno ||
-                  item.turno === turno;
+    document
+      .getElementById("btnAplicarFiltros")
+      .addEventListener("click", aplicarFiltrosDashboardSelecao);
+  </script>
 
-                const atendeStatus =
-                  !status ||
-                  statusCalculado === status;
+  <script src="./sessao.js"></script>
 
-                return (
-                  atendeFornecedor &&
-                  atendeTurno &&
-                  atendeStatus
-                );
-              });
-
-            renderizarDashboardSelecao(filtrados);
-          }
-
-          /* =========================================================
-            EVENTOS
-            ========================================================= */
-          document
-            .getElementById("filtroFornecedor")
-            .addEventListener("change", aplicarFiltrosDashboardSelecao);
-
-          document
-            .getElementById("filtroTurno")
-            .addEventListener("change", aplicarFiltrosDashboardSelecao);
-
-          document
-            .getElementById("filtroStatus")
-            .addEventListener("change", aplicarFiltrosDashboardSelecao);
-
-          document
-            .getElementById("btnAplicarFiltros")
-            .addEventListener("click", aplicarFiltrosDashboardSelecao);
-
-</script>
+  <script>
+    protegerPagina();
+    preencherUsuarioLogadoNaTela();
+  </script>
 
 </body>
 </html>

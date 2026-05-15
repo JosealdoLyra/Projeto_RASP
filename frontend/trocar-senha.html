@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <!-- =========================================================
+         01. CONFIGURAÇÕES BÁSICAS
+         ========================================================= -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Trocar Senha - RASP</title>
+
+    <link rel="stylesheet" href="./trocar-senha.css" />
+</head>
+
+<body>
+
+    <!-- =========================================================
+     01A. MENSAGEM DO SISTEMA
+     ========================================================= -->
+<div id="mensagemSistema" class="mensagem-sistema oculto">
+    <div class="mensagem-caixa">
+        <div id="mensagemIcone" class="mensagem-icone">ℹ</div>
+        <p id="mensagemTexto"></p>
+        <button id="mensagemOk" type="button">OK</button>
+    </div>
+</div>
+
+    <!-- =========================================================
+         02. CONTAINER PRINCIPAL
+         ========================================================= -->
+    <main class="senha-page">
+        <section class="senha-card">
+            <!-- =================================================
+                 03. CABEÇALHO
+                 ================================================= -->
+            <div class="senha-header">
+                <div class="senha-icon">🔐</div>
+
+                <div>
+                    <h1>Trocar senha</h1>
+                    <p>Defina uma nova senha para continuar usando o sistema.</p>
+                </div>
+            </div>
+
+
+            <!-- =================================================
+                 04. FORMULÁRIO
+                 ================================================= -->
+            <form id="formTrocarSenha">
+                <label for="login">Usuário</label>
+                <input
+                    type="text"
+                    id="login"
+                    placeholder="GMID ou Nome Sobrenome"
+                    autocomplete="username"
+                    required
+                />
+
+                <label for="senhaAtual">Senha atual</label>
+                <input
+                    type="password"
+                    id="senhaAtual"
+                    placeholder="Digite sua senha atual"
+                    autocomplete="current-password"
+                    required
+                />
+
+                <label for="novaSenha">Nova senha</label>
+                <input
+                    type="password"
+                    id="novaSenha"
+                    placeholder="Mínimo 8 caracteres, letras e números"
+                    autocomplete="new-password"
+                    required
+                />
+
+                <label for="confirmarNovaSenha">Confirmar nova senha</label>
+                <input
+                    type="password"
+                    id="confirmarNovaSenha"
+                    placeholder="Confirme a nova senha"
+                    autocomplete="new-password"
+                    required
+                />
+
+                <button type="submit">
+                    Alterar senha
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <script src="./trocar-senha.js"></script>
+</body>
+</html>
