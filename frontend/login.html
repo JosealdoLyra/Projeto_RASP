@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    RASP - Sistema da Qualidade
+  </title>
+
+  <!-- =========================================================
+       02. CSS DA TELA DE LOGIN
+       ========================================================= -->
+  <link
+    rel="stylesheet"
+    href="./login.css"
+  />
+
+</head>
+
+<body>
+
+  <!-- =========================================================
+       03. PALCO PRINCIPAL DA TELA
+       ========================================================= -->
+  <main class="login-stage">
+
+    <!-- =====================================================
+         04. EFEITO DINÂMICO DO DIAMANTE
+         ===================================================== -->
+    <div class="efeito-diamante"></div>
+
+    <!-- =====================================================
+         05. EFEITO DINÂMICO DO CHIP / CÉREBRO
+         ===================================================== -->
+    <div class="efeito-chip"></div>
+
+    
+    <!-- =====================================================
+         06. LOGIN REAL SOBRE A ÁREA DA IMAGEM
+         ===================================================== -->
+    <section class="login-real">
+
+      <!-- Cabeçalho do login -->
+      <div class="login-header">
+
+        <div class="login-icon">
+          👤
+        </div>
+
+        <div>
+
+          <h2>
+            Acesse o sistema
+          </h2>
+
+          <p>
+            Informe suas credenciais para continuar
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- Formulário -->
+      <form id="formLogin">
+
+        <!-- Usuário -->
+        <label for="usuario">
+          Usuário (GMID ou Matrícula)
+        </label>
+
+        <div class="input-group">
+
+          <span>
+            👤
+          </span>
+
+          <input
+            type="text"
+            id="usuario"
+            placeholder="Digite seu usuário"
+            autocomplete="username"
+          />
+
+        </div>
+
+        <!-- Senha -->
+        <label for="senha">
+          Senha
+        </label>
+
+        <div class="input-group">
+
+          <span>
+            🔒
+          </span>
+
+          <input
+            type="password"
+            id="senha"
+            placeholder="Digite sua senha"
+            autocomplete="current-password"
+          />
+
+          <button
+            type="button"
+            id="toggleSenha"
+          >
+            👁
+          </button>
+
+        </div>
+
+        <!-- Opções -->
+        <div class="login-options">
+
+          <label class="remember">
+
+            <input
+              type="checkbox"
+              checked
+            />
+
+            <span>
+              Lembrar meu usuário
+            </span>
+
+          </label>
+
+          <a href="#">
+            Esqueci minha senha
+          </a>
+
+        </div>
+
+        <!-- Botão entrar -->
+        <button
+          type="submit"
+          class="btn-login"
+        >
+          Entrar no sistema →
+        </button>
+
+        <!-- Separador -->
+        <div class="separator">
+          ou
+        </div>
+
+        
+       
+      </form>
+
+    </section>
+
+  </main>
+
+  <!-- =========================================================
+       07. JAVASCRIPT
+       ========================================================= -->
+  <script src="./login.js"></script>
+
+</body>
+
+</html>

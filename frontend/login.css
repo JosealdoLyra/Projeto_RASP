@@ -1,0 +1,495 @@
+/* =========================================================
+   01. RESET GLOBAL
+   ========================================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   02. CONFIGURAÇÃO BASE DA PÁGINA
+   ========================================================= */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #020816;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* =========================================================
+   03. PALCO PRINCIPAL
+   Observação:
+   - ocupa 100% da largura e altura da tela;
+   - usa a imagem aprovada como fundo;
+   - background-size: cover faz crescer nas laterais.
+   ========================================================= */
+.login-stage {
+  position: relative;
+
+  width: 100vw;
+  height: 100vh;
+
+  background-image: url("./img/imagem-login-rasp.png");
+  background-size: 100% 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   04. EFEITO DINÂMICO DO DIAMANTE
+   ========================================================= */
+.efeito-diamante {
+  position: absolute;
+
+  left: 3.2%;
+  top: 3.6%;
+
+  width: 8.5%;
+  aspect-ratio: 1 / 1;
+  transform-origin: center center;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(0, 220, 255, 0.95),
+      rgba(0, 119, 255, 0.42) 42%,
+      transparent 72%
+    );
+
+  filter: blur(8px);
+
+  animation:
+    diamantePulse 2.8s ease-in-out infinite;
+
+  pointer-events: none;
+
+  z-index: 5;
+}
+
+
+/* Animação do diamante */
+@keyframes diamantePulse {
+
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+
+}
+
+/* =========================================================
+   05. EFEITO DINÂMICO DO CHIP / CÉREBRO
+   ========================================================= */
+.efeito-chip {
+  position: absolute;
+
+  left: 53.8%;
+  top: 6.7%;
+
+  width: 6.4%;
+  aspect-ratio: 1 / 1;
+  transform-origin: center center;
+
+  border-radius: 20px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(0, 238, 255, 0.70),
+      rgba(0, 119, 255, 0.26) 42%,
+      transparent 70%
+    );
+
+  filter: blur(7px);
+
+  animation:
+    chipPulse 2.5s ease-in-out infinite;
+
+  pointer-events: none;
+
+  z-index: 5;
+}
+
+/* Animação de brilho do chip */
+@keyframes chipPulse {
+
+  0%,
+  100% {
+    opacity: 0.40;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.95;
+    transform: scale(1.08);
+  }
+
+}
+
+/* =========================================================
+   06. ÁREA DO LOGIN REAL
+   ========================================================= */
+.login-real {
+  position: absolute;
+
+  left: 8.4%;
+  top: 37.6%;
+
+  width: 23.4%;
+  height: 48%;
+
+  padding:
+    1.9%
+    1.55%;
+
+  color: #ffffff;
+
+  z-index: 4;
+}
+
+/* =========================================================
+   07. CABEÇALHO DO LOGIN
+   ========================================================= */
+.login-header {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  margin-bottom: 7%;
+}
+
+/* Ícone do usuário */
+.login-icon {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #00bfff;
+
+  border:
+    1px solid
+    rgba(0, 174, 255, 0.75);
+
+  box-shadow:
+    0 0 18px rgba(0, 119, 255, 0.28);
+
+  font-size: 22px;
+}
+
+/* Título do login */
+.login-header h2 {
+  font-size: 1.25vw;
+  font-weight: 700;
+}
+
+/* Subtítulo do login */
+.login-header p {
+  margin-top: 3px;
+
+  font-size: 0.72vw;
+
+  color:
+    rgba(255, 255, 255, 0.72);
+}
+
+/* =========================================================
+   08. LABELS DO FORMULÁRIO
+   ========================================================= */
+.login-real form > label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 0.78vw;
+  font-weight: 600;
+}
+
+/* =========================================================
+   09. CAMPOS DE ENTRADA
+   ========================================================= */
+.input-group {
+  position: relative;
+
+  margin-bottom: 5.5%;
+}
+
+/* Ícone dentro do campo */
+.input-group span {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #cfe7ff;
+
+  font-size: 0.95vw;
+}
+
+/* Input */
+.input-group input {
+  width: 100%;
+  height: 2.9vw;
+
+  padding:
+    0
+    44px;
+
+  border-radius: 8px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.28);
+
+  background:
+    rgba(2, 8, 22, 0.45);
+
+  color: #ffffff;
+
+  outline: none;
+
+  font-size: 0.9vw;
+}
+
+/* Placeholder */
+.input-group input::placeholder {
+  color:
+    rgba(255, 255, 255, 0.60);
+}
+
+/* Foco no input */
+.input-group input:focus {
+  border-color:
+    rgba(0, 174, 255, 0.80);
+
+  box-shadow:
+    0 0 16px rgba(0, 119, 255, 0.28);
+}
+
+/* Botão do olho */
+.input-group button {
+  position: absolute;
+
+  right: 12px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  border: none;
+  background: transparent;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  font-size: 1vw;
+}
+
+/* =========================================================
+   10. OPÇÕES DO LOGIN
+   ========================================================= */
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 1%;
+
+  font-size: 0.72vw;
+}
+
+/* Lembrar usuário */
+.remember {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  margin: 0;
+
+  color: #ffffff;
+}
+
+/* Checkbox */
+.remember input {
+  accent-color: #0d6efd;
+}
+
+/* Link esqueci senha */
+.login-options a {
+  color: #009dff;
+
+  text-decoration: none;
+}
+
+/* =========================================================
+   11. BOTÃO ENTRAR
+   ========================================================= */
+.btn-login {
+  width: 100%;
+  height: 3.25vw;
+
+  margin-top: 6%;
+
+  border: none;
+  border-radius: 8px;
+
+  color: #ffffff;
+
+  font-size: 0.95vw;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  background:
+    linear-gradient(
+      135deg,
+      #006dff,
+      #004de0
+    );
+
+  transition:
+    0.25s;
+}
+
+/* Hover do botão entrar */
+.btn-login:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 0 24px rgba(0, 119, 255, 0.55);
+}
+
+/* =========================================================
+   12. SEPARADOR
+   ========================================================= */
+.separator {
+  margin:
+    4.5%
+    0;
+
+  text-align: center;
+
+  color:
+    rgba(255, 255, 255, 0.75);
+
+  font-size: 0.72vw;
+}
+
+/* =========================================================
+   13. BOTÃO CARTÃO CORPORATIVO
+   ========================================================= */
+.btn-card {
+  width: 100%;
+  height: 2.75vw;
+
+  border-radius: 7px;
+
+  border:
+    1px solid
+    rgba(0, 119, 255, 0.80);
+
+  background:
+    rgba(2, 8, 22, 0.55);
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  font-size: 0.82vw;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  transition:
+    0.25s;
+}
+
+/* Selo AE */
+.btn-card span {
+  border:
+    1px solid
+    #008cff;
+
+  color: #008cff;
+
+  padding:
+    1px
+    5px;
+
+  border-radius: 3px;
+
+  font-size: 0.72vw;
+}
+
+/* Hover cartão */
+.btn-card:hover {
+  background:
+    rgba(0, 119, 255, 0.15);
+
+  box-shadow:
+    0 0 18px rgba(0, 119, 255, 0.35);
+}
+
+
+/* =========================================================
+   15. AJUSTE PARA TELAS MENORES
+   ========================================================= */
+@media (max-width: 1000px) {
+
+  .login-header h2 {
+    font-size: 14px;
+  }
+
+  .login-header p,
+  .login-real form > label,
+  .login-options,
+  .separator,
+  .security {
+    font-size: 9px;
+  }
+
+  .input-group input {
+    height: 28px;
+
+    font-size: 10px;
+  }
+
+  .btn-login {
+    height: 32px;
+
+    font-size: 11px;
+  }
+
+  .btn-card {
+    height: 28px;
+
+    font-size: 10px;
+  }
+
+}
