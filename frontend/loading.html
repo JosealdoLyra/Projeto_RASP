@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>RASP - Carregando Sistema</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul-950: #020817;
+      --azul-925: #041126;
+      --azul-900: #061b3a;
+      --azul-800: #08285c;
+      --azul-700: #0b3f93;
+      --azul-600: #0f6dff;
+      --azul-500: #2f94ff;
+      --azul-400: #5bb6ff;
+
+      --texto: #f4f8ff;
+      --texto-suave: #c8d6ee;
+      --texto-azul: #4aa3ff;
+
+      --borda: rgba(47, 148, 255, 0.34);
+      --borda-fraca: rgba(47, 148, 255, 0.18);
+
+      --card: rgba(3, 17, 39, 0.78);
+      --card-2: rgba(6, 27, 58, 0.82);
+
+      --sombra-azul: 0 0 28px rgba(47, 148, 255, 0.35);
+      --sombra-forte: 0 0 60px rgba(15, 109, 255, 0.28);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 78%, rgba(15, 109, 255, 0.30), transparent 23%),
+        radial-gradient(circle at 80% 22%, rgba(47, 148, 255, 0.18), transparent 24%),
+        linear-gradient(135deg, #010611 0%, #031126 48%, #020817 100%);
+      color: var(--texto);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0 35%, rgba(47, 148, 255, 0.06) 36%, transparent 37%),
+        linear-gradient(150deg, transparent 0 63%, rgba(47, 148, 255, 0.05) 64%, transparent 65%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(47, 148, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47, 148, 255, 0.045) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,0.36), transparent 70%);
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      padding: 18px;
+    }
+
+    .shell {
+      position: relative;
+      height: calc(100vh - 36px);
+      border: 1px solid var(--borda);
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(3, 13, 31, 0.92), rgba(2, 8, 23, 0.90)),
+        radial-gradient(circle at 20% 70%, rgba(15,109,255,0.18), transparent 32%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.025), var(--sombra-forte);
+      overflow: hidden;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      left: -8%;
+      bottom: -18%;
+      width: 52%;
+      height: 55%;
+      background:
+        radial-gradient(circle, rgba(47,148,255,0.22), transparent 8%),
+        radial-gradient(circle, rgba(47,148,255,0.08), transparent 42%);
+      filter: blur(1px);
+      opacity: 0.9;
+    }
+
+    .shell::after {
+      content: "";
+      position: absolute;
+      right: -8%;
+      top: -10%;
+      width: 42%;
+      height: 42%;
+      background: radial-gradient(circle, rgba(47,148,255,0.14), transparent 55%);
+      pointer-events: none;
+    }
+
+    /* =========================================================
+       03. CABEÇALHO
+       ========================================================= */
+    .header {
+      position: relative;
+      z-index: 2;
+      height: 118px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--borda);
+      padding: 0 34px;
+    }
+
+    .brand {
+      width: 450px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .diamond-small {
+      width: 72px;
+      height: 72px;
+      filter: drop-shadow(0 0 14px rgba(47, 148, 255, 0.7));
+    }
+
+    .brand h1 {
+      font-size: 50px;
+      line-height: 0.9;
+      letter-spacing: 2px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 18px rgba(47, 148, 255, 0.35);
+    }
+
+    .brand p {
+      margin-top: 8px;
+      color: var(--texto);
+      font-size: 15px;
+    }
+
+    .header-divider {
+      width: 1px;
+      height: 64px;
+      background: linear-gradient(180deg, transparent, var(--azul-500), transparent);
+      margin: 0 38px;
+    }
+
+    .header-title h2 {
+      color: var(--azul-500);
+      font-size: 25px;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+
+    .header-title p {
+      color: var(--texto);
+      font-size: 18px;
+    }
+
+    /* =========================================================
+       04. CONTEÚDO
+       ========================================================= */
+    .content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 33% 67%;
+      height: calc(100% - 118px - 78px);
+    }
+
+    .left-panel {
+      position: relative;
+      padding: 44px 44px 20px;
+      border-right: 1px solid var(--borda);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .left-panel::before {
+      content: "";
+      position: absolute;
+      left: -120px;
+      bottom: 10px;
+      width: 520px;
+      height: 260px;
+      background:
+        radial-gradient(circle at center, rgba(47,148,255,0.9) 0 1px, transparent 2px),
+        radial-gradient(circle at center, rgba(47,148,255,0.24), transparent 50%);
+      background-size: 24px 24px, 100% 100%;
+      opacity: 0.55;
+    }
+
+    .diamond-main {
+      width: 150px;
+      height: 150px;
+      margin-top: 18px;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 28px rgba(47, 148, 255, 0.85));
+      animation: pulseDiamond 2.8s ease-in-out infinite;
+    }
+
+    .left-panel h1 {
+      font-size: 82px;
+      letter-spacing: 6px;
+      line-height: 1;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow:
+        0 0 18px rgba(47, 148, 255, 0.42),
+        0 4px 0 rgba(255,255,255,0.12);
+      margin-bottom: 12px;
+    }
+
+    .left-panel h3 {
+      color: var(--azul-400);
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+
+    .left-panel p {
+      max-width: 430px;
+      color: var(--texto);
+      font-size: 20px;
+      line-height: 1.55;
+    }
+
+    .orbit {
+      position: absolute;
+      bottom: 48px;
+      width: 370px;
+      height: 170px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, rgba(47,148,255,0.34), transparent 5%),
+        repeating-radial-gradient(circle at center, transparent 0 17px, rgba(47,148,255,0.24) 18px, transparent 20px);
+      opacity: 0.95;
+      animation: rotateSoft 12s linear infinite;
+    }
+
+    .right-panel {
+      padding: 56px 44px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .status-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .status-title h2 {
+      color: var(--azul-500);
+      font-size: 34px;
+      margin-bottom: 18px;
+      text-shadow: 0 0 18px rgba(47,148,255,0.28);
+    }
+
+    .status-title p {
+      color: var(--texto);
+      font-size: 21px;
+      line-height: 1.55;
+    }
+
+    /* =========================================================
+       05. ETAPAS
+       ========================================================= */
+    .steps {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 42px;
+    }
+
+    .steps::before {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 48px;
+      height: 3px;
+      background: rgba(91, 182, 255, 0.24);
+    }
+
+    .steps::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      top: 48px;
+      width: 45%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--azul-600), var(--azul-400));
+      box-shadow: 0 0 18px rgba(47,148,255,0.65);
+    }
+
+    .step {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .step-icon {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(91, 182, 255, 0.36);
+      background: rgba(3, 17, 39, 0.86);
+      display: grid;
+      place-items: center;
+      color: #dcecff;
+      font-size: 40px;
+      box-shadow: inset 0 0 26px rgba(15, 109, 255, 0.18);
+    }
+
+    .step.active .step-icon {
+      border-color: var(--azul-400);
+      background: radial-gradient(circle, rgba(47,148,255,0.28), rgba(3,17,39,0.92));
+      box-shadow: 0 0 26px rgba(47,148,255,0.70), inset 0 0 28px rgba(47,148,255,0.28);
+      color: #ffffff;
+    }
+
+    .step.done .step-icon {
+      border-color: var(--azul-600);
+      box-shadow: 0 0 20px rgba(15,109,255,0.35);
+    }
+
+    .step h4 {
+      font-size: 16px;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .step p {
+      color: var(--texto-suave);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .step-dot {
+      margin: 18px auto 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: rgba(91,182,255,0.28);
+    }
+
+    .step.active .step-dot {
+      background: var(--azul-400);
+      box-shadow: 0 0 18px rgba(91,182,255,0.9);
+    }
+
+    /* =========================================================
+       06. PROGRESSO
+       ========================================================= */
+    .progress-card {
+      border: 1px solid var(--borda);
+      background: rgba(3, 17, 39, 0.72);
+      border-radius: 12px;
+      padding: 18px 24px 24px;
+      margin-bottom: 18px;
+      box-shadow: inset 0 0 34px rgba(15,109,255,0.08);
+    }
+
+    .progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .progress-label {
+      color: var(--azul-400);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .progress-percent {
+      color: var(--azul-500);
+      font-size: 32px;
+      font-weight: 900;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(15, 109, 255, 0.20);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--azul-600), var(--azul-400));
+      box-shadow: 0 0 20px rgba(47,148,255,0.75);
+      animation: carregarBarra 3.8s ease-in-out forwards;
+    }
+
+    .info-card {
+      border: 1px solid var(--borda);
+      background: rgba(3, 17, 39, 0.72);
+      border-radius: 12px;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .info-icon {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--azul-500);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--azul-400);
+      font-size: 26px;
+      font-weight: 800;
+      box-shadow: 0 0 18px rgba(47,148,255,0.28);
+    }
+
+    .info-card h3 {
+      color: var(--azul-400);
+      font-size: 21px;
+      margin-bottom: 6px;
+    }
+
+    .info-card p {
+      color: var(--texto);
+      font-size: 16px;
+    }
+
+    /* =========================================================
+       07. FLUXO INFERIOR
+       ========================================================= */
+    .flow {
+      position: relative;
+      z-index: 2;
+      height: 78px;
+      margin: 0 36px;
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr 70px 1fr;
+      align-items: center;
+      padding: 0 46px;
+      background: rgba(3, 17, 39, 0.64);
+    }
+
+    .flow-item {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .flow-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 10px;
+      border: 1px solid var(--borda);
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      color: var(--azul-400);
+      background: rgba(6, 27, 58, 0.82);
+      box-shadow: inset 0 0 18px rgba(15,109,255,0.10);
+    }
+
+    .flow-item h4 {
+      color: var(--azul-400);
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .flow-item p {
+      color: var(--texto);
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .flow-arrow {
+      color: var(--azul-500);
+      font-size: 34px;
+      text-align: center;
+      text-shadow: 0 0 14px rgba(47,148,255,0.55);
+    }
+
+    /* =========================================================
+       08. ASSINATURA
+       ========================================================= */
+    .signature {
+      position: absolute;
+      right: 34px;
+      bottom: 10px;
+      z-index: 5;
+      color: rgba(244, 248, 255, 0.72);
+      font-size: 12px;
+      letter-spacing: 0.3px;
+    }
+
+    .signature span {
+      color: var(--azul-400);
+      font-weight: 700;
+    }
+
+    /* =========================================================
+       09. SVG DIAMANTE
+       ========================================================= */
+    .diamond-line {
+      fill: none;
+      stroke: #1f86ff;
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .diamond-line-light {
+      fill: none;
+      stroke: #74c5ff;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.85;
+    }
+
+    /* =========================================================
+       10. ANIMAÇÕES
+       ========================================================= */
+    @keyframes carregarBarra {
+      0% { width: 0%; }
+      18% { width: 18%; }
+      42% { width: 42%; }
+      68% { width: 65%; }
+      100% { width: 100%; }
+    }
+
+    @keyframes pulseDiamond {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 24px rgba(47,148,255,0.70));
+      }
+      50% {
+        transform: scale(1.035);
+        filter: drop-shadow(0 0 38px rgba(91,182,255,0.95));
+      }
+    }
+
+    @keyframes rotateSoft {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* =========================================================
+       11. RESPONSIVO
+       ========================================================= */
+    @media (max-width: 1100px) {
+      body {
+        overflow: auto;
+      }
+
+      .shell {
+        height: auto;
+        min-height: calc(100vh - 36px);
+      }
+
+      .header {
+        height: auto;
+        padding: 24px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+      }
+
+      .brand {
+        width: auto;
+      }
+
+      .header-divider {
+        display: none;
+      }
+
+      .content {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .left-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--borda);
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .steps::before,
+      .steps::after {
+        display: none;
+      }
+
+      .flow {
+        height: auto;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .flow-arrow {
+        transform: rotate(90deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       12. ESTRUTURA PRINCIPAL
+       ========================================================= -->
+  <div class="page">
+    <div class="shell">
+
+      <!-- =======================================================
+           13. CABEÇALHO
+           ======================================================= -->
+      <header class="header">
+        <div class="brand">
+          <svg class="diamond-small" viewBox="0 0 120 100" aria-label="Diamante RASP">
+            <path class="diamond-line" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+            <path class="diamond-line-light" d="M15 30 H105" />
+            <path class="diamond-line-light" d="M35 8 L48 30 L60 92" />
+            <path class="diamond-line-light" d="M85 8 L72 30 L60 92" />
+            <path class="diamond-line-light" d="M48 30 H72" />
+          </svg>
+
+          <div>
+            <h1>RASP</h1>
+            <p>Relatório Análise e Solução do Problema</p>
+          </div>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <div class="header-title">
+          <h2>CARREGANDO O SISTEMA</h2>
+          <p>Aguarde enquanto preparamos seu ambiente de trabalho.</p>
+        </div>
+      </header>
+
+      <!-- =======================================================
+           14. CONTEÚDO
+           ======================================================= -->
+      <main class="content">
+
+        <!-- PAINEL ESQUERDO -->
+        <section class="left-panel">
+          <svg class="diamond-main" viewBox="0 0 120 100" aria-label="Diamante RASP">
+            <path class="diamond-line" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+            <path class="diamond-line-light" d="M15 30 H105" />
+            <path class="diamond-line-light" d="M35 8 L48 30 L60 92" />
+            <path class="diamond-line-light" d="M85 8 L72 30 L60 92" />
+            <path class="diamond-line-light" d="M48 30 H72" />
+          </svg>
+
+          <h1>RASP</h1>
+          <h3>Relatório Análise e Solução do Problema</h3>
+
+          <p>
+            Sistema inteligente para registro, análise e solução de problemas,
+            garantindo qualidade, segurança e melhoria contínua.
+          </p>
+
+          <div class="orbit"></div>
+        </section>
+
+        <!-- PAINEL DIREITO -->
+        <section class="right-panel">
+
+          <div class="status-title">
+            <h2>Iniciando o sistema...</h2>
+            <p>
+              Estamos realizando verificações e carregando<br>
+              as informações necessárias para você.
+            </p>
+          </div>
+
+          <div class="steps">
+
+            <div class="step done">
+              <div class="step-icon">👤</div>
+              <h4>1. Validando usuário</h4>
+              <p>Verificando suas<br>credenciais de acesso.</p>
+              <div class="step-dot"></div>
+            </div>
+
+            <div class="step done">
+              <div class="step-icon">▰</div>
+              <h4>2. Carregando dados</h4>
+              <p>Buscando e carregando<br>os dados do sistema.</p>
+              <div class="step-dot"></div>
+            </div>
+
+            <div class="step active">
+              <div class="step-icon">✓</div>
+              <h4>3. Verificando permissões</h4>
+              <p>Validando suas permissões<br>e níveis de acesso.</p>
+              <div class="step-dot"></div>
+            </div>
+
+            <div class="step">
+              <div class="step-icon">⚙</div>
+              <h4>4. Inicializando módulos</h4>
+              <p>Preparando os módulos<br>e recursos do sistema.</p>
+              <div class="step-dot"></div>
+            </div>
+
+            <div class="step">
+              <div class="step-icon">⚑</div>
+              <h4>5. Finalizando preparação</h4>
+              <p>Concluindo a preparação<br>do seu ambiente.</p>
+              <div class="step-dot"></div>
+            </div>
+
+          </div>
+
+          <div class="progress-card">
+            <div class="progress-top">
+              <div class="progress-label" id="textoCarregamento">Carregando...</div>
+              <div class="progress-percent" id="percentualCarregamento">0%</div>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-icon">i</div>
+            <div>
+              <h3>Por favor, aguarde.</h3>
+              <p>Isso pode levar alguns segundos. Não feche esta janela.</p>
+            </div>
+          </div>
+
+        </section>
+      </main>
+
+      <!-- =======================================================
+           15. FLUXO INFERIOR
+           ======================================================= -->
+      <section class="flow">
+
+        <div class="flow-item">
+          <div class="flow-icon">🔒</div>
+          <div>
+            <h4>LOGIN</h4>
+            <p>Usuário realiza<br>o login com sucesso.</p>
+          </div>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <div class="flow-icon">◌</div>
+          <div>
+            <h4>CARREGAMENTO</h4>
+            <p>Sistema verifica, carrega<br>e prepara o ambiente.</p>
+          </div>
+        </div>
+
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-item">
+          <div class="flow-icon">⌂</div>
+          <div>
+            <h4>HOME / INÍCIO</h4>
+            <p>Usuário é direcionado<br>para a tela inicial.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- =======================================================
+           16. ASSINATURA
+           ======================================================= -->
+      <div class="signature">
+        Developed: <span>Josealdo Lyra</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =========================================================
+       17. SCRIPT
+       ========================================================= -->
+  <script>
+    /* =========================================================
+       17.01 CONFIGURAÇÃO DO TEMPO DE TRANSIÇÃO
+       ========================================================= */
+    const TEMPO_TOTAL_MS = 4200;
+    const DESTINO_HOME = "home.html";
+
+    /* =========================================================
+       17.02 ANIMAÇÃO DO PERCENTUAL
+       ========================================================= */
+    function animarPercentual() {
+      const percentual = document.getElementById("percentualCarregamento");
+      const texto = document.getElementById("textoCarregamento");
+
+      let valor = 0;
+
+      const intervalo = setInterval(() => {
+        valor += 1;
+
+        if (valor <= 22) {
+          texto.textContent = "Validando usuário...";
+        } else if (valor <= 48) {
+          texto.textContent = "Carregando dados...";
+        } else if (valor <= 68) {
+          texto.textContent = "Verificando permissões...";
+        } else if (valor <= 88) {
+          texto.textContent = "Inicializando módulos...";
+        } else {
+          texto.textContent = "Finalizando preparação...";
+        }
+
+        percentual.textContent = valor + "%";
+
+        if (valor >= 100) {
+          clearInterval(intervalo);
+        }
+      }, TEMPO_TOTAL_MS / 100);
+    }
+
+    /* =========================================================
+       17.03 REDIRECIONAR PARA HOME
+       ========================================================= */
+    function redirecionarParaHome() {
+      setTimeout(() => {
+        window.location.href = DESTINO_HOME;
+      }, TEMPO_TOTAL_MS + 350);
+    }
+
+    /* =========================================================
+       17.04 INICIALIZAÇÃO
+       ========================================================= */
+    animarPercentual();
+    redirecionarParaHome();
+  </script>
+</body>
+</html>

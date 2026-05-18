@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>RASP - Página Inicial</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul-950: #020817;
+      --azul-925: #041126;
+      --azul-900: #061b3a;
+      --azul-800: #08285c;
+      --azul-700: #0b3f93;
+      --azul-600: #0f6dff;
+      --azul-500: #2f94ff;
+      --azul-400: #5bb6ff;
+
+      --texto: #f4f8ff;
+      --texto-suave: #c8d6ee;
+      --texto-fraco: #91a4c2;
+
+      --borda: rgba(47, 148, 255, 0.34);
+      --borda-fraca: rgba(47, 148, 255, 0.18);
+
+      --card: rgba(3, 17, 39, 0.74);
+      --card-2: rgba(6, 27, 58, 0.74);
+
+      --dourado: #f7c948;
+      --dourado-escuro: #a87900;
+
+      --vermelho: #ff6262;
+      --verde: #22c55e;
+
+      --sombra-azul: 0 0 28px rgba(47, 148, 255, 0.30);
+      --sombra-forte: 0 0 60px rgba(15, 109, 255, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 74%, rgba(15, 109, 255, 0.23), transparent 24%),
+        radial-gradient(circle at 82% 20%, rgba(47, 148, 255, 0.13), transparent 23%),
+        linear-gradient(135deg, #010611 0%, #031126 48%, #020817 100%);
+      color: var(--texto);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(120deg, transparent 0 37%, rgba(47, 148, 255, 0.045) 38%, transparent 39%),
+        linear-gradient(150deg, transparent 0 62%, rgba(47, 148, 255, 0.045) 63%, transparent 64%);
+      pointer-events: none;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(47, 148, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47, 148, 255, 0.035) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(circle at center, rgba(0,0,0,0.34), transparent 72%);
+      pointer-events: none;
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 26px;
+    }
+
+    /* =========================================================
+       03. MENU LATERAL
+       ========================================================= */
+    .sidebar {
+      min-height: calc(100vh - 32px);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(3, 13, 31, 0.94), rgba(2, 8, 23, 0.92)),
+        radial-gradient(circle at bottom left, rgba(15,109,255,0.20), transparent 45%);
+      box-shadow: var(--sombra-forte);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      padding: 30px 28px 26px;
+    }
+
+    .diamond-logo {
+      width: 78px;
+      height: 68px;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 0 18px rgba(47, 148, 255, 0.75));
+    }
+
+    .brand h1 {
+      font-size: 52px;
+      line-height: 0.95;
+      letter-spacing: 2px;
+      font-weight: 900;
+      text-shadow: 0 0 22px rgba(47,148,255,0.35);
+    }
+
+    .brand p {
+      margin-top: 12px;
+      font-size: 16px;
+      line-height: 1.35;
+      color: var(--texto);
+    }
+
+    .nav {
+      padding: 140px 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      flex: 1;
+    }
+
+    .nav-item {
+      min-height: 62px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 22px;
+      color: var(--texto);
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: 0.22s ease;
+      position: relative;
+    }
+
+    .nav-item::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: -10px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(47,148,255,0.32), transparent);
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      border-color: var(--azul-500);
+      background: linear-gradient(90deg, rgba(15,109,255,0.28), rgba(15,109,255,0.06));
+      box-shadow: 0 0 22px rgba(47,148,255,0.28), inset 4px 0 0 var(--azul-400);
+    }
+
+    .nav-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--azul-400);
+      font-size: 27px;
+      text-shadow: 0 0 16px rgba(47,148,255,0.55);
+    }
+
+    .nav-arrow {
+      margin-left: auto;
+      color: var(--texto-suave);
+      font-size: 25px;
+    }
+
+    .logout {
+      color: #ffffff;
+    }
+
+    .logout .nav-icon {
+      color: var(--azul-400);
+    }
+
+    .sidebar-footer {
+      margin: auto 16px 18px;
+      padding: 18px;
+      border: 1px solid var(--borda-fraca);
+      border-radius: 10px;
+      background: rgba(3,17,39,0.56);
+      color: var(--texto-suave);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .sidebar-footer strong {
+      display: block;
+      color: var(--azul-400);
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    /* =========================================================
+       04. ÁREA PRINCIPAL
+       ========================================================= */
+    .main {
+      min-width: 0;
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, rgba(2, 8, 23, 0.52), rgba(2, 8, 23, 0.78)),
+        radial-gradient(circle at 95% 18%, rgba(47,148,255,0.11), transparent 27%);
+      box-shadow: var(--sombra-forte);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 100px;
+      border-bottom: 1px solid var(--borda-fraca);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+    }
+
+    .topbar h2 {
+      font-size: 30px;
+      line-height: 1.1;
+      margin-bottom: 9px;
+      color: #ffffff;
+    }
+
+    .topbar p {
+      color: var(--texto-suave);
+      font-size: 16px;
+    }
+
+    .user-top {
+      min-width: 360px;
+      height: 64px;
+      border: 1px solid var(--borda-fraca);
+      border-radius: 10px;
+      background: rgba(3,17,39,0.55);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+    }
+
+    .user-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--azul-500);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      color: var(--azul-400);
+      box-shadow: 0 0 18px rgba(47,148,255,0.28);
+    }
+
+    .user-top strong {
+      font-size: 16px;
+      color: #ffffff;
+    }
+
+    .user-top span {
+      color: var(--azul-400);
+      font-weight: 800;
+    }
+
+    .user-dropdown {
+      margin-left: auto;
+      color: var(--azul-500);
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .content {
+      padding: 22px 38px 0;
+      flex: 1;
+    }
+
+    /* =========================================================
+       05. BOAS-VINDAS
+       ========================================================= */
+    .welcome-card {
+      min-height: 158px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background:
+        linear-gradient(90deg, rgba(3,17,39,0.70), rgba(3,17,39,0.50)),
+        radial-gradient(circle at right, rgba(47,148,255,0.14), transparent 38%);
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      align-items: center;
+      padding: 22px 34px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-card::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -20px;
+      width: 230px;
+      height: 180px;
+      background-image:
+        radial-gradient(circle, rgba(47,148,255,0.55) 1px, transparent 2px);
+      background-size: 18px 18px;
+      opacity: 0.32;
+      transform: rotate(22deg);
+    }
+
+    .welcome-left {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .welcome-diamond-wrap {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 2px solid rgba(47,148,255,0.45);
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle, rgba(47,148,255,0.20), rgba(3,17,39,0.55));
+      box-shadow: 0 0 26px rgba(47,148,255,0.24);
+    }
+
+    .welcome-diamond {
+      width: 64px;
+      height: 56px;
+      filter: drop-shadow(0 0 16px rgba(47,148,255,0.85));
+    }
+
+    .welcome-left h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .welcome-left h3 span {
+      color: var(--azul-400);
+    }
+
+    .welcome-left p {
+      color: var(--texto);
+      font-size: 17px;
+      line-height: 1.45;
+    }
+
+    /* =========================================================
+       05.01 DATA / HORÁRIO ALINHADOS
+       ========================================================= */
+    .welcome-info {
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      justify-self: end;
+      width: 620px;
+      height: 92px;
+      border-left: 2px solid var(--borda-fraca);
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      height: 100%;
+      padding: 0 12px;
+    }
+
+    .info-item + .info-item {
+      border-left: 2px solid var(--borda-fraca);
+    }
+
+    .data-item {
+      justify-content: flex-end;
+      padding-right: 28px;
+    }
+
+    .hora-item {
+      justify-content: flex-start;
+      padding-left: 8px;
+    }
+
+    .info-icon {
+      flex: 0 0 auto;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--azul-500);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--azul-400);
+      font-size: 22px;
+      background: rgba(15,109,255,0.10);
+      box-shadow: 0 0 14px rgba(47,148,255,0.18);
+    }
+
+    .info-texto {
+      width: 112px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .info-label {
+      color: var(--texto-suave);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      color: var(--azul-500);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* =========================================================
+       06. TÍTULO DOS MÓDULOS
+       ========================================================= */
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--azul-500);
+      font-size: 24px;
+      letter-spacing: 0.4px;
+      margin: 0 0 24px 4px;
+      position: relative;
+      padding-bottom: 12px;
+      width: fit-content;
+    }
+
+    .section-title::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 370px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--azul-500), transparent);
+      box-shadow: 0 0 12px rgba(47,148,255,0.65);
+    }
+
+    .title-grid-icon {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 4px;
+    }
+
+    .title-grid-icon span {
+      border-radius: 3px;
+      background: var(--azul-500);
+      box-shadow: 0 0 10px rgba(47,148,255,0.6);
+    }
+
+    /* =========================================================
+       07. CARDS DOS MÓDULOS
+       ========================================================= */
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 18px;
+      padding-bottom: 22px;
+    }
+
+    .module-card {
+      min-height: 254px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background:
+        linear-gradient(180deg, rgba(6,27,58,0.55), rgba(3,17,39,0.72));
+      box-shadow: inset 0 0 28px rgba(47,148,255,0.04);
+      padding: 24px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .module-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(47,148,255,0.12), transparent 48%);
+      opacity: 0;
+      transition: 0.22s ease;
+    }
+
+    .module-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--azul-500);
+      box-shadow: 0 0 28px rgba(47,148,255,0.24);
+    }
+
+    .module-card:hover::before {
+      opacity: 1;
+    }
+
+    .module-icon {
+      position: relative;
+      z-index: 2;
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      border: 1px solid var(--azul-500);
+      background: rgba(15,109,255,0.09);
+      display: grid;
+      place-items: center;
+      color: var(--azul-400);
+      font-size: 42px;
+      margin-bottom: 18px;
+      box-shadow: 0 0 20px rgba(47,148,255,0.22);
+    }
+
+    .module-card h3 {
+      position: relative;
+      z-index: 2;
+      font-size: 19px;
+      margin-bottom: 13px;
+      color: #ffffff;
+    }
+
+    .module-card p {
+      position: relative;
+      z-index: 2;
+      color: var(--texto-suave);
+      font-size: 15px;
+      line-height: 1.42;
+      min-height: 62px;
+      margin-bottom: 16px;
+    }
+
+    .module-card button {
+      position: relative;
+      z-index: 2;
+      width: 160px;
+      height: 42px;
+      border: 1px solid var(--azul-500);
+      border-radius: 6px;
+      background: rgba(15,109,255,0.10);
+      color: var(--azul-400);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: inset 0 0 18px rgba(47,148,255,0.05);
+      transition: 0.22s ease;
+    }
+
+    .module-card button:hover {
+      background: rgba(15,109,255,0.22);
+      box-shadow: 0 0 18px rgba(47,148,255,0.28);
+    }
+
+    .module-card.admin-card {
+      border-color: rgba(247, 201, 72, 0.72);
+      background:
+        linear-gradient(180deg, rgba(80,54,0,0.16), rgba(3,17,39,0.72));
+    }
+
+    .admin-card .module-icon {
+      border-color: var(--dourado);
+      color: var(--dourado);
+      background: rgba(247,201,72,0.08);
+      box-shadow: 0 0 20px rgba(247,201,72,0.22);
+    }
+
+    .admin-card h3 {
+      color: var(--dourado);
+    }
+
+    .admin-card button {
+      border-color: var(--dourado);
+      color: var(--dourado);
+      background: rgba(247,201,72,0.10);
+    }
+
+    .admin-card button:hover {
+      background: rgba(247,201,72,0.18);
+      box-shadow: 0 0 18px rgba(247,201,72,0.24);
+    }
+
+    .empty-card {
+      min-height: 254px;
+      border: 1px dashed rgba(47,148,255,0.20);
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at center, rgba(47,148,255,0.06), transparent 55%),
+        rgba(3,17,39,0.30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(200,214,238,0.35);
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    /* =========================================================
+       08. RODAPÉ
+       ========================================================= */
+    .footer {
+      height: 58px;
+      border-top: 1px solid var(--borda-fraca);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 38px;
+      color: var(--texto-suave);
+      font-size: 14px;
+      background: rgba(3,17,39,0.45);
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-shield {
+      width: 26px;
+      height: 26px;
+      color: var(--azul-400);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      text-shadow: 0 0 12px rgba(47,148,255,0.55);
+    }
+
+    .footer strong {
+      color: #ffffff;
+    }
+
+    .footer-dev span {
+      color: var(--dourado);
+      font-weight: 800;
+      text-shadow: 0 0 10px rgba(247,201,72,0.28);
+    }
+
+    .footer-version {
+      color: var(--texto-suave);
+    }
+
+    /* =========================================================
+       09. SVG DIAMANTE
+       ========================================================= */
+    .diamond-line {
+      fill: none;
+      stroke: #1f86ff;
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .diamond-line-light {
+      fill: none;
+      stroke: #74c5ff;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.88;
+    }
+
+    /* =========================================================
+       10. RESPONSIVO NOTEBOOK / LAPTOP
+       ========================================================= */
+    @media (max-width: 1500px), (max-height: 850px) {
+      body {
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .app {
+        height: 100vh;
+        min-height: 0;
+        padding: 8px;
+        gap: 12px;
+        grid-template-columns: 230px 1fr;
+      }
+
+      .sidebar,
+      .main {
+        height: calc(100vh - 16px);
+        min-height: 0;
+      }
+
+      .brand {
+        padding: 18px 22px 10px;
+      }
+
+      .diamond-logo {
+        width: 50px;
+        height: 44px;
+        margin-bottom: 8px;
+      }
+
+      .brand h1 {
+        font-size: 34px;
+      }
+
+      .brand p {
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      .nav {
+        padding: 88px 10px 0;
+        gap: 8px;
+      }
+
+      .nav-item {
+        min-height: 46px;
+        font-size: 12px;
+        padding: 0 14px;
+      }
+
+      .nav-icon {
+        width: 26px;
+        height: 26px;
+        font-size: 20px;
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+
+      .topbar {
+        height: 66px;
+        padding: 0 26px;
+        flex-shrink: 0;
+      }
+
+      .topbar h2 {
+        font-size: 21px;
+        margin-bottom: 4px;
+      }
+
+      .topbar p {
+        font-size: 12px;
+      }
+
+      .user-top {
+        height: 48px;
+        min-width: 280px;
+        font-size: 11px;
+        padding: 0 14px;
+      }
+
+      .user-avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 20px;
+      }
+
+      .content {
+        height: calc(100vh - 66px - 34px - 16px);
+        min-height: 0;
+        padding: 12px 26px 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .welcome-card {
+        min-height: 86px;
+        height: 86px;
+        padding: 10px 22px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
+      }
+
+      .welcome-diamond-wrap {
+        width: 62px;
+        height: 62px;
+      }
+
+      .welcome-diamond {
+        width: 36px;
+        height: 32px;
+      }
+
+      .welcome-left {
+        gap: 18px;
+      }
+
+      .welcome-left h3 {
+        font-size: 17px;
+        margin-bottom: 4px;
+      }
+
+      .welcome-left p {
+        font-size: 12px;
+        line-height: 1.25;
+      }
+
+      .welcome-info {
+        height: 58px;
+        justify-self: end;
+        width: 500px;
+      }
+
+      .info-item {
+        gap: 10px;
+        padding: 0 8px;
+      }
+
+      .data-item {
+        padding-right: 20px;
+      }
+
+      .hora-item {
+        padding-left: 12px;
+      }
+
+      .info-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 19px;
+      }
+
+      .info-texto {
+        width: 90px;
+      }
+
+      .info-label {
+        font-size: 11px;
+        margin-bottom: 3px;
+      }
+
+      .info-value {
+        font-size: 16px;
+      }
+
+      .section-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        padding-bottom: 7px;
+        flex-shrink: 0;
+      }
+
+      .section-title::after {
+        width: 300px;
+      }
+
+      .title-grid-icon {
+        width: 20px;
+        height: 20px;
+      }
+
+      .modules-grid {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        padding-bottom: 10px;
+      }
+
+      .module-card,
+      .empty-card {
+        min-height: 0;
+        height: auto;
+        padding: 10px 12px;
+      }
+
+      .module-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+        margin-bottom: 7px;
+      }
+
+      .module-card h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+
+      .module-card p {
+        font-size: 10.5px;
+        line-height: 1.25;
+        min-height: 32px;
+        margin-bottom: 6px;
+      }
+
+      .module-card button {
+        width: 110px;
+        height: 28px;
+        font-size: 10.5px;
+      }
+
+      .empty-card {
+        font-size: 10px;
+      }
+
+      .footer {
+        height: 34px;
+        flex-shrink: 0;
+        font-size: 10.5px;
+        padding: 0 26px;
+      }
+    }
+
+
+/* =========================================================
+   AJUSTE FINO - ÍCONE DO HORÁRIO
+   ========================================================= */
+.hora-item .info-icon {
+  transform: translateX(-5px);
+}
+
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       11. ESTRUTURA PRINCIPAL
+       ========================================================= -->
+  <div class="app">
+
+    <!-- =======================================================
+         12. MENU LATERAL
+         ======================================================= -->
+    <aside class="sidebar">
+
+      <div class="brand">
+        <svg class="diamond-logo" viewBox="0 0 120 100" aria-label="Diamante RASP">
+          <path class="diamond-line" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+          <path class="diamond-line-light" d="M15 30 H105" />
+          <path class="diamond-line-light" d="M35 8 L48 30 L60 92" />
+          <path class="diamond-line-light" d="M85 8 L72 30 L60 92" />
+          <path class="diamond-line-light" d="M48 30 H72" />
+        </svg>
+
+        <h1>RASP</h1>
+        <p>Relatório Análise e<br>Solução do Problema</p>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-item active" href="home.html">
+          <span class="nav-icon">⌂</span>
+          Página Inicial
+        </a>
+
+        <a class="nav-item admin-only" href="admin.html">
+          <span class="nav-icon">⚙</span>
+          Administração do Sistema
+          <span class="nav-arrow">›</span>
+        </a>
+
+        <a class="nav-item logout" href="#" onclick="sairDoSistema()">
+          <span class="nav-icon">↪</span>
+          Sair do Sistema
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        RASP - Relatório Análise e Solução do Problema
+        <strong>Versão 1.0.0</strong>
+      </div>
+
+    </aside>
+
+    <!-- =======================================================
+         13. CONTEÚDO PRINCIPAL
+         ======================================================= -->
+    <main class="main">
+
+      <!-- =====================================================
+           13.01 TOPO
+           ===================================================== -->
+      <header class="topbar">
+        <div>
+          <h2>Bem-vindo ao RASP</h2>
+          <p>Sistema de Relatório Análise e Solução do Problema</p>
+        </div>
+
+        <div class="user-top">
+          <div class="user-avatar">○</div>
+
+          <div>
+            <strong>Olá, <span id="nomeUsuarioTopo">Usuário</span></strong><br>
+            <span>Perfil: <span id="perfilUsuarioTopo">PERFIL</span></span>
+          </div>
+
+          <div class="user-dropdown">⌄</div>
+        </div>
+      </header>
+
+      <!-- =====================================================
+           13.02 CONTEÚDO
+           ===================================================== -->
+      <section class="content">
+
+        <!-- ===================================================
+             13.02.01 BOAS-VINDAS
+             =================================================== -->
+        <div class="welcome-card">
+
+          <div class="welcome-left">
+            <div class="welcome-diamond-wrap">
+              <svg class="welcome-diamond" viewBox="0 0 120 100" aria-label="Diamante RASP">
+                <path class="diamond-line" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+                <path class="diamond-line-light" d="M15 30 H105" />
+                <path class="diamond-line-light" d="M35 8 L48 30 L60 92" />
+                <path class="diamond-line-light" d="M85 8 L72 30 L60 92" />
+                <path class="diamond-line-light" d="M48 30 H72" />
+              </svg>
+            </div>
+
+            <div>
+              <h3>Bem-vindo, <span id="nomeUsuarioBoasVindas">Usuário</span>!</h3>
+              <p>Acesse os módulos do sistema utilizando<br>as opções abaixo.</p>
+            </div>
+          </div>
+
+          <div class="welcome-info">
+
+            <div class="info-item data-item">
+              <div class="info-icon">▣</div>
+
+              <div class="info-texto">
+                <div class="info-label">Data atual</div>
+                <div class="info-value" id="dataAtual">--/--/----</div>
+              </div>
+            </div>
+
+            <div class="info-item hora-item">
+              <div class="info-icon">◷</div>
+
+              <div class="info-texto">
+                <div class="info-label">Horário</div>
+                <div class="info-value" id="horaAtual">--:--:--</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ===================================================
+             13.02.02 TÍTULO
+             =================================================== -->
+        <h2 class="section-title">
+          <span class="title-grid-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          MÓDULOS DO SISTEMA
+        </h2>
+
+       <!-- ===================================================
+     13.02.03 MÓDULOS
+     =================================================== -->
+<div class="modules-grid">
+
+  <!-- =================================================
+       13.02.03.01 EMITIR / ABRIR RASP
+       Tela principal de abertura/emissão do RASP
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">▤</div>
+
+    <h3>Emitir / Abrir RASP</h3>
+
+    <p>Criar um novo RASP ou abrir registros existentes.</p>
+
+    <button onclick="abrirTela('index.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.02 RASCUNHOS
+       Por enquanto direciona para a tela principal,
+       onde os rascunhos poderão ser filtrados/abertos
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">▣</div>
+
+    <h3>Rascunhos</h3>
+
+    <p>Visualize e gerencie RASPs salvos como rascunho.</p>
+
+    <button onclick="abrirTela('index.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.03 GESTÃO DE APROVAÇÕES
+       Tela de análise/aprovação FT/LG
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">✓</div>
+
+    <h3>Gestão de Aprovações</h3>
+
+    <p>Acompanhe e realize aprovações das análises.</p>
+
+    <button onclick="abrirTela('gestao-aprovacoes.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.04 SELEÇÃO / CONTENÇÃO
+       Tela operacional de seleção/contenção
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">▽</div>
+
+    <h3>Seleção / Contenção</h3>
+
+    <p>Gerencie a seleção, contenção e destinação das sucatas.</p>
+
+    <button onclick="abrirTela('selecao-operacional.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.05 HISTÓRICO GERAL
+       Tela de consulta histórica geral
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">↺</div>
+
+    <h3>Histórico Geral</h3>
+
+    <p>Consulte o histórico completo de todos os RASPs.</p>
+
+    <button onclick="abrirTela('historico-geral.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.06 DASHBOARD
+       Dashboard de seleção/contenção
+       ================================================= -->
+  <div class="module-card">
+    <div class="module-icon">▥</div>
+
+    <h3>Dashboard</h3>
+
+    <p>Indicadores e gráficos de acompanhamento.</p>
+
+    <button onclick="abrirTela('dashboard-selecao.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.07 ADMINISTRAÇÃO DO SISTEMA
+       Card exclusivo para perfil ADMIN
+       ================================================= -->
+  <div class="module-card admin-card admin-only">
+    <div class="module-icon">⚙</div>
+
+    <h3>Administração do Sistema</h3>
+
+    <p>Cadastros, usuários, perfis e configurações do sistema.</p>
+
+    <button onclick="abrirTela('admin.html')">
+      Acessar →
+    </button>
+  </div>
+
+  <!-- =================================================
+       13.02.03.08 ÁREA RESERVADA
+       Mantida para equilíbrio visual da grade
+       ================================================= -->
+  <div class="empty-card" id="cardVazio">
+    ÁREA RESERVADA
+  </div>
+
+</div>
+</section>
+
+
+      <!-- =====================================================
+           13.03 RODAPÉ
+           ===================================================== -->
+      <footer class="footer">
+        <div class="footer-left">
+          <div class="footer-shield">◇</div>
+          <div>
+            <strong>RASP</strong> - Relatório Análise e Solução do Problema
+          </div>
+        </div>
+
+        <div class="footer-dev">
+          Developed: <span>Josealdo Lyra</span>
+        </div>
+
+        <div class="footer-version">
+          Versão 1.0.0
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- =========================================================
+       14. SCRIPTS
+       ========================================================= -->
+  <script>
+    /* =========================================================
+       14.01 DADOS DO USUÁRIO LOGADO
+       ========================================================= */
+    const usuarioLogado =
+      JSON.parse(sessionStorage.getItem("raspUsuarioLogado")) ||
+      JSON.parse(localStorage.getItem("usuarioLogado")) ||
+      null;
+
+    if (!usuarioLogado) {
+      window.location.href = "./login.html";
+    }
+
+    /* =========================================================
+       14.02 CARREGAR INFORMAÇÕES DO USUÁRIO
+       ========================================================= */
+    function carregarUsuario() {
+      const nome =
+        usuarioLogado?.nomeCompleto ||
+        usuarioLogado?.nome ||
+        usuarioLogado?.usuario?.nomeCompleto ||
+        usuarioLogado?.usuario?.nome ||
+        usuarioLogado?.login ||
+        "Usuário";
+
+      const perfil =
+        usuarioLogado?.perfil ||
+        usuarioLogado?.nomePerfil ||
+        usuarioLogado?.tipoPerfil ||
+        usuarioLogado?.usuario?.perfil ||
+        usuarioLogado?.usuario?.nomePerfil ||
+        usuarioLogado?.usuario?.tipoPerfil ||
+        "USUARIO";
+
+      const perfilNormalizado = String(perfil).toUpperCase();
+
+      document.getElementById("nomeUsuarioTopo").textContent = nome;
+      document.getElementById("nomeUsuarioBoasVindas").textContent = nome;
+
+      document.getElementById("perfilUsuarioTopo").textContent =
+        perfilNormalizado === "ADMIN" || perfilNormalizado === "ADMINISTRADOR"
+          ? "ADMINISTRADOR"
+          : perfilNormalizado;
+
+      controlarAcessoAdmin(perfilNormalizado);
+    }
+
+    /* =========================================================
+       14.03 CONTROLAR ACESSO ADMINISTRADOR
+       ========================================================= */
+    function controlarAcessoAdmin(perfil) {
+      const itensAdmin = document.querySelectorAll(".admin-only");
+      const cardVazio = document.getElementById("cardVazio");
+
+      const ehAdmin =
+        perfil === "ADMIN" ||
+        perfil === "ADMINISTRADOR" ||
+        perfil === "ADM";
+
+      itensAdmin.forEach(item => {
+        item.style.display = ehAdmin ? "" : "none";
+      });
+
+      if (cardVazio) {
+        cardVazio.style.display = ehAdmin ? "" : "none";
+      }
+    }
+
+    /* =========================================================
+       14.04 DATA E HORA
+       ========================================================= */
+    function atualizarDataHora() {
+      const agora = new Date();
+
+      const data = agora.toLocaleDateString("pt-BR");
+
+      const hora = agora.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+
+      document.getElementById("dataAtual").textContent = data;
+      document.getElementById("horaAtual").textContent = hora;
+    }
+
+    /* =========================================================
+       14.05 NAVEGAÇÃO
+       ========================================================= */
+    function abrirTela(tela) {
+      window.location.href = tela;
+    }
+
+    /* =========================================================
+       14.06 SAIR DO SISTEMA
+       ========================================================= */
+    function sairDoSistema() {
+      sessionStorage.removeItem("raspUsuarioLogado");
+
+      localStorage.removeItem("usuarioLogado");
+      localStorage.removeItem("token");
+      localStorage.removeItem("raspToken");
+
+      window.location.href = "./login.html";
+    }
+
+    /* =========================================================
+       14.07 INICIALIZAÇÃO
+       ========================================================= */
+    carregarUsuario();
+    atualizarDataHora();
+    setInterval(atualizarDataHora, 1000);
+  </script>
+</body>
+</html>

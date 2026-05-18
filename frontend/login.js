@@ -213,26 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // =============================================
             // LOGIN OK
             // =============================================
-            mostrarMensagem(
-                `Bem-vindo ${dados.nomeCompleto}`,
-                "sucesso",
-                () => {
-
-                    // =====================================
-                    // REDIRECIONAMENTO
-                    // =====================================
-                    if (dados.telaInicial === "admin") {
-
-                        window.location.href =
-                            "./admin.html";
-
-                    } else {
-
-                        window.location.href =
-                            "./dashboard.html";
-                    }
-                }
-            );
+            window.location.href = "./loading.html";
 
         } catch (erro) {
 

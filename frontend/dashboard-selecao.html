@@ -820,7 +820,13 @@
       <!-- =====================================================
            04.02 MENU
            ===================================================== -->
-      <nav class="menu"></nav>
+      <nav class="menu">
+      <a class="menu-item" href="home.html">🏠 Página Inicial</a>
+      <a class="menu-item active" href="dashboard-selecao.html">📊 Dashboard Seleção</a>
+      <a class="menu-item" href="selecao-operacional.html">🛠️ Seleção Operacional</a>
+      <a class="menu-item" href="historico-geral.html">📚 Histórico Geral</a>
+      </nav>
+
 
       <!-- =====================================================
            04.03 FILTROS
@@ -1688,10 +1694,7 @@
 
   <script src="app.js"></script>
 
-  <script>
-    carregarMenuLateral("dashboard");
-  </script>
-
+  
   <script>
     function popularFiltrosDashboard() {
       const selectFornecedor =

@@ -80,48 +80,70 @@
   </section>
 
         <!-- =====================================================
-          MENU DE NAVEGAÇÃO
-          ===================================================== -->
-      <nav class="sidebar-nav">
-        <ul>
-          <!-- 01. DASHBOARDS -->
-          <li class="sidebar-nav-group">
-          <button type="button" class="sidebar-dashboard-toggle" id="btnDashboardMenu">
-            <span>Dashboard</span>
-            <span id="dashboardMenuIcon">▾</span>
-          </button>
+     MENU DE NAVEGAÇÃO
+     ===================================================== -->
+<nav class="sidebar-nav">
+  <ul>
 
-          <ul class="sidebar-submenu hidden" id="dashboardSubmenu">
-            <li>
-              <a href="dashboard-selecao.html">Seleção / Contenção</a>
-            </li>
-            <li>
-              <a href="#" class="disabled-link">RASP Geral</a>
-            </li>
-            <li>
-              <a href="#" class="disabled-link">Scrap</a>
-            </li>
-            <li>
-              <a href="#" class="disabled-link">Fornecedores</a>
-            </li>
-          </ul>
+    <!-- =================================================
+         01. PÁGINA INICIAL / CENTRAL DO SISTEMA
+         ================================================= -->
+    <li>
+      <a href="home.html">
+        Página Inicial
+      </a>
+    </li>
+
+    <!-- =================================================
+         02. DASHBOARDS
+         ================================================= -->
+    <li class="sidebar-nav-group">
+      <button
+        type="button"
+        class="sidebar-dashboard-toggle"
+        id="btnDashboardMenu"
+      >
+        <span>Dashboard</span>
+        <span id="dashboardMenuIcon">▾</span>
+      </button>
+
+      <ul class="sidebar-submenu hidden" id="dashboardSubmenu">
+        <li>
+          <a href="dashboard-selecao.html">Seleção / Contenção</a>
         </li>
 
+        <li>
+          <a href="#" class="disabled-link">RASP Geral</a>
+        </li>
 
-          <!-- 02. OPERAÇÃO RASP -->
-          <li>
-            <a href="#" class="active">Novo RASP</a>
-          </li>
+        <li>
+          <a href="#" class="disabled-link">Scrap</a>
+        </li>
 
-          <li>
-            <a href="#">Consulta</a>
-          </li>
+        <li>
+          <a href="#" class="disabled-link">Fornecedores</a>
+        </li>
+      </ul>
+    </li>
 
-          <li>
-            <a href="#">Cadastros</a>
-          </li>
-        </ul>
-      </nav>
+    <!-- =================================================
+         03. OPERAÇÃO RASP
+         ================================================= -->
+    <li>
+      <a href="#" class="active">Novo RASP</a>
+    </li>
+
+    <li>
+      <a href="#">Consulta</a>
+    </li>
+
+    <li>
+      <a href="#">Cadastros</a>
+    </li>
+
+  </ul>
+</nav>
+
 
 </aside>
 

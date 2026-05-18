@@ -89,6 +89,26 @@
       font-size: 13px;
     }
 
+    /* =========================================================
+   PILLS DA TOPBAR OPERACIONAL
+   ========================================================= */
+
+.pill-perfil {
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.45);
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+.pill-ativo {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(74, 222, 128, 0.50);
+  color: #86efac;
+  font-weight: 800;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.18);
+}
+
+
     .container {
       max-width: 100%;
       margin: 0;
@@ -835,18 +855,47 @@
         <p>SAC - S10 SJC • Tela Operacional de Apontamento</p>
       </div>
 
-      <div class="acoes-topo">
-        <a href="dashboard-selecao.html" class="btn-topo">← Dashboard Seleção Operacional</a>
-        <a href="historico-geral.html" class="btn-topo">Histórico Geral →</a>
-      </div>
+      <!-- =====================================================
+     03.01 AÇÕES DE NAVEGAÇÃO DO TOPO
+     ===================================================== -->
+<div class="acoes-topo">
+
+  <!-- 03.01.01 VOLTAR PARA A PÁGINA INICIAL -->
+  <a href="home.html" class="btn-topo">
+    ← Página Inicial
+  </a>
+
+  <!-- 03.01.02 ACESSAR DASHBOARD DE SELEÇÃO -->
+  <a href="dashboard-selecao.html" class="btn-topo">
+    Dashboard Seleção Operacional
+  </a>
+
+  <!-- 03.01.03 ACESSAR HISTÓRICO GERAL -->
+  <a href="historico-geral.html" class="btn-topo">
+    Histórico Geral →
+  </a>
+
+</div>
 
 
-      <div class="topbar-info">
-        <div class="pill">Turno Atual: A</div>
-        <div class="pill">Usuário: Terminal Operacional</div>
-        <div class="pill">Somente Itens Ativos</div>
-      </div>
-    </div>
+
+      <!-- =====================================================
+     TOPBAR - INFORMAÇÕES OPERACIONAIS
+     ===================================================== -->
+<div class="topbar-info">
+
+  <!-- PERFIL OPERACIONAL -->
+  <div class="pill pill-perfil">
+    👤 Perfil: Empresa
+  </div>
+
+  <!-- STATUS DA TELA -->
+  <div class="pill pill-ativo">
+    🟢 Somente Itens Ativos
+  </div>
+
+</div>
+
   </header>
 
   <main class="container">

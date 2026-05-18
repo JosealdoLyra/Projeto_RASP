@@ -252,11 +252,21 @@
     }
 
     .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #2563eb, #9333ea);
-    }
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  overflow: hidden;
+}
+
 
     /* =========================================================
        06. KPIs
@@ -1031,7 +1041,29 @@
         </div>
       </div>
 
-      <nav class="menu"></nav>
+      <!-- =====================================================
+     10.01 MENU DE NAVEGAÇÃO
+     ===================================================== -->
+<nav class="menu">
+
+  <a class="menu-item" href="home.html">
+    🏠 Página Inicial
+  </a>
+
+  <a class="menu-item" href="dashboard-selecao.html">
+    📊 Dashboard Seleção
+  </a>
+
+  <a class="menu-item" href="selecao-operacional.html">
+    🛠️ Seleção Operacional
+  </a>
+
+  <a class="menu-item active" href="historico-geral.html">
+    📚 Histórico Geral
+  </a>
+
+</nav>
+
 
 <button
   type="button"
@@ -2371,9 +2403,7 @@
     </aside>
   </div>
   <script src="app.js"></script>
-    <script>
-    carregarMenuLateral("dashboard");
-    </script>
+    
 
 <script src="./sessao.js"></script>
 
