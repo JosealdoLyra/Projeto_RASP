@@ -58,6 +58,9 @@ namespace Rasp.Api.Models
         [Column("id_operador_selecao_terceiro")]
         public int? IdOperadorSelecaoTerceiro { get; set; }
 
+        [Column("id_usuario_terceiro")]
+        public int? IdUsuarioTerceiro { get; set; }
+
         [Column("origem_registro")]
         public short? OrigemRegistro { get; set; }
 
@@ -71,7 +74,3 @@ namespace Rasp.Api.Models
         public DateTime? DataHoraFimAtividade { get; set; }
     }
 }
-
-
-
-

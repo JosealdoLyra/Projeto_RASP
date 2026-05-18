@@ -1070,6 +1070,508 @@ app.MapGet("/usuarios/{id:int}", async (int id, RaspDbContext db) =>
 .WithName("ObterUsuarioPorId");
 
 // -----------------------------------------------------------------------------
+// 11A. ADMIN - USUÁRIOS GM
+// -----------------------------------------------------------------------------
+
+app.MapGet("/admin/usuarios-gm", async (RaspDbContext db) =>
+{
+    var itens = await (
+        from u in db.Usuarios.AsNoTracking()
+        join pJoin in db.PerfilRasp.AsNoTracking()
+            on u.IdPerfil equals pJoin.IdPerfil into perfilLeft
+        from p in perfilLeft.DefaultIfEmpty()
+        join tJoin in db.TurnoRasp.AsNoTracking()
+            on u.IdTurnoRasp equals tJoin.IdTurnoRasp into turnoLeft
+        from t in turnoLeft.DefaultIfEmpty()
+        orderby u.Nome, u.Sobrenome
+        select new
+        {
+            u.IdUsuario,
+            u.Nome,
+            u.Sobrenome,
+            NomeCompleto = (u.Nome + " " + (u.Sobrenome ?? "")).Trim(),
+            u.Gmin,
+            u.Email,
+            u.Cargo,
+            u.Ativo,
+            u.IdPerfil,
+            Perfil = p != null ? p.Nome : null,
+            u.IdTurnoRasp,
+            Turno = t != null ? t.Descricao : null,
+            u.PrimeiroAcesso,
+            u.Administrador,
+            u.DataCriacao,
+            u.UltimoLogin
+        }
+    ).ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("AdminListarUsuariosGm")
+.WithTags("Admin - Usuários");
+
+app.MapPost("/admin/usuarios-gm", async (
+    CriarUsuarioGmAdminRequest req,
+    RaspDbContext db) =>
+{
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var executor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor && u.Ativo);
+
+    if (executor is null)
+        return Results.BadRequest("Usuário executor não encontrado ou inativo.");
+
+    if (!executor.Administrador && executor.IdPerfil != 1)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var nome = (req.Nome ?? string.Empty).Trim();
+    var sobrenome = (req.Sobrenome ?? string.Empty).Trim();
+    var gmin = (req.Gmin ?? string.Empty).Trim().ToLower();
+    var email = (req.Email ?? string.Empty).Trim().ToLower();
+    var cargo = (req.Cargo ?? string.Empty).Trim();
+    var senhaInicial = (req.SenhaInicial ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(nome))
+        return Results.BadRequest("Nome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(sobrenome))
+        return Results.BadRequest("Sobrenome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(gmin))
+        return Results.BadRequest("GMIN é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(email))
+        return Results.BadRequest("Email é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(cargo))
+        return Results.BadRequest("Cargo é obrigatório.");
+
+    if (req.IdPerfil <= 0)
+        return Results.BadRequest("Perfil é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(senhaInicial))
+        return Results.BadRequest("Senha inicial é obrigatória.");
+
+    if (senhaInicial.Length < 8)
+        return Results.BadRequest("A senha inicial deve ter no mínimo 8 caracteres.");
+
+    var perfilExiste = await db.PerfilRasp
+        .AnyAsync(p => p.IdPerfil == req.IdPerfil);
+
+    if (!perfilExiste)
+        return Results.BadRequest("Perfil informado não existe.");
+
+    if (req.IdTurnoRasp.HasValue && req.IdTurnoRasp.Value > 0)
+    {
+        var turnoExiste = await db.TurnoRasp
+            .AnyAsync(t => t.IdTurnoRasp == req.IdTurnoRasp.Value);
+
+        if (!turnoExiste)
+            return Results.BadRequest("Turno informado não existe.");
+    }
+
+    var gminExiste = await db.Usuarios
+        .AnyAsync(u => u.Gmin.ToLower() == gmin);
+
+    if (gminExiste)
+        return Results.BadRequest("Já existe usuário GM cadastrado com esse GMIN.");
+
+    var emailExiste = await db.Usuarios
+        .AnyAsync(u => u.Email.ToLower() == email);
+
+    if (emailExiste)
+        return Results.BadRequest("Já existe usuário GM cadastrado com esse email.");
+
+    var usuario = new Usuario
+    {
+        Nome = nome,
+        Sobrenome = sobrenome,
+        Gmin = gmin,
+        Email = email,
+        Cargo = cargo,
+        Ativo = true,
+        SenhaHash = SenhaService.GerarHash(senhaInicial),
+        IdPerfil = req.IdPerfil,
+        IdTurnoRasp = req.IdTurnoRasp.HasValue && req.IdTurnoRasp.Value > 0
+            ? req.IdTurnoRasp.Value
+            : null,
+        PrimeiroAcesso = true,
+        Administrador = req.Administrador,
+        DataCriacao = DateTime.UtcNow
+    };
+
+    db.Usuarios.Add(usuario);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/admin/usuarios-gm/{usuario.IdUsuario}", new
+    {
+        mensagem = "Usuário GM cadastrado com sucesso.",
+        usuario.IdUsuario,
+        usuario.Nome,
+        usuario.Sobrenome,
+        usuario.Gmin,
+        usuario.Email,
+        usuario.IdPerfil,
+        usuario.IdTurnoRasp,
+        usuario.Administrador,
+        usuario.PrimeiroAcesso,
+        usuario.Ativo
+    });
+})
+.WithName("AdminCriarUsuarioGm")
+.WithTags("Admin - Usuários");
+
+app.MapPut("/admin/usuarios-gm/{id:int}", async (
+    int id,
+    AtualizarUsuarioGmAdminRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do usuário inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var executor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor && u.Ativo);
+
+    if (executor is null)
+        return Results.BadRequest("Usuário executor não encontrado ou inativo.");
+
+    if (!executor.Administrador && executor.IdPerfil != 1)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var usuario = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == id);
+
+    if (usuario is null)
+        return Results.NotFound("Usuário GM não encontrado.");
+
+    if (req.Nome is not null)
+    {
+        var nome = req.Nome.Trim();
+
+        if (string.IsNullOrWhiteSpace(nome))
+            return Results.BadRequest("Nome não pode ficar vazio.");
+
+        usuario.Nome = nome;
+    }
+
+    if (req.Sobrenome is not null)
+    {
+        var sobrenome = req.Sobrenome.Trim();
+
+        if (string.IsNullOrWhiteSpace(sobrenome))
+            return Results.BadRequest("Sobrenome não pode ficar vazio.");
+
+        usuario.Sobrenome = sobrenome;
+    }
+
+    if (req.Email is not null)
+    {
+        var email = req.Email.Trim().ToLower();
+
+        if (string.IsNullOrWhiteSpace(email))
+            return Results.BadRequest("Email não pode ficar vazio.");
+
+        var emailExiste = await db.Usuarios
+            .AnyAsync(u => u.IdUsuario != id && u.Email.ToLower() == email);
+
+        if (emailExiste)
+            return Results.BadRequest("Já existe outro usuário GM com esse email.");
+
+        usuario.Email = email;
+    }
+
+    if (req.Cargo is not null)
+    {
+        var cargo = req.Cargo.Trim();
+
+        if (string.IsNullOrWhiteSpace(cargo))
+            return Results.BadRequest("Cargo não pode ficar vazio.");
+
+        usuario.Cargo = cargo;
+    }
+
+    if (req.IdPerfil.HasValue)
+    {
+        if (req.IdPerfil.Value <= 0)
+            return Results.BadRequest("Perfil inválido.");
+
+        var perfilExiste = await db.PerfilRasp
+            .AnyAsync(p => p.IdPerfil == req.IdPerfil.Value);
+
+        if (!perfilExiste)
+            return Results.BadRequest("Perfil informado não existe.");
+
+        usuario.IdPerfil = req.IdPerfil.Value;
+    }
+
+    if (req.IdTurnoRasp.HasValue)
+    {
+        if (req.IdTurnoRasp.Value == 0)
+        {
+            usuario.IdTurnoRasp = null;
+        }
+        else
+        {
+            var turnoExiste = await db.TurnoRasp
+                .AnyAsync(t => t.IdTurnoRasp == req.IdTurnoRasp.Value);
+
+            if (!turnoExiste)
+                return Results.BadRequest("Turno informado não existe.");
+
+            usuario.IdTurnoRasp = req.IdTurnoRasp.Value;
+        }
+    }
+
+    if (req.Ativo.HasValue)
+        usuario.Ativo = req.Ativo.Value;
+
+    if (req.Administrador.HasValue)
+        usuario.Administrador = req.Administrador.Value;
+
+    if (!string.IsNullOrWhiteSpace(req.NovaSenha))
+    {
+        var novaSenha = req.NovaSenha.Trim();
+
+        if (novaSenha.Length < 8)
+            return Results.BadRequest("A nova senha deve ter no mínimo 8 caracteres.");
+
+        usuario.SenhaHash = SenhaService.GerarHash(novaSenha);
+        usuario.PrimeiroAcesso = true;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Usuário GM atualizado com sucesso.",
+        usuario.IdUsuario,
+        usuario.Nome,
+        usuario.Sobrenome,
+        usuario.Gmin,
+        usuario.Email,
+        usuario.Cargo,
+        usuario.Ativo,
+        usuario.IdPerfil,
+        usuario.IdTurnoRasp,
+        usuario.Administrador,
+        usuario.PrimeiroAcesso
+    });
+})
+.WithName("AdminAtualizarUsuarioGm")
+.WithTags("Admin - Usuários");
+
+
+// -----------------------------------------------------------------------------
+// 11B. ADMIN - USUÁRIOS TERCEIROS
+// -----------------------------------------------------------------------------
+
+app.MapGet("/admin/usuarios-terceiros", async (RaspDbContext db) =>
+{
+    var itens = await (
+        from u in db.UsuariosTerceiros.AsNoTracking()
+        join e in db.EmpresaSelecaoRasp.AsNoTracking()
+            on u.IdEmpresaSelecao equals e.IdEmpresaSelecao
+        orderby u.Nome, u.Sobrenome
+        select new
+        {
+            u.IdUsuarioTerceiro,
+            u.Nome,
+            u.Sobrenome,
+            NomeCompleto = (u.Nome + " " + u.Sobrenome).Trim(),
+            u.Gmid,
+            u.Ativo,
+            u.PrimeiroAcesso,
+            u.DataCriacao,
+            u.IdEmpresaSelecao,
+            Empresa = e.NomeEmpresa,
+            TipoEmpresa = e.TipoEmpresa
+        }
+    ).ToListAsync();
+
+    return Results.Ok(itens);
+})
+.WithName("AdminListarUsuariosTerceiros")
+.WithTags("Admin - Usuários");
+
+app.MapPost("/admin/usuarios-terceiros", async (
+    CriarUsuarioTerceiroAdminRequest req,
+    RaspDbContext db) =>
+{
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var executor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor && u.Ativo);
+
+    if (executor is null)
+        return Results.BadRequest("Usuário executor não encontrado ou inativo.");
+
+    if (!executor.Administrador && executor.IdPerfil != 1)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var nome = (req.Nome ?? string.Empty).Trim();
+    var sobrenome = (req.Sobrenome ?? string.Empty).Trim();
+    var gmid = (req.Gmid ?? string.Empty).Trim().ToLower();
+    var senhaInicial = (req.SenhaInicial ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(nome))
+        return Results.BadRequest("Nome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(sobrenome))
+        return Results.BadRequest("Sobrenome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(gmid))
+        return Results.BadRequest("GMID é obrigatório.");
+
+    if (req.IdEmpresaSelecao <= 0)
+        return Results.BadRequest("Empresa de seleção é obrigatória.");
+
+    if (string.IsNullOrWhiteSpace(senhaInicial))
+        return Results.BadRequest("Senha inicial é obrigatória.");
+
+    if (senhaInicial.Length < 8)
+        return Results.BadRequest("A senha inicial deve ter no mínimo 8 caracteres.");
+
+    var empresaExiste = await db.EmpresaSelecaoRasp
+        .AnyAsync(e => e.IdEmpresaSelecao == req.IdEmpresaSelecao && e.Ativo);
+
+    if (!empresaExiste)
+        return Results.BadRequest("Empresa de seleção não encontrada ou inativa.");
+
+    var gmidExiste = await db.UsuariosTerceiros
+        .AnyAsync(u => u.Gmid.ToLower() == gmid);
+
+    if (gmidExiste)
+        return Results.BadRequest("Já existe usuário terceiro cadastrado com esse GMID.");
+
+    var usuario = new UsuarioTerceiro
+    {
+        Nome = nome,
+        Sobrenome = sobrenome,
+        Gmid = gmid,
+        SenhaHash = SenhaService.GerarHash(senhaInicial),
+        Ativo = true,
+        PrimeiroAcesso = true,
+        DataCriacao = DateTime.UtcNow,
+        IdEmpresaSelecao = req.IdEmpresaSelecao
+    };
+
+    db.UsuariosTerceiros.Add(usuario);
+    await db.SaveChangesAsync();
+
+    return Results.Created($"/admin/usuarios-terceiros/{usuario.IdUsuarioTerceiro}", new
+    {
+        mensagem = "Usuário terceiro cadastrado com sucesso.",
+        usuario.IdUsuarioTerceiro,
+        usuario.Nome,
+        usuario.Sobrenome,
+        usuario.Gmid,
+        usuario.IdEmpresaSelecao,
+        usuario.Ativo,
+        usuario.PrimeiroAcesso
+    });
+})
+.WithName("AdminCriarUsuarioTerceiro")
+.WithTags("Admin - Usuários");
+
+app.MapPut("/admin/usuarios-terceiros/{id:int}", async (
+    int id,
+    AtualizarUsuarioTerceiroAdminRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Id do usuário terceiro inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var executor = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor && u.Ativo);
+
+    if (executor is null)
+        return Results.BadRequest("Usuário executor não encontrado ou inativo.");
+
+    if (!executor.Administrador && executor.IdPerfil != 1)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var usuario = await db.UsuariosTerceiros
+        .FirstOrDefaultAsync(u => u.IdUsuarioTerceiro == id);
+
+    if (usuario is null)
+        return Results.NotFound("Usuário terceiro não encontrado.");
+
+    if (req.Nome is not null)
+    {
+        var nome = req.Nome.Trim();
+
+        if (string.IsNullOrWhiteSpace(nome))
+            return Results.BadRequest("Nome não pode ficar vazio.");
+
+        usuario.Nome = nome;
+    }
+
+    if (req.Sobrenome is not null)
+    {
+        var sobrenome = req.Sobrenome.Trim();
+
+        if (string.IsNullOrWhiteSpace(sobrenome))
+            return Results.BadRequest("Sobrenome não pode ficar vazio.");
+
+        usuario.Sobrenome = sobrenome;
+    }
+
+    if (req.IdEmpresaSelecao.HasValue)
+    {
+        if (req.IdEmpresaSelecao.Value <= 0)
+            return Results.BadRequest("Empresa de seleção inválida.");
+
+        var empresaExiste = await db.EmpresaSelecaoRasp
+            .AnyAsync(e => e.IdEmpresaSelecao == req.IdEmpresaSelecao.Value && e.Ativo);
+
+        if (!empresaExiste)
+            return Results.BadRequest("Empresa de seleção não encontrada ou inativa.");
+
+        usuario.IdEmpresaSelecao = req.IdEmpresaSelecao.Value;
+    }
+
+    if (req.Ativo.HasValue)
+        usuario.Ativo = req.Ativo.Value;
+
+    if (!string.IsNullOrWhiteSpace(req.NovaSenha))
+    {
+        var novaSenha = req.NovaSenha.Trim();
+
+        if (novaSenha.Length < 8)
+            return Results.BadRequest("A nova senha deve ter no mínimo 8 caracteres.");
+
+        usuario.SenhaHash = SenhaService.GerarHash(novaSenha);
+        usuario.PrimeiroAcesso = true;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Usuário terceiro atualizado com sucesso.",
+        usuario.IdUsuarioTerceiro,
+        usuario.Nome,
+        usuario.Sobrenome,
+        usuario.Gmid,
+        usuario.IdEmpresaSelecao,
+        usuario.Ativo,
+        usuario.PrimeiroAcesso
+    });
+})
+.WithName("AdminAtualizarUsuarioTerceiro")
+.WithTags("Admin - Usuários");
+
+
+// -----------------------------------------------------------------------------
 // 12. RASP
 // -----------------------------------------------------------------------------
 
@@ -2821,6 +3323,147 @@ app.MapGet("/rasp-pn/{idRaspPn:int}/contencoes", async (int idRaspPn, RaspDbCont
 .WithName("ListarContencoesPorRaspPn")
 .WithTags("RASP Seleção");
 
+// -----------------------------------------------------------------------------
+// 18C. SELEÇÃO OPERACIONAL - VALIDAÇÃO DE TERCEIRO
+// -----------------------------------------------------------------------------
+app.MapPost("/selecao-operacional/validar-terceiro", async (
+    ValidarTerceiroSelecaoRequest req,
+    RaspDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(req.Gmid))
+        return Results.BadRequest("GMID é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.Senha))
+        return Results.BadRequest("Senha é obrigatória.");
+
+    var gmid = req.Gmid.Trim().ToLower();
+
+    var usuario = await db.UsuariosTerceiros
+        .FirstOrDefaultAsync(u =>
+            u.Gmid.ToLower() == gmid &&
+            u.Ativo);
+
+    if (usuario is null)
+        return Results.BadRequest("Usuário terceiro não encontrado ou inativo.");
+
+    var senhaValida = SenhaService.ValidarSenha(
+        req.Senha,
+        usuario.SenhaHash
+    );
+
+    if (!senhaValida)
+        return Results.BadRequest("GMID ou senha inválidos.");
+
+    return Results.Ok(new
+    {
+        sucesso = true,
+        mensagem = "Terceiro validado com sucesso.",
+        idUsuarioTerceiro = usuario.IdUsuarioTerceiro,
+        nomeCompleto = $"{usuario.Nome} {usuario.Sobrenome}".Trim(),
+        gmid = usuario.Gmid,
+        idEmpresaSelecao = usuario.IdEmpresaSelecao,
+        validadeMinutos = 3
+    });
+})
+.WithName("ValidarTerceiroSelecaoOperacional")
+.WithTags("RASP Seleção");
+
+
+// -----------------------------------------------------------------------------
+// 18D. SELEÇÃO OPERACIONAL - VALIDAÇÃO DE EXECUTOR
+// Valida tanto terceiro quanto usuário GM para apontamento operacional.
+// -----------------------------------------------------------------------------
+app.MapPost("/selecao-operacional/validar-executor", async (
+    ValidarExecutorSelecaoRequest req,
+    RaspDbContext db) =>
+{
+    if (string.IsNullOrWhiteSpace(req.TipoExecutor))
+        return Results.BadRequest("TipoExecutor é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.Login))
+        return Results.BadRequest("Login é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(req.Senha))
+        return Results.BadRequest("Senha é obrigatória.");
+
+    var tipoExecutor = req.TipoExecutor.Trim().ToUpperInvariant();
+    var login = req.Login.Trim().ToLower();
+
+    // -------------------------------------------------------------------------
+    // TERCEIRO
+    // -------------------------------------------------------------------------
+    if (tipoExecutor == "TERCEIRO")
+    {
+        var usuarioTerceiro = await db.UsuariosTerceiros
+            .FirstOrDefaultAsync(u =>
+                u.Gmid.ToLower() == login &&
+                u.Ativo);
+
+        if (usuarioTerceiro is null)
+            return Results.BadRequest("Terceiro não encontrado ou inativo.");
+
+        var senhaValida = SenhaService.ValidarSenha(
+            req.Senha,
+            usuarioTerceiro.SenhaHash
+        );
+
+        if (!senhaValida)
+            return Results.BadRequest("Login ou senha inválidos.");
+
+        return Results.Ok(new
+        {
+            sucesso = true,
+            tipoExecutor = "TERCEIRO",
+            idUsuarioTerceiro = usuarioTerceiro.IdUsuarioTerceiro,
+            idUsuarioInterno = (int?)null,
+            nomeCompleto = $"{usuarioTerceiro.Nome} {usuarioTerceiro.Sobrenome}".Trim(),
+            login = usuarioTerceiro.Gmid,
+            origemRegistro = 1,
+            validadeMinutos = 3
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // GM INTERNO
+    // -------------------------------------------------------------------------
+    if (tipoExecutor == "GM")
+    {
+        var usuarioGm = await db.Usuarios
+            .FirstOrDefaultAsync(u =>
+                u.Ativo &&
+                u.Gmin.ToLower() == login);
+
+        if (usuarioGm is null)
+            return Results.BadRequest("Usuário GM não encontrado ou inativo.");
+
+        if (string.IsNullOrWhiteSpace(usuarioGm.SenhaHash))
+            return Results.BadRequest("Usuário GM sem senha cadastrada.");
+
+        var senhaValida = SenhaService.ValidarSenha(
+            req.Senha,
+            usuarioGm.SenhaHash
+        );
+
+        if (!senhaValida)
+            return Results.BadRequest("Login ou senha inválidos.");
+
+        return Results.Ok(new
+        {
+            sucesso = true,
+            tipoExecutor = "GM",
+            idUsuarioTerceiro = (int?)null,
+            idUsuarioInterno = usuarioGm.IdUsuario,
+            nomeCompleto = $"{usuarioGm.Nome} {usuarioGm.Sobrenome}".Trim(),
+            login = usuarioGm.Gmin,
+            origemRegistro = 2,
+            validadeMinutos = 3
+        });
+    }
+
+    return Results.BadRequest("TipoExecutor inválido. Use TERCEIRO ou GM.");
+})
+.WithName("ValidarExecutorSelecaoOperacional")
+.WithTags("RASP Seleção");
 
 
 // -----------------------------------------------------------------------------
@@ -2937,38 +3580,58 @@ app.MapPost("/rasp-contencao", async (
     // OrigemRegistro = 1 -> terceiro
     // OrigemRegistro = 2 -> usuário interno
     // -------------------------------------------------------------------------
-    if (req.OrigemRegistro == 1)
-    {
-        if (!req.IdOperadorSelecaoTerceiro.HasValue || req.IdOperadorSelecaoTerceiro.Value <= 0)
-            return Results.BadRequest("IdOperadorSelecaoTerceiro é obrigatório quando OrigemRegistro = 1.");
+    
+    // -------------------------------------------------------------------------
+// 05. VALIDAÇÃO DA ORIGEM DO REGISTRO
+// OrigemRegistro = 1 -> terceiro validado por credencial rápida
+// OrigemRegistro = 2 -> usuário interno
+// -------------------------------------------------------------------------
+if (req.OrigemRegistro == 1)
+{
+    if (!req.IdUsuarioTerceiro.HasValue || req.IdUsuarioTerceiro.Value <= 0)
+        return Results.BadRequest("IdUsuarioTerceiro é obrigatório quando OrigemRegistro = 1.");
 
-        if (req.IdUsuarioInterno.HasValue)
-            return Results.BadRequest("IdUsuarioInterno deve ficar vazio quando OrigemRegistro = 1.");
+    if (req.IdUsuarioInterno.HasValue)
+        return Results.BadRequest("IdUsuarioInterno deve ficar vazio quando OrigemRegistro = 1.");
 
-        var operadorExiste = await db.Set<OperadorSelecaoTerceiro>()
-            .AnyAsync(o =>
-                o.IdOperadorSelecaoTerceiro == req.IdOperadorSelecaoTerceiro.Value &&
-                o.Ativo);
+    if (req.IdOperadorSelecaoTerceiro.HasValue)
+        return Results.BadRequest("IdOperadorSelecaoTerceiro não deve mais ser usado para novos apontamentos.");
 
-        if (!operadorExiste)
-            return Results.BadRequest("Operador terceiro não encontrado ou inativo.");
-    }
-    else
-    {
-        if (!req.IdUsuarioInterno.HasValue || req.IdUsuarioInterno.Value <= 0)
-            return Results.BadRequest("IdUsuarioInterno é obrigatório quando OrigemRegistro = 2.");
+    var usuarioTerceiro = await db.UsuariosTerceiros
+        .FirstOrDefaultAsync(u =>
+            u.IdUsuarioTerceiro == req.IdUsuarioTerceiro.Value &&
+            u.Ativo);
 
-        if (req.IdOperadorSelecaoTerceiro.HasValue)
-            return Results.BadRequest("IdOperadorSelecaoTerceiro deve ficar vazio quando OrigemRegistro = 2.");
+    if (usuarioTerceiro is null)
+        return Results.BadRequest("Usuário terceiro não encontrado ou inativo.");
 
-        var usuarioExiste = await db.Usuarios
-            .AnyAsync(u =>
-                u.IdUsuario == req.IdUsuarioInterno.Value &&
-                u.Ativo);
+    var empresaAtiva = await db.EmpresaSelecaoRasp
+        .AnyAsync(e =>
+            e.IdEmpresaSelecao == usuarioTerceiro.IdEmpresaSelecao &&
+            e.Ativo);
 
-        if (!usuarioExiste)
-            return Results.BadRequest("Usuário interno não encontrado ou inativo.");
-    }
+    if (!empresaAtiva)
+        return Results.BadRequest("Empresa de seleção do terceiro está inativa ou não encontrada.");
+}
+else
+{
+    if (!req.IdUsuarioInterno.HasValue || req.IdUsuarioInterno.Value <= 0)
+        return Results.BadRequest("IdUsuarioInterno é obrigatório quando OrigemRegistro = 2.");
+
+    if (req.IdUsuarioTerceiro.HasValue)
+        return Results.BadRequest("IdUsuarioTerceiro deve ficar vazio quando OrigemRegistro = 2.");
+
+    if (req.IdOperadorSelecaoTerceiro.HasValue)
+        return Results.BadRequest("IdOperadorSelecaoTerceiro deve ficar vazio quando OrigemRegistro = 2.");
+
+    var usuarioExiste = await db.Usuarios
+        .AnyAsync(u =>
+            u.IdUsuario == req.IdUsuarioInterno.Value &&
+            u.Ativo);
+
+    if (!usuarioExiste)
+        return Results.BadRequest("Usuário interno não encontrado ou inativo.");
+}
 
     // -------------------------------------------------------------------------
     // 06. CÁLCULO DA QUANTIDADE OK
@@ -3018,6 +3681,7 @@ var item = new RaspContencao
     Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
     IdTurnoRasp = req.IdTurnoRasp,
     IdOperadorSelecaoTerceiro = req.IdOperadorSelecaoTerceiro,
+    IdUsuarioTerceiro = req.IdUsuarioTerceiro,
     IdUsuarioExecucao = req.IdUsuarioInterno,
     OrigemRegistro = req.OrigemRegistro,
     
@@ -4981,10 +5645,85 @@ public record TrocarFtRaspRequest(
 );
 
 // -----------------------------------------------------------------------------
+// Admin - cadastro de usuário GM
+// -----------------------------------------------------------------------------
+public record CriarUsuarioGmAdminRequest(
+    int IdUsuarioExecutor,
+    string Nome,
+    string Sobrenome,
+    string Gmin,
+    string Email,
+    string Cargo,
+    int IdPerfil,
+    int? IdTurnoRasp,
+    bool Administrador,
+    string SenhaInicial
+);
+
+// -----------------------------------------------------------------------------
+// Admin - atualização de usuário GM
+// -----------------------------------------------------------------------------
+public record AtualizarUsuarioGmAdminRequest(
+    int IdUsuarioExecutor,
+    string? Nome,
+    string? Sobrenome,
+    string? Email,
+    string? Cargo,
+    int? IdPerfil,
+    int? IdTurnoRasp,
+    bool? Ativo,
+    bool? Administrador,
+    string? NovaSenha
+);
+
+// -----------------------------------------------------------------------------
+// Admin - cadastro de usuário terceiro
+// -----------------------------------------------------------------------------
+public record CriarUsuarioTerceiroAdminRequest(
+    int IdUsuarioExecutor,
+    string Nome,
+    string Sobrenome,
+    string Gmid,
+    int IdEmpresaSelecao,
+    string SenhaInicial
+);
+
+// -----------------------------------------------------------------------------
+// Admin - atualização de usuário terceiro
+// -----------------------------------------------------------------------------
+public record AtualizarUsuarioTerceiroAdminRequest(
+    int IdUsuarioExecutor,
+    string? Nome,
+    string? Sobrenome,
+    int? IdEmpresaSelecao,
+    bool? Ativo,
+    string? NovaSenha
+);
+
+
+// -----------------------------------------------------------------------------
 // Troca administrativa de LG
 // -----------------------------------------------------------------------------
 public record TrocarLgRaspRequest(
     int IdUsuarioExecutor,
     int IdNovoAprovadorLg
 );
+
+// -----------------------------------------------------------------------------
+// Validação rápida de terceiro na tela de seleção
+// -----------------------------------------------------------------------------
+public record ValidarTerceiroSelecaoRequest(
+    string Gmid,
+    string Senha
+);
+
+// -----------------------------------------------------------------------------
+// Validação de executor da seleção operacional
+// -----------------------------------------------------------------------------
+public record ValidarExecutorSelecaoRequest(
+    string TipoExecutor,
+    string Login,
+    string Senha
+);
+
 

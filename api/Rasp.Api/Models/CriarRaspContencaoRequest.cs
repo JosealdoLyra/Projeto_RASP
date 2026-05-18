@@ -26,6 +26,11 @@ public class CriarRaspContencaoRequest
     public DateTime? DataHoraInicioAtividade { get; set; }
 
     public DateTime? DataHoraFimAtividade { get; set; }
+
+    public int? IdUsuarioTerceiro
+    {
+        get;set;
+    }
 }
 
 

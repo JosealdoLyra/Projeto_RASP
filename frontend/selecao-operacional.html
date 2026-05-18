@@ -841,6 +841,60 @@
   background: #1d4ed8;
 }
 
+/* =========================================================
+   MODAL DE CREDENCIAL DO TERCEIRO
+   ========================================================= */
+
+.credencial-status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  font-size: 12px;
+  color: #334155;
+}
+
+.credencial-status.ativa {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+  font-weight: 700;
+}
+
+.credencial-status.inativa {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.modal-credencial-box {
+  width: min(420px, 92vw);
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+  padding: 20px;
+}
+
+.modal-credencial-box h3 {
+  margin: 0 0 8px;
+  color: var(--azul-900);
+}
+
+.modal-credencial-box p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--cinza-700);
+}
+
+.modal-credencial-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
     
   </style>
 </head>
@@ -1106,11 +1160,30 @@
               </div>
 
               <div class="campo">
-                <label>Executor</label>
-                <select id="executorApontamento">
-                  <option value="1">MT / Usuário interno</option>
-                </select>
-              </div>
+              <label>Executor</label>
+
+            <select id="executorApontamento">
+              <option value="TERCEIRO" selected>
+                Terceiro / Seleção Operacional
+              </option>
+
+              <option value="GM">
+                GM / Usuário Interno
+              </option>
+            </select>
+
+            </div>
+
+            <div id="statusCredencialTerceiro" class="credencial-status inativa">
+              Credencial: não validada
+            </div>
+
+            <div class="acoes" style="justify-content:flex-start;">
+              <button id="btnEncerrarCredencial" class="btn-secundario" type="button">
+                Encerrar Credencial
+              </button>
+            </div>
+
 
               <div class="campo full">
                 <label>Observação</label>
@@ -1196,7 +1269,46 @@
     </div>
   </div>
 
+  <div id="modal-credencial-terceiro" class="modal-overlay hidden">
+  <div class="modal-credencial-box">
+    <h3>Validação do Executor</h3>
+    <p>Informe sua credencial para registrar o apontamento operacional.</p>
+
+    <div class="campo">
+    <label>Tipo de Executor</label>
+
+    <select id="tipoExecutorModal">
+      <option value="TERCEIRO" selected>
+        Terceiro / Seleção Operacional
+      </option>
+
+      <option value="GM">
+        GM / Usuário Interno
+      </option>
+    </select>
+  </div>
+
+
+    <div class="campo">
+      <label>GMID</label>
+      <input id="credencialGmid" type="text" placeholder="Digite seu GMID" />
+    </div>
+
+    <div class="campo" style="margin-top: 12px;">
+      <label>Senha</label>
+      <input id="credencialSenha" type="password" placeholder="Digite sua senha" />
+    </div>
+
+    <div class="modal-credencial-acoes">
+      <button id="btnCancelarCredencial" class="btn-secundario" type="button">Cancelar</button>
+      <button id="btnValidarCredencial" class="btn-primario" type="button">Validar e Registrar</button>
+    </div>
+  </div>
+</div>
+
+
   <script>
+    let tipoExecutorAtual = null;
     document.addEventListener("DOMContentLoaded", () => {
       const tabela = document.querySelector("#tabela-itens-selecao");
 
@@ -1229,6 +1341,10 @@
 
       let itemSelecionado = null;
       let itensSelecao = [];
+      let credencialTerceiro = null;
+      let timeoutCredencialTerceiro = null;
+      let payloadPendenteApontamento = null;
+
 
       if (btnRegistrar) {
         btnRegistrar.disabled = true;
@@ -1256,9 +1372,51 @@
         return (valor ?? "").toString().trim().toLowerCase();
       }
 
-      function mostrarMensagem(texto) {
-        alert(texto);
-      }
+      function mostrarMensagem(texto, tipo = "info") {
+  const modalExistente = document.getElementById("modal-mensagem-sistema");
+
+  if (modalExistente) {
+    modalExistente.remove();
+  }
+
+  const icone =
+    tipo === "sucesso" ? "✅" :
+    tipo === "erro" ? "⚠️" :
+    tipo === "alerta" ? "⏱️" :
+    "ℹ️";
+
+  const titulo =
+    tipo === "sucesso" ? "Operação concluída" :
+    tipo === "erro" ? "Atenção necessária" :
+    tipo === "alerta" ? "Sessão encerrada" :
+    "Mensagem do sistema";
+
+  const modal = document.createElement("div");
+  modal.id = "modal-mensagem-sistema";
+  modal.className = "modal-overlay";
+
+  modal.innerHTML = `
+    <div class="modal-credencial-box">
+      <h3>${icone} ${titulo}</h3>
+      <p>${texto}</p>
+
+      <div class="modal-credencial-acoes">
+        <button id="btnFecharMensagemSistema" class="btn-primario" type="button">
+          OK
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  document
+    .getElementById("btnFecharMensagemSistema")
+    .addEventListener("click", () => {
+      modal.remove();
+    });
+}
+
 
       function abrirModalHistorico() {
         const modal = document.getElementById("modal-historico");
@@ -1653,84 +1811,345 @@
         });
       }
 
-      if (btnRegistrar) {
-        btnRegistrar.addEventListener("click", async () => {
-          if (!itemSelecionado) {
-            mostrarMensagem("Selecione um item primeiro.");
-            return;
-          }
+      const modalCredencial = document.getElementById("modal-credencial-terceiro");
+const btnValidarCredencial = document.getElementById("btnValidarCredencial");
+const btnCancelarCredencial = document.getElementById("btnCancelarCredencial");
+const btnEncerrarCredencial = document.getElementById("btnEncerrarCredencial");
 
-          const dataLote = document.getElementById("dataLote").value;
-          const qtdVerificada = parseInt(document.getElementById("qtdVerificada").value || 0);
-          const qtdRejeitada = parseInt(document.getElementById("qtdRejeitada").value || 0);
+const campoGmid = document.getElementById("credencialGmid");
+const campoSenha = document.getElementById("credencialSenha");
 
-          if (!dataLote) {
-            mostrarMensagem("Informe a data do lote.");
-            return;
-          }
+const statusCredencial = document.getElementById("statusCredencialTerceiro");
 
-          if (qtdVerificada <= 0) {
-            mostrarMensagem("Quantidade verificada deve ser maior que zero.");
-            return;
-          }
+function abrirModalCredencial() {
+  modalCredencial.classList.remove("hidden");
+}
 
-          if (qtdRejeitada < 0) {
-            mostrarMensagem("Quantidade rejeitada inválida.");
-            return;
-          }
+function fecharModalCredencial() {
+  modalCredencial.classList.add("hidden");
+}
 
-          if (qtdRejeitada > qtdVerificada) {
-            mostrarMensagem("Quantidade rejeitada não pode ser maior que a verificada.");
-            return;
-          }
+function atualizarStatusCredencial() {
 
-          if (!confirm("Confirma o registro deste apontamento? Essa ação não poderá ser desfeita.")) {
-            return;
-          }
+  if (credencialTerceiro) {
 
-          const payload = {
-            idRaspPn: parseInt(itemSelecionado.dataset.idRaspPn),
-            dataLoteVerificada: dataLote,
-            lote: document.getElementById("lote").value,
-            quantidadeVerificada: qtdVerificada,
-            quantidadeRejeitada: qtdRejeitada,
-            observacao: document.getElementById("observacao").value,
-            idTurnoRasp: parseInt(document.getElementById("turnoApontamento").value),
-            idUsuarioInterno: 1,
-            origemRegistro: 2,
-            dataHoraInicioAtividade: new Date().toISOString(),
-            dataHoraFimAtividade: new Date().toISOString()
-          };
+    statusCredencial.classList.remove("inativa");
+    statusCredencial.classList.add("ativa");
 
-          try {
-            const response = await fetch("http://localhost:5050/rasp-contencao", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify(payload)
-            });
+    statusCredencial.innerHTML =
+  `Credencial ativa: <strong>${credencialTerceiro.nomeCompleto}</strong>`;
 
-            if (!response.ok) {
-              mostrarMensagem("Erro ao registrar apontamento.");
-              return;
-            }
 
-            mostrarMensagem("Apontamento registrado com sucesso!");
+  } else {
 
-            document.getElementById("dataLote").value = "";
-            document.getElementById("lote").value = "";
-            document.getElementById("qtdVerificada").value = "";
-            document.getElementById("qtdRejeitada").value = "";
-            document.getElementById("observacao").value = "";
+    statusCredencial.classList.remove("ativa");
+    statusCredencial.classList.add("inativa");
 
-            await carregarItensSelecao();
-          } catch (error) {
-            console.error("Erro POST:", error);
-            mostrarMensagem("Erro de comunicação com API.");
-          }
-        });
+    statusCredencial.innerHTML =
+      `Credencial: não validada`;
+  }
+}
+
+function iniciarTimeoutCredencial() {
+
+  if (timeoutCredencialTerceiro) {
+    clearTimeout(timeoutCredencialTerceiro);
+  }
+
+  timeoutCredencialTerceiro = setTimeout(() => {
+
+    credencialTerceiro = null;
+
+    atualizarStatusCredencial();
+
+    mostrarMensagem(
+      "Sessão operacional encerrada por inatividade.", "alerta"
+    );
+
+  }, 180000);
+}
+
+if (btnEncerrarCredencial) {
+
+  btnEncerrarCredencial.addEventListener("click", () => {
+
+    credencialTerceiro = null;
+
+    atualizarStatusCredencial();
+
+    if (timeoutCredencialTerceiro) {
+      clearTimeout(timeoutCredencialTerceiro);
+    }
+
+    mostrarMensagem("Credencial encerrada.");
+  });
+}
+
+if (btnCancelarCredencial) {
+
+  btnCancelarCredencial.addEventListener("click", () => {
+    fecharModalCredencial();
+  });
+}
+
+if (btnValidarCredencial) {
+
+  btnValidarCredencial.addEventListener("click", async () => {
+
+    const gmid = campoGmid.value.trim();
+    const senha = campoSenha.value.trim();
+
+    if (!gmid || !senha) {
+
+      mostrarMensagem(
+        "Informe GMID e senha."
+      );
+
+      return;
+    }
+
+    try {
+
+      const response = await fetch(
+        "http://localhost:5050/selecao-operacional/validar-executor",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            tipoExecutor:
+              document.getElementById("tipoExecutorModal").value,
+
+            login: gmid,
+            senha: senha
+          })
+
+
+        }
+      );
+
+      if (!response.ok) {
+
+        mostrarMensagem(
+          "GMID ou senha inválidos."
+        );
+
+        return;
       }
+
+      const dados = await response.json();
+
+      credencialTerceiro = dados;
+      tipoExecutorAtual = dados.tipoExecutor;
+      console.log("Crendencial validada:", credencialTerceiro);
+
+      atualizarStatusCredencial();
+
+      iniciarTimeoutCredencial();
+
+      fecharModalCredencial();
+
+      campoGmid.value = "";
+      campoSenha.value = "";
+
+      if (payloadPendenteApontamento) {
+
+      payloadPendenteApontamento.idUsuarioInterno =
+  credencialTerceiro.tipoExecutor === "GM"
+    ? credencialTerceiro.idUsuarioInterno
+    : null;
+
+payloadPendenteApontamento.idUsuarioTerceiro =
+  credencialTerceiro.tipoExecutor === "TERCEIRO"
+    ? credencialTerceiro.idUsuarioTerceiro
+    : null;
+
+payloadPendenteApontamento.origemRegistro =
+  credencialTerceiro.tipoExecutor === "GM"
+    ? 2
+    : 1;
+
+
+      await registrarApontamento(payloadPendenteApontamento);
+
+      payloadPendenteApontamento = null;
+    }
+
+
+    } catch (error) {
+
+      console.error(error);
+
+      mostrarMensagem(
+        "Erro ao validar credencial.", "erro"
+      );
+    }
+  });
+}
+
+async function registrarApontamento(payload) {
+
+  try {
+
+    const response = await fetch(
+      "http://localhost:5050/rasp-contencao",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    if (!response.ok) {
+  const erroApi = await response.text();
+
+  console.error("Erro API /rasp-contencao:", erroApi);
+
+  mostrarMensagem(
+    "Erro ao registrar apontamento: " + erroApi
+  );
+
+  return;
+}
+
+
+    mostrarMensagem(
+      "Apontamento registrado com sucesso!", "sucesso"
+    );
+
+    document.getElementById("dataLote").value = "";
+    document.getElementById("lote").value = "";
+    document.getElementById("qtdVerificada").value = "";
+    document.getElementById("qtdRejeitada").value = "";
+    document.getElementById("observacao").value = "";
+
+    iniciarTimeoutCredencial();
+
+    await carregarItensSelecao();
+
+  } catch (error) {
+
+    console.error("Erro POST:", error);
+
+    mostrarMensagem(
+      "Erro de comunicação com API."
+    );
+  }
+}
+
+if (btnRegistrar) {
+
+  btnRegistrar.addEventListener("click", async () => {
+
+    if (!itemSelecionado) {
+
+      mostrarMensagem(
+        "Selecione um item primeiro."
+      );
+
+      return;
+    }
+
+    const dataLote =
+      document.getElementById("dataLote").value;
+
+    const qtdVerificada =
+      parseInt(
+        document.getElementById("qtdVerificada").value || 0
+      );
+
+    const qtdRejeitada =
+      parseInt(
+        document.getElementById("qtdRejeitada").value || 0
+      );
+
+    if (!dataLote) {
+
+      mostrarMensagem(
+        "Informe a data do lote."
+      );
+
+      return;
+    }
+
+    if (qtdVerificada <= 0) {
+
+      mostrarMensagem(
+        "Quantidade verificada deve ser maior que zero."
+      );
+
+      return;
+    }
+
+    if (qtdRejeitada > qtdVerificada) {
+
+      mostrarMensagem(
+        "Quantidade rejeitada não pode ser maior que a verificada."
+      );
+
+      return;
+    }
+
+    const payload = {
+  idRaspPn:
+    parseInt(itemSelecionado.dataset.idRaspPn),
+
+  dataLoteVerificada:
+    dataLote,
+
+  lote:
+    document.getElementById("lote").value,
+
+  quantidadeVerificada:
+    qtdVerificada,
+
+  quantidadeRejeitada:
+    qtdRejeitada,
+
+  observacao:
+    document.getElementById("observacao").value,
+
+  idTurnoRasp:
+    parseInt(
+      document.getElementById("turnoApontamento").value
+    ),
+
+  idUsuarioInterno:
+    credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
+      ? credencialTerceiro.idUsuarioInterno
+      : null,
+
+  idUsuarioTerceiro:
+    credencialTerceiro && credencialTerceiro.tipoExecutor === "TERCEIRO"
+      ? credencialTerceiro.idUsuarioTerceiro
+      : null,
+
+  origemRegistro:
+    credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
+      ? 2
+      : 1,
+
+  dataHoraInicioAtividade:
+    new Date().toISOString(),
+
+  dataHoraFimAtividade:
+    new Date().toISOString()
+};
+
+if (!credencialTerceiro) {
+  payloadPendenteApontamento = payload;
+  abrirModalCredencial();
+  return;
+}
+
+await registrarApontamento(payload);
+  });
+}
+
+
 
       function atualizarCabecalhoImpressao() {
         const agora = new Date();
