@@ -973,7 +973,7 @@
           Página Inicial
         </a>
 
-        <a class="nav-item admin-only" href="admin.html">
+        <a class="nav-item admin-only" href="admin/admin-home.html">
           <span class="nav-icon">⚙</span>
           Administração do Sistema
           <span class="nav-arrow">›</span>
@@ -1195,7 +1195,7 @@
 
     <p>Cadastros, usuários, perfis e configurações do sistema.</p>
 
-    <button onclick="abrirTela('admin.html')">
+    <button onclick="abrirTela('admin/admin-home.html')">
       Acessar →
     </button>
   </div>
@@ -1289,22 +1289,27 @@
        14.03 CONTROLAR ACESSO ADMINISTRADOR
        ========================================================= */
     function controlarAcessoAdmin(perfil) {
-      const itensAdmin = document.querySelectorAll(".admin-only");
-      const cardVazio = document.getElementById("cardVazio");
+  const itensAdmin = document.querySelectorAll(".admin-only");
+  const cardVazio = document.getElementById("cardVazio");
 
-      const ehAdmin =
-        perfil === "ADMIN" ||
-        perfil === "ADMINISTRADOR" ||
-        perfil === "ADM";
+  const ehAdmin =
+    usuarioLogado?.administrador === true ||
+    usuarioLogado?.Administrador === true ||
+    usuarioLogado?.usuario?.administrador === true ||
+    usuarioLogado?.usuario?.Administrador === true ||
+    perfil === "ADMIN" ||
+    perfil === "ADMINISTRADOR" ||
+    perfil === "ADM";
 
-      itensAdmin.forEach(item => {
-        item.style.display = ehAdmin ? "" : "none";
-      });
+  itensAdmin.forEach(item => {
+    item.style.display = ehAdmin ? "" : "none";
+  });
 
-      if (cardVazio) {
-        cardVazio.style.display = ehAdmin ? "" : "none";
-      }
-    }
+  if (cardVazio) {
+    cardVazio.style.display = ehAdmin ? "" : "none";
+  }
+}
+
 
     /* =========================================================
        14.04 DATA E HORA

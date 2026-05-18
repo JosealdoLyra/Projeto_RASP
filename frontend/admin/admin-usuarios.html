@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Usuários - RASP</title>
+
+  <style>
+    :root {
+      --azul-950:#06152d;
+      --azul-900:#082046;
+      --azul-800:#0d2d63;
+      --azul-700:#0f3f8f;
+      --azul-600:#2563eb;
+      --azul-100:#dbeafe;
+      --verde:#22c55e;
+      --amarelo:#f59e0b;
+      --vermelho:#ef4444;
+      --texto:#e5eefc;
+      --texto-suave:#9fb7d9;
+      --branco:#ffffff;
+      --cinza-50:#f8fafc;
+      --cinza-100:#f1f5f9;
+      --cinza-200:#e2e8f0;
+      --cinza-300:#cbd5e1;
+      --cinza-700:#334155;
+      --cinza-900:#0f172a;
+      --sombra:0 18px 45px rgba(0,0,0,.22);
+      --radius:18px;
+    }
+
+    * { box-sizing:border-box; }
+
+    body {
+      margin:0;
+      min-height:100vh;
+      font-family:"Segoe UI", Arial, sans-serif;
+      background:#f4f7fb;
+      color:var(--cinza-900);
+    }
+
+    .topbar {
+      background:linear-gradient(90deg,var(--azul-950),var(--azul-800));
+      color:white;
+      padding:18px 30px;
+      box-shadow:var(--sombra);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .marca h1 { margin:0; font-size:23px; }
+    .marca p { margin:4px 0 0; color:var(--texto-suave); font-size:13px; }
+
+    .top-actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn-link,
+    button {
+      height:40px;
+      border:none;
+      border-radius:11px;
+      padding:0 16px;
+      font-weight:800;
+      font-size:13px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn-link {
+      background:rgba(255,255,255,.12);
+      color:white;
+      border:1px solid rgba(255,255,255,.18);
+    }
+
+    .btn-primary { background:var(--azul-600); color:white; }
+    .btn-secondary { background:var(--cinza-100); color:var(--cinza-900); border:1px solid var(--cinza-300); }
+    .btn-danger { background:var(--vermelho); color:white; }
+    .btn-success { background:var(--verde); color:white; }
+
+    .container {
+      padding:24px;
+      max-width:1500px;
+      margin:0 auto;
+    }
+
+    .card {
+      background:white;
+      border-radius:var(--radius);
+      box-shadow:0 10px 30px rgba(15,23,42,.08);
+      border:1px solid var(--cinza-200);
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .tabs {
+      display:flex;
+      gap:10px;
+      margin-bottom:18px;
+      flex-wrap:wrap;
+    }
+
+    .tab {
+      background:var(--cinza-100);
+      color:var(--cinza-700);
+      border:1px solid var(--cinza-300);
+    }
+
+    .tab.active {
+      background:var(--azul-700);
+      color:white;
+      border-color:var(--azul-700);
+    }
+
+    .section-title {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .section-title h2 {
+      margin:0;
+      color:var(--azul-900);
+      font-size:19px;
+    }
+
+    .section-title span {
+      color:#64748b;
+      font-size:12px;
+    }
+
+    .form-grid {
+      display:grid;
+      grid-template-columns:repeat(4,minmax(180px,1fr));
+      gap:12px;
+    }
+
+    .campo {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .campo label {
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      color:#475569;
+    }
+
+    .campo input,
+    .campo select {
+      height:40px;
+      border:1px solid var(--cinza-300);
+      border-radius:10px;
+      padding:0 12px;
+      font-size:14px;
+      background:white;
+    }
+
+    .check-row {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding-top:22px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .acoes-form {
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+
+    .table-wrap {
+      overflow:auto;
+      border:1px solid var(--cinza-200);
+      border-radius:14px;
+    }
+
+    table {
+      width:100%;
+      min-width:1120px;
+      border-collapse:collapse;
+      background:white;
+    }
+
+    thead th {
+      background:var(--azul-100);
+      color:var(--azul-900);
+      font-size:11px;
+      text-transform:uppercase;
+      text-align:left;
+      padding:11px 9px;
+      border-bottom:1px solid var(--cinza-200);
+      white-space:nowrap;
+    }
+
+    tbody td {
+      padding:10px 9px;
+      border-bottom:1px solid var(--cinza-200);
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    tbody tr:hover { background:#f8fbff; }
+
+    .badge {
+      display:inline-block;
+      padding:5px 9px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .badge-ok { background:#dcfce7; color:#166534; }
+    .badge-off { background:#fee2e2; color:#991b1b; }
+    .badge-admin { background:#dbeafe; color:#1d4ed8; }
+    .badge-first { background:#fef3c7; color:#92400e; }
+
+    .hidden { display:none !important; }
+
+    .modal-overlay {
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.58);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      z-index:9999;
+    }
+
+    .modal-box {
+      width:min(520px,94vw);
+      background:white;
+      border-radius:18px;
+      box-shadow:0 22px 60px rgba(0,0,0,.30);
+      padding:20px;
+    }
+
+    .modal-box h3 {
+      margin:0 0 8px;
+      color:var(--azul-900);
+    }
+
+    .modal-box p {
+      margin:0 0 16px;
+      color:#64748b;
+      font-size:13px;
+    }
+
+    .modal-actions {
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    @media(max-width:1100px) {
+      .form-grid { grid-template-columns:repeat(2,minmax(180px,1fr)); }
+    }
+
+    @media(max-width:700px) {
+      .container { padding:14px; }
+      .form-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="marca">
+      <h1>Cadastro de Usuários</h1>
+      <p>Administração RASP • Usuários GM e Terceiros</p>
+    </div>
+
+    <div class="top-actions">
+      <a class="btn-link" href="admin-home.html">← Administração</a>
+      <a class="btn-link" href="../home.html">Página Inicial</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="tabs">
+        <button id="tabGm" class="tab active" type="button">Usuários GM</button>
+        <button id="tabTerceiros" class="tab" type="button">Usuários Terceiros</button>
+      </div>
+
+      <div class="section-title">
+        <div>
+          <h2 id="tituloFormulario">Cadastrar Usuário GM</h2>
+          <span id="subtituloFormulario">Cadastro de usuários internos GM, perfis, turnos e administradores.</span>
+        </div>
+        <button id="btnRecarregar" class="btn-secondary" type="button">Atualizar Listas</button>
+      </div>
+
+      <!-- FORM GM -->
+      <form id="formGm">
+        <div class="form-grid">
+          <div class="campo">
+            <label>Nome</label>
+            <input id="gmNome" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>Sobrenome</label>
+            <input id="gmSobrenome" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>GMIN</label>
+            <input id="gmGmin" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>Email</label>
+            <input id="gmEmail" type="email" />
+          </div>
+
+          <div class="campo">
+            <label>Cargo</label>
+            <input id="gmCargo" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>Perfil</label>
+            <select id="gmPerfil"></select>
+          </div>
+
+          <div class="campo">
+            <label>Turno</label>
+            <select id="gmTurno">
+              <option value="">Sem turno</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>Senha Inicial</label>
+            <input id="gmSenha" type="password" placeholder="mínimo 8 caracteres" />
+          </div>
+
+          <label class="check-row">
+            <input id="gmAdministrador" type="checkbox" />
+            Administrador do sistema
+          </label>
+        </div>
+
+        <div class="acoes-form">
+          <button class="btn-secondary" type="reset">Limpar</button>
+          <button class="btn-primary" type="submit">Cadastrar GM</button>
+        </div>
+      </form>
+
+      <!-- FORM TERCEIRO -->
+      <form id="formTerceiro" class="hidden">
+        <div class="form-grid">
+          <div class="campo">
+            <label>Nome</label>
+            <input id="terNome" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>Sobrenome</label>
+            <input id="terSobrenome" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>GMID/Login</label>
+            <input id="terGmid" type="text" />
+          </div>
+
+          <div class="campo">
+            <label>Empresa de Seleção</label>
+            <select id="terEmpresa"></select>
+          </div>
+
+          <div class="campo">
+            <label>Senha Inicial</label>
+            <input id="terSenha" type="password" placeholder="mínimo 8 caracteres" />
+          </div>
+        </div>
+
+        <div class="acoes-form">
+          <button class="btn-secondary" type="reset">Limpar</button>
+          <button class="btn-primary" type="submit">Cadastrar Terceiro</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="secaoGm" class="card">
+      <div class="section-title">
+        <h2>Usuários GM</h2>
+        <span>Lista de usuários internos cadastrados.</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>GMIN</th>
+              <th>Email</th>
+              <th>Cargo</th>
+              <th>Perfil</th>
+              <th>Turno</th>
+              <th>Admin</th>
+              <th>Status</th>
+              <th>1º Acesso</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyGm"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="secaoTerceiros" class="card hidden">
+      <div class="section-title">
+        <h2>Usuários Terceiros</h2>
+        <span>Usuários que validam apontamentos na seleção operacional.</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>GMID</th>
+              <th>Empresa</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>1º Acesso</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyTerceiros"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="modalMensagem" class="modal-overlay hidden">
+    <div class="modal-box">
+      <h3 id="modalTitulo">Mensagem</h3>
+      <p id="modalTexto">-</p>
+      <div class="modal-actions">
+        <button id="btnFecharModal" class="btn-primary" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "http://localhost:5050";
+
+    let abaAtual = "GM";
+    let idUsuarioExecutor = 1;
+
+    const tabGm = document.getElementById("tabGm");
+    const tabTerceiros = document.getElementById("tabTerceiros");
+
+    const formGm = document.getElementById("formGm");
+    const formTerceiro = document.getElementById("formTerceiro");
+
+    const secaoGm = document.getElementById("secaoGm");
+    const secaoTerceiros = document.getElementById("secaoTerceiros");
+
+    const tbodyGm = document.getElementById("tbodyGm");
+    const tbodyTerceiros = document.getElementById("tbodyTerceiros");
+
+    const gmPerfil = document.getElementById("gmPerfil");
+    const gmTurno = document.getElementById("gmTurno");
+    const terEmpresa = document.getElementById("terEmpresa");
+
+    const modalMensagem = document.getElementById("modalMensagem");
+    const modalTitulo = document.getElementById("modalTitulo");
+    const modalTexto = document.getElementById("modalTexto");
+
+    document.getElementById("btnFecharModal").addEventListener("click", () => {
+      modalMensagem.classList.add("hidden");
+    });
+
+    function mostrarMensagem(titulo, texto) {
+      modalTitulo.textContent = titulo;
+      modalTexto.textContent = texto;
+      modalMensagem.classList.remove("hidden");
+    }
+
+    function obterExecutorSessao() {
+      const raw =
+        localStorage.getItem("usuarioRasp") ||
+        sessionStorage.getItem("usuarioRasp");
+
+      if (!raw) return;
+
+      try {
+        const usuario = JSON.parse(raw);
+        idUsuarioExecutor = usuario.idUsuario || usuario.IdUsuario || usuario.id || 1;
+      } catch {
+        idUsuarioExecutor = 1;
+      }
+    }
+
+    function trocarAba(aba) {
+      abaAtual = aba;
+
+      const isGm = aba === "GM";
+
+      tabGm.classList.toggle("active", isGm);
+      tabTerceiros.classList.toggle("active", !isGm);
+
+      formGm.classList.toggle("hidden", !isGm);
+      formTerceiro.classList.toggle("hidden", isGm);
+
+      secaoGm.classList.toggle("hidden", !isGm);
+      secaoTerceiros.classList.toggle("hidden", isGm);
+
+      document.getElementById("tituloFormulario").textContent =
+        isGm ? "Cadastrar Usuário GM" : "Cadastrar Usuário Terceiro";
+
+      document.getElementById("subtituloFormulario").textContent =
+        isGm
+          ? "Cadastro de usuários internos GM, perfis, turnos e administradores."
+          : "Cadastro de terceiros para validação no apontamento operacional.";
+    }
+
+    tabGm.addEventListener("click", () => trocarAba("GM"));
+    tabTerceiros.addEventListener("click", () => trocarAba("TERCEIRO"));
+
+    document.getElementById("btnRecarregar").addEventListener("click", carregarTudo);
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        const erro = await response.text();
+        throw new Error(erro || "Erro na API.");
+      }
+
+      if (response.status === 204) return null;
+
+      return await response.json();
+    }
+
+    async function carregarCombos() {
+      const [perfis, turnos, empresas] = await Promise.all([
+        fetchJson(`${API}/perfil-rasp`),
+        fetchJson(`${API}/turno-rasp`),
+        fetchJson(`${API}/empresa-selecao-rasp`)
+      ]);
+
+      gmPerfil.innerHTML = `<option value="">Selecione</option>`;
+      perfis.forEach(p => {
+        gmPerfil.innerHTML += `<option value="${p.idPerfil}">${p.nome}</option>`;
+      });
+
+      gmTurno.innerHTML = `<option value="">Sem turno</option>`;
+      turnos.forEach(t => {
+        gmTurno.innerHTML += `<option value="${t.idTurnoRasp}">${t.descricao}</option>`;
+      });
+
+      terEmpresa.innerHTML = `<option value="">Selecione</option>`;
+      empresas
+        .filter(e => e.ativo !== false)
+        .forEach(e => {
+          terEmpresa.innerHTML += `<option value="${e.idEmpresaSelecao}">${e.nomeEmpresa}</option>`;
+        });
+    }
+
+    async function carregarUsuariosGm() {
+      const usuarios = await fetchJson(`${API}/admin/usuarios-gm`);
+
+      tbodyGm.innerHTML = "";
+
+      if (!usuarios.length) {
+        tbodyGm.innerHTML = `<tr><td colspan="11">Nenhum usuário GM cadastrado.</td></tr>`;
+        return;
+      }
+
+      usuarios.forEach(u => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${u.idUsuario}</td>
+          <td>${u.nomeCompleto || "-"}</td>
+          <td>${u.gmin || "-"}</td>
+          <td>${u.email || "-"}</td>
+          <td>${u.cargo || "-"}</td>
+          <td>${u.perfil || "-"}</td>
+          <td>${u.turno || "-"}</td>
+          <td>${u.administrador ? `<span class="badge badge-admin">Sim</span>` : "Não"}</td>
+          <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
+          <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
+          <td>
+            <button class="btn-secondary" onclick="alterarStatusGm(${u.idUsuario}, ${!u.ativo})">
+              ${u.ativo ? "Inativar" : "Ativar"}
+            </button>
+            <button class="btn-secondary" onclick="resetarSenhaGm(${u.idUsuario})">
+              Reset Senha
+            </button>
+          </td>
+        `;
+
+        tbodyGm.appendChild(tr);
+      });
+    }
+
+    async function carregarUsuariosTerceiros() {
+      const usuarios = await fetchJson(`${API}/admin/usuarios-terceiros`);
+
+      tbodyTerceiros.innerHTML = "";
+
+      if (!usuarios.length) {
+        tbodyTerceiros.innerHTML = `<tr><td colspan="8">Nenhum usuário terceiro cadastrado.</td></tr>`;
+        return;
+      }
+
+      usuarios.forEach(u => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${u.idUsuarioTerceiro}</td>
+          <td>${u.nomeCompleto || "-"}</td>
+          <td>${u.gmid || "-"}</td>
+          <td>${u.empresa || "-"}</td>
+          <td>${u.tipoEmpresa || "-"}</td>
+          <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
+          <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
+          <td>
+            <button class="btn-secondary" onclick="alterarStatusTerceiro(${u.idUsuarioTerceiro}, ${!u.ativo})">
+              ${u.ativo ? "Inativar" : "Ativar"}
+            </button>
+            <button class="btn-secondary" onclick="resetarSenhaTerceiro(${u.idUsuarioTerceiro})">
+              Reset Senha
+            </button>
+          </td>
+        `;
+
+        tbodyTerceiros.appendChild(tr);
+      });
+    }
+
+    formGm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        idUsuarioExecutor,
+        nome: document.getElementById("gmNome").value.trim(),
+        sobrenome: document.getElementById("gmSobrenome").value.trim(),
+        gmin: document.getElementById("gmGmin").value.trim(),
+        email: document.getElementById("gmEmail").value.trim(),
+        cargo: document.getElementById("gmCargo").value.trim(),
+        idPerfil: parseInt(document.getElementById("gmPerfil").value || 0),
+        idTurnoRasp: document.getElementById("gmTurno").value
+          ? parseInt(document.getElementById("gmTurno").value)
+          : null,
+        administrador: document.getElementById("gmAdministrador").checked,
+        senhaInicial: document.getElementById("gmSenha").value
+      };
+
+      try {
+        await fetchJson(`${API}/admin/usuarios-gm`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify(payload)
+        });
+
+        mostrarMensagem("Sucesso", "Usuário GM cadastrado com sucesso.");
+        formGm.reset();
+        await carregarUsuariosGm();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    });
+
+    formTerceiro.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const payload = {
+        idUsuarioExecutor,
+        nome: document.getElementById("terNome").value.trim(),
+        sobrenome: document.getElementById("terSobrenome").value.trim(),
+        gmid: document.getElementById("terGmid").value.trim(),
+        idEmpresaSelecao: parseInt(document.getElementById("terEmpresa").value || 0),
+        senhaInicial: document.getElementById("terSenha").value
+      };
+
+      try {
+        await fetchJson(`${API}/admin/usuarios-terceiros`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify(payload)
+        });
+
+        mostrarMensagem("Sucesso", "Usuário terceiro cadastrado com sucesso.");
+        formTerceiro.reset();
+        await carregarUsuariosTerceiros();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    });
+
+    async function alterarStatusGm(id, ativo) {
+      try {
+        await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
+          method:"PUT",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ idUsuarioExecutor, ativo })
+        });
+
+        await carregarUsuariosGm();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    }
+
+    async function alterarStatusTerceiro(id, ativo) {
+      try {
+        await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
+          method:"PUT",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ idUsuarioExecutor, ativo })
+        });
+
+        await carregarUsuariosTerceiros();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    }
+
+    async function resetarSenhaGm(id) {
+      const novaSenha = prompt("Digite a nova senha inicial do usuário GM:");
+
+      if (!novaSenha) return;
+
+      try {
+        await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
+          method:"PUT",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ idUsuarioExecutor, novaSenha })
+        });
+
+        mostrarMensagem("Senha redefinida", "Senha redefinida. O usuário deverá trocar no primeiro acesso.");
+        await carregarUsuariosGm();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    }
+
+    async function resetarSenhaTerceiro(id) {
+      const novaSenha = prompt("Digite a nova senha inicial do terceiro:");
+
+      if (!novaSenha) return;
+
+      try {
+        await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
+          method:"PUT",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({ idUsuarioExecutor, novaSenha })
+        });
+
+        mostrarMensagem("Senha redefinida", "Senha redefinida. O usuário deverá trocar no primeiro acesso.");
+        await carregarUsuariosTerceiros();
+      } catch (error) {
+        mostrarMensagem("Erro", error.message);
+      }
+    }
+
+    async function carregarTudo() {
+      try {
+        await carregarCombos();
+        await carregarUsuariosGm();
+        await carregarUsuariosTerceiros();
+      } catch (error) {
+        mostrarMensagem("Erro ao carregar tela", error.message);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      obterExecutorSessao();
+      carregarTudo();
+    });
+  </script>
+</body>
+</html>

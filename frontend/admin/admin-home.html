@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Administração - Sistema RASP</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul-950: #06152d;
+      --azul-900: #082046;
+      --azul-800: #0d2d63;
+      --azul-700: #0f3f8f;
+      --azul-600: #2563eb;
+      --azul-100: #dbeafe;
+
+      --verde: #22c55e;
+      --amarelo: #f59e0b;
+      --vermelho: #ef4444;
+
+      --texto: #e5eefc;
+      --texto-suave: #9fb7d9;
+      --branco: #ffffff;
+
+      --card: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(255, 255, 255, 0.13);
+      --borda: rgba(255, 255, 255, 0.14);
+
+      --sombra: 0 22px 60px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(37, 99, 235, 0.28), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(34, 197, 94, 0.15), transparent 28%),
+        linear-gradient(135deg, var(--azul-950), var(--azul-900) 55%, #020617);
+      color: var(--texto);
+    }
+
+    .topbar {
+      height: 78px;
+      padding: 0 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--borda);
+      background: rgba(2, 6, 23, 0.34);
+      backdrop-filter: blur(14px);
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #60a5fa, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 0 26px rgba(96, 165, 250, 0.35);
+    }
+
+    .marca h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .marca p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--texto-suave);
+    }
+
+    .acoes-topo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill {
+      border: 1px solid var(--borda);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .btn-topo {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: rgba(37, 99, 235, 0.22);
+      color: white;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-topo:hover {
+      background: rgba(37, 99, 235, 0.38);
+    }
+
+    .container {
+      padding: 34px;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+      padding: 30px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--borda);
+      box-shadow: var(--sombra);
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0.2px;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      max-width: 780px;
+      color: var(--texto-suave);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      min-height: 190px;
+      padding: 22px;
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--borda);
+      box-shadow: var(--sombra);
+      text-decoration: none;
+      color: var(--texto);
+      transition: 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background: var(--card-hover);
+      border-color: rgba(96, 165, 250, 0.42);
+    }
+
+    .card.bloqueado {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .card.bloqueado:hover {
+      transform: none;
+      background: var(--card);
+      border-color: var(--borda);
+    }
+
+    .icone {
+      width: 52px;
+      height: 52px;
+      border-radius: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      background: rgba(37, 99, 235, 0.22);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 10px 0 0;
+      color: var(--texto-suave);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status {
+      position: absolute;
+      right: 18px;
+      bottom: 16px;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .status.futuro {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+
+    .rodape {
+      margin-top: 34px;
+      color: var(--texto-suave);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .grid-cards {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        height: auto;
+        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .acoes-topo {
+        width: 100%;
+        flex-wrap: wrap;
+      }
+
+      .container {
+        padding: 18px;
+      }
+
+      .grid-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       03. TOPO
+       ========================================================= -->
+  <header class="topbar">
+    <div class="marca">
+      <div class="logo">R</div>
+      <div>
+        <h1>Administração RASP</h1>
+        <p>Sistema de Qualidade • SAC - S10 SJC</p>
+      </div>
+    </div>
+
+    <div class="acoes-topo">
+      <div class="pill" id="usuarioLogado">Administrador</div>
+      <a href="../home.html" class="btn-topo">← Página Inicial</a>
+    </div>
+  </header>
+
+  <!-- =========================================================
+       04. CONTEÚDO PRINCIPAL
+       ========================================================= -->
+  <main class="container">
+    <section class="hero">
+      <h2>Manutenção do Administrador</h2>
+      <p>
+        Área restrita para manutenção dos cadastros principais do sistema RASP.
+        O primeiro módulo operacional desta área será o cadastro de usuários GM
+        e usuários terceiros da seleção operacional.
+      </p>
+    </section>
+
+    <section class="grid-cards">
+      <a href="admin-usuarios.html" class="card">
+        <div class="icone">👥</div>
+        <h3>Cadastro de Usuários</h3>
+        <p>
+          Manutenção de usuários GM, perfis, turnos, administradores e usuários
+          terceiros vinculados às empresas de seleção.
+        </p>
+        <span class="status">Disponível</span>
+      </a>
+
+      <div class="card bloqueado">
+        <div class="icone">🏭</div>
+        <h3>Fornecedores</h3>
+        <p>
+          Manutenção futura do cadastro mestre de fornecedores e DUNS.
+        </p>
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <div class="card bloqueado">
+        <div class="icone">🔩</div>
+        <h3>Peças / PN</h3>
+        <p>
+          Manutenção futura do cadastro mestre de peças e part numbers.
+        </p>
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <div class="card bloqueado">
+        <div class="icone">⚙️</div>
+        <h3>Domínios do Sistema</h3>
+        <p>
+          Manutenção futura de turnos, setores, impactos, classificações e listas auxiliares.
+        </p>
+        <span class="status futuro">Futuro</span>
+      </div>
+    </section>
+
+    <div class="rodape">
+      Desenvolvido por: <strong>Josealdo Lyra</strong> • Sistema RASP
+    </div>
+  </main>
+
+  <!-- =========================================================
+       05. SCRIPT DE PROTEÇÃO SIMPLES
+       ========================================================= -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuarioRaw =
+        localStorage.getItem("usuarioRasp") ||
+        sessionStorage.getItem("usuarioRasp");
+
+      if (!usuarioRaw) {
+        console.warn("Usuário não encontrado em sessão local.");
+        return;
+      }
+
+      try {
+        const usuario = JSON.parse(usuarioRaw);
+
+        const nome = usuario.nomeCompleto || usuario.nome || "Administrador";
+        const isAdmin =
+          usuario.administrador === true ||
+          usuario.Administrador === true ||
+          usuario.perfil === "ADMIN" ||
+          usuario.Perfil === "ADMIN";
+
+        document.getElementById("usuarioLogado").textContent =
+          `👤 ${nome}`;
+
+        if (!isAdmin) {
+          alert("Acesso restrito ao administrador do sistema.");
+          window.location.href = "home.html";
+        }
+      } catch (error) {
+        console.error("Erro ao validar sessão administrativa:", error);
+      }
+    });
+  </script>
+</body>
+</html>
