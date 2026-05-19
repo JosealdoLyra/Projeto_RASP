@@ -12,7 +12,6 @@ namespace Rasp.Api.Models.Auth
 
         public string Mensagem { get; set; } = string.Empty;
 
-
         // =====================================================
         // 01.02 DADOS DO USUÁRIO
         // =====================================================
@@ -26,10 +25,13 @@ namespace Rasp.Api.Models.Auth
 
         public string Perfil { get; set; } = string.Empty;
 
+        public string Empresa { get; set; } = string.Empty;
+
+        public string NomeEmpresa { get; set; } = string.Empty;
+
         public bool Administrador { get; set; }
 
         public bool PrimeiroAcesso { get; set; }
-
 
         // =====================================================
         // 01.03 DIRECIONAMENTO

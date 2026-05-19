@@ -468,335 +468,663 @@
   </div>
 
   <script>
-    const API = "http://localhost:5050";
+  // =========================================================
+  // 01. CONFIGURAÇÕES GERAIS
+  // =========================================================
+  const API = "http://localhost:5050";
 
-    let abaAtual = "GM";
-    let idUsuarioExecutor = 1;
+  let abaAtual = "GM";
+  let idUsuarioExecutor = 1;
 
-    const tabGm = document.getElementById("tabGm");
-    const tabTerceiros = document.getElementById("tabTerceiros");
+  let idEdicaoGm = null;
+  let idEdicaoTerceiro = null;
 
-    const formGm = document.getElementById("formGm");
-    const formTerceiro = document.getElementById("formTerceiro");
+  // =========================================================
+  // 02. ELEMENTOS DA TELA
+  // =========================================================
+  const tabGm = document.getElementById("tabGm");
+  const tabTerceiros = document.getElementById("tabTerceiros");
 
-    const secaoGm = document.getElementById("secaoGm");
-    const secaoTerceiros = document.getElementById("secaoTerceiros");
+  const formGm = document.getElementById("formGm");
+  const formTerceiro = document.getElementById("formTerceiro");
 
-    const tbodyGm = document.getElementById("tbodyGm");
-    const tbodyTerceiros = document.getElementById("tbodyTerceiros");
+  const secaoGm = document.getElementById("secaoGm");
+  const secaoTerceiros = document.getElementById("secaoTerceiros");
 
-    const gmPerfil = document.getElementById("gmPerfil");
-    const gmTurno = document.getElementById("gmTurno");
-    const terEmpresa = document.getElementById("terEmpresa");
+  const tbodyGm = document.getElementById("tbodyGm");
+  const tbodyTerceiros = document.getElementById("tbodyTerceiros");
 
-    const modalMensagem = document.getElementById("modalMensagem");
-    const modalTitulo = document.getElementById("modalTitulo");
-    const modalTexto = document.getElementById("modalTexto");
+  const gmPerfil = document.getElementById("gmPerfil");
+  const gmTurno = document.getElementById("gmTurno");
+  const terEmpresa = document.getElementById("terEmpresa");
 
-    document.getElementById("btnFecharModal").addEventListener("click", () => {
-      modalMensagem.classList.add("hidden");
+  const modalMensagem = document.getElementById("modalMensagem");
+  const modalTitulo = document.getElementById("modalTitulo");
+  const modalTexto = document.getElementById("modalTexto");
+
+  const btnSubmitGm = formGm.querySelector("button[type='submit']");
+  const btnSubmitTerceiro = formTerceiro.querySelector("button[type='submit']");
+
+  // =========================================================
+  // 03. MODAL DE MENSAGEM
+  // =========================================================
+  document.getElementById("btnFecharModal").addEventListener("click", () => {
+    modalMensagem.classList.add("hidden");
+  });
+
+  function mostrarMensagem(titulo, texto) {
+    modalTitulo.textContent = titulo;
+    modalTexto.textContent = texto;
+    modalMensagem.classList.remove("hidden");
+  }
+
+  // =========================================================
+  // 04. VALIDAÇÃO DE SESSÃO ADMINISTRATIVA
+  // =========================================================
+  function obterExecutorSessao() {
+    const raw =
+      sessionStorage.getItem("raspUsuarioLogado") ||
+      localStorage.getItem("usuarioLogado");
+
+    if (!raw) {
+      alert("Sessão não encontrada. Faça login novamente.");
+      window.location.href = "../login.html";
+      return false;
+    }
+
+    try {
+      const usuario = JSON.parse(raw);
+
+      idUsuarioExecutor =
+        usuario.idUsuario ||
+        usuario.IdUsuario ||
+        usuario.id ||
+        usuario.usuario?.idUsuario ||
+        usuario.usuario?.IdUsuario ||
+        1;
+
+      const perfil =
+        usuario.perfil ||
+        usuario.nomePerfil ||
+        usuario.tipoPerfil ||
+        usuario.usuario?.perfil ||
+        usuario.usuario?.nomePerfil ||
+        usuario.usuario?.tipoPerfil ||
+        "";
+
+      const perfilNormalizado = String(perfil).toUpperCase();
+
+      const isAdmin =
+        usuario.administrador === true ||
+        usuario.Administrador === true ||
+        usuario.usuario?.administrador === true ||
+        usuario.usuario?.Administrador === true ||
+        perfilNormalizado === "ADMIN" ||
+        perfilNormalizado === "ADMINISTRADOR" ||
+        perfilNormalizado === "ADM";
+
+      if (!isAdmin) {
+        alert("Acesso restrito ao administrador do sistema.");
+        window.location.href = "../home.html";
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Erro ao validar sessão administrativa:", error);
+      alert("Erro ao validar sessão. Faça login novamente.");
+      window.location.href = "../login.html";
+      return false;
+    }
+  }
+
+  // =========================================================
+  // 05. TROCA DE ABAS
+  // =========================================================
+  function trocarAba(aba) {
+    abaAtual = aba;
+
+    const isGm = aba === "GM";
+
+    tabGm.classList.toggle("active", isGm);
+    tabTerceiros.classList.toggle("active", !isGm);
+
+    formGm.classList.toggle("hidden", !isGm);
+    formTerceiro.classList.toggle("hidden", isGm);
+
+    secaoGm.classList.toggle("hidden", !isGm);
+    secaoTerceiros.classList.toggle("hidden", isGm);
+
+    document.getElementById("tituloFormulario").textContent =
+      isGm
+        ? idEdicaoGm
+          ? "Editar Usuário GM"
+          : "Cadastrar Usuário GM"
+        : idEdicaoTerceiro
+          ? "Editar Usuário Terceiro"
+          : "Cadastrar Usuário Terceiro";
+
+    document.getElementById("subtituloFormulario").textContent =
+      isGm
+        ? "Cadastro de usuários internos GM, perfis, turnos e administradores."
+        : "Cadastro de terceiros para validação no apontamento operacional.";
+  }
+
+  tabGm.addEventListener("click", () => trocarAba("GM"));
+  tabTerceiros.addEventListener("click", () => trocarAba("TERCEIRO"));
+
+  document.getElementById("btnRecarregar").addEventListener("click", carregarTudo);
+
+  // =========================================================
+  // 06. FETCH PADRÃO COM ERRO DETALHADO
+  // =========================================================
+  async function fetchJson(url, options = {}) {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const erro = await response.text();
+
+      console.error("Erro API:", {
+        url: url,
+        status: response.status,
+        erro: erro
+      });
+
+      throw new Error(
+        `Erro na API.\n\nEndpoint: ${url}\nStatus: ${response.status}\nDetalhe: ${erro}`
+      );
+    }
+
+    if (response.status === 204) {
+      return null;
+    }
+
+    return await response.json();
+  }
+
+  // =========================================================
+  // 07. FUNÇÕES AUXILIARES
+  // =========================================================
+  function selecionarOptionPorTexto(select, texto) {
+    if (!select || !texto) return;
+
+    const textoNormalizado = String(texto).trim().toLowerCase();
+
+    Array.from(select.options).forEach((option) => {
+      if (String(option.textContent).trim().toLowerCase() === textoNormalizado) {
+        select.value = option.value;
+      }
+    });
+  }
+
+  function cancelarEdicaoGm() {
+    idEdicaoGm = null;
+
+    document.getElementById("gmGmin").disabled = false;
+    btnSubmitGm.textContent = "Cadastrar GM";
+
+    trocarAba("GM");
+    }
+
+    function cancelarEdicaoTerceiro() {
+    idEdicaoTerceiro = null;
+
+    document.getElementById("terGmid").disabled = false;
+    btnSubmitTerceiro.textContent = "Cadastrar Terceiro";
+
+    trocarAba("TERCEIRO");
+    }
+
+
+  // =========================================================
+  // 08. CARREGAR COMBOS
+  // =========================================================
+  async function carregarCombos() {
+    const [perfis, turnos, empresas] = await Promise.all([
+      fetchJson(`${API}/perfil-rasp`),
+      fetchJson(`${API}/turno-rasp`),
+      fetchJson(`${API}/empresa-selecao-rasp`)
+    ]);
+
+    gmPerfil.innerHTML = `<option value="">Selecione</option>`;
+
+    perfis.forEach((p) => {
+      gmPerfil.innerHTML += `
+        <option value="${p.idPerfil}">
+          ${p.nome}
+        </option>
+      `;
     });
 
-    function mostrarMensagem(titulo, texto) {
-      modalTitulo.textContent = titulo;
-      modalTexto.textContent = texto;
-      modalMensagem.classList.remove("hidden");
+    gmTurno.innerHTML = `<option value="">Sem turno</option>`;
+
+    turnos.forEach((t) => {
+      gmTurno.innerHTML += `
+        <option value="${t.idTurnoRasp}">
+          ${t.descricao}
+        </option>
+      `;
+    });
+
+    terEmpresa.innerHTML = `<option value="">Selecione</option>`;
+
+    empresas
+      .filter((e) => e.ativo !== false)
+      .forEach((e) => {
+        terEmpresa.innerHTML += `
+          <option value="${e.idEmpresaSelecao}">
+            ${e.nomeEmpresa}
+          </option>
+        `;
+      });
+  }
+
+  // =========================================================
+  // 09. SELECIONAR USUÁRIO GM PARA EDIÇÃO
+  // =========================================================
+  function selecionarUsuarioGm(u) {
+    idEdicaoGm = u.idUsuario;
+
+    document.getElementById("gmNome").value = u.nome || "";
+    document.getElementById("gmSobrenome").value = u.sobrenome || "";
+    document.getElementById("gmGmin").value = u.gmin || "";
+    document.getElementById("gmEmail").value = u.email || "";
+    document.getElementById("gmCargo").value = u.cargo || "";
+    document.getElementById("gmAdministrador").checked = u.administrador === true;
+
+    document.getElementById("gmGmin").disabled = true;
+    document.getElementById("gmSenha").value = "";
+
+    if (u.idPerfil) {
+      gmPerfil.value = u.idPerfil;
+    } else {
+      selecionarOptionPorTexto(gmPerfil, u.perfil);
     }
 
-    function obterExecutorSessao() {
-      const raw =
-        localStorage.getItem("usuarioRasp") ||
-        sessionStorage.getItem("usuarioRasp");
-
-      if (!raw) return;
-
-      try {
-        const usuario = JSON.parse(raw);
-        idUsuarioExecutor = usuario.idUsuario || usuario.IdUsuario || usuario.id || 1;
-      } catch {
-        idUsuarioExecutor = 1;
-      }
+    if (u.idTurnoRasp) {
+      gmTurno.value = u.idTurnoRasp;
+    } else {
+      selecionarOptionPorTexto(gmTurno, u.turno);
     }
 
-    function trocarAba(aba) {
-      abaAtual = aba;
+    btnSubmitGm.textContent = "Salvar Alteração GM";
 
-      const isGm = aba === "GM";
+    trocarAba("GM");
+  }
 
-      tabGm.classList.toggle("active", isGm);
-      tabTerceiros.classList.toggle("active", !isGm);
+  // =========================================================
+  // 10. SELECIONAR USUÁRIO TERCEIRO PARA EDIÇÃO
+  // =========================================================
+  function selecionarUsuarioTerceiro(u) {
+    idEdicaoTerceiro = u.idUsuarioTerceiro;
 
-      formGm.classList.toggle("hidden", !isGm);
-      formTerceiro.classList.toggle("hidden", isGm);
+    document.getElementById("terNome").value = u.nome || "";
+    document.getElementById("terSobrenome").value = u.sobrenome || "";
+    document.getElementById("terGmid").value = u.gmid || "";
+    document.getElementById("terSenha").value = "";
 
-      secaoGm.classList.toggle("hidden", !isGm);
-      secaoTerceiros.classList.toggle("hidden", isGm);
+    document.getElementById("terGmid").disabled = true;
 
-      document.getElementById("tituloFormulario").textContent =
-        isGm ? "Cadastrar Usuário GM" : "Cadastrar Usuário Terceiro";
-
-      document.getElementById("subtituloFormulario").textContent =
-        isGm
-          ? "Cadastro de usuários internos GM, perfis, turnos e administradores."
-          : "Cadastro de terceiros para validação no apontamento operacional.";
+    if (u.idEmpresaSelecao) {
+      terEmpresa.value = u.idEmpresaSelecao;
+    } else {
+      selecionarOptionPorTexto(terEmpresa, u.empresa);
     }
 
-    tabGm.addEventListener("click", () => trocarAba("GM"));
-    tabTerceiros.addEventListener("click", () => trocarAba("TERCEIRO"));
+    btnSubmitTerceiro.textContent = "Salvar Alteração Terceiro";
 
-    document.getElementById("btnRecarregar").addEventListener("click", carregarTudo);
+    trocarAba("TERCEIRO");
+  }
 
-    async function fetchJson(url, options = {}) {
-      const response = await fetch(url, options);
+  // =========================================================
+  // 11. CARREGAR USUÁRIOS GM
+  // =========================================================
+  async function carregarUsuariosGm() {
+    const usuarios = await fetchJson(`${API}/admin/usuarios-gm`);
 
-      if (!response.ok) {
-        const erro = await response.text();
-        throw new Error(erro || "Erro na API.");
-      }
+    tbodyGm.innerHTML = "";
 
-      if (response.status === 204) return null;
-
-      return await response.json();
+    if (!usuarios.length) {
+      tbodyGm.innerHTML = `
+        <tr>
+          <td colspan="11">Nenhum usuário GM cadastrado.</td>
+        </tr>
+      `;
+      return;
     }
 
-    async function carregarCombos() {
-      const [perfis, turnos, empresas] = await Promise.all([
-        fetchJson(`${API}/perfil-rasp`),
-        fetchJson(`${API}/turno-rasp`),
-        fetchJson(`${API}/empresa-selecao-rasp`)
-      ]);
+    usuarios.forEach((u) => {
+      const tr = document.createElement("tr");
 
-      gmPerfil.innerHTML = `<option value="">Selecione</option>`;
-      perfis.forEach(p => {
-        gmPerfil.innerHTML += `<option value="${p.idPerfil}">${p.nome}</option>`;
+      tr.addEventListener("click", () => {
+        selecionarUsuarioGm(u);
       });
 
-      gmTurno.innerHTML = `<option value="">Sem turno</option>`;
-      turnos.forEach(t => {
-        gmTurno.innerHTML += `<option value="${t.idTurnoRasp}">${t.descricao}</option>`;
+      tr.innerHTML = `
+        <td>${u.idUsuario}</td>
+        <td>${u.nomeCompleto || "-"}</td>
+        <td>${u.gmin || "-"}</td>
+        <td>${u.email || "-"}</td>
+        <td>${u.cargo || "-"}</td>
+        <td>${u.perfil || "-"}</td>
+        <td>${u.turno || "-"}</td>
+        <td>${u.administrador ? `<span class="badge badge-admin">Sim</span>` : "Não"}</td>
+        <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
+        <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
+        <td>
+          <button class="btn-secondary" onclick="event.stopPropagation(); alterarStatusGm(${u.idUsuario}, ${!u.ativo})">
+            ${u.ativo ? "Inativar" : "Ativar"}
+          </button>
+
+          <button class="btn-secondary" onclick="event.stopPropagation(); resetarSenhaGm(${u.idUsuario})">
+            Reset Senha
+          </button>
+        </td>
+      `;
+
+      tbodyGm.appendChild(tr);
+    });
+  }
+
+  // =========================================================
+  // 12. CARREGAR USUÁRIOS TERCEIROS
+  // =========================================================
+  async function carregarUsuariosTerceiros() {
+    const usuarios = await fetchJson(`${API}/admin/usuarios-terceiros`);
+
+    tbodyTerceiros.innerHTML = "";
+
+    if (!usuarios.length) {
+      tbodyTerceiros.innerHTML = `
+        <tr>
+          <td colspan="8">Nenhum usuário terceiro cadastrado.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    usuarios.forEach((u) => {
+      const tr = document.createElement("tr");
+
+      tr.addEventListener("click", () => {
+        selecionarUsuarioTerceiro(u);
       });
 
-      terEmpresa.innerHTML = `<option value="">Selecione</option>`;
-      empresas
-        .filter(e => e.ativo !== false)
-        .forEach(e => {
-          terEmpresa.innerHTML += `<option value="${e.idEmpresaSelecao}">${e.nomeEmpresa}</option>`;
+      tr.innerHTML = `
+        <td>${u.idUsuarioTerceiro}</td>
+        <td>${u.nomeCompleto || "-"}</td>
+        <td>${u.gmid || "-"}</td>
+        <td>${u.empresa || "-"}</td>
+        <td>${u.tipoEmpresa || "-"}</td>
+        <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
+        <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
+        <td>
+          <button class="btn-secondary" onclick="event.stopPropagation(); alterarStatusTerceiro(${u.idUsuarioTerceiro}, ${!u.ativo})">
+            ${u.ativo ? "Inativar" : "Ativar"}
+          </button>
+
+          <button class="btn-secondary" onclick="event.stopPropagation(); resetarSenhaTerceiro(${u.idUsuarioTerceiro})">
+            Reset Senha
+          </button>
+        </td>
+      `;
+
+      tbodyTerceiros.appendChild(tr);
+    });
+  }
+
+  // =========================================================
+  // 13. SUBMIT GM - CADASTRAR OU EDITAR
+  // =========================================================
+  formGm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const payloadCadastro = {
+      idUsuarioExecutor,
+      nome: document.getElementById("gmNome").value.trim(),
+      sobrenome: document.getElementById("gmSobrenome").value.trim(),
+      gmin: document.getElementById("gmGmin").value.trim(),
+      email: document.getElementById("gmEmail").value.trim(),
+      cargo: document.getElementById("gmCargo").value.trim(),
+      idPerfil: parseInt(document.getElementById("gmPerfil").value || 0),
+      idTurnoRasp: document.getElementById("gmTurno").value
+        ? parseInt(document.getElementById("gmTurno").value)
+        : null,
+      administrador: document.getElementById("gmAdministrador").checked,
+      senhaInicial: document.getElementById("gmSenha").value
+    };
+
+    const payloadEdicao = {
+      idUsuarioExecutor,
+      nome: payloadCadastro.nome,
+      sobrenome: payloadCadastro.sobrenome,
+      email: payloadCadastro.email,
+      cargo: payloadCadastro.cargo,
+      idPerfil: payloadCadastro.idPerfil,
+      idTurnoRasp: payloadCadastro.idTurnoRasp,
+      administrador: payloadCadastro.administrador
+    };
+
+    const senhaInformada = document.getElementById("gmSenha").value;
+
+    if (senhaInformada) {
+      payloadEdicao.novaSenha = senhaInformada;
+    }
+
+    try {
+      if (idEdicaoGm) {
+        await fetchJson(`${API}/admin/usuarios-gm/${idEdicaoGm}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadEdicao)
         });
-    }
 
-    async function carregarUsuariosGm() {
-      const usuarios = await fetchJson(`${API}/admin/usuarios-gm`);
+        mostrarMensagem("Sucesso", "Usuário GM atualizado com sucesso.");
+        formGm.reset();
+        cancelarEdicaoGm();
 
-      tbodyGm.innerHTML = "";
-
-      if (!usuarios.length) {
-        tbodyGm.innerHTML = `<tr><td colspan="11">Nenhum usuário GM cadastrado.</td></tr>`;
-        return;
-      }
-
-      usuarios.forEach(u => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${u.idUsuario}</td>
-          <td>${u.nomeCompleto || "-"}</td>
-          <td>${u.gmin || "-"}</td>
-          <td>${u.email || "-"}</td>
-          <td>${u.cargo || "-"}</td>
-          <td>${u.perfil || "-"}</td>
-          <td>${u.turno || "-"}</td>
-          <td>${u.administrador ? `<span class="badge badge-admin">Sim</span>` : "Não"}</td>
-          <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
-          <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
-          <td>
-            <button class="btn-secondary" onclick="alterarStatusGm(${u.idUsuario}, ${!u.ativo})">
-              ${u.ativo ? "Inativar" : "Ativar"}
-            </button>
-            <button class="btn-secondary" onclick="resetarSenhaGm(${u.idUsuario})">
-              Reset Senha
-            </button>
-          </td>
-        `;
-
-        tbodyGm.appendChild(tr);
-      });
-    }
-
-    async function carregarUsuariosTerceiros() {
-      const usuarios = await fetchJson(`${API}/admin/usuarios-terceiros`);
-
-      tbodyTerceiros.innerHTML = "";
-
-      if (!usuarios.length) {
-        tbodyTerceiros.innerHTML = `<tr><td colspan="8">Nenhum usuário terceiro cadastrado.</td></tr>`;
-        return;
-      }
-
-      usuarios.forEach(u => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td>${u.idUsuarioTerceiro}</td>
-          <td>${u.nomeCompleto || "-"}</td>
-          <td>${u.gmid || "-"}</td>
-          <td>${u.empresa || "-"}</td>
-          <td>${u.tipoEmpresa || "-"}</td>
-          <td>${u.ativo ? `<span class="badge badge-ok">Ativo</span>` : `<span class="badge badge-off">Inativo</span>`}</td>
-          <td>${u.primeiroAcesso ? `<span class="badge badge-first">Sim</span>` : "Não"}</td>
-          <td>
-            <button class="btn-secondary" onclick="alterarStatusTerceiro(${u.idUsuarioTerceiro}, ${!u.ativo})">
-              ${u.ativo ? "Inativar" : "Ativar"}
-            </button>
-            <button class="btn-secondary" onclick="resetarSenhaTerceiro(${u.idUsuarioTerceiro})">
-              Reset Senha
-            </button>
-          </td>
-        `;
-
-        tbodyTerceiros.appendChild(tr);
-      });
-    }
-
-    formGm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const payload = {
-        idUsuarioExecutor,
-        nome: document.getElementById("gmNome").value.trim(),
-        sobrenome: document.getElementById("gmSobrenome").value.trim(),
-        gmin: document.getElementById("gmGmin").value.trim(),
-        email: document.getElementById("gmEmail").value.trim(),
-        cargo: document.getElementById("gmCargo").value.trim(),
-        idPerfil: parseInt(document.getElementById("gmPerfil").value || 0),
-        idTurnoRasp: document.getElementById("gmTurno").value
-          ? parseInt(document.getElementById("gmTurno").value)
-          : null,
-        administrador: document.getElementById("gmAdministrador").checked,
-        senhaInicial: document.getElementById("gmSenha").value
-      };
-
-      try {
+      } else {
         await fetchJson(`${API}/admin/usuarios-gm`, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify(payload)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadCadastro)
         });
 
         mostrarMensagem("Sucesso", "Usuário GM cadastrado com sucesso.");
         formGm.reset();
-        await carregarUsuariosGm();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
       }
-    });
 
-    formTerceiro.addEventListener("submit", async (event) => {
-      event.preventDefault();
+      await carregarUsuariosGm();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  });
 
-      const payload = {
-        idUsuarioExecutor,
-        nome: document.getElementById("terNome").value.trim(),
-        sobrenome: document.getElementById("terSobrenome").value.trim(),
-        gmid: document.getElementById("terGmid").value.trim(),
-        idEmpresaSelecao: parseInt(document.getElementById("terEmpresa").value || 0),
-        senhaInicial: document.getElementById("terSenha").value
-      };
+  // =========================================================
+  // 14. SUBMIT TERCEIRO - CADASTRAR OU EDITAR
+  // =========================================================
+  formTerceiro.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-      try {
+    const payloadCadastro = {
+      idUsuarioExecutor,
+      nome: document.getElementById("terNome").value.trim(),
+      sobrenome: document.getElementById("terSobrenome").value.trim(),
+      gmid: document.getElementById("terGmid").value.trim(),
+      idEmpresaSelecao: parseInt(document.getElementById("terEmpresa").value || 0),
+      senhaInicial: document.getElementById("terSenha").value
+    };
+
+    const payloadEdicao = {
+      idUsuarioExecutor,
+      nome: payloadCadastro.nome,
+      sobrenome: payloadCadastro.sobrenome,
+      idEmpresaSelecao: payloadCadastro.idEmpresaSelecao
+    };
+
+    const senhaInformada = document.getElementById("terSenha").value;
+
+    if (senhaInformada) {
+      payloadEdicao.novaSenha = senhaInformada;
+    }
+
+    try {
+      if (idEdicaoTerceiro) {
+        await fetchJson(`${API}/admin/usuarios-terceiros/${idEdicaoTerceiro}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadEdicao)
+        });
+
+        mostrarMensagem("Sucesso", "Usuário terceiro atualizado com sucesso.");
+        formTerceiro.reset();
+        cancelarEdicaoTerceiro();
+
+      } else {
         await fetchJson(`${API}/admin/usuarios-terceiros`, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify(payload)
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadCadastro)
         });
 
         mostrarMensagem("Sucesso", "Usuário terceiro cadastrado com sucesso.");
         formTerceiro.reset();
-        await carregarUsuariosTerceiros();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
       }
-    });
 
-    async function alterarStatusGm(id, ativo) {
-      try {
-        await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
-          method:"PUT",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ idUsuarioExecutor, ativo })
-        });
+      await carregarUsuariosTerceiros();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  });
 
-        await carregarUsuariosGm();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
-      }
+  // =========================================================
+  // 15. ALTERAR STATUS GM
+  // =========================================================
+  async function alterarStatusGm(id, ativo) {
+    try {
+      await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idUsuarioExecutor, ativo })
+      });
+
+      await carregarUsuariosGm();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  }
+
+  // =========================================================
+  // 16. ALTERAR STATUS TERCEIRO
+  // =========================================================
+  async function alterarStatusTerceiro(id, ativo) {
+    try {
+      await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idUsuarioExecutor, ativo })
+      });
+
+      await carregarUsuariosTerceiros();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  }
+
+  // =========================================================
+  // 17. RESETAR SENHA GM
+  // =========================================================
+  async function resetarSenhaGm(id) {
+    const novaSenha = prompt("Digite a nova senha inicial do usuário GM:");
+
+    if (!novaSenha) return;
+
+    try {
+      await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idUsuarioExecutor, novaSenha })
+      });
+
+      mostrarMensagem(
+        "Senha redefinida",
+        "Senha redefinida. O usuário deverá trocar no primeiro acesso."
+      );
+
+      await carregarUsuariosGm();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  }
+
+  // =========================================================
+  // 18. RESETAR SENHA TERCEIRO
+  // =========================================================
+  async function resetarSenhaTerceiro(id) {
+    const novaSenha = prompt("Digite a nova senha inicial do terceiro:");
+
+    if (!novaSenha) return;
+
+    try {
+      await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idUsuarioExecutor, novaSenha })
+      });
+
+      mostrarMensagem(
+        "Senha redefinida",
+        "Senha redefinida. O usuário deverá trocar no primeiro acesso."
+      );
+
+      await carregarUsuariosTerceiros();
+    } catch (error) {
+      mostrarMensagem("Erro", error.message);
+    }
+  }
+
+  // =========================================================
+  // 19. LIMPAR FORMULÁRIOS / CANCELAR EDIÇÃO
+  // =========================================================
+  formGm.addEventListener("reset", () => {
+    setTimeout(() => {
+      cancelarEdicaoGm();
+    }, 0);
+  });
+
+  formTerceiro.addEventListener("reset", () => {
+    setTimeout(() => {
+      cancelarEdicaoTerceiro();
+    }, 0);
+  });
+
+  // =========================================================
+  // 20. CARREGAR TUDO
+  // =========================================================
+  async function carregarTudo() {
+    try {
+      await carregarCombos();
+      await carregarUsuariosGm();
+      await carregarUsuariosTerceiros();
+    } catch (error) {
+      mostrarMensagem("Erro ao carregar tela", error.message);
+    }
+  }
+
+  // =========================================================
+  // 21. INICIALIZAÇÃO
+  // =========================================================
+  document.addEventListener("DOMContentLoaded", () => {
+    const acessoLiberado = obterExecutorSessao();
+
+    if (!acessoLiberado) {
+      return;
     }
 
-    async function alterarStatusTerceiro(id, ativo) {
-      try {
-        await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
-          method:"PUT",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ idUsuarioExecutor, ativo })
-        });
+    carregarTudo();
+  });
+</script>
 
-        await carregarUsuariosTerceiros();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
-      }
-    }
 
-    async function resetarSenhaGm(id) {
-      const novaSenha = prompt("Digite a nova senha inicial do usuário GM:");
-
-      if (!novaSenha) return;
-
-      try {
-        await fetchJson(`${API}/admin/usuarios-gm/${id}`, {
-          method:"PUT",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ idUsuarioExecutor, novaSenha })
-        });
-
-        mostrarMensagem("Senha redefinida", "Senha redefinida. O usuário deverá trocar no primeiro acesso.");
-        await carregarUsuariosGm();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
-      }
-    }
-
-    async function resetarSenhaTerceiro(id) {
-      const novaSenha = prompt("Digite a nova senha inicial do terceiro:");
-
-      if (!novaSenha) return;
-
-      try {
-        await fetchJson(`${API}/admin/usuarios-terceiros/${id}`, {
-          method:"PUT",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({ idUsuarioExecutor, novaSenha })
-        });
-
-        mostrarMensagem("Senha redefinida", "Senha redefinida. O usuário deverá trocar no primeiro acesso.");
-        await carregarUsuariosTerceiros();
-      } catch (error) {
-        mostrarMensagem("Erro", error.message);
-      }
-    }
-
-    async function carregarTudo() {
-      try {
-        await carregarCombos();
-        await carregarUsuariosGm();
-        await carregarUsuariosTerceiros();
-      } catch (error) {
-        mostrarMensagem("Erro ao carregar tela", error.message);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      obterExecutorSessao();
-      carregarTudo();
-    });
-  </script>
 </body>
 </html>

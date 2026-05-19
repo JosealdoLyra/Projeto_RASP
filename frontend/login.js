@@ -213,7 +213,35 @@ document.addEventListener("DOMContentLoaded", () => {
             // =============================================
             // LOGIN OK
             // =============================================
+            // =============================================
+            // LOGIN OK - REDIRECIONAMENTO POR TIPO DE USUÁRIO
+            // =============================================
+            const tipoUsuario =
+                dados.tipoUsuario ||
+                dados.TipoUsuario ||
+                "";
+
+            const telaInicial =
+                dados.telaInicial ||
+                dados.TelaInicial ||
+                "";
+
+            const tipoUsuarioNormalizado =
+                String(tipoUsuario).toUpperCase();
+
+            const telaInicialNormalizada =
+                String(telaInicial).toLowerCase();
+
+            if (
+                tipoUsuarioNormalizado === "TERCEIRO" ||
+                telaInicialNormalizada === "selecao-operacional"
+            ) {
+                window.location.href = "./selecao-operacional.html";
+                return;
+            }
+
             window.location.href = "./loading.html";
+
 
         } catch (erro) {
 

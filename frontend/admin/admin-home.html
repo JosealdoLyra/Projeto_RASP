@@ -356,37 +356,62 @@
        05. SCRIPT DE PROTEÇÃO SIMPLES
        ========================================================= -->
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const usuarioRaw =
-        localStorage.getItem("usuarioRasp") ||
-        sessionStorage.getItem("usuarioRasp");
+  document.addEventListener("DOMContentLoaded", () => {
+    const usuarioRaw =
+      sessionStorage.getItem("raspUsuarioLogado") ||
+      localStorage.getItem("usuarioLogado");
 
-      if (!usuarioRaw) {
-        console.warn("Usuário não encontrado em sessão local.");
+    if (!usuarioRaw) {
+      alert("Sessão não encontrada. Faça login novamente.");
+      window.location.href = "../login.html";
+      return;
+    }
+
+    try {
+      const usuario = JSON.parse(usuarioRaw);
+
+      const nome =
+        usuario.nomeCompleto ||
+        usuario.nome ||
+        usuario.usuario?.nomeCompleto ||
+        usuario.usuario?.nome ||
+        "Administrador";
+
+      const perfil =
+        usuario.perfil ||
+        usuario.nomePerfil ||
+        usuario.tipoPerfil ||
+        usuario.usuario?.perfil ||
+        usuario.usuario?.nomePerfil ||
+        usuario.usuario?.tipoPerfil ||
+        "";
+
+      const perfilNormalizado = String(perfil).toUpperCase();
+
+      const isAdmin =
+        usuario.administrador === true ||
+        usuario.Administrador === true ||
+        usuario.usuario?.administrador === true ||
+        usuario.usuario?.Administrador === true ||
+        perfilNormalizado === "ADMIN" ||
+        perfilNormalizado === "ADMINISTRADOR" ||
+        perfilNormalizado === "ADM";
+
+      document.getElementById("usuarioLogado").textContent =
+        `👤 ${nome}`;
+
+      if (!isAdmin) {
+        alert("Acesso restrito ao administrador do sistema.");
+        window.location.href = "../home.html";
         return;
       }
+    } catch (error) {
+      console.error("Erro ao validar sessão administrativa:", error);
+      alert("Erro ao validar sessão. Faça login novamente.");
+      window.location.href = "../login.html";
+    }
+  });
+</script>
 
-      try {
-        const usuario = JSON.parse(usuarioRaw);
-
-        const nome = usuario.nomeCompleto || usuario.nome || "Administrador";
-        const isAdmin =
-          usuario.administrador === true ||
-          usuario.Administrador === true ||
-          usuario.perfil === "ADMIN" ||
-          usuario.Perfil === "ADMIN";
-
-        document.getElementById("usuarioLogado").textContent =
-          `👤 ${nome}`;
-
-        if (!isAdmin) {
-          alert("Acesso restrito ao administrador do sistema.");
-          window.location.href = "home.html";
-        }
-      } catch (error) {
-        console.error("Erro ao validar sessão administrativa:", error);
-      }
-    });
-  </script>
 </body>
 </html>

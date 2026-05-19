@@ -841,6 +841,14 @@
   background: #1d4ed8;
 }
 
+.btn-topo.bloqueado {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.4);
+}
+
+
 /* =========================================================
    MODAL DE CREDENCIAL DO TERCEIRO
    ========================================================= */
@@ -940,8 +948,9 @@
 
   <!-- PERFIL OPERACIONAL -->
   <div class="pill pill-perfil">
-    👤 Perfil: Empresa
+    👤 <span id="usuarioOperacional">Terminal Operacional</span>
   </div>
+
 
   <!-- STATUS DA TELA -->
   <div class="pill pill-ativo">
@@ -1308,8 +1317,67 @@
 
 
   <script>
-    let tipoExecutorAtual = null;
-    document.addEventListener("DOMContentLoaded", () => {
+  let tipoExecutorAtual = null;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const usuarioSessaoRaw =
+      sessionStorage.getItem("raspUsuarioLogado") ||
+      localStorage.getItem("usuarioLogado");
+
+    if (usuarioSessaoRaw) {
+      const usuarioSessao = JSON.parse(usuarioSessaoRaw);
+
+      const nomeUsuario =
+        usuarioSessao.nomeCompleto ||
+        usuarioSessao.nome ||
+        usuarioSessao.usuario?.nomeCompleto ||
+        usuarioSessao.usuario?.nome ||
+        "Terminal Operacional";
+
+      const empresaUsuario =
+        usuarioSessao.nomeEmpresa ||
+        usuarioSessao.empresa ||
+        usuarioSessao.usuario?.nomeEmpresa ||
+        usuarioSessao.usuario?.empresa ||
+        "Provider";
+
+      const campoUsuarioOperacional =
+        document.getElementById("usuarioOperacional");
+
+      if (campoUsuarioOperacional) {
+        campoUsuarioOperacional.textContent =
+          `${nomeUsuario} - ${empresaUsuario}`;
+      }
+      const tipoUsuarioSessao =
+      usuarioSessao.tipoUsuario ||
+      usuarioSessao.TipoUsuario ||
+      "";
+
+      const tipoUsuarioNormalizado =
+        String(tipoUsuarioSessao).toUpperCase();
+
+      if (tipoUsuarioNormalizado === "TERCEIRO") {
+      document.querySelectorAll(".acoes-topo .btn-topo").forEach((botao) => {
+        const textoBotao = botao.textContent.trim().toLowerCase();
+
+        if (textoBotao.includes("página inicial")) {
+          botao.href = "./login.html";
+          botao.classList.remove("bloqueado");
+          botao.setAttribute("title", "Voltar para a abertura do sistema");
+          return;
+        }
+
+        botao.classList.add("bloqueado");
+        botao.removeAttribute("href");
+        botao.setAttribute("title", "Acesso restrito para usuário terceiro");
+      });
+    }
+
+
+    }
+
+
+
       const tabela = document.querySelector("#tabela-itens-selecao");
 
       const resumoPn = document.getElementById("resumo-pn");
