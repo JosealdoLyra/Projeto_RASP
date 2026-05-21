@@ -5726,13 +5726,11 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
                 })
                 .FirstOrDefault(),
 
-            QuantidadePn = db.RaspPn
-                .Count(p => p.IdRasp == r.IdRasp),
+            FoiReprovadoFt = db.RaspHistoricoFluxo
+    .Any(h =>
+        h.IdRasp == r.IdRasp &&
+        h.Acao == "REPROVADO_FT"),
 
-            PossuiContencao = db.RaspPn
-                .Any(p =>
-                    p.IdRasp == r.IdRasp &&
-                    p.EmContencao)
         })
         .ToListAsync();
 
