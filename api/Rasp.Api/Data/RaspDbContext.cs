@@ -48,11 +48,41 @@ namespace Rasp.Api.Data
         public DbSet<IndiceOperacionalRasp> IndiceOperacionalRasp => Set<IndiceOperacionalRasp>();
         public DbSet<RaspBp> RaspBp => Set<RaspBp>();
 
+        public DbSet<RaspLgHistoricoEntity> RaspLgHistorico => Set<RaspLgHistoricoEntity>();
+
+
         public DbSet<RaspContencao> RaspContencao { get; set;}
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+            protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+            // -----------------------------------------------------------------
+            // RASP LG HISTÓRICO
+            // -----------------------------------------------------------------
+            modelBuilder.Entity<RaspLgHistoricoEntity>(entity =>
+            {
+                entity.ToTable("rasp_lg_historico");
 
-        {
+                entity.HasKey(e => e.IdRaspLgHistorico);
+
+                entity.Property(e => e.IdRaspLgHistorico)
+                    .HasColumnName("id_rasp_lg_historico");
+
+                entity.Property(e => e.IdRasp)
+                    .HasColumnName("id_rasp");
+
+                entity.Property(e => e.IdUsuarioLg)
+                    .HasColumnName("id_usuario_lg");
+
+                entity.Property(e => e.Decisao)
+                    .HasColumnName("decisao");
+
+                entity.Property(e => e.Justificativa)
+                    .HasColumnName("justificativa");
+
+                entity.Property(e => e.DataHora)
+                    .HasColumnName("data_hora");
+            });
+
             // -----------------------------------------------------------------
             // STATUS RASP
             // -----------------------------------------------------------------
@@ -70,35 +100,39 @@ namespace Rasp.Api.Data
 
                 entity.Property(e => e.OrdemFluxo)
                     .HasColumnName("ordem_fluxo");
-                
-                modelBuilder.Entity<RaspArquivo>(entity =>
-{
-    entity.ToTable("rasp_arquivo");
-
-    entity.HasKey(e => e.IdArquivoRasp);
-
-    entity.Property(e => e.IdArquivoRasp)
-        .HasColumnName("id_arquivo_rasp");
-
-    entity.Property(e => e.IdRasp)
-        .HasColumnName("id_rasp");
-
-    entity.Property(e => e.TipoArquivo)
-        .HasColumnName("tipo_arquivo");
-
-    entity.Property(e => e.Descricao)
-        .HasColumnName("descricao");
-
-    entity.Property(e => e.CaminhoArquivo)
-        .HasColumnName("caminho_arquivo");
-
-    entity.Property(e => e.DataUpload)
-        .HasColumnName("data_upload");
-
-    entity.Property(e => e.IdUsuarioUpload)
-        .HasColumnName("id_usuario_upload");
-});
             });
+
+            // -----------------------------------------------------------------
+            // RASP ARQUIVO
+            // -----------------------------------------------------------------
+            modelBuilder.Entity<RaspArquivo>(entity =>
+            {
+                entity.ToTable("rasp_arquivo");
+
+                entity.HasKey(e => e.IdArquivoRasp);
+
+                entity.Property(e => e.IdArquivoRasp)
+                    .HasColumnName("id_arquivo_rasp");
+
+                entity.Property(e => e.IdRasp)
+                    .HasColumnName("id_rasp");
+
+                entity.Property(e => e.TipoArquivo)
+                    .HasColumnName("tipo_arquivo");
+
+                entity.Property(e => e.Descricao)
+                    .HasColumnName("descricao");
+
+                entity.Property(e => e.CaminhoArquivo)
+                    .HasColumnName("caminho_arquivo");
+
+                entity.Property(e => e.DataUpload)
+                    .HasColumnName("data_upload");
+
+                entity.Property(e => e.IdUsuarioUpload)
+                    .HasColumnName("id_usuario_upload");
+            });
+
 
             // -----------------------------------------------------------------
             // PN RASP

@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestão LG - RASP</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    /* =========================================================
+       02.01 RESET
+       ========================================================= */
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Segoe UI, Arial, sans-serif;
+    }
+
+    body{
+      background:#071426;
+      color:#e5eefc;
+      height:100vh;
+      overflow:hidden;
+    }
+
+    /* =========================================================
+       02.02 LAYOUT PRINCIPAL
+       ========================================================= */
+    .container{
+      display:flex;
+      height:100vh;
+    }
+
+    /* =========================================================
+       02.03 MENU LATERAL
+       ========================================================= */
+    .sidebar{
+      width:380px;
+      background:#0b1d35;
+      border-right:1px solid rgba(255,255,255,0.08);
+      display:flex;
+      flex-direction:column;
+    }
+
+    .sidebar-header{
+      padding:24px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-header h1{
+      font-size:22px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    .sidebar-header p{
+      margin-top:8px;
+      color:#8ea3c7;
+      font-size:13px;
+    }
+
+    /* =========================================================
+       02.04 KPI
+       ========================================================= */
+    .kpi-container{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      padding:20px;
+    }
+
+    .kpi-card{
+      background:#122744;
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:14px;
+      padding:16px;
+    }
+
+    .kpi-title{
+      font-size:13px;
+      color:#93a9ca;
+      margin-bottom:8px;
+    }
+
+    .kpi-value{
+      font-size:29px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    /* =========================================================
+       02.05 DIAMANTE ORIGINAL RASP - SVG
+       ========================================================= */
+    .diamond-lg-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:18px 0 28px;
+      position:relative;
+    }
+
+    .diamond-logo-lg{
+      width:118px;
+      height:98px;
+      transform-origin:center;
+      filter:
+        drop-shadow(0 0 6px rgba(125,211,252,1))
+        drop-shadow(0 0 18px rgba(59,130,246,0.95))
+        drop-shadow(0 0 38px rgba(37,99,235,0.75))
+        drop-shadow(0 0 60px rgba(14,165,233,0.35));
+      animation:diamondPulseLg 2.4s ease-in-out infinite;
+    }
+
+
+    .diamond-line-lg{
+      fill:none;
+      stroke:#7dd3fc;
+      stroke-width:4.5;
+      stroke-linejoin:round;
+    }
+
+    .diamond-line-light-lg{
+      fill:none;
+      stroke:#dbeafe;
+      stroke-width:2.2;
+      stroke-linecap:round;
+      opacity:0.95;
+    }
+
+    .diamond-spark-lg{
+    fill:#ffffff;
+    transform-box:fill-box;
+    transform-origin:center;
+    filter:
+      drop-shadow(0 0 6px rgba(255,255,255,1))
+      drop-shadow(0 0 14px rgba(125,211,252,0.95));
+    animation:sparkPulseLg 1.4s ease-in-out infinite;
+  }
+
+
+    @keyframes diamondPulseLg{
+      0%{ transform:scale(1); opacity:0.92; }
+      50%{ transform:scale(1.08); opacity:1; }
+      100%{ transform:scale(1); opacity:0.92; }
+    }
+
+    
+    /* =========================================================
+       02.06 FILA LG
+       ========================================================= */
+    .fila-container{
+      flex:1;
+      overflow-y:auto;
+      padding:0 16px 20px;
+    }
+
+    .fila-title{
+      margin-bottom:16px;
+      font-size:14px;
+      color:#8ea3c7;
+      font-weight:600;
+    }
+
+    .rasp-card{
+      position:relative;
+      overflow:hidden;
+      background:#122744;
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:16px;
+      padding:16px 16px 16px 22px;
+      margin-bottom:14px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .rasp-card:hover{
+      border-color:#2563eb;
+      transform:translateY(-2px);
+    }
+
+    .rasp-card.ativo{
+      border:2px solid #22c55e;
+      background:linear-gradient(145deg,#17365f,#0f2746);
+      box-shadow:
+        0 0 0 1px rgba(34,197,94,0.35),
+        0 0 22px rgba(34,197,94,0.45);
+    }
+
+    .rasp-card.ativo::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:0;
+      width:7px;
+      height:100%;
+      background:#22c55e;
+      border-radius:10px;
+    }
+
+    .rasp-numero{
+      font-size:18px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    .rasp-fornecedor{
+      margin-top:8px;
+      color:#b7c8e4;
+      font-size:14px;
+    }
+
+    .rasp-info{
+      margin-top:12px;
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      color:#7f95b5;
+    }
+
+    /* =========================================================
+        02.06.01 CRITICIDADE VISUAL LG
+        ========================================================= */
+
+        .criticidade-normal{
+        border:1px solid rgba(34,197,94,0.22);
+        }
+
+        .criticidade-normal:hover{
+        box-shadow:
+            0 0 18px rgba(34,197,94,0.22);
+        }
+
+        .criticidade-atencao{
+        border:1px solid rgba(245,158,11,0.30);
+        }
+
+        .criticidade-atencao:hover{
+        box-shadow:
+            0 0 18px rgba(245,158,11,0.30);
+        }
+
+        .criticidade-critico{
+        border:1px solid rgba(239,68,68,0.45);
+        background:
+            linear-gradient(
+            145deg,
+            rgba(127,29,29,0.30),
+            rgba(15,39,70,1)
+            );
+        }
+
+        .criticidade-critico:hover{
+        box-shadow:
+            0 0 22px rgba(239,68,68,0.42);
+        }
+
+
+    /* =========================================================
+       02.07 RODAPÉ LATERAL
+       ========================================================= */
+    .sidebar-footer{
+      padding:18px;
+      border-top:1px solid rgba(255,255,255,0.06);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .footer-buttons{
+      display:flex;
+      gap:10px;
+    }
+
+    .btn-retorno{
+      flex:1;
+      height:44px;
+      border:none;
+      border-radius:12px;
+      color:#ffffff;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-dashboard{
+      background:#1d4ed8;
+    }
+
+    .btn-home{
+      background:#0f172a;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    .assinatura{
+      text-align:center;
+      font-size:12px;
+      letter-spacing:1px;
+      color:#d4af37;
+      font-weight:700;
+      opacity:0.9;
+    }
+
+    /* =========================================================
+       02.08 CONTEÚDO DIREITO
+       ========================================================= */
+    .content{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+
+    .content-header{
+      padding:24px 30px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      background:#081528;
+    }
+
+    .content-header h2{
+      font-size:26px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    .content-body{
+      flex:1;
+      overflow-y:auto;
+      padding:30px;
+    }
+
+    /* =========================================================
+       02.09 CARDS / TIMELINE
+       ========================================================= */
+    .timeline{
+      margin-bottom:30px;
+      background:#10233f;
+      border-radius:18px;
+      padding:24px;
+      border:1px solid rgba(255,255,255,0.06);
+    }
+
+    .timeline h3{
+      margin-bottom:20px;
+      color:#7ea6ff;
+      font-size:16px;
+      text-transform:uppercase;
+    }
+
+    .detail-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:18px;
+      margin-bottom:30px;
+    }
+
+    .detail-card{
+      background:#10233f;
+      border:1px solid rgba(255,255,255,0.06);
+      border-radius:18px;
+      padding:22px;
+    }
+
+    .detail-card h3{
+      margin-bottom:16px;
+      font-size:16px;
+      color:#7ea6ff;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+
+    .detail-item{
+      margin-bottom:14px;
+    }
+
+    .detail-label{
+      font-size:13px;
+      color:#8fa6ca;
+      margin-bottom:4px;
+    }
+
+    .detail-value{
+      font-size:17px;
+      color:#ffffff;
+      font-weight:600;
+    }
+
+    .timeline-item{
+      padding:16px;
+      border-left:4px solid #2563eb;
+      margin-bottom:18px;
+      background:#0c1b31;
+      border-radius:0 14px 14px 0;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .timeline-item::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:2px;
+      background:rgba(255,255,255,0.05);
+    }
+
+    .timeline-item.ft{ border-left-color:#38bdf8; }
+    .timeline-item.lg{ border-left-color:#22c55e; }
+    .timeline-item.complemento{ border-left-color:#a855f7; }
+    .timeline-item.reprovado{ border-left-color:#ef4444; }
+    .timeline-item.alerta{ border-left-color:#f59e0b; }
+
+    .timeline-title{
+      font-size:15px;
+      font-weight:700;
+      color:#ffffff;
+    }
+
+    .timeline-date{
+      margin-top:6px;
+      font-size:13px;
+      color:#7f95b5;
+    }
+
+    .timeline-text{
+      margin-top:10px;
+      font-size:14px;
+      color:#d4e0f7;
+      line-height:1.5;
+    }
+
+    .rejeicao-qtd{
+      color:#ef4444;
+      font-weight:800;
+    }
+
+    /* =========================================================
+       02.10 BOTÕES LG
+       ========================================================= */
+    .btn-lg{
+      border:none;
+      padding:16px 24px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.2s;
+      color:#ffffff;
+    }
+
+    .btn-lg:hover{
+      transform:translateY(-2px);
+    }
+
+    .btn-spps{ background:#2563eb; }
+    .btn-alert{ background:#f59e0b; }
+    .btn-nao{ background:#ef4444; }
+    .btn-complemento{ background:#7c3aed; }
+
+    /* =========================================================
+       02.11 MODAIS
+       ========================================================= */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(2,8,23,0.72);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+
+    .modal-box{
+      width:420px;
+      background:linear-gradient(145deg,#10233f,#081528);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:24px;
+      padding:34px;
+      text-align:center;
+      box-shadow:0 25px 80px rgba(0,0,0,0.55);
+    }
+
+    .modal-diamond{
+      color:#d4af37;
+      font-size:34px;
+      margin-bottom:16px;
+    }
+
+    .modal-box h2{
+      color:#ffffff;
+      font-size:22px;
+      margin-bottom:12px;
+    }
+
+    .modal-box p{
+      color:#b7c8e4;
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .modal-actions{
+      display:flex;
+      gap:14px;
+      margin-top:28px;
+    }
+
+    .modal-btn{
+      flex:1;
+      height:46px;
+      border:none;
+      border-radius:14px;
+      color:#ffffff;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .modal-cancelar{ background:#334155; }
+    .modal-confirmar{ background:#2563eb; }
+
+    /* =========================================================
+       02.12 RESPONSIVO
+       ========================================================= */
+    @media(max-width:1200px){
+      .container{
+        flex-direction:column;
+      }
+
+      .sidebar{
+        width:100%;
+        height:430px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       03. CONTAINER PRINCIPAL
+       ========================================================= -->
+  <div class="container">
+
+    <!-- =======================================================
+         03.01 SIDEBAR
+         ======================================================= -->
+    <aside class="sidebar">
+
+      <!-- =====================================================
+           03.01.01 HEADER
+           ===================================================== -->
+      <div class="sidebar-header">
+        <h1>Gestão LG</h1>
+        <p>Fila de análise e aprovação RASP</p>
+      </div>
+
+      <!-- =====================================================
+           03.01.02 KPI
+           ===================================================== -->
+      <div class="kpi-container">
+        <div class="kpi-card">
+          <div class="kpi-title">Aguardando LG</div>
+          <div id="kpiAguardandoLg" class="kpi-value">0</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">SLA Crítico</div>
+          <div id="kpiSlaCritico" class="kpi-value">0</div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+           03.01.03 FILA LG
+           ===================================================== -->
+      <div class="fila-container">
+
+        <div class="diamond-lg-wrap">
+          <svg class="diamond-logo-lg" viewBox="0 0 120 100" aria-label="Diamante RASP">
+            <path class="diamond-line-lg" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+            <path class="diamond-line-light-lg" d="M15 30 H105" />
+            <path class="diamond-line-light-lg" d="M35 8 L48 30 L60 92" />
+            <path class="diamond-line-light-lg" d="M85 8 L72 30 L60 92" />
+            <path class="diamond-line-light-lg" d="M48 30 H72" />
+            
+          </svg>
+        </div>
+
+        <div class="fila-title">FILA OPERACIONAL LG</div>
+
+        <div id="listaFilaLg">
+          <div class="timeline-item">
+            <div class="timeline-title">Carregando fila LG...</div>
+            <div class="timeline-date">Aguarde</div>
+            <div class="timeline-text">Buscando RASPs pendentes na API.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+           03.01.04 RODAPÉ
+           ===================================================== -->
+      <div class="sidebar-footer">
+        <div class="footer-buttons">
+          <button class="btn-retorno btn-dashboard" onclick="window.location.href='dashboard.html'">
+            Dashboard
+          </button>
+
+          <button class="btn-retorno btn-home" onclick="window.location.href='home.html'">
+            Home
+          </button>
+        </div>
+
+        <div class="assinatura">
+          ◆ Developed by Josealdo Lyra
+        </div>
+      </div>
+    </aside>
+
+    <!-- =======================================================
+         03.02 CONTEÚDO PRINCIPAL
+         ======================================================= -->
+    <main class="content">
+
+      <div class="content-header">
+        <h2>Detalhe Completo do RASP</h2>
+      </div>
+
+      <div class="content-body">
+
+        <!-- ===================================================
+             AÇÕES LG
+             =================================================== -->
+        <div class="timeline">
+          <h3>Ações LG</h3>
+
+          <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:20px;">
+            <button id="btnSpps" class="btn-lg btn-spps">Emitir SPPS</button>
+            <button id="btnAlert" class="btn-lg btn-alert">Supplier Alert</button>
+            <button id="btnNaoEmitir" class="btn-lg btn-nao">Não Emitir</button>
+            <button id="btnComplemento" class="btn-lg btn-complemento">Solicitar Complemento</button>
+          </div>
+
+          <div style="margin-top:25px;">
+            <label style="display:block; margin-bottom:10px; color:#8ea3c7; font-size:13px; font-weight:600;">
+              Observação LG
+            </label>
+
+            <textarea
+              id="observacaoLg"
+              placeholder="Digite a justificativa da decisão LG..."
+              style="
+                width:100%;
+                height:140px;
+                background:#081528;
+                border:1px solid rgba(255,255,255,0.08);
+                border-radius:14px;
+                padding:16px;
+                color:#ffffff;
+                resize:none;
+                font-size:14px;
+                outline:none;
+              "
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- ===================================================
+             CARDS DE DETALHE
+             =================================================== -->
+        <div class="detail-grid">
+
+          <div class="detail-card">
+            <h3>Informações Gerais</h3>
+
+            <div class="detail-item">
+              <div class="detail-label">Número RASP</div>
+              <div id="detNumeroRasp" class="detail-value">Selecione um RASP</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Fornecedor</div>
+              <div id="detFornecedor" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">DUNS</div>
+              <div id="detDuns" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Analista MT</div>
+              <div id="detAnalista" class="detail-value">-</div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <h3>Classificação</h3>
+
+            <div class="detail-item">
+              <div class="detail-label">Origem</div>
+              <div id="detOrigem" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Setor Reclamante</div>
+              <div id="detSetor" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Impacto Cliente</div>
+              <div id="detImpactoCliente" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Impacto Qualidade</div>
+              <div id="detImpactoQualidade" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Safety</div>
+              <div id="detSafety" class="detail-value">-</div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <h3>Controle Fluxo</h3>
+
+            <div class="detail-item">
+              <div class="detail-label">Data envio LG</div>
+              <div id="detDataEnvioLg" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Tempo aguardando LG</div>
+              <div id="detTempoLg" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div id="detStatus" class="detail-value">-</div>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <h3>Contenção / Controle</h3>
+
+            <div class="detail-item">
+              <div class="detail-label">Empresa Seleção</div>
+              <div id="detEmpresaSelecao" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Teve Seleção</div>
+              <div id="detTeveSelecao" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Trava Ativa</div>
+              <div id="detTravaAtiva" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">QHD Ativo</div>
+              <div id="detQhdAtivo" class="detail-value">-</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Scrap Gerado</div>
+              <div id="detScrap" class="detail-value">Em desenvolvimento</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================
+             OCORRÊNCIA / PROBLEMA
+             =================================================== -->
+        <div class="timeline">
+          <h3>Ocorrência / Problema</h3>
+
+          <div class="detail-item">
+            <div class="detail-label">Resumo da ocorrência</div>
+            <div id="detResumoOcorrencia" class="detail-value">-</div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-label">Descrição do problema</div>
+            <div id="detDescricaoProblema" class="detail-value">-</div>
+          </div>
+        </div>
+
+        <!-- ===================================================
+             PNs ENVOLVIDOS
+             =================================================== -->
+        <div class="timeline">
+          <h3>PNs envolvidos</h3>
+
+          <div id="listaPnsRasp">
+            <div class="timeline-item">
+              <div class="timeline-title">Selecione um RASP</div>
+              <div class="timeline-text">A lista de PNs será carregada aqui.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================
+             HISTÓRICO / TIMELINE
+             =================================================== -->
+        <div class="timeline">
+          <h3>Histórico / Timeline</h3>
+
+          <div id="timelineConteudo">
+            <div class="timeline-item">
+              <div class="timeline-title">Selecione um RASP na fila</div>
+              <div class="timeline-date">-</div>
+              <div class="timeline-text">O histórico será carregado aqui.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================
+       04. MODAL CONFIRMAÇÃO
+       ========================================================= -->
+  <div id="modalConfirmacao" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-diamond">◆</div>
+
+      <h2>Confirmar decisão LG</h2>
+
+      <p>Deseja realmente registrar esta decisão para o RASP selecionado?</p>
+
+      <div class="modal-actions">
+        <button class="modal-btn modal-cancelar" onclick="fecharModalConfirmacao()">
+          Cancelar
+        </button>
+
+        <button class="modal-btn modal-confirmar" onclick="confirmarDecisaoLg()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       05. MODAL SUCESSO / AVISO
+       ========================================================= -->
+  <div id="modalSucesso" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-diamond">◆</div>
+
+      <h2>Aviso</h2>
+
+      <p id="mensagemSucesso">Operação realizada.</p>
+
+      <div class="modal-actions">
+        <button class="modal-btn modal-confirmar" onclick="fecharModalSucesso()">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       06. SCRIPTS
+       ========================================================= -->
+  <script>
+    /* =========================================================
+       06.01 VARIÁVEIS GLOBAIS
+       ========================================================= */
+    const API_BASE = "http://localhost:5050";
+
+    let idRaspSelecionado = null;
+    let idUsuarioLogado = 1;
+    let decisaoPendenteLg = null;
+
+    /* =========================================================
+        06.01.01 TRAVA DE ACESSO LG
+        ========================================================= */
+        async function validarAcessoLg(){
+
+        const resposta = await fetch(`${API_BASE}/usuarios/${idUsuarioLogado}/perfil`);
+
+        if(!resposta.ok){
+            alert("Usuário não localizado.");
+            window.location.href = "home.html";
+            return false;
+        }
+
+        const usuario = await resposta.json();
+
+        const acessoPermitido =
+            usuario.administrador === true ||
+            usuario.perfil === "LG" ||
+            usuario.idPerfil === 4;
+
+        if(!acessoPermitido){
+            alert("Acesso restrito ao LG ou Administrador.");
+            window.location.href = "home.html";
+            return false;
+        }
+
+        return true;
+        }
+
+
+
+    /* =========================================================
+       06.02 SELECIONAR RASP
+       ========================================================= */
+    async function selecionarRasp(idRasp, elementoCard){
+
+      idRaspSelecionado = idRasp;
+
+      document
+        .querySelectorAll(".rasp-card")
+        .forEach(card => card.classList.remove("ativo"));
+
+      elementoCard.classList.add("ativo");
+
+      const numeroCard =
+        elementoCard.querySelector(".rasp-numero")?.innerText.replace("RASP ", "") ?? "-";
+
+      const fornecedorCard =
+        elementoCard.querySelector(".rasp-fornecedor")?.innerText ?? "-";
+
+      limparCamposAntesCarregar(numeroCard, fornecedorCard);
+
+      try{
+        const resposta = await fetch(`${API_BASE}/lg/rasp/${idRasp}`);
+
+        if(!resposta.ok){
+          document.getElementById("detStatus").innerText = "Não localizado na API";
+          return;
+        }
+
+        const dados = await resposta.json();
+
+        carregarDetalhesGerais(dados, numeroCard, fornecedorCard);
+        carregarCamposOperacionais(dados);
+        carregarOcorrencia(dados);
+        carregarPns(dados);
+        carregarHistorico(dados);
+      }
+      catch(erro){
+        console.error(erro);
+        document.getElementById("detStatus").innerText = "Erro de comunicação";
+      }
+    }
+
+    /* =========================================================
+       06.03 LIMPAR CAMPOS ANTES DE CARREGAR
+       ========================================================= */
+    function limparCamposAntesCarregar(numeroCard, fornecedorCard){
+
+      document.getElementById("detNumeroRasp").innerText = numeroCard;
+      document.getElementById("detFornecedor").innerText = fornecedorCard;
+      document.getElementById("detDuns").innerText = "-";
+      document.getElementById("detAnalista").innerText = "-";
+      document.getElementById("detOrigem").innerText = "-";
+      document.getElementById("detSetor").innerText = "-";
+      document.getElementById("detImpactoCliente").innerText = "-";
+      document.getElementById("detImpactoQualidade").innerText = "-";
+      document.getElementById("detSafety").innerText = "-";
+      document.getElementById("detDataEnvioLg").innerText = "-";
+      document.getElementById("detTempoLg").innerText = "-";
+      document.getElementById("detStatus").innerText = "Carregando...";
+      document.getElementById("detEmpresaSelecao").innerText = "-";
+      document.getElementById("detTeveSelecao").innerText = "-";
+      document.getElementById("detTravaAtiva").innerText = "-";
+      document.getElementById("detQhdAtivo").innerText = "-";
+      document.getElementById("detScrap").innerText = "Em desenvolvimento";
+    }
+
+    /* =========================================================
+       06.04 CARREGAR DETALHES GERAIS
+       ========================================================= */
+    function carregarDetalhesGerais(dados, numeroCard, fornecedorCard){
+
+      document.getElementById("detNumeroRasp").innerText =
+        dados.numeroRasp ?? numeroCard;
+
+      document.getElementById("detFornecedor").innerText =
+        dados.fornecedor?.nome ?? dados.fornecedor ?? fornecedorCard;
+
+      document.getElementById("detDuns").innerText =
+        dados.fornecedor?.duns ?? dados.duns ?? "-";
+
+      document.getElementById("detAnalista").innerText =
+        dados.analista?.nomeCompleto ??
+        dados.analistaNome ??
+        dados.analista ??
+        "-";
+
+      document.getElementById("detImpactoCliente").innerText =
+        dados.impactoClienteDescricao ??
+        dados.impactoCliente ??
+        dados.idImpactoClienteRasp ??
+        "-";
+
+      document.getElementById("detImpactoQualidade").innerText =
+        dados.impactoQualidadeDescricao ??
+        dados.impactoQualidade ??
+        dados.idImpactoQualidadeRasp ??
+        "-";
+
+      document.getElementById("detSafety").innerText =
+        dados.isSafety === true ? "Sim" : "Não";
+
+      document.getElementById("detDataEnvioLg").innerText =
+        formatarData(dados.dataEnvioLg);
+
+      document.getElementById("detTempoLg").innerText =
+        dados.horasAguardandoLg != null
+          ? `${dados.horasAguardandoLg} h`
+          : "-";
+
+      document.getElementById("detStatus").innerText =
+        dados.statusDescricao ??
+        dados.status ??
+        dados.idStatusRasp ??
+        "-";
+    }
+
+    /* =========================================================
+       06.05 CARREGAR CAMPOS OPERACIONAIS
+       ========================================================= */
+    function carregarCamposOperacionais(dados){
+
+      document.getElementById("detOrigem").innerText =
+        dados.origemFabricacaoDescricao ??
+        dados.origemDescricao ??
+        "-";
+
+      document.getElementById("detSetor").innerText =
+        dados.setorDescricao ??
+        "-";
+
+      document.getElementById("detEmpresaSelecao").innerText =
+        dados.empresaSelecao?.nomeEmpresa ??
+        dados.empresaSelecao ??
+        "-";
+
+      document.getElementById("detTeveSelecao").innerText =
+        dados.temSelecaoPecas === true || dados.teveSelecao === true ? "Sim" : "Não";
+
+      document.getElementById("detTravaAtiva").innerText =
+        dados.temTrava === true || dados.travaAtiva === true ? "Sim" : "Não";
+
+      document.getElementById("detQhdAtivo").innerText =
+        dados.temQhd === true || dados.qhdAtivo === true ? "Sim" : "Não";
+
+      document.getElementById("detScrap").innerText =
+        dados.temScrap === true ? "Sim" : "Em desenvolvimento";
+    }
+
+    /* =========================================================
+       06.06 CARREGAR OCORRÊNCIA
+       ========================================================= */
+    function carregarOcorrencia(dados){
+
+      document.getElementById("detResumoOcorrencia").innerText =
+        dados.resumoOcorrencia ?? "-";
+
+      document.getElementById("detDescricaoProblema").innerText =
+        dados.descricaoProblema ?? "-";
+    }
+
+    /* =========================================================
+       06.07 CARREGAR PNs
+       ========================================================= */
+    function carregarPns(dados){
+
+      const listaPns = document.getElementById("listaPnsRasp");
+
+      if(dados.pns && dados.pns.length > 0){
+
+        listaPns.innerHTML = "";
+
+        dados.pns.forEach(pn => {
+          listaPns.innerHTML += `
+            <div class="timeline-item">
+              <div class="timeline-title">PN ${pn.pn ?? "-"}</div>
+
+              <div class="timeline-date">
+                Lote inicial: ${formatarData(pn.dataLoteInicial)}
+              </div>
+
+              <div class="timeline-text">
+                Suspeita: ${pn.quantidadeSuspeita ?? 0} |
+                Checada: ${pn.quantidadeChecada ?? 0} |
+                <span class="rejeicao-qtd">Rejeitada: ${pn.quantidadeRejeitada ?? 0}</span> |
+                Contenção: ${pn.emContencao ? "Sim" : "Não"} |
+                Trava: ${pn.travaAtiva ? "Sim" : "Não"} |
+                QHD: ${pn.qhdAtivo ? "Sim" : "Não"}
+              </div>
+            </div>
+          `;
+        });
+      }
+      else{
+        listaPns.innerHTML = `
+          <div class="timeline-item">
+            <div class="timeline-title">Nenhum PN encontrado</div>
+            <div class="timeline-text">Este RASP não possui PN vinculado.</div>
+          </div>
+        `;
+      }
+    }
+
+    /* =========================================================
+       06.08 CARREGAR HISTÓRICO
+       ========================================================= */
+    function carregarHistorico(dados){
+
+      const timeline = document.getElementById("timelineConteudo");
+
+      if(dados.historicoFluxo && dados.historicoFluxo.length > 0){
+
+        timeline.innerHTML = "";
+
+        dados.historicoFluxo.forEach(item => {
+
+          let classeTimeline = "ft";
+
+          if(item.origemEvento === "LG"){
+            classeTimeline = "lg";
+          }
+
+          if(item.acao?.includes("COMPLEMENTO")){
+            classeTimeline = "complemento";
+          }
+
+          if(item.statusNovo === 5 || item.statusNovo === 6){
+            classeTimeline = "reprovado";
+          }
+
+          if(item.statusNovo === 4 && dados.isSupplierAlert){
+            classeTimeline = "alerta";
+          }
+
+          timeline.innerHTML += `
+            <div class="timeline-item ${classeTimeline}">
+              <div class="timeline-title">${item.acao ?? "-"}</div>
+              <div class="timeline-date">${formatarData(item.dataHora)}</div>
+              <div class="timeline-text">${item.observacao ?? "Sem observação"}</div>
+            </div>
+          `;
+        });
+      }
+      else{
+        timeline.innerHTML = `
+          <div class="timeline-item">
+            <div class="timeline-title">Sem histórico</div>
+            <div class="timeline-date">-</div>
+            <div class="timeline-text">Nenhum evento encontrado.</div>
+          </div>
+        `;
+      }
+    }
+
+    /* =========================================================
+       06.09 DASHBOARD LG
+       ========================================================= */
+    async function carregarDashboardLg(){
+
+      try{
+        const resposta = await fetch(`${API_BASE}/lg/dashboard`);
+
+        if(!resposta.ok){
+          return;
+        }
+
+        const dados = await resposta.json();
+
+        document.getElementById("kpiAguardandoLg").innerText =
+          dados.totalAguardandoLg ?? 0;
+
+        document.getElementById("kpiSlaCritico").innerText =
+          dados.critico ?? 0;
+      }
+      catch(erro){
+        console.error(erro);
+      }
+    }
+
+    /* =========================================================
+    06.10 FILA LG
+    ========================================================= */
+    async function carregarFilaLg(){
+
+    const container = document.getElementById("listaFilaLg");
+
+    try{
+
+        const resposta = await fetch(`${API_BASE}/lg/fila-operacional`);
+
+        if(!resposta.ok){
+
+        container.innerHTML = `
+            <div class="timeline-item">
+            <div class="timeline-title">Erro ao carregar fila LG</div>
+            <div class="timeline-date">API indisponível</div>
+            <div class="timeline-text">
+                Verifique o endpoint /lg/fila-operacional.
+            </div>
+            </div>
+        `;
+
+        return;
+        }
+
+        const dados = await resposta.json();
+
+        if(!dados || dados.length === 0){
+
+        container.innerHTML = `
+            <div class="timeline-item">
+            <div class="timeline-title">
+                Nenhum RASP aguardando LG
+            </div>
+
+            <div class="timeline-date">
+                Fila limpa
+            </div>
+
+            <div class="timeline-text">
+                Não há documentos pendentes para decisão LG.
+            </div>
+            </div>
+        `;
+
+        return;
+        }
+
+        container.innerHTML = "";
+
+        dados.forEach(item => {
+
+        const card = document.createElement("div");
+
+        /* =====================================================
+            DEFINIÇÃO VISUAL DA CRITICIDADE
+            ===================================================== */
+
+        let criticidadeTexto = "Normal";
+        let criticidadeIcone = "🟢";
+        let criticidadeClasse = "criticidade-normal";
+
+        if(item.criticidade === "Atenção"){
+
+            criticidadeTexto = "Atenção";
+            criticidadeIcone = "🟡";
+            criticidadeClasse = "criticidade-atencao";
+        }
+
+        if(item.criticidade === "Crítico"){
+
+            criticidadeTexto = "Crítico";
+            criticidadeIcone = "🔴";
+            criticidadeClasse = "criticidade-critico";
+        }
+
+        /* =====================================================
+            CARD
+            ===================================================== */
+
+        card.className = `rasp-card ${criticidadeClasse}`;
+
+        card.setAttribute("data-id-rasp", item.idRasp);
+
+        card.onclick = () => selecionarRasp(item.idRasp, card);
+
+        card.innerHTML = `
+            <div class="rasp-numero">
+            RASP ${item.numeroRasp ?? "-"}
+            </div>
+
+            <div class="rasp-fornecedor">
+            ${item.fornecedor ?? "-"}
+            </div>
+
+            <div class="rasp-info">
+
+            <span>
+                ${criticidadeIcone}
+                ${criticidadeTexto}
+            </span>
+
+            <span>
+                ${item.diasAguardandoLg ?? 0} dias
+            </span>
+
+            </div>
+        `;
+
+        container.appendChild(card);
+        });
+
+    }
+    catch(erro){
+
+        console.error(erro);
+
+        container.innerHTML = `
+        <div class="timeline-item">
+
+            <div class="timeline-title">
+            Erro de comunicação
+            </div>
+
+            <div class="timeline-date">
+            Frontend sem conexão
+            </div>
+
+            <div class="timeline-text">
+            Não foi possível carregar a fila LG.
+            </div>
+
+        </div>
+        `;
+    }
+    }
+
+
+    /* =========================================================
+       06.11 LIMPAR DETALHE
+       ========================================================= */
+    function limparDetalheRasp(){
+
+      idRaspSelecionado = null;
+
+      document
+        .querySelectorAll(".rasp-card")
+        .forEach(card => card.classList.remove("ativo"));
+
+      document.getElementById("detNumeroRasp").innerText = "Selecione um RASP";
+      document.getElementById("detFornecedor").innerText = "-";
+      document.getElementById("detDuns").innerText = "-";
+      document.getElementById("detAnalista").innerText = "-";
+      document.getElementById("detOrigem").innerText = "-";
+      document.getElementById("detSetor").innerText = "-";
+      document.getElementById("detImpactoCliente").innerText = "-";
+      document.getElementById("detImpactoQualidade").innerText = "-";
+      document.getElementById("detSafety").innerText = "-";
+      document.getElementById("detDataEnvioLg").innerText = "-";
+      document.getElementById("detTempoLg").innerText = "-";
+      document.getElementById("detStatus").innerText = "-";
+      document.getElementById("detEmpresaSelecao").innerText = "-";
+      document.getElementById("detTeveSelecao").innerText = "-";
+      document.getElementById("detTravaAtiva").innerText = "-";
+      document.getElementById("detQhdAtivo").innerText = "-";
+      document.getElementById("detScrap").innerText = "Em desenvolvimento";
+      document.getElementById("detResumoOcorrencia").innerText = "-";
+      document.getElementById("detDescricaoProblema").innerText = "-";
+
+      document.getElementById("listaPnsRasp").innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-title">Selecione um RASP</div>
+          <div class="timeline-text">A lista de PNs será carregada aqui.</div>
+        </div>
+      `;
+
+      document.getElementById("timelineConteudo").innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-title">Selecione um RASP na fila</div>
+          <div class="timeline-date">-</div>
+          <div class="timeline-text">O histórico será carregado aqui.</div>
+        </div>
+      `;
+    }
+
+    /* =========================================================
+       06.12 MODAIS
+       ========================================================= */
+    function abrirModalConfirmacao(decisaoLg){
+      decisaoPendenteLg = decisaoLg;
+      document.getElementById("modalConfirmacao").style.display = "flex";
+    }
+
+    function fecharModalConfirmacao(){
+      decisaoPendenteLg = null;
+      document.getElementById("modalConfirmacao").style.display = "none";
+    }
+
+    function confirmarDecisaoLg(){
+      const decisao = decisaoPendenteLg;
+      fecharModalConfirmacao();
+      executarDecisaoLg(decisao);
+    }
+
+    function abrirModalSucesso(mensagem){
+      document.getElementById("mensagemSucesso").innerText = mensagem;
+      document.getElementById("modalSucesso").style.display = "flex";
+    }
+
+    function fecharModalSucesso(){
+      document.getElementById("modalSucesso").style.display = "none";
+    }
+
+    /* =========================================================
+       06.13 DECISÃO LG
+       ========================================================= */
+    function decidirLg(decisaoLg){
+      abrirModalConfirmacao(decisaoLg);
+    }
+
+    async function executarDecisaoLg(decisaoLg){
+
+      if(!idRaspSelecionado){
+        abrirModalSucesso("Selecione um RASP antes de registrar a decisão.");
+        return;
+      }
+
+      const observacaoLg =
+        document.getElementById("observacaoLg").value.trim();
+
+      if(!observacaoLg){
+        abrirModalSucesso("Digite a observação LG.");
+        return;
+      }
+
+      try{
+        const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/aprovar-lg`, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            idUsuarioExecutor:idUsuarioLogado,
+            decisaoLg:decisaoLg,
+            observacaoLg:observacaoLg
+          })
+        });
+
+        if(!resposta.ok){
+          const erro = await resposta.text();
+          abrirModalSucesso("Erro ao registrar decisão: " + erro);
+          return;
+        }
+
+        abrirModalSucesso("Decisão registrada com sucesso.");
+
+        document.getElementById("observacaoLg").value = "";
+
+        await carregarDashboardLg();
+        await carregarFilaLg();
+
+        limparDetalheRasp();
+      }
+      catch(erro){
+        console.error(erro);
+        abrirModalSucesso("Erro inesperado.");
+      }
+    }
+
+    /* =========================================================
+       06.14 SOLICITAR COMPLEMENTO LG
+       ========================================================= */
+    async function solicitarComplementoLg(){
+
+      if(!idRaspSelecionado){
+        abrirModalSucesso("Selecione um RASP antes de solicitar complemento.");
+        return;
+      }
+
+      const motivoComplemento =
+        document.getElementById("observacaoLg").value.trim();
+
+      if(!motivoComplemento){
+        abrirModalSucesso("Digite o motivo do complemento.");
+        return;
+      }
+
+      try{
+        const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/solicitar-complemento-lg`, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            idUsuarioExecutor:idUsuarioLogado,
+            motivoComplemento:motivoComplemento
+          })
+        });
+
+        if(!resposta.ok){
+          const erro = await resposta.text();
+          abrirModalSucesso("Erro ao solicitar complemento: " + erro);
+          return;
+        }
+
+        abrirModalSucesso("Complemento solicitado ao FT com sucesso.");
+
+        document.getElementById("observacaoLg").value = "";
+
+        await carregarDashboardLg();
+        await carregarFilaLg();
+
+        limparDetalheRasp();
+      }
+      catch(erro){
+        console.error(erro);
+        abrirModalSucesso("Erro inesperado ao solicitar complemento.");
+      }
+    }
+
+    /* =========================================================
+       06.15 UTILITÁRIOS
+       ========================================================= */
+    function formatarData(valor){
+
+      if(!valor){
+        return "-";
+      }
+
+      const data = new Date(valor);
+
+      if(isNaN(data.getTime())){
+        return "-";
+      }
+
+      return data.toLocaleString("pt-BR");
+    }
+
+    /* =========================================================
+       06.16 EVENTOS
+       ========================================================= */
+    document
+      .getElementById("btnSpps")
+      .addEventListener("click", () => decidirLg(3));
+
+    document
+      .getElementById("btnAlert")
+      .addEventListener("click", () => decidirLg(2));
+
+    document
+      .getElementById("btnNaoEmitir")
+      .addEventListener("click", () => decidirLg(1));
+
+    document
+      .getElementById("btnComplemento")
+      .addEventListener("click", solicitarComplementoLg);
+
+    /* =========================================================
+       06.17 INICIALIZAÇÃO
+       ========================================================= */
+        window.onload = async () => {
+
+        if(!validarAcessoLg()){
+            return;
+        }
+
+        await carregarDashboardLg();
+        await carregarFilaLg();
+        };
+
+  </script>
+</body>
+</html>

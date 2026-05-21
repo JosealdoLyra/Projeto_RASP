@@ -3797,6 +3797,23 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
     var rasp = await db.Rasp.FirstOrDefaultAsync(r => r.IdRasp == id);
 
     if (rasp is null)
+{
+    return Results.NotFound(new
+    {
+        erro = "RASP não encontrado."
+    });
+}
+
+if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoLg)
+{
+    return Results.BadRequest(new
+    {
+        erro = "Este RASP não está aguardando aprovação LG."
+    });
+}
+
+
+    if (rasp is null)
         return Results.NotFound("RASP não encontrado.");
 
     if (!rasp.IsRascunho)
@@ -4651,85 +4668,121 @@ var possuiPn = await db.RaspPn
 })
 .WithName("SubmeterRaspAoFt");
 
-        // ==========================================================
-        // APROVAÇÃO FT
-        // ==========================================================
-        app.MapPost("/rasp/{id:int}/aprovar-ft", async (
-            int id,
-            AprovarFtRequest request,
-            RaspDbContext db) =>
-        {
-            var rasp = await db.Rasp
-                .FirstOrDefaultAsync(r => r.IdRasp == id);
-
-            if (rasp == null)
-            {
-                return Results.NotFound(new
-                {
-                    mensagem = "RASP não encontrado."
-                });
-            }
-
-            // ------------------------------------------------------
-            // VALIDAÇÃO
-            // ------------------------------------------------------
-            if (rasp.IsRascunho)
-            {
-                return Results.BadRequest(new
-                {
-                    mensagem = "Rascunho não pode ser aprovado pelo FT."
-                });
-            }
-            if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoFt)
-{
-    return Results.BadRequest(new
-    {
-        mensagem = "Somente RASP aguardando análise FT pode ser aprovado pelo FT.",
-        statusAtual = rasp.IdStatusRasp
-    });
-}
-
-            // ------------------------------------------------------
-            // APROVAÇÃO FT
-            // ------------------------------------------------------
-            rasp.DataAprovacaoFt = DateTime.UtcNow;
-            rasp.DataEnvioLg = DateTime.UtcNow;
-
-            rasp.IdUsuarioAprovacaoFt = request.IdUsuarioExecutor;
-
-            rasp.ObservacaoFt = request.ObservacaoFt;
-
-
-            // STATUS:
-            // 3 = Aguardando análise LG
-           var statusAnterior = rasp.IdStatusRasp;
-           rasp.IdStatusRasp = StatusRaspConstantes.AguardandoLg;
-
-            await db.SaveChangesAsync();
-
-            await RegistrarHistoricoFluxoAsync(
-            db,
-            rasp.IdRasp,
-            request.IdUsuarioExecutor,
-            "APROVADO_FT",
-            statusAnterior,
-            rasp.IdStatusRasp,
-            request.ObservacaoFt,
-            "FT"
-        );
-
-
-            return Results.Ok(new
-            {
-                mensagem = "RASP aprovado pelo FT com sucesso.",
-                rasp.IdRasp,
-                rasp.NumeroRasp,
-                rasp.DataAprovacaoFt,
-                rasp.IdStatusRasp
-            });
-        });
 
 // ==========================================================
+// 20A. RASP - APROVAÇÃO FT
+// ==========================================================
+app.MapPost("/rasp/{id:int}/aprovar-ft", async (
+    int id,
+    AprovarFtRequest request,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp == null)
+    {
+        return Results.NotFound(new
+        {
+            mensagem = "RASP não encontrado."
+        });
+    }
+
+    if (rasp.IsRascunho)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Rascunho não pode ser aprovado pelo FT."
+        });
+    }
+
+    if (string.IsNullOrWhiteSpace(request.ObservacaoFt))
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Observação FT obrigatória."
+        });
+    }
+
+    var usuario = await db.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u =>
+            u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuario == null)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Usuário não encontrado."
+        });
+    }
+
+    var perfilFt = usuario.IdPerfil == 3;
+    var administrador = usuario.Administrador == true;
+
+    if (!perfilFt && !administrador)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Acesso permitido somente para FT ou administrador."
+        });
+    }
+
+    if (!administrador)
+    {
+        if (usuario.IdTurnoRasp != rasp.IdTurnoRasp)
+        {
+            return Results.BadRequest(new
+            {
+                mensagem = "FT sem permissão para este turno."
+            });
+        }
+    }
+
+    if (rasp.IdStatusRasp != 2 && rasp.IdStatusRasp != 7)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "RASP não está aguardando análise FT.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var statusAnterior = rasp.IdStatusRasp;
+
+    rasp.IdStatusRasp = 3;
+    rasp.DataAprovacaoFt = DateTime.UtcNow;
+    rasp.DataEnvioLg = DateTime.UtcNow;
+    rasp.IdUsuarioAprovacaoFt = request.IdUsuarioExecutor;
+    rasp.ObservacaoFt = request.ObservacaoFt;
+
+    await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "APROVADO_FT",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        request.ObservacaoFt,
+        "FT"
+    );
+
+    return Results.Ok(new
+    {
+        mensagem = "RASP aprovado pelo FT e enviado ao LG.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.DataAprovacaoFt,
+        rasp.IdStatusRasp
+    });
+})
+.WithName("AprovarFt")
+.WithTags("FT");
+
+
+/// ==========================================================
 // 20B. RASP - DECISÃO / APROVAÇÃO LG
 // ==========================================================
 app.MapPost("/rasp/{id:int}/aprovar-lg", async (
@@ -4737,6 +4790,32 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     AprovarLgRequest request,
     RaspDbContext db) =>
 {
+
+var usuario = await db.Usuarios
+    .AsNoTracking()
+    .FirstOrDefaultAsync(u =>
+        u.IdUsuario == request.IdUsuarioExecutor);
+
+if (usuario is null)
+{
+    return Results.BadRequest(new
+    {
+        erro = "Usuário não encontrado."
+    });
+}
+
+var perfilLg =
+    usuario.IdPerfil == 3;
+
+var administrador =
+    usuario.Administrador == true;
+
+if (!perfilLg && !administrador)
+{
+    return Results.StatusCode(403);
+}
+
+
     if (id <= 0)
         return Results.BadRequest("Id do RASP inválido.");
 
@@ -4772,8 +4851,6 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
         });
     }
 
-    var statusAnterior = rasp.IdStatusRasp;
-
     var usuarioExecutor = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == request.IdUsuarioExecutor);
 
@@ -4783,47 +4860,68 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
     if (!usuarioExecutor.Ativo)
         return Results.BadRequest("Usuário executor está inativo.");
 
+    var isAdmin = usuarioExecutor.IdPerfil == 1;
+    var isLg = usuarioExecutor.IdPerfil == 4;
+
+    if (!isAdmin && !isLg)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var statusAnterior = rasp.IdStatusRasp;
+    var agora = DateTime.UtcNow;
+
     string resultadoLg;
+    string decisaoHistorico;
 
     switch (request.DecisaoLg)
     {
         case 1:
-
             rasp.IdStatusRasp = StatusRaspConstantes.SppsNaoEmitido;
+            rasp.AprovadoLg = true;
             resultadoLg = "Não emitir SPPS";
+            decisaoHistorico = "NAO_EMITIR_SPPS";
             break;
 
         case 2:
-
             rasp.IdStatusRasp = StatusRaspConstantes.SupplierAlertEmitido;
             rasp.SupplierAlert = true;
             rasp.IsSupplierAlert = true;
             rasp.AprovadoLg = true;
-
             resultadoLg = "Emitir Supplier Alert";
+            decisaoHistorico = "SUPPLIER_ALERT";
             break;
 
         case 3:
-
             rasp.IdStatusRasp = StatusRaspConstantes.SppsEmitido;
+            rasp.AprovadoLg = true;
             resultadoLg = "Emitir SPPS";
+            decisaoHistorico = "EMITIR_SPPS";
             break;
 
         default:
-
             return Results.BadRequest("Decisão LG inválida.");
     }
 
-    rasp.DataAprovacaoLg = DateTime.UtcNow;
-    rasp.IdUsuarioAprovacaoLg = request.IdUsuarioExecutor;
+    rasp.DataAprovacaoLg = agora;
+    rasp.IdUsuarioAprovacaoLg = usuarioExecutor.IdUsuario;
+    rasp.IdAprovadorLg = usuarioExecutor.IdUsuario;
+    rasp.JustificativaLg = request.ObservacaoLg;
     rasp.ObservacaoLg = request.ObservacaoLg;
+
+    db.Set<RaspLgHistoricoEntity>().Add(new RaspLgHistoricoEntity
+    {
+        IdRasp = rasp.IdRasp,
+        IdUsuarioLg = usuarioExecutor.IdUsuario,
+        Decisao = decisaoHistorico,
+        Justificativa = request.ObservacaoLg,
+        DataHora = agora
+    });
 
     await db.SaveChangesAsync();
 
     await RegistrarHistoricoFluxoAsync(
         db,
         rasp.IdRasp,
-        request.IdUsuarioExecutor,
+        usuarioExecutor.IdUsuario,
         "DECISAO_LG",
         statusAnterior,
         rasp.IdStatusRasp,
@@ -4838,12 +4936,65 @@ app.MapPost("/rasp/{id:int}/aprovar-lg", async (
         rasp.NumeroRasp,
         rasp.IdStatusRasp,
         resultadoLg,
+        decisaoHistorico,
         rasp.DataAprovacaoLg,
         rasp.IdUsuarioAprovacaoLg,
+        rasp.IdAprovadorLg,
         rasp.ObservacaoLg
     });
 })
 .WithName("AprovarRaspLg");
+
+// ==========================================================
+// 20C. HISTÓRICO COMPLETO FT / LG
+// ==========================================================
+app.MapGet("/rasp/{id:int}/historico-fluxo", async (
+    int id,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(x => x.IdRasp == id);
+
+    if (rasp is null)
+    {
+        return Results.NotFound(new
+        {
+            erro = "RASP não encontrado."
+        });
+    }
+
+    var historico = await db.RaspHistoricoFluxo
+        .AsNoTracking()
+        .Where(x => x.IdRasp == id)
+        .OrderBy(x => x.DataHora)
+        .Select(x => new
+        {
+            x.IdHistoricoFluxo,
+            x.Acao,
+            x.StatusAnterior,
+            x.StatusNovo,
+            x.Observacao,
+            x.DataHora,
+            x.TempoFaseMinutos,
+            x.OrigemEvento,
+            x.TipoComplemento,
+            x.IdUsuario
+        })
+        .ToListAsync();
+
+    return Results.Ok(new
+    {
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        historico
+    });
+})
+.WithName("HistoricoFluxoRasp");
+
+
+
+
 
 
 // ==========================================================
@@ -5021,6 +5172,31 @@ app.MapPost("/rasp/{id:int}/solicitar-complemento-lg", async (
     SolicitarComplementoLgRequest request,
     RaspDbContext db) =>
 {
+
+var usuario = await db.Usuarios
+    .AsNoTracking()
+    .FirstOrDefaultAsync(u =>
+        u.IdUsuario == request.IdUsuarioExecutor);
+
+if (usuario is null)
+{
+    return Results.BadRequest(new
+    {
+        erro = "Usuário não encontrado."
+    });
+}
+
+var perfilLg =
+    usuario.IdPerfil == 4;
+
+var administrador =
+    usuario.Administrador == true;
+
+if (!perfilLg && !administrador)
+{
+    return Results.StatusCode(403);
+}
+
     if (id <= 0)
         return Results.BadRequest("Id do RASP inválido.");
 
@@ -5249,6 +5425,942 @@ app.MapPost("/rasp/{id:int}/ft-devolver-complemento-mt", async (
     });
 })
 .WithName("FtDevolverComplementoMt");
+
+// ==========================================================
+// 20H. LG - LISTAR RASPS PENDENTES DE DECISÃO
+// ==========================================================
+app.MapGet("/lg/rasps-pendentes", async (RaspDbContext db) =>
+{
+    var agora = DateTime.UtcNow;
+
+    var itens = await (
+        from r in db.Rasp.AsNoTracking()
+
+        join f in db.FornecedorRasp.AsNoTracking()
+            on r.IdFornecedorRasp equals f.IdFornecedor
+
+        join ftJoin in db.Usuarios.AsNoTracking()
+            on r.IdUsuarioAprovacaoFt equals ftJoin.IdUsuario into ftLeft
+        from ft in ftLeft.DefaultIfEmpty()
+
+        where r.IdStatusRasp == StatusRaspConstantes.AguardandoLg
+              && !r.IsRascunho
+
+        orderby r.DataEnvioLg
+        select new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.ResumoOcorrencia,
+            r.DescricaoProblema,
+
+            Fornecedor = f.Nome,
+            Duns = f.Duns,
+
+            r.IdStatusRasp,
+            r.DataEnvioLg,
+            r.DataAprovacaoFt,
+
+            FtResponsavel = ft != null
+                ? (ft.Nome + " " + (ft.Sobrenome ?? "")).Trim()
+                : null
+        }
+    ).ToListAsync();
+
+    var resultado = itens.Select(x =>
+    {
+        int diasAguardandoLg = 0;
+        double horasAguardandoLg = 0;
+
+        if (x.DataEnvioLg.HasValue)
+        {
+            var tempo = agora - x.DataEnvioLg.Value;
+
+            diasAguardandoLg = (int)Math.Floor(tempo.TotalDays);
+            horasAguardandoLg = Math.Round(tempo.TotalHours, 1);
+
+            if (diasAguardandoLg < 0)
+                diasAguardandoLg = 0;
+
+            if (horasAguardandoLg < 0)
+                horasAguardandoLg = 0;
+        }
+
+        var criticidadePrazoLg =
+            diasAguardandoLg >= 4
+                ? "Crítico"
+                : diasAguardandoLg >= 2
+                    ? "Atenção"
+                    : "Normal";
+
+        return new
+        {
+            x.IdRasp,
+            x.NumeroRasp,
+            x.DataCriacao,
+            x.ResumoOcorrencia,
+            x.DescricaoProblema,
+            x.Fornecedor,
+            x.Duns,
+            x.IdStatusRasp,
+            x.DataEnvioLg,
+            x.DataAprovacaoFt,
+            x.FtResponsavel,
+            DiasAguardandoLg = diasAguardandoLg,
+            HorasAguardandoLg = horasAguardandoLg,
+            CriticidadePrazoLg = criticidadePrazoLg
+        };
+    })
+    .OrderByDescending(x => x.DiasAguardandoLg)
+    .ThenBy(x => x.DataEnvioLg)
+    .ToList();
+
+    return Results.Ok(resultado);
+})
+.WithName("LgListarRaspsPendentes")
+.WithTags("LG");
+
+// ==========================================================
+// 20J. LG - DASHBOARD DE PRAZO / FILA
+// ==========================================================
+app.MapGet("/lg/dashboard", async (RaspDbContext db) =>
+{
+    var agora = DateTime.Now;
+
+    int CalcularDiasUteis(DateTime? dataInicio, DateTime dataFim)
+    {
+        if (!dataInicio.HasValue)
+        {
+            return 0;
+        }
+
+        var inicio = dataInicio.Value.Date;
+        var fim = dataFim.Date;
+
+        if (fim <= inicio)
+        {
+            return 0;
+        }
+
+        var diasUteis = 0;
+        var data = inicio;
+
+        while (data < fim)
+        {
+            data = data.AddDays(1);
+
+            if (
+                data.DayOfWeek != DayOfWeek.Saturday &&
+                data.DayOfWeek != DayOfWeek.Sunday
+            )
+            {
+                diasUteis++;
+            }
+        }
+
+        return diasUteis;
+    }
+
+    var pendentes = await db.Rasp
+        .AsNoTracking()
+        .Where(r =>
+            r.IdStatusRasp == StatusRaspConstantes.AguardandoLg &&
+            !r.IsRascunho)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataEnvioLg,
+            r.DataAprovacaoFt
+        })
+        .ToListAsync();
+
+    var itens = pendentes.Select(x =>
+    {
+        var dataReferencia =
+            x.DataEnvioLg ??
+            x.DataAprovacaoFt;
+
+        double horas = 0;
+
+        if (dataReferencia.HasValue)
+        {
+            var tempo = agora - dataReferencia.Value;
+
+            horas = Math.Round(tempo.TotalHours, 1);
+
+            if (horas < 0)
+            {
+                horas = 0;
+            }
+        }
+
+        var diasUteis = CalcularDiasUteis(
+            dataReferencia,
+            agora
+        );
+
+        var criticidade =
+            diasUteis > 2
+                ? "Crítico"
+                : diasUteis == 2
+                    ? "Atenção"
+                    : "Normal";
+
+        return new
+        {
+            x.IdRasp,
+            x.NumeroRasp,
+            DataReferenciaLg = dataReferencia,
+            x.DataEnvioLg,
+            x.DataAprovacaoFt,
+            HorasAguardandoLg = horas,
+            DiasUteisAguardandoLg = diasUteis,
+            Criticidade = criticidade
+        };
+    }).ToList();
+
+    var total = itens.Count;
+
+    return Results.Ok(new
+    {
+        TotalAguardandoLg = total,
+
+        MediaHorasAguardandoLg = total == 0
+            ? 0
+            : Math.Round(itens.Average(x => x.HorasAguardandoLg), 1),
+
+        MaiorAtrasoHorasLg = total == 0
+            ? 0
+            : itens.Max(x => x.HorasAguardandoLg),
+
+        Normal = itens.Count(x => x.Criticidade == "Normal"),
+
+        Atencao = itens.Count(x => x.Criticidade == "Atenção"),
+
+        Critico = itens.Count(x => x.Criticidade == "Crítico"),
+
+        ItensCriticos = itens
+            .Where(x => x.Criticidade == "Crítico")
+            .OrderByDescending(x => x.DiasUteisAguardandoLg)
+            .ThenByDescending(x => x.HorasAguardandoLg)
+            .ToList()
+    });
+})
+.WithName("LgDashboard")
+.WithTags("LG");
+
+// ==========================================================
+// USUÁRIOS - PERFIL DO USUÁRIO
+// ==========================================================
+app.MapGet("/usuarios/{id:int}/perfil", async (
+    int id,
+    RaspDbContext db) =>
+{
+    var usuario = await db.Usuarios
+        .AsNoTracking()
+        .Where(u => u.IdUsuario == id)
+        .Select(u => new
+        {
+            u.IdUsuario,
+            u.Nome,
+            u.Sobrenome,
+            NomeCompleto = (u.Nome + " " + u.Sobrenome).Trim(),
+            u.Email,
+            u.Gmin,
+            u.Administrador,
+            u.IdPerfil,
+
+            Perfil = db.PerfilRasp
+                .Where(p => p.IdPerfil == u.IdPerfil)
+                .Select(p => p.Nome)
+                .FirstOrDefault()
+        })
+        .FirstOrDefaultAsync();
+
+    if (usuario is null)
+    {
+        return Results.NotFound(new
+        {
+            erro = "Usuário não encontrado."
+        });
+    }
+
+    return Results.Ok(usuario);
+})
+.WithName("UsuarioPerfil")
+.WithTags("Usuários");
+
+
+
+// ==========================================================
+// 20K. LG - FILA OPERACIONAL
+// ==========================================================
+app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
+{
+    var agora = DateTime.UtcNow;
+
+    var itens = await db.Rasp
+        .AsNoTracking()
+        .Where(r =>
+            r.IdStatusRasp == StatusRaspConstantes.AguardandoLg &&
+            !r.IsRascunho)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.ResumoOcorrencia,
+            r.DataEnvioLg,
+            r.SupplierAlert,
+            r.IsSafety,
+            r.IdMajorRasp,
+            r.IdImpactoClienteRasp,
+
+            Fornecedor = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => new
+                {
+                    f.Nome,
+                    f.Duns
+                })
+                .FirstOrDefault(),
+
+            QuantidadePn = db.RaspPn
+                .Count(p => p.IdRasp == r.IdRasp),
+
+            PossuiContencao = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.EmContencao)
+        })
+        .ToListAsync();
+
+    var retorno = itens.Select(x =>
+    {
+        double horas = 0;
+        int dias = 0;
+
+        if (x.DataEnvioLg.HasValue)
+        {
+            var tempo = agora - x.DataEnvioLg.Value;
+
+            horas = Math.Round(tempo.TotalHours, 1);
+            dias = (int)Math.Floor(tempo.TotalDays);
+
+            if (horas < 0)
+                horas = 0;
+
+            if (dias < 0)
+                dias = 0;
+        }
+
+        var criticidade =
+            dias >= 4
+                ? "Crítico"
+                : dias >= 2
+                    ? "Atenção"
+                    : "Normal";
+
+        return new
+        {
+            x.IdRasp,
+            x.NumeroRasp,
+            x.ResumoOcorrencia,
+
+            fornecedor = x.Fornecedor?.Nome,
+            duns = x.Fornecedor?.Duns,
+
+            x.QuantidadePn,
+            x.PossuiContencao,
+
+            x.SupplierAlert,
+            x.IsSafety,
+
+            x.IdMajorRasp,
+            x.IdImpactoClienteRasp,
+
+            x.DataEnvioLg,
+
+            DiasAguardandoLg = dias,
+            HorasAguardandoLg = horas,
+
+            Criticidade = criticidade
+        };
+    })
+    .OrderByDescending(x => x.HorasAguardandoLg)
+    .ToList();
+
+    return Results.Ok(retorno);
+})
+.WithName("LgFilaOperacional")
+.WithTags("LG");
+
+// ==========================================================
+// 20L. LG - DETALHE OPERACIONAL RASP
+// ==========================================================
+app.MapGet("/lg/rasp/{id:int}", async (
+    int id,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdRasp == id)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.ResumoOcorrencia,
+            r.DescricaoProblema,
+            r.DataCriacao,
+            r.DataEnvioFt,
+            r.DataAprovacaoFt,
+            r.DataEnvioLg,
+            r.DataAprovacaoLg,
+            r.SupplierAlert,
+            r.IsSupplierAlert,
+            r.IsSafety,
+            r.AprovadoLg,
+            r.IdStatusRasp,
+            r.IdMajorRasp,
+            r.IdImpactoClienteRasp,
+            r.IdImpactoQualidadeRasp,
+            r.IdSetorRasp,
+            r.IdOrigemFabricacaoRasp,
+            r.IdAnalista,
+            r.IdEmpresaSelecaoRasp,
+
+            StatusDescricao = db.StatusRasp
+                .Where(s => s.IdStatusRasp == r.IdStatusRasp)
+                .Select(s => s.Descricao)
+                .FirstOrDefault(),
+
+            ImpactoClienteDescricao = db.ImpactoClienteRasp
+                .Where(i => i.IdImpactoCliente == r.IdImpactoClienteRasp)
+                .Select(i => i.Descricao)
+                .FirstOrDefault(),
+
+            ImpactoQualidadeDescricao = db.ImpactoQualidadeRasp
+                .Where(i => i.IdImpactoQualidadeRasp == r.IdImpactoQualidadeRasp)
+                .Select(i => i.Descricao)
+                .FirstOrDefault(),
+
+            OrigemFabricacaoDescricao = db.OrigemFabricacaoRasp
+                .Where(o => o.IdOrigemFabricacaoRasp == r.IdOrigemFabricacaoRasp)
+                .Select(o => o.Descricao)
+                .FirstOrDefault(),
+
+            SetorDescricao = db.SetorRasp
+                .Where(s => s.IdSetorRasp == r.IdSetorRasp)
+                .Select(s => s.Descricao)
+                .FirstOrDefault(),
+
+            Analista = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdAnalista)
+                .Select(u => new
+                {
+                    u.IdUsuario,
+                    NomeCompleto = ((u.Nome ?? "") + " " + (u.Sobrenome ?? "")).Trim(),
+                    u.Gmin,
+                    u.Email
+                })
+                .FirstOrDefault(),
+
+            EmpresaSelecao = db.EmpresaSelecaoRasp
+                .Where(e => e.IdEmpresaSelecao == r.IdEmpresaSelecaoRasp)
+                .Select(e => new
+                {
+                    e.IdEmpresaSelecao,
+                    e.NomeEmpresa,
+                    e.TipoEmpresa
+                })
+                .FirstOrDefault(),
+
+            TemSelecaoPecas = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    (
+                        p.EntrouSelecao == true ||
+                        p.EmContencao == true ||
+                        p.StatusSelecao > 0
+                    )
+                ),
+
+            TemTrava = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.TravaAtiva == true
+                ),
+
+            TemQhd = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.QhdAtivo == true
+                ),
+
+            TemScrap = false,
+
+            fornecedor = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => new
+                {
+                    f.IdFornecedor,
+                    f.Nome,
+                    f.Duns,
+                    f.TipoFornecedor
+                })
+                .FirstOrDefault(),
+
+            pns = db.RaspPn
+                .Where(p => p.IdRasp == r.IdRasp)
+                .Select(p => new
+                {
+                    p.IdRaspPn,
+                    p.Pn,
+                    p.EmContencao,
+                    p.QuantidadeSuspeita,
+                    p.QuantidadeChecada,
+                    p.QuantidadeRejeitada,
+                    p.DataLoteInicial,
+                    p.EntrouSelecao,
+                    p.StatusSelecao,
+                    p.TravaAtiva,
+                    p.QhdAtivo
+                })
+                .ToList(),
+
+            anotacoes = db.RaspAnotacao
+                .Where(a => a.IdRasp == r.IdRasp)
+                .OrderByDescending(a => a.DataHora)
+                .Select(a => new
+                {
+                    a.IdRaspAnotacao,
+                    a.IdUsuario,
+                    a.TipoAnotacao,
+                    a.TextoAnotacao,
+                    a.DataHora
+                })
+                .ToList(),
+
+            historicoFluxo = db.RaspHistoricoFluxo
+                .Where(h => h.IdRasp == r.IdRasp)
+                .OrderByDescending(h => h.DataHora)
+                .Select(h => new
+                {
+                    h.IdHistoricoFluxo,
+                    h.Acao,
+                    h.StatusAnterior,
+                    h.StatusNovo,
+                    h.Observacao,
+                    h.DataHora,
+                    h.TempoFaseMinutos,
+                    h.OrigemEvento
+                })
+                .ToList()
+        })
+        .FirstOrDefaultAsync();
+
+    if (rasp is null)
+    {
+        return Results.NotFound(new
+        {
+            erro = "RASP não encontrado."
+        });
+    }
+
+    return Results.Ok(rasp);
+})
+.WithName("LgDetalheRasp")
+.WithTags("LG");
+
+// ==========================================================
+// 21A. FT - FILA OPERACIONAL POR APROVADOR
+// ==========================================================
+app.MapGet("/ft/fila-operacional/{idUsuario:int}", async (
+    int idUsuario,
+    RaspDbContext db) =>
+{
+    var usuario = await db.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.IdUsuario == idUsuario);
+
+    if (usuario is null)
+    {
+        return Results.NotFound(new
+        {
+            erro = "Usuário não encontrado."
+        });
+    }
+
+    if (usuario.IdPerfil == 2)
+    {
+        return Results.StatusCode(403);
+    }
+
+    var podeVerTodos =
+        usuario.Administrador == true ||
+        usuario.IdPerfil == 1 ||
+        usuario.IdPerfil == 4 ||
+        usuario.IdPerfil == 5 ||
+        usuario.IdPerfil == 6 ||
+        usuario.IdPerfil == 7 ||
+        usuario.IdPerfil == 8;
+
+    var fila = await db.Rasp
+        .AsNoTracking()
+        .Where(r =>
+            (
+                r.IdStatusRasp == 2 ||
+                r.IdStatusRasp == StatusRaspConstantes.ComplementoSolicitadoLg
+            ) &&
+            !r.IsRascunho &&
+            (
+                podeVerTodos ||
+                r.IdAprovadorFt == idUsuario
+            ))
+        .OrderByDescending(r =>
+            r.IdStatusRasp == StatusRaspConstantes.ComplementoSolicitadoLg)
+        .ThenBy(r => r.DataEnvioFt)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.ResumoOcorrencia,
+            r.DataEnvioFt,
+            r.IdAprovadorFt,
+            r.IdTurnoRasp,
+            r.IdStatusRasp,
+
+            EhRetornoLg =
+                r.IdStatusRasp == StatusRaspConstantes.ComplementoSolicitadoLg,
+
+            StatusDescricao = db.StatusRasp
+                .Where(s => s.IdStatusRasp == r.IdStatusRasp)
+                .Select(s => s.Descricao)
+                .FirstOrDefault(),
+
+            Fornecedor = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => f.Nome)
+                .FirstOrDefault(),
+
+            Turno = db.TurnoRasp
+                .Where(t => t.IdTurnoRasp == r.IdTurnoRasp)
+                .Select(t => t.Descricao)
+                .FirstOrDefault(),
+
+            AprovadorFt = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdAprovadorFt)
+                .Select(u => (u.Nome + " " + u.Sobrenome).Trim())
+                .FirstOrDefault()
+        })
+        .ToListAsync();
+
+    return Results.Ok(fila);
+})
+.WithName("FtFilaOperacional")
+.WithTags("FT");
+
+
+// ==========================================================
+// 21B. FT - DETALHE OPERACIONAL RASP
+// ==========================================================
+app.MapGet("/ft/rasp/{id:int}", async (
+    int id,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.IdRasp == id)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.ResumoOcorrencia,
+            r.DescricaoProblema,
+            r.DataCriacao,
+            r.DataEnvioFt,
+            r.DataAprovacaoFt,
+            r.DataEnvioLg,
+            r.DataAprovacaoLg,
+            r.SupplierAlert,
+            r.IsSupplierAlert,
+            r.IsSafety,
+            r.AprovadoLg,
+            r.IdStatusRasp,
+            r.IdMajorRasp,
+            r.IdImpactoClienteRasp,
+            r.IdImpactoQualidadeRasp,
+            r.IdSetorRasp,
+            r.IdOrigemFabricacaoRasp,
+            r.IdAnalista,
+            r.IdEmpresaSelecaoRasp,
+            r.IdAprovadorFt,
+
+            StatusDescricao = db.StatusRasp
+                .Where(s => s.IdStatusRasp == r.IdStatusRasp)
+                .Select(s => s.Descricao)
+                .FirstOrDefault(),
+
+            ImpactoClienteDescricao = db.ImpactoClienteRasp
+                .Where(i => i.IdImpactoCliente == r.IdImpactoClienteRasp)
+                .Select(i => i.Descricao)
+                .FirstOrDefault(),
+
+            ImpactoQualidadeDescricao = db.ImpactoQualidadeRasp
+                .Where(i => i.IdImpactoQualidadeRasp == r.IdImpactoQualidadeRasp)
+                .Select(i => i.Descricao)
+                .FirstOrDefault(),
+
+            OrigemFabricacaoDescricao = db.OrigemFabricacaoRasp
+                .Where(o => o.IdOrigemFabricacaoRasp == r.IdOrigemFabricacaoRasp)
+                .Select(o => o.Descricao)
+                .FirstOrDefault(),
+
+            SetorDescricao = db.SetorRasp
+                .Where(s => s.IdSetorRasp == r.IdSetorRasp)
+                .Select(s => s.Descricao)
+                .FirstOrDefault(),
+
+            Analista = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdAnalista)
+                .Select(u => new
+                {
+                    u.IdUsuario,
+                    NomeCompleto = ((u.Nome ?? "") + " " + (u.Sobrenome ?? "")).Trim(),
+                    u.Gmin,
+                    u.Email
+                })
+                .FirstOrDefault(),
+
+            AprovadorFt = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdAprovadorFt)
+                .Select(u => new
+                {
+                    u.IdUsuario,
+                    NomeCompleto = ((u.Nome ?? "") + " " + (u.Sobrenome ?? "")).Trim()
+                })
+                .FirstOrDefault(),
+
+            EmpresaSelecao = db.EmpresaSelecaoRasp
+                .Where(e => e.IdEmpresaSelecao == r.IdEmpresaSelecaoRasp)
+                .Select(e => new
+                {
+                    e.IdEmpresaSelecao,
+                    e.NomeEmpresa,
+                    e.TipoEmpresa
+                })
+                .FirstOrDefault(),
+
+            TemSelecaoPecas = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    (
+                        p.EntrouSelecao == true ||
+                        p.EmContencao == true ||
+                        p.StatusSelecao > 0
+                    )
+                ),
+
+            TemTrava = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.TravaAtiva == true
+                ),
+
+            TemQhd = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.QhdAtivo == true
+                ),
+
+            fornecedor = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => new
+                {
+                    f.IdFornecedor,
+                    f.Nome,
+                    f.Duns,
+                    f.TipoFornecedor
+                })
+                .FirstOrDefault(),
+
+            pns = db.RaspPn
+                .Where(p => p.IdRasp == r.IdRasp)
+                .Select(p => new
+                {
+                    p.IdRaspPn,
+                    p.Pn,
+                    p.EmContencao,
+                    p.QuantidadeSuspeita,
+                    p.QuantidadeChecada,
+                    p.QuantidadeRejeitada,
+                    p.DataLoteInicial,
+                    p.EntrouSelecao,
+                    p.StatusSelecao,
+                    p.TravaAtiva,
+                    p.QhdAtivo
+                })
+                .ToList(),
+
+            anotacoes = db.RaspAnotacao
+                .Where(a => a.IdRasp == r.IdRasp)
+                .OrderByDescending(a => a.DataHora)
+                .Select(a => new
+                {
+                    a.IdRaspAnotacao,
+                    a.IdUsuario,
+                    a.TipoAnotacao,
+                    a.TextoAnotacao,
+                    a.DataHora
+                })
+                .ToList(),
+
+            historicoFluxo = db.RaspHistoricoFluxo
+                .Where(h => h.IdRasp == r.IdRasp)
+                .OrderByDescending(h => h.DataHora)
+                .Select(h => new
+                {
+                    h.IdHistoricoFluxo,
+                    h.Acao,
+                    h.StatusAnterior,
+                    h.StatusNovo,
+                    h.Observacao,
+                    h.DataHora,
+                    h.TempoFaseMinutos,
+                    h.OrigemEvento
+                })
+                .ToList()
+        })
+        .FirstOrDefaultAsync();
+
+    if (rasp is null)
+    {
+        return Results.NotFound(new
+        {
+            erro = "RASP não encontrado."
+        });
+    }
+
+    return Results.Ok(rasp);
+})
+.WithName("FtDetalheRasp")
+.WithTags("FT");
+
+// ==========================================================
+// 20A.01 RASP - REPROVAÇÃO FT
+// ==========================================================
+app.MapPost("/rasp/{id:int}/reprovar-ft", async (
+    int id,
+    AprovarFtRequest request,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == id);
+
+    if (rasp == null)
+    {
+        return Results.NotFound(new
+        {
+            mensagem = "RASP não encontrado."
+        });
+    }
+
+    if (rasp.IsRascunho)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Rascunho não pode ser reprovado pelo FT."
+        });
+    }
+
+    if (string.IsNullOrWhiteSpace(request.ObservacaoFt))
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Justificativa FT obrigatória para reprovação."
+        });
+    }
+
+    var usuario = await db.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u =>
+            u.IdUsuario == request.IdUsuarioExecutor);
+
+    if (usuario == null)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Usuário não encontrado."
+        });
+    }
+
+    var perfilFt = usuario.IdPerfil == 3;
+    var administrador = usuario.Administrador == true;
+
+    if (!perfilFt && !administrador)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Acesso permitido somente para FT ou administrador."
+        });
+    }
+
+    if (!administrador)
+    {
+        if (usuario.IdTurnoRasp != rasp.IdTurnoRasp)
+        {
+            return Results.BadRequest(new
+            {
+                mensagem = "FT sem permissão para este turno."
+            });
+        }
+    }
+
+    if (rasp.IdStatusRasp != 2 &&
+        rasp.IdStatusRasp != StatusRaspConstantes.ComplementoSolicitadoLg)
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "RASP não está aguardando análise FT.",
+            statusAtual = rasp.IdStatusRasp
+        });
+    }
+
+    var statusAnterior = rasp.IdStatusRasp;
+
+    rasp.IdStatusRasp = StatusRaspConstantes.AguardandoLg;
+    rasp.DataAprovacaoFt = DateTime.UtcNow;
+    rasp.DataEnvioLg = DateTime.UtcNow;
+    rasp.IdUsuarioAprovacaoFt = request.IdUsuarioExecutor;
+    rasp.ObservacaoFt = request.ObservacaoFt;
+
+
+    await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        request.IdUsuarioExecutor,
+        "REPROVADO_FT",
+        statusAnterior,
+        rasp.IdStatusRasp,
+        request.ObservacaoFt,
+        "FT"
+    );
+
+    return Results.Ok(new
+    {
+        mensagem = "Procedência técnica reprovada pelo FT e enviada ao LG para ciência/decisão final.",
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.IdStatusRasp,
+        rasp.DataAprovacaoFt
+    });
+})
+.WithName("ReprovarFt")
+.WithTags("FT");
+
 
 
 
