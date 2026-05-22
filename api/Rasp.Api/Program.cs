@@ -5701,6 +5701,17 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
 {
     var agora = DateTime.UtcNow;
 
+    var idsReprovadosFt = await db.Set<RaspHistoricoFluxoEntity>()
+    .AsNoTracking()
+    .Where(h =>
+        h.Acao != null &&
+        h.Acao.Contains("REPROV"))
+    .Select(h => h.IdRasp)
+    .Distinct()
+    .ToListAsync();
+
+
+
     var itens = await db.Rasp
         .AsNoTracking()
         .Where(r =>
@@ -5716,6 +5727,7 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
             r.IsSafety,
             r.IdMajorRasp,
             r.IdImpactoClienteRasp,
+            
 
             Fornecedor = db.FornecedorRasp
                 .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
@@ -5726,11 +5738,13 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
                 })
                 .FirstOrDefault(),
 
-            FoiReprovadoFt = db.RaspHistoricoFluxo
-    .Any(h =>
-        h.IdRasp == r.IdRasp &&
-        h.Acao == "REPROVADO_FT"),
+            QuantidadePn = db.RaspPn
+                .Count(p => p.IdRasp == r.IdRasp),
 
+            PossuiContencao = db.RaspPn
+                .Any(p =>
+                    p.IdRasp == r.IdRasp &&
+                    p.EmContencao)
         })
         .ToListAsync();
 
@@ -5760,6 +5774,9 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
                     ? "Atenção"
                     : "Normal";
 
+        var foiReprovadoFt =
+            idsReprovadosFt.Contains(x.IdRasp);
+
         return new
         {
             x.IdRasp,
@@ -5783,16 +5800,19 @@ app.MapGet("/lg/fila-operacional", async (RaspDbContext db) =>
             DiasAguardandoLg = dias,
             HorasAguardandoLg = horas,
 
-            Criticidade = criticidade
+            Criticidade = criticidade,
+            FoiReprovadoFt = foiReprovadoFt
         };
     })
-    .OrderByDescending(x => x.HorasAguardandoLg)
+    .OrderByDescending(x => x.FoiReprovadoFt)
+    .ThenByDescending(x => x.HorasAguardandoLg)
     .ToList();
 
     return Results.Ok(retorno);
 })
 .WithName("LgFilaOperacional")
 .WithTags("LG");
+
 
 // ==========================================================
 // 20L. LG - DETALHE OPERACIONAL RASP

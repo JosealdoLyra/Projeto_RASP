@@ -70,23 +70,36 @@
        ========================================================= */
     .kpi-container{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      padding:20px;
+      grid-template-columns:repeat(3, 1fr);
+      gap: 10px;
+      padding:18px;
     }
 
     .kpi-card{
       background:#122744;
       border:1px solid rgba(255,255,255,0.06);
       border-radius:14px;
-      padding:16px;
+      padding:14px 10px;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
     }
 
+
     .kpi-title{
-      font-size:13px;
+      font-size:12px;
       color:#93a9ca;
       margin-bottom:8px;
+      min-height:30px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      line-height:1.15;
     }
+
 
     .kpi-value{
       font-size:29px;
@@ -377,6 +390,34 @@
       text-transform:uppercase;
     }
 
+    .timeline-legenda{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .legenda-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:#b7c8e4;
+    }
+
+    .legenda-cor{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+    }
+
+    .legenda-cor.ft{ background:#38bdf8; }
+    .legenda-cor.lg{ background:#22c55e; }
+    .legenda-cor.complemento{ background:#a855f7; }
+    .legenda-cor.reprovado{ background:#ef4444; }
+    .legenda-cor.alerta{ background:#f59e0b; }
+
+
     .detail-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -482,6 +523,14 @@
     .btn-ft:hover{
       transform:translateY(-2px);
     }
+
+    .btn-ft:disabled{
+    opacity:0.45;
+    cursor:not-allowed;
+    filter:grayscale(0.35);
+    transform:none;
+    }
+
 
     .btn-aprovar{
       background:#22c55e;
@@ -643,6 +692,12 @@
           <div class="kpi-title">SLA Crítico</div>
           <div id="kpiSlaCriticoFt" class="kpi-value">0</div>
         </div>
+
+        <div class="kpi-card">
+           <div class="kpi-title">Retornos LG</div>
+          <div id="kpiRetornosLgFt" class="kpi-value">0</div>
+        </div>
+
       </div>
 
       <div class="fila-container">
@@ -900,6 +955,15 @@
         <div class="timeline">
           <h3>Histórico / Timeline</h3>
 
+          <div class="timeline-legenda">
+          <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
+          <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
+          <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
+          <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
+          <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
+        </div>
+
+
           <div id="timelineConteudo">
             <div class="timeline-item">
               <div class="timeline-title">Selecione um RASP na fila</div>
@@ -1144,12 +1208,20 @@
 
         document.getElementById("btnAprovarFt").innerText =
           "Reenviar ao LG";
+        
+        document.getElementById("btnAprovarFt").disabled = true;
+        document.getElementById("btnReprovarFt").disabled = true;
+
       }
       else{
         alertaRetornoLg.style.display = "none";
 
         document.getElementById("btnAprovarFt").innerText =
           "Aprovar Procedência";
+        
+        document.getElementById("btnAprovarFt").disabled = false;
+        document.getElementById("btnReprovarFt").disabled = false;
+
       }
 
     }
@@ -1335,6 +1407,17 @@ async function carregarFilaFt(){
         </div>
       `;
       return;
+
+      const retornosLg = dados
+      ? dados.filter(item =>
+          item.idStatusRasp === 8 ||
+          item.statusAtual === 8 ||
+          item.status === 8
+        ).length
+      : 0;
+
+    document.getElementById("kpiRetornosLgFt").innerText = retornosLg;
+
     }
 
     dados.forEach(item => {
@@ -1450,15 +1533,23 @@ async function carregarFilaFt(){
        ========================================================= */
     function atualizarKpisFt(dados){
 
-      const total = dados?.length ?? 0;
+  const total = dados?.length ?? 0;
 
-      const criticos = dados
-        ? dados.filter(item => calcularDiasAguardando(item.dataEnvioFt) >= 4).length
-        : 0;
+  const criticos = dados
+    ? dados.filter(item => calcularDiasAguardando(item.dataEnvioFt) >= 4).length
+    : 0;
 
-      document.getElementById("kpiAguardandoFt").innerText = total;
-      document.getElementById("kpiSlaCriticoFt").innerText = criticos;
-    }
+  const retornosLg = dados
+    ? dados.filter(item =>
+        Number(item.idStatusRasp ?? item.statusAtual ?? item.status) === 8
+      ).length
+    : 0;
+
+  document.getElementById("kpiAguardandoFt").innerText = total;
+  document.getElementById("kpiSlaCriticoFt").innerText = criticos;
+  document.getElementById("kpiRetornosLgFt").innerText = retornosLg;
+}
+
 
     /* =========================================================
        06.12 LIMPAR DETALHE

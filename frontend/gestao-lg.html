@@ -70,28 +70,43 @@
        ========================================================= */
     .kpi-container{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      padding:20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      padding:18px;
     }
 
     .kpi-card{
       background:#122744;
       border:1px solid rgba(255,255,255,0.06);
       border-radius:14px;
-      padding:16px;
+      padding:14px 10px;
+      text-align:center;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
     }
 
+
     .kpi-title{
-      font-size:13px;
+      font-size:12px;
       color:#93a9ca;
       margin-bottom:8px;
+      min-height:30px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      line-height:1.15;
     }
+
+
 
     .kpi-value{
       font-size:29px;
       font-weight:700;
       color:#ffffff;
+      line-height: 1;
     }
 
     /* =========================================================
@@ -261,6 +276,56 @@
             0 0 22px rgba(239,68,68,0.42);
         }
 
+     .rasp-card.reprovado-ft-card{
+      border:1px solid rgba(239,68,68,0.55);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(127,29,29,0.35),
+          #122744
+        );
+      box-shadow:0 0 20px rgba(239,68,68,0.20);
+    }
+
+    .badge-reprovado-ft{
+      display:inline-block;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(239,68,68,0.18);
+      color:#fca5a5;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:0.4px;
+    }
+
+    /* =========================================================
+   02.06.02 REPROVADO PELO FT - VISUAL LG
+   ========================================================= */
+.rasp-card.reprovado-ft-card{
+  border:1px solid rgba(239,68,68,0.75) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(127,29,29,0.48),
+      #122744
+    ) !important;
+
+  box-shadow:
+    0 0 24px rgba(239,68,68,0.35) !important;
+}
+
+.badge-reprovado-ft{
+  display:inline-block;
+  margin-top:10px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(239,68,68,0.22);
+  color:#fecaca;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.4px;
+}
 
     /* =========================================================
        02.07 RODAPÉ LATERAL
@@ -351,6 +416,34 @@
       font-size:16px;
       text-transform:uppercase;
     }
+
+    .timeline-legenda{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .legenda-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:#b7c8e4;
+    }
+
+    .legenda-cor{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+    }
+
+    .legenda-cor.ft{ background:#38bdf8; }
+    .legenda-cor.lg{ background:#22c55e; }
+    .legenda-cor.complemento{ background:#a855f7; }
+    .legenda-cor.reprovado{ background:#ef4444; }
+    .legenda-cor.alerta{ background:#f59e0b; }
+
 
     .detail-grid{
       display:grid;
@@ -572,6 +665,12 @@
           <div class="kpi-title">SLA Crítico</div>
           <div id="kpiSlaCritico" class="kpi-value">0</div>
         </div>
+
+        <div class="kpi-card">
+        <div class="kpi-title">Reprovados FT</div>
+        <div id="kpiReprovadosFt" class="kpi-value">0</div>
+      </div>
+
       </div>
 
       <!-- =====================================================
@@ -812,6 +911,15 @@
              =================================================== -->
         <div class="timeline">
           <h3>Histórico / Timeline</h3>
+
+          <div class="timeline-legenda">
+          <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
+          <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
+          <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
+          <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
+          <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
+        </div>
+
 
           <div id="timelineConteudo">
             <div class="timeline-item">
@@ -1192,142 +1300,128 @@
     }
 
     /* =========================================================
-    06.10 FILA LG
-    ========================================================= */
-    async function carregarFilaLg(){
+   06.10 FILA LG
+   ========================================================= */
+async function carregarFilaLg(){
 
-    const container = document.getElementById("listaFilaLg");
+  const container = document.getElementById("listaFilaLg");
 
-    try{
+  try{
+    const resposta = await fetch(`${API_BASE}/lg/fila-operacional`);
 
-        const resposta = await fetch(`${API_BASE}/lg/fila-operacional`);
-
-        if(!resposta.ok){
-
-        container.innerHTML = `
-            <div class="timeline-item">
-            <div class="timeline-title">Erro ao carregar fila LG</div>
-            <div class="timeline-date">API indisponível</div>
-            <div class="timeline-text">
-                Verifique o endpoint /lg/fila-operacional.
-            </div>
-            </div>
-        `;
-
-        return;
-        }
-
-        const dados = await resposta.json();
-
-        if(!dados || dados.length === 0){
-
-        container.innerHTML = `
-            <div class="timeline-item">
-            <div class="timeline-title">
-                Nenhum RASP aguardando LG
-            </div>
-
-            <div class="timeline-date">
-                Fila limpa
-            </div>
-
-            <div class="timeline-text">
-                Não há documentos pendentes para decisão LG.
-            </div>
-            </div>
-        `;
-
-        return;
-        }
-
-        container.innerHTML = "";
-
-        dados.forEach(item => {
-
-        const card = document.createElement("div");
-
-        /* =====================================================
-            DEFINIÇÃO VISUAL DA CRITICIDADE
-            ===================================================== */
-
-        let criticidadeTexto = "Normal";
-        let criticidadeIcone = "🟢";
-        let criticidadeClasse = "criticidade-normal";
-
-        if(item.criticidade === "Atenção"){
-
-            criticidadeTexto = "Atenção";
-            criticidadeIcone = "🟡";
-            criticidadeClasse = "criticidade-atencao";
-        }
-
-        if(item.criticidade === "Crítico"){
-
-            criticidadeTexto = "Crítico";
-            criticidadeIcone = "🔴";
-            criticidadeClasse = "criticidade-critico";
-        }
-
-        /* =====================================================
-            CARD
-            ===================================================== */
-
-        card.className = `rasp-card ${criticidadeClasse}`;
-
-        card.setAttribute("data-id-rasp", item.idRasp);
-
-        card.onclick = () => selecionarRasp(item.idRasp, card);
-
-        card.innerHTML = `
-            <div class="rasp-numero">
-            RASP ${item.numeroRasp ?? "-"}
-            </div>
-
-            <div class="rasp-fornecedor">
-            ${item.fornecedor ?? "-"}
-            </div>
-
-            <div class="rasp-info">
-
-            <span>
-                ${criticidadeIcone}
-                ${criticidadeTexto}
-            </span>
-
-            <span>
-                ${item.diasAguardandoLg ?? 0} dias
-            </span>
-
-            </div>
-        `;
-
-        container.appendChild(card);
-        });
-
-    }
-    catch(erro){
-
-        console.error(erro);
-
-        container.innerHTML = `
+    if(!resposta.ok){
+      container.innerHTML = `
         <div class="timeline-item">
-
-            <div class="timeline-title">
-            Erro de comunicação
-            </div>
-
-            <div class="timeline-date">
-            Frontend sem conexão
-            </div>
-
-            <div class="timeline-text">
-            Não foi possível carregar a fila LG.
-            </div>
-
+          <div class="timeline-title">Erro ao carregar fila LG</div>
+          <div class="timeline-date">API indisponível</div>
+          <div class="timeline-text">
+            Verifique o endpoint /lg/fila-operacional.
+          </div>
         </div>
-        `;
+      `;
+      return;
     }
+
+    const dados = await resposta.json();
+
+    document.getElementById("kpiReprovadosFt").innerText =
+    dados.filter(item =>
+      item.foiReprovadoFt === true ||
+      item.FoiReprovadoFt === true
+    ).length;
+
+    
+
+    if(!dados || dados.length === 0){
+      container.innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-title">Nenhum RASP aguardando LG</div>
+          <div class="timeline-date">Fila limpa</div>
+          <div class="timeline-text">
+            Não há documentos pendentes para decisão LG.
+          </div>
+        </div>
+      `;
+      return;
     }
+
+    container.innerHTML = "";
+
+    dados.forEach(item => {
+
+      const card = document.createElement("div");
+
+      let criticidadeTexto = "Normal";
+      let criticidadeIcone = "🟢";
+      let criticidadeClasse = "criticidade-normal";
+
+      if(item.criticidade === "Atenção"){
+        criticidadeTexto = "Atenção";
+        criticidadeIcone = "🟡";
+        criticidadeClasse = "criticidade-atencao";
+      }
+
+      if(item.criticidade === "Crítico"){
+        criticidadeTexto = "Crítico";
+        criticidadeIcone = "🔴";
+        criticidadeClasse = "criticidade-critico";
+      }
+
+      const foiReprovadoFt =
+        item.foiReprovadoFt === true ||
+        item.FoiReprovadoFt === true;
+
+      card.className = foiReprovadoFt
+        ? `rasp-card ${criticidadeClasse} reprovado-ft-card`
+        : `rasp-card ${criticidadeClasse}`;
+
+      card.setAttribute("data-id-rasp", item.idRasp);
+      card.onclick = () => selecionarRasp(item.idRasp, card);
+
+      card.innerHTML = `
+        <div class="rasp-numero">
+          RASP ${item.numeroRasp ?? "-"}
+        </div>
+
+        <div class="rasp-fornecedor">
+          ${item.fornecedor ?? "-"}
+        </div>
+
+        ${foiReprovadoFt
+          ? `<span class="badge-reprovado-ft">REPROVADO PELO FT</span>`
+          : ""
+        }
+
+        <div class="rasp-info">
+          <span>
+            ${criticidadeIcone}
+            ${criticidadeTexto}
+          </span>
+
+          <span>
+            ${item.diasAguardandoLg ?? 0} dias
+          </span>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+  catch(erro){
+    console.error(erro);
+
+    container.innerHTML = `
+      <div class="timeline-item">
+        <div class="timeline-title">Erro de comunicação</div>
+        <div class="timeline-date">Frontend sem conexão</div>
+        <div class="timeline-text">
+          Não foi possível carregar a fila LG.
+        </div>
+      </div>
+    `;
+  }
+}
+
 
 
     /* =========================================================
