@@ -1150,6 +1150,23 @@
               </div>
 
               <div class="campo">
+                <label>Data da execução da seleção</label>
+                <input id="dataExecucaoSelecao" type="date" />
+              </div>
+
+              <div class="campo">
+                <label>Hora início da seleção</label>
+                <input id="horaInicioSelecao" type="time" />
+              </div>
+
+              <div class="campo">
+                <label>Hora fim da seleção</label>
+                <input id="horaFimSelecao" type="time" />
+              </div>
+
+
+
+              <div class="campo">
                 <label>Quantidade Verificada</label>
                 <input id="qtdVerificada" type="number" min="0" placeholder="0" />
               </div>
@@ -1872,12 +1889,16 @@
       if (btnLimpar) {
         btnLimpar.addEventListener("click", () => {
           document.getElementById("dataLote").value = "";
+          document.getElementById("dataExecucaoSelecao").value = "";
+          document.getElementById("horaInicioSelecao").value = "";
+          document.getElementById("horaFimSelecao").value = "";
           document.getElementById("lote").value = "";
           document.getElementById("qtdVerificada").value = "";
           document.getElementById("qtdRejeitada").value = "";
           document.getElementById("observacao").value = "";
         });
       }
+
 
       const modalCredencial = document.getElementById("modal-credencial-terceiro");
 const btnValidarCredencial = document.getElementById("btnValidarCredencial");
@@ -2089,10 +2110,14 @@ async function registrarApontamento(payload) {
     );
 
     document.getElementById("dataLote").value = "";
+    document.getElementById("dataExecucaoSelecao").value = "";
+    document.getElementById("horaInicioSelecao").value = "";
+    document.getElementById("horaFimSelecao").value = "";
     document.getElementById("lote").value = "";
     document.getElementById("qtdVerificada").value = "";
     document.getElementById("qtdRejeitada").value = "";
     document.getElementById("observacao").value = "";
+
 
     iniciarTimeoutCredencial();
 
@@ -2109,20 +2134,25 @@ async function registrarApontamento(payload) {
 }
 
 if (btnRegistrar) {
-
   btnRegistrar.addEventListener("click", async () => {
 
     if (!itemSelecionado) {
-
-      mostrarMensagem(
-        "Selecione um item primeiro."
-      );
-
+      mostrarMensagem("Selecione um item primeiro.");
       return;
     }
 
     const dataLote =
       document.getElementById("dataLote").value;
+
+    const dataExecucaoSelecao =
+      document.getElementById("dataExecucaoSelecao").value;
+
+
+    const horaInicioSelecao =
+      document.getElementById("horaInicioSelecao").value;
+
+    const horaFimSelecao =
+      document.getElementById("horaFimSelecao").value;
 
     const qtdVerificada =
       parseInt(
@@ -2135,114 +2165,119 @@ if (btnRegistrar) {
       );
 
     if (!dataLote) {
+      mostrarMensagem("Informe a data do lote.");
+      return;
+    }
 
-      mostrarMensagem(
-        "Informe a data do lote."
-      );
+    if (!dataExecucaoSelecao) {
+      mostrarMensagem("Informe a data da execução da seleção.");
+      return;
+    }
 
+
+    if (!horaInicioSelecao || !horaFimSelecao) {
+      mostrarMensagem("Informe a hora de início e a hora fim da seleção.");
+      return;
+    }
+
+    if (horaFimSelecao < horaInicioSelecao) {
+      mostrarMensagem("Hora fim não pode ser menor que a hora início.");
       return;
     }
 
     if (qtdVerificada <= 0) {
-
-      mostrarMensagem(
-        "Quantidade verificada deve ser maior que zero."
-      );
-
+      mostrarMensagem("Quantidade verificada deve ser maior que zero.");
       return;
     }
 
     if (qtdRejeitada > qtdVerificada) {
-
-      mostrarMensagem(
-        "Quantidade rejeitada não pode ser maior que a verificada."
-      );
-
+      mostrarMensagem("Quantidade rejeitada não pode ser maior que a verificada.");
       return;
     }
 
     const payload = {
-  idRaspPn:
-    parseInt(itemSelecionado.dataset.idRaspPn),
+      idRaspPn:
+        parseInt(itemSelecionado.dataset.idRaspPn),
 
-  dataLoteVerificada:
-    dataLote,
+      dataLoteVerificada:
+        dataLote,
 
-  lote:
-    document.getElementById("lote").value,
+      lote:
+        document.getElementById("lote").value,
 
-  quantidadeVerificada:
-    qtdVerificada,
+      quantidadeVerificada:
+        qtdVerificada,
 
-  quantidadeRejeitada:
-    qtdRejeitada,
+      quantidadeRejeitada:
+        qtdRejeitada,
 
-  observacao:
-    document.getElementById("observacao").value,
+      observacao:
+        document.getElementById("observacao").value,
 
-  idTurnoRasp:
-    parseInt(
-      document.getElementById("turnoApontamento").value
-    ),
+      idTurnoRasp:
+        parseInt(
+          document.getElementById("turnoApontamento").value
+        ),
 
-  idUsuarioInterno:
-    credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
-      ? credencialTerceiro.idUsuarioInterno
-      : null,
+      idUsuarioInterno:
+        credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
+          ? credencialTerceiro.idUsuarioInterno
+          : null,
 
-  idUsuarioTerceiro:
-    credencialTerceiro && credencialTerceiro.tipoExecutor === "TERCEIRO"
-      ? credencialTerceiro.idUsuarioTerceiro
-      : null,
+      idUsuarioTerceiro:
+        credencialTerceiro && credencialTerceiro.tipoExecutor === "TERCEIRO"
+          ? credencialTerceiro.idUsuarioTerceiro
+          : null,
 
-  origemRegistro:
-    credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
-      ? 2
-      : 1,
+      origemRegistro:
+        credencialTerceiro && credencialTerceiro.tipoExecutor === "GM"
+          ? 2
+          : 1,
 
-  dataHoraInicioAtividade:
-    new Date().toISOString(),
+      dataHoraInicioAtividade:
+        `${dataExecucaoSelecao}T${horaInicioSelecao}:00`,
 
-  dataHoraFimAtividade:
-    new Date().toISOString()
-};
+      dataHoraFimAtividade:
+        `${dataExecucaoSelecao}T${horaFimSelecao}:00`
 
-if (!credencialTerceiro) {
-  payloadPendenteApontamento = payload;
-  abrirModalCredencial();
-  return;
-}
+    };
 
-await registrarApontamento(payload);
+    if (!credencialTerceiro) {
+      payloadPendenteApontamento = payload;
+      abrirModalCredencial();
+      return;
+    }
+
+    await registrarApontamento(payload);
   });
 }
 
+function atualizarCabecalhoImpressao() {
+  const dataRelatorio = document.getElementById("printDataRelatorio");
+  const horaRelatorio = document.getElementById("printHoraRelatorio");
 
+  const agora = new Date();
 
-      function atualizarCabecalhoImpressao() {
-        const agora = new Date();
+  if (dataRelatorio) {
+    dataRelatorio.textContent = agora.toLocaleDateString("pt-BR");
+  }
 
-        const data = agora.toLocaleDateString("pt-BR");
-        const hora = agora.toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-
-        const campoData = document.getElementById("printDataRelatorio");
-        const campoHora = document.getElementById("printHoraRelatorio");
-
-        if (campoData) campoData.textContent = data;
-        if (campoHora) campoHora.textContent = hora;
-
-        atualizarTextoFiltrosImpressao();
-      }
+  if (horaRelatorio) {
+    horaRelatorio.textContent = agora.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+}
 
       if (btnImprimir) {
-        btnImprimir.addEventListener("click", function () {
+        btnImprimir.addEventListener("click", () => {
           atualizarCabecalhoImpressao();
+          atualizarTextoFiltrosImpressao();
           window.print();
         });
       }
+
 
       atualizarCabecalhoImpressao();
       ativarEventosDosFiltros();
