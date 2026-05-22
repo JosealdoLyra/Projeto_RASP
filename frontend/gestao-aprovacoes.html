@@ -121,45 +121,60 @@
       opacity: 0.75;
     }
 
-    .diamond-logo {
-      width: 42px;
-      height: 42px;
-      position: relative;
-      transform: rotate(45deg);
-      background: linear-gradient(135deg, #0b63ff, #003b9e);
-      border-radius: 8px;
-      box-shadow: 0 0 18px rgba(37, 99, 235, 0.45);
-      flex-shrink: 0;
+    .diamond-ft-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:18px 0 28px;
+      position:relative;
     }
 
-    .diamond-logo::before {
-      content: "";
-      position: absolute;
-      inset: 10px;
-      background: #031022;
-      border-radius: 4px;
+    .diamond-logo-ft{
+        width:118px;
+        height:98px;
+        transform-origin:center;
+        filter:
+            drop-shadow(0 0 6px rgba(125,211,252,1))
+            drop-shadow(0 0 18px rgba(59,130,246,0.95))
+            drop-shadow(0 0 38px rgba(37,99,235,0.75))
+            drop-shadow(0 0 60px rgba(14,165,233,0.35));
+        animation:diamondPulseFt 2.4s ease-in-out infinite;
     }
 
-    .diamond-logo::after {
-      content: "";
-      position: absolute;
-      width: 9px;
-      height: 9px;
-      right: 6px;
-      top: 6px;
-      background: #7dd3fc;
-      border-radius: 50%;
-      box-shadow: 0 0 14px #7dd3fc;
+    .diamond-line-ft{
+      fill:none;
+      stroke:#7dd3fc;
+      stroke-width:4.5;
+      stroke-linejoin:round;
     }
 
-    .diamond-logo span {
-      position: absolute;
-      inset: 15px;
-      background: #2563eb;
-      border-radius: 3px;
+    .diamond-line-light-ft{
+      fill:none;
+      stroke:#dbeafe;
+      stroke-width:2.2;
+      stroke-linecap:round;
+      opacity:0.95;
     }
 
-    .menu {
+    .diamond-spark-ft{
+    fill:#ffffff;
+    transform-box:fill-box;
+    transform-origin:center;
+    filter:
+        drop-shadow(0 0 6px rgba(255,255,255,1))
+        drop-shadow(0 0 14px rgba(125,211,252,0.95));
+    animation:sparkPulseFt 1.4s ease-in-out infinite;
+    }
+
+
+    @keyframes diamondPulseFt{
+      0%{ transform:scale(1); opacity:0.92; }
+      50%{ transform:scale(1.08); opacity:1; }
+      100%{ transform:scale(1); opacity:0.92; }
+    }
+
+   .menu {
       display: flex;
       flex-direction: column;
       gap: 7px;
@@ -174,13 +189,36 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      transition: 0.18s ease;
     }
+    
+    .menu-sub a:not(.active):not(.menu-bloqueado):hover{
+      background:rgba(37,99,235,0.22);
+      color:#ffffff;
+      box-shadow:0 0 14px rgba(37,99,235,0.18);
+      transform:translateX(3px);
+    }
+
 
     .menu a.active {
       background: #1263ff;
       color: white;
       box-shadow: 0 8px 18px rgba(18, 99, 255, 0.25);
     }
+
+    .menu a.menu-bloqueado{
+      opacity:0.35 !important;
+      cursor:not-allowed !important;
+      filter:grayscale(0.6) !important;
+      pointer-events:auto !important;
+    }
+
+    .menu a.menu-bloqueado:hover{
+      background:transparent !important;
+      color:rgba(255,255,255,0.45) !important;
+    }
+
+
 
     .menu-group {
       background: rgba(255, 255, 255, 0.07);
@@ -252,11 +290,7 @@
       gap: 14px;
     }
 
-    .bell {
-      position: relative;
-      font-size: 22px;
-    }
-
+    
     .badge-alert {
       position: absolute;
       top: -7px;
@@ -562,6 +596,7 @@
       overflow-y: auto;
       position: sticky;
       top: 22px;
+      min-height: 600px;
     }
 
     .panel-header {
@@ -601,6 +636,7 @@
     .panel-tabs {
       display: flex;
       gap: 26px;
+      justify-content: center;
       border-bottom: 1px solid var(--borda);
       margin-bottom: 18px;
     }
@@ -785,8 +821,15 @@
 
       <!-- 04.01 LOGO -->
       <div class="brand">
-        <div class="diamond-logo">
-          <span></span>
+        <div class="diamond-ft-wrap">
+          <svg class="diamond-logo-ft" viewBox="0 0 120 100" aria-label="Diamante RASP">
+            <path class="diamond-line-ft" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+            <path class="diamond-line-light-ft" d="M15 30 H105" />
+            <path class="diamond-line-light-ft" d="M35 8 L48 30 L60 92" />
+            <path class="diamond-line-light-ft" d="M85 8 L72 30 L60 92" />
+            <path class="diamond-line-light-ft" d="M48 30 H72" />
+            
+          </svg>
         </div>
 
         <div>
@@ -822,45 +865,79 @@
   </a>
 
   <!-- =====================================================
-       04. GRUPO RASP
-       ===================================================== -->
-  <div class="menu-group">
+     04. GRUPO RASP
+     ===================================================== -->
+<div class="menu-group">
 
-    <a href="#">
-      ◎ RASP
+
+  <!-- ================================================
+       RASP
+       ================================================ -->
+  <a href="#">
+    ◎ RASP
+  </a>
+
+
+  <div class="menu-sub">
+
+
+    <!-- NOVO RASP -->
+    <a href="index.html">
+      • Novo RASP
     </a>
 
-    <div class="menu-sub">
 
-      <!-- NOVO RASP -->
-      <a href="index.html">
-        • Novo RASP
-      </a>
+    <!-- HISTÓRICO -->
+    <a href="historico-geral.html">
+      • Histórico Geral
+    </a>
 
-      <!-- GESTÃO -->
-      <a class="active" href="gestao-aprovacoes.html">
-        • Gestão de Aprovações
-      </a>
 
-      <!-- HISTÓRICO -->
-      <a href="historico-geral.html">
-        • Histórico Geral
-      </a>
-
-    </div>
   </div>
+</div>
+
+
+<!-- =====================================================
+     05. CENTRAL DE APROVAÇÕES
+     ===================================================== -->
+<div class="menu-group">
+
+
+  <!-- CENTRAL -->
+  <a href="#">
+    ◈ Central Aprovação
+  </a>
+
+
+  <div class="menu-sub">
+
+
+    <!-- VISÃO GERAL -->
+    <a class="active" href="gestao-aprovacoes.html">
+      • Gestão Geral
+    </a>
+
+
+    <!-- FT -->
+    <a href="gestao-ft.html">
+      • Gestão FT
+    </a>
+
+
+    <!-- LG -->
+    <a href="gestao-lg.html" id="menuGestaoLg">
+      • Gestão LG
+    </a>
+
+
+  </div>
+</div>
+
 
   <!-- =====================================================
        05. MENUS FUTUROS
        ===================================================== -->
-  <a href="#">
-    ⚙ Configurações
-  </a>
-
-  <a href="#">
-    👤 Usuários
-  </a>
-
+ 
 </nav>
 
 
@@ -888,7 +965,7 @@
         </div>
 
         <div class="user">
-          <div class="bell">🔔<span class="badge-alert">3</span></div>
+          
           <div class="avatar" id="avatarUsuario">JS</div>
 
             <div class="user-info">
@@ -1050,8 +1127,6 @@
             <strong id="painelNumeroRasp">Selecione um RASP</strong>
             <span id="painelStatusRasp" class="pill pill-blue">Aguardando seleção</span>
             </div>
-
-            <button class="btn-light">×</button>
         </div>
 
         <!-- 07.02 METADADOS DO RASP -->
@@ -1074,9 +1149,7 @@
 
         <!-- 07.03 ABAS DO PAINEL -->
         <div class="panel-tabs">
-            <button>Resumo</button>
             <button class="active">Histórico do fluxo</button>
-            <button>Anexos</button>
         </div>
 
         <!-- 07.04 HISTÓRICO DO FLUXO -->
@@ -1088,28 +1161,7 @@
             </div>
         </div>
 
-        <!-- 07.05 AÇÕES DISPONÍVEIS -->
-        <div class="actions">
-            <h3>Ações disponíveis para este RASP</h3>
-
-            <div id="painelAcoes">
-            <button class="action-btn">
-                <strong>Nenhuma ação selecionada</strong>
-                <span>Selecione um RASP na tabela para carregar as ações disponíveis.</span>
-            </button>
-            </div>
-
-            <div class="confirm">
-            <label>Observação / Justificativa</label>
-
-            <div class="confirm-row">
-                <textarea id="painelObservacao" placeholder="Digite aqui sua observação..."></textarea>
-                <button id="btnConfirmarAcao" class="btn-confirm">
-                Confirmar ação
-                </button>
-            </div>
-            </div>
-        </div>
+        
         </aside>
 
 
@@ -1156,7 +1208,7 @@
     // =========================================================
 
     const USUARIO_LOGADO = {
-    idUsuario: 1,
+    idUsuario: 3,
     nome: "Josealdo Lyra",
     idPerfil: 1
     };
@@ -1199,7 +1251,7 @@
   let filtroAtual = "todos";
   
   let raspSelecionado = null;
-  let acaoSelecionada = null;
+  
 
   // =========================================================
   // 09.04 FUNÇÕES AUXILIARES
@@ -1284,7 +1336,10 @@
         return rasps.filter(r => r.isRascunho === true);
 
       case "aguardandoMt":
-        return rasps.filter(r => r.idStatusRasp === 7);
+         return rasps.filter(r => r.isRascunho === true || r.idStatusRasp === 1 ||
+        r.idStatusRasp === 7
+      );
+
 
       case "aguardandoFt":
         return rasps.filter(r => r.idStatusRasp === 2 || r.idStatusRasp === 8);
@@ -1351,7 +1406,10 @@
       rasps.filter(r => r.isRascunho === true).length;
 
     document.getElementById("tabAguardandoMt").innerText =
-      rasps.filter(r => r.idStatusRasp === 7).length;
+     rasps.filter(r => r.isRascunho === true || r.idStatusRasp === 1 ||
+     r.idStatusRasp === 7
+    ).length;
+
 
     document.getElementById("tabAguardandoFt").innerText =
       rasps.filter(r => r.idStatusRasp === 2 || r.idStatusRasp === 8).length;
@@ -1400,6 +1458,32 @@
         return { texto: "Em análise", classe: "pill-red" };
     }
   }
+
+function calcularDiasNaFase(rasp) {
+
+  const dataBase =
+    rasp.dataEnvioLg ||
+    rasp.dataEnvioFt ||
+    rasp.dataAprovacaoFt ||
+    rasp.dataCriacao;
+
+  if (!dataBase) {
+    return "-";
+  }
+
+  const inicio = new Date(dataBase);
+  const hoje = new Date();
+
+  if (isNaN(inicio.getTime())) {
+    return "-";
+  }
+
+  const diff = hoje - inicio;
+  const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  return dias < 0 ? "0" : dias;
+}
+
 
   // =========================================================
 // 09.08 RENDERIZAR TABELA PAGINADA
@@ -1516,7 +1600,8 @@ function renderizarTabela(rasps, fornecedores, usuarios) {
         </span>
       </td>
 
-      <td>-</td>
+      <td>${calcularDiasNaFase(rasp)}</td>
+
 
       <td>${responsavelHtml}</td>
 
@@ -1612,7 +1697,7 @@ function renderizarPaginacao(totalRegistrosTabela) {
   // =========================================================
   function selecionarRaspPainel(rasp) {
     raspSelecionado = rasp;
-    acaoSelecionada = null;
+    
 
     const fornecedor = buscarFornecedorNome(rasp.idFornecedorRasp, fornecedoresCarregados);
     const mt = buscarUsuarioNome(rasp.idAnalistaMt, usuariosCarregados);
@@ -1629,7 +1714,7 @@ function renderizarPaginacao(totalRegistrosTabela) {
 
     limparObservacao();
     renderizarTimelineBasica(rasp);
-    renderizarAcoesBasicas(rasp);
+  
   }
 
   function renderizarTimelineBasica(rasp) {
@@ -1679,264 +1764,9 @@ function renderizarPaginacao(totalRegistrosTabela) {
     `;
   }
 
-  // =========================================================
-  // 09.10 PAINEL LATERAL - AÇÕES DISPONÍVEIS
-  // =========================================================
-  function criarBotaoAcao(tipo, classe, titulo, descricao) {
-    return `
-      <button class="action-btn ${classe}"
-              onclick="selecionarAcao('${tipo}')">
-        <strong>${titulo}</strong>
-        <span>${descricao}</span>
-      </button>
-    `;
-  }
+ 
 
-  function selecionarAcao(tipo) {
-  acaoSelecionada = tipo;
-
-  document.querySelectorAll("#painelAcoes .action-btn").forEach(btn => {
-    btn.classList.remove("acao-selecionada");
-  });
-
-  const botao = Array.from(document.querySelectorAll("#painelAcoes .action-btn"))
-    .find(btn => btn.getAttribute("onclick")?.includes(tipo));
-
-  if (botao) {
-    botao.classList.add("acao-selecionada");
-  }
-}
-
-
-  function renderizarAcoesBasicas(rasp) {
-
-  const acoes = document.getElementById("painelAcoes");
-
-  // =====================================================
-  // PERFIL SOMENTE LEITURA
-  // =====================================================
-  if (!perfilPodeExecutarFluxo()) {
-
-    acoes.innerHTML = `
-      <button class="action-btn">
-        <strong>Modo consulta</strong>
-        <span>
-          Este perfil possui acesso somente leitura.
-        </span>
-      </button>
-    `;
-
-    return;
-  }
-
-  if (rasp.idStatusRasp === 1) {
-    acoes.innerHTML = criarBotaoAcao(
-      "submeter-ft",
-      "blue",
-      "Submeter ao FT",
-      "Enviar RASP preenchido para análise do FT."
-    );
-    return;
-  }
-
-  if (rasp.idStatusRasp === 2) {
-    acoes.innerHTML =
-      criarBotaoAcao(
-        "aprovar-ft",
-        "blue",
-        "Aprovar procedência FT",
-        "Confirmar procedência técnica e enviar ao LG."
-      ) +
-      criarBotaoAcao(
-        "solicitar-complemento-ft",
-        "primary",
-        "Solicitar complemento ao MT",
-        "Devolver para complemento do analista MT."
-      );
-    return;
-  }
-
-  if (rasp.idStatusRasp === 3) {
-    acoes.innerHTML =
-      criarBotaoAcao(
-        "aprovar-lg",
-        "blue",
-        "Registrar decisão LG",
-        "Decidir: não emitir SPPS, Supplier Alert ou SPPS."
-      ) +
-      criarBotaoAcao(
-        "solicitar-complemento-lg",
-        "primary",
-        "Solicitar complemento ao FT",
-        "Solicitar análise complementar do FT."
-      );
-    return;
-  }
-
-  if (rasp.idStatusRasp === 7) {
-    acoes.innerHTML = criarBotaoAcao(
-      "reenviar-complemento-ft",
-      "blue",
-      "Reenviar complemento ao FT",
-      "MT complementou e reenviará ao FT."
-    );
-    return;
-  }
-
-  if (rasp.idStatusRasp === 8) {
-    acoes.innerHTML =
-      criarBotaoAcao(
-        "reenviar-complemento-lg",
-        "blue",
-        "Reenviar complemento ao LG",
-        "FT complementou e reenviará ao LG."
-      ) +
-      criarBotaoAcao(
-        "ft-devolver-complemento-mt",
-        "primary",
-        "Devolver complemento ao MT",
-        "FT precisa de novos dados do MT."
-      );
-    return;
-  }
-
-  acoes.innerHTML = `
-    <button class="action-btn">
-      <strong>Fluxo concluído</strong>
-      <span>Não há ações pendentes para este status.</span>
-    </button>
-  `;
-}
-
-
-  // =========================================================
-  // 09.11 EXECUTAR AÇÃO - CHAMADA API
-  // =========================================================
-  async function executarAcaoFluxo() {
-    if (!raspSelecionado) {
-      alert("Selecione um RASP antes de confirmar.");
-      return;
-    }
-
-    if (!acaoSelecionada) {
-      alert("Selecione uma ação antes de confirmar.");
-      return;
-    }
-
-    const obs = obterObservacaoDigitada();
-
-    let endpoint = "";
-    let body = {};
-
-    switch (acaoSelecionada) {
-      case "submeter-ft":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/submeter-ft`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario
-        };
-        break;
-
-      case "aprovar-ft":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/aprovar-ft`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          observacaoFt: obs || "Procedência técnica aprovada pelo FT."
-        };
-        break;
-
-      case "solicitar-complemento-ft":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/solicitar-complemento-ft`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          motivoComplemento: obs
-        };
-        break;
-
-      case "reenviar-complemento-ft":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/reenviar-complemento-ft`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          observacaoReenvio: obs
-        };
-        break;
-
-      case "aprovar-lg":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/aprovar-lg`;
-
-        const decisaoLgTexto = prompt(
-          "Decisão LG:\n1 = Não emitir SPPS\n2 = Supplier Alert\n3 = SPPS",
-          "2"
-        );
-
-        const decisaoLg = Number(decisaoLgTexto);
-
-        if (![1, 2, 3].includes(decisaoLg)) {
-          alert("Decisão LG inválida.");
-          return;
-        }
-
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          decisaoLg,
-          observacaoLg: obs || "Decisão registrada pelo LG."
-        };
-        break;
-
-      case "solicitar-complemento-lg":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/solicitar-complemento-lg`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          motivoComplemento: obs
-        };
-        break;
-
-      case "reenviar-complemento-lg":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/reenviar-complemento-lg`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          observacaoReenvio: obs
-        };
-        break;
-
-      case "ft-devolver-complemento-mt":
-        endpoint = `/rasp/${raspSelecionado.idRasp}/ft-devolver-complemento-mt`;
-        body = {
-          idUsuarioExecutor: USUARIO_LOGADO.idUsuario,
-          motivoComplemento: obs
-        };
-        break;
-
-      default:
-        alert("Ação não reconhecida.");
-        return;
-    }
-
-    try {
-      const resposta = await fetch(`${API_URL}${endpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (!resposta.ok) {
-        const erroTexto = await resposta.text();
-        alert(`Erro ao executar ação:\n${erroTexto}`);
-        return;
-      }
-
-      alert("Ação executada com sucesso.");
-
-      limparObservacao();
-      await carregarRasps();
-
-    } catch (erro) {
-      console.error(erro);
-      alert("Erro de comunicação com a API.");
-    }
-  }
-
+  
     // =========================================================
     // 09.11A ATUALIZAÇÃO CENTRAL DA TELA
     // =========================================================
@@ -2066,11 +1896,83 @@ function renderizarPaginacao(totalRegistrosTabela) {
     // =========================================================
     // 09.14 INICIALIZAÇÃO
     // =========================================================
-    document.getElementById("btnConfirmarAcao")
-    .addEventListener("click", executarAcaoFluxo);
+    function aplicarPermissaoMenuAprovacoes(){
+
+      const menuFt = document.getElementById("menuGestaoFt");
+      const menuLg = document.getElementById("menuGestaoLg");
+
+      const perfilAtual = Number(USUARIO_LOGADO.idPerfil);
+
+      const podeAcessarFt =
+        perfilAtual === 1 ||
+        perfilAtual === 3 ||
+        perfilAtual === 4;
+
+      const podeAcessarLg =
+        perfilAtual === 1 ||
+        perfilAtual === 4;
+
+      if(menuFt && !podeAcessarFt){
+        menuFt.classList.add("menu-bloqueado");
+        menuFt.setAttribute("data-bloqueado", "true");
+        menuFt.setAttribute("title", "Acesso permitido apenas para FT, LG ou Administrador.");
+      }
+
+      if(menuLg && !podeAcessarLg){
+        menuLg.classList.add("menu-bloqueado");
+        menuLg.setAttribute("data-bloqueado", "true");
+        menuLg.setAttribute("title", "Acesso permitido apenas para LG ou Administrador.");
+      }
+
+      document.querySelectorAll(".menu-bloqueado").forEach(link => {
+        link.addEventListener("click", function(event){
+          event.preventDefault();
+          event.stopPropagation();
+
+          alert(this.getAttribute("title"));
+
+          return false;
+        });
+      });
+    }
+// =========================================================
+// ACESSO À CENTRAL DE APROVAÇÕES
+// ADMIN, FT, LG, SA E GERENTE PODEM ACESSAR.
+// MT E EQF NÃO ACESSAM.
+// =========================================================
+
+    function validarAcessoPaginaGestaoAprovacoes(){
+
+    const perfilAtual = Number(USUARIO_LOGADO.idPerfil);
+
+    const podeAcessarPagina =
+      perfilAtual === PERFIS.ADMIN ||
+      perfilAtual === PERFIS.FT ||
+      perfilAtual === PERFIS.LG ||
+      perfilAtual === PERFIS.SA ||
+      perfilAtual === PERFIS.GERENTE;
+
+    if(!podeAcessarPagina){
+      alert("Acesso restrito. Perfil MT não possui acesso à Central de Aprovações.");
+      window.location.href = "home.html";
+      return false;
+    }
+
+    return true;
+  }
+
+
+    if(validarAcessoPaginaGestaoAprovacoes()){
 
     atualizarUsuarioTopo();
     carregarRasps();
+
+    setTimeout(() => {
+      aplicarPermissaoMenuAprovacoes();
+    }, 300);
+  }
+
+
 
 </script>
 
