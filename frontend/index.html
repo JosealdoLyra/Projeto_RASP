@@ -165,6 +165,13 @@
         <div class="topbar-actions">
     <button type="button" class="ghost-btn">Salvar rascunho</button>
 
+    <button
+    type="button" id="btnVoltarGestaoSpps" class="ghost-btn" style="display:none;"
+    onclick="window.location.href='gestao-spps.html'">
+    ← Voltar para Gestão SPPS
+  </button>
+
+
     <button type="button" class="ghost-btn" onclick="sairDoSistema()">
         Sair
     </button>
@@ -808,32 +815,115 @@
        ========================================================= -->
   <script src="app.js"></script>
 
-    <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
 
-    const botao = document.querySelector(".sidebar-dashboard-toggle");
-    const submenu = document.querySelector(".sidebar-submenu");
+      const botao = document.querySelector(".sidebar-dashboard-toggle");
+      const submenu = document.querySelector(".sidebar-submenu");
 
-    if (!botao || !submenu) {
-      console.error("Menu dashboard não encontrado.");
+      if (botao && submenu) {
+        botao.addEventListener("click", () => {
+          submenu.classList.toggle("hidden");
+        });
+      }
+
+    });
+  </script>
+
+  <script src="./sessao.js"></script>
+
+  <script>
+    protegerPagina();
+    preencherUsuarioLogadoNaTela();
+
+    async function carregarRaspPorUrl() {
+  const parametros = new URLSearchParams(window.location.search);
+
+  const idRasp = parametros.get("idRasp");
+  const modo = parametros.get("modo");
+  const origem = parametros.get("origem");
+
+  const perfilUsuario = sessionStorage.getItem("perfilUsuario");
+
+  if (origem === "spps" && perfilUsuario !== "MT") {
+    const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
+    const sppsBox = document.querySelector("#sppsNumeroDisplay").closest(".rasp-indicador-box");
+
+
+    if (btnVoltar) {
+      btnVoltar.style.display = "inline-flex";
+      btnVoltar.disabled = false;
+      btnVoltar.onclick = () => {
+        window.location.href = "gestao-spps.html";
+      };
+    }
+
+    if (sppsBox) {
+      sppsBox.style.cursor = "pointer";
+      sppsBox.title = "Voltar para Gestão SPPS";
+      sppsBox.onclick = () => {
+        window.location.href = "gestao-spps.html";
+      };
+    }
+  }
+
+  if (!idRasp) {
+    return;
+  }
+
+  try {
+    const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
+
+    if (!resposta.ok) {
+      alert("Não foi possível carregar o RASP informado.");
       return;
     }
 
-    botao.addEventListener("click", () => {
-      submenu.classList.toggle("hidden");
-    });
+    const rasp = await resposta.json();
 
-  });
-</script>
+    const campoBusca = document.getElementById("buscarRaspNumero");
+    const botaoBusca = document.getElementById("btnBuscarRasp");
+
+    if (!campoBusca || !botaoBusca) {
+      alert("Campo de busca do RASP não localizado na tela.");
+      return;
+    }
+
+    campoBusca.value = rasp.numeroRasp;
+    botaoBusca.click();
+
+    if (modo === "consulta") {
+      setTimeout(() => {
+        document
+          .querySelectorAll("input, select, textarea, button")
+          .forEach(campo => {
+
+            if (
+              campo.id === "btnVoltarGestaoSpps" ||
+              campo.id === "buscarRaspNumero" ||
+              campo.id === "btnBuscarRasp" ||
+              campo.closest(".sidebar")
+            ) {
+              return;
+            }
+
+            campo.disabled = true;
+          });
+      }, 1200);
+    }
+
+  } catch (erro) {
+    console.error(erro);
+    alert("Erro ao carregar RASP pela URL.");
+  }
+}
 
 
-<script src="./sessao.js"></script>
-
-<script>
-  protegerPagina();
-  preencherUsuarioLogadoNaTela();
-
-</script>
+    setTimeout(() => {
+      carregarRaspPorUrl();
+    }, 500);
+  </script>
 
 </body>
 </html>
+

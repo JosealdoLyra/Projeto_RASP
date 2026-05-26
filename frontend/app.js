@@ -355,7 +355,13 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("DETALHE RECEBIDO:", detalhe);
         console.log("RASP RECEBIDO:", detalhe?.rasp);
 
-        alert("RASP carregado com sucesso.");
+        const mensagem = document.getElementById("mensagemRasp");
+
+      if (mensagem) {
+        mensagem.classList.remove("oculto");
+        mensagem.innerHTML = "✅ RASP carregado para consulta SPPS.";
+      }
+
       } catch (error) {
         console.error("Erro ao buscar RASP:", error);
         alert("Erro ao buscar RASP.");

@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestão SPPS - RASP</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Segoe UI, Arial, sans-serif;
+    }
+
+    body{
+      background:#071426;
+      color:#e5eefc;
+      min-height:100vh;
+    }
+
+    .container{
+      display:flex;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      width:330px;
+      background:#0b1d35;
+      border-right:1px solid rgba(255,255,255,0.08);
+      padding:24px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:22px;
+    }
+
+    .sidebar h1{
+      color:#ffffff;
+      font-size:23px;
+    }
+
+    .sidebar p{
+      color:#8ea3c7;
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .menu{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:18px;
+    }
+
+    .menu a{
+      color:#dbeafe;
+      text-decoration:none;
+      padding:12px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .menu a:hover{
+      background:rgba(37,99,235,0.22);
+    }
+
+    .menu a.active{
+      background:#2563eb;
+      color:white;
+    }
+
+    .assinatura{
+      margin-top:auto;
+      text-align:center;
+      color:#d4af37;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .main{
+      flex:1;
+      padding:28px;
+    }
+
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
+    }
+
+    .header h2{
+      font-size:28px;
+      color:#ffffff;
+    }
+
+    .header span{
+      color:#93a9ca;
+      font-size:14px;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .kpi{
+      background:#10233f;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:18px;
+      padding:20px;
+    }
+
+    .kpi-title{
+      font-size:13px;
+      color:#93a9ca;
+      margin-bottom:8px;
+    }
+
+    .kpi-value{
+      font-size:30px;
+      font-weight:800;
+      color:#ffffff;
+    }
+
+    .card{
+      background:#10233f;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:20px;
+      padding:22px;
+    }
+
+    .card-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .card-title h3{
+      color:#7ea6ff;
+      font-size:16px;
+      text-transform:uppercase;
+      letter-spacing:0.8px;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+
+    th{
+      text-align:left;
+      color:#93a9ca;
+      padding:12px 10px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      text-transform:uppercase;
+      font-size:11px;
+    }
+
+    td{
+      padding:14px 10px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+      color:#dbeafe;
+    }
+
+    tr:hover{
+      background:rgba(37,99,235,0.10);
+    }
+
+    .btn{
+      border:none;
+      border-radius:12px;
+      padding:10px 14px;
+      cursor:pointer;
+      color:white;
+      font-weight:800;
+    }
+
+    .btn-primary{
+      background:#2563eb;
+    }
+
+    .btn-secondary{
+      background:#334155;
+    }
+
+    .btn-success{
+      background:#16a34a;
+    }
+
+    .empty{
+      padding:24px;
+      text-align:center;
+      color:#93a9ca;
+    }
+
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(2,8,23,0.76);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+
+    .modal{
+      width:460px;
+      background:linear-gradient(145deg,#10233f,#081528);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:24px;
+      padding:28px;
+      box-shadow:0 25px 80px rgba(0,0,0,0.55);
+    }
+
+    .modal h2{
+      color:#ffffff;
+      margin-bottom:10px;
+    }
+
+    .modal p{
+      color:#b7c8e4;
+      font-size:14px;
+      margin-bottom:18px;
+      line-height:1.5;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:16px;
+    }
+
+    .field label{
+      font-size:13px;
+      color:#93a9ca;
+      font-weight:700;
+    }
+
+    .field input,
+    .field select{
+      height:44px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background:#071426;
+      color:#ffffff;
+      padding:0 12px;
+      outline:none;
+      font-size:15px;
+    }
+
+    .modal-actions{
+      display:flex;
+      gap:12px;
+      justify-content:flex-end;
+      margin-top:22px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:5px 9px;
+      border-radius:999px;
+      background:rgba(37,99,235,0.18);
+      color:#93c5fd;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .erro{
+      color:#fca5a5;
+      font-weight:700;
+      margin-top:8px;
+      font-size:13px;
+      display:none;
+    }
+
+   /* =========================================================
+   IMPRESSÃO FILA SPPS
+   ========================================================= */
+.print-only {
+  display: none;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+.print-only {
+  display: none;
+}
+
+@page {
+  size: A4 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: #111827 !important;
+  }
+
+  .sidebar,
+  .header,
+  .kpis,
+  button,
+  .btn,
+  .ghost-btn,
+  .action-cell {
+    display: none !important;
+  }
+
+  .container,
+  .main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .print-only {
+    display: flex !important;
+  }
+
+  .print-header-spps {
+    width: 100% !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 3px solid #0f2747 !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .print-title-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+    .print-diamond {
+    width: 58px;
+    height: 58px;
+    border: 3px solid #0f2747;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    }
+
+    .print-diamond-svg {
+    width: 43px;
+    height: 36px;
+    fill: none;
+    stroke: #0f2747;
+    stroke-width: 5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    }
+
+
+  .print-header-spps h1 {
+    margin: 0;
+    font-size: 23px;
+    color: #0f2747;
+  }
+
+  .print-header-spps p {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #334155;
+  }
+
+  .print-info-right {
+    margin-left: auto !important;
+    text-align: left !important;
+    font-size: 11px;
+    line-height: 1.7;
+    min-width: 250px;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  .card-title {
+    margin-bottom: 10px !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10px !important;
+  }
+
+  thead th {
+    background: #0f2747 !important;
+    color: white !important;
+    padding: 7px 5px !important;
+    border: 1px solid #d1d5db !important;
+    text-align: center !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tbody td {
+    padding: 7px 5px !important;
+    border: 1px solid #d1d5db !important;
+    color: #111827 !important;
+    text-align: center !important;
+  }
+
+  tbody td:last-child,
+  thead th:last-child {
+    display: none !important;
+  }
+
+  .badge {
+    background: transparent !important;
+    color: #111827 !important;
+    font-weight: 700 !important;
+  }
+
+  .print-footer-spps {
+    position: fixed;
+    left: 8mm;
+    right: 8mm;
+    bottom: 5mm;
+    justify-content: space-between !important;
+    border-top: 2px solid #0f2747;
+    padding-top: 6px;
+    font-size: 10px;
+    color: #0f2747;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <aside class="sidebar">
+      <div>
+        <h1>Gestão SPPS</h1>
+        <p>Vinculação do número SPPS global ao RASP aprovado pelo LG.</p>
+
+        
+      </div>
+
+      <nav class="menu">
+        <a href="home.html">⌂ Página Inicial</a>
+        <a href="gestao-aprovacoes.html">◈ Gestão Geral</a>
+        <a href="gestao-ft.html">• Gestão FT</a>
+        <a href="gestao-lg.html">• Gestão LG</a>
+        <a class="active" href="gestao-spps.html">• Gestão SPPS</a>
+      </nav>
+
+      <div class="assinatura">◆ Developed by Josealdo Lyra</div>
+    </aside>
+
+    <main class="main">
+
+        <section class="print-only print-header-spps">
+        <div class="print-title-left">
+            <div class="print-diamond">
+            <svg class="print-diamond-svg" viewBox="0 0 120 100">
+                <path d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
+                <path d="M15 30 H105" />
+                <path d="M35 8 L48 30 L60 92" />
+                <path d="M85 8 L72 30 L60 92" />
+                <path d="M48 30 H72" />
+            </svg>
+            </div>
+
+
+            <div>
+            <h1>FILA DE EMISSÃO SPPS</h1>
+            <p>RASPs aprovados pelo LG e ainda sem número SPPS vinculado</p>
+            </div>
+        </div>
+
+        <div class="print-info-right">
+            <div>▣ Data do Relatório: <strong id="printDataSpps">-</strong></div>
+            <div>◷ Hora: <strong id="printHoraSpps">-</strong></div>
+            <div>● Usuário: <strong id="printUsuarioSpps">-</strong></div>
+        </div>
+        </section>
+
+        
+      <div class="header">
+        <div>
+            
+
+
+
+          <h2>Fila de Emissão SPPS</h2>
+          <span>RASPs aprovados pelo LG para emissão de SPPS e ainda sem número vinculado.</span>
+        </div>
+
+       <div style="display:flex; gap:10px;">
+  <button
+    type="button" id="btnImprimirFilaSpps" class="btn btn-secondary"
+  >
+    🖨️ Imprimir
+  </button>
+
+  <button
+    class="btn btn-primary"
+    onclick="carregarFilaSpps()"
+  >
+    Atualizar
+  </button>
+</div>
+
+      </div>
+
+      <section class="kpis">
+        <div class="kpi">
+          <div class="kpi-title">Pendentes de Nº SPPS</div>
+          <div id="kpiPendentes" class="kpi-value">0</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-title">Mais antigo na fila</div>
+          <div id="kpiMaisAntigo" class="kpi-value">-</div>
+        </div>
+
+        <div class="kpi">
+          <div class="kpi-title">Perfil da tela</div>
+          <div id="kpiPerfil" class="kpi-value">-</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <h3>RASPs aguardando número SPPS</h3>
+          <span id="totalTabela">Carregando...</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>RASP</th>
+              <th>Fornecedor</th>
+              <th>DUNS</th>
+              <th>MT</th>
+              <th>Aprovador LG</th>
+              <th>Aprovação LG</th>
+              <th>Dias após LG</th>
+              <th>Status</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+
+          <tbody id="tbodySpps">
+            <tr>
+              <td colspan="8" class="empty">Carregando fila SPPS...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+        <section class="print-only print-footer-spps">
+            <div>☑ Relatório gerado automaticamente pelo sistema <strong>RASP</strong></div>
+            <div>Desenvolvido por: <strong>Josealdo Lyra</strong> ●</div>
+        </section>
+
+
+    </main>
+  </div>
+
+  <div id="modalSpps" class="modal-overlay">
+    <div class="modal">
+      <h2>Registrar número SPPS</h2>
+      <p id="modalResumo">Informe o número SPPS emitido no sistema global GM.</p>
+
+      <div class="field">
+        <label>Número SPPS</label>
+        <input id="inputSppsNumero" maxlength="6" placeholder="Ex: 123456" />
+      </div>
+
+      <div class="field">
+        <label>Classificação SPPS</label>
+        <select id="selectClassificacaoSpps">
+          <option value="1">QUALITY</option>
+          <option value="2">SUPPLIER ALERT</option>
+          <option value="3">PROGRAM MANAGEMENT</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Status SPPS inicial</label>
+        <select id="selectStatusSpps">
+          <option value="2">Issued</option>
+        </select>
+      </div>
+
+      <div id="mensagemErro" class="erro"></div>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="fecharModalSpps()">Cancelar</button>
+        <button class="btn btn-success" onclick="registrarSpps()">Registrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:5050";
+
+    let filaSpps = [];
+    let raspSelecionado = null;
+
+    const usuarioLogado = JSON.parse(
+      sessionStorage.getItem("raspUsuarioLogado") ||
+      localStorage.getItem("usuarioLogado") ||
+      "{}"
+    );
+
+    const idUsuarioLogado =
+      usuarioLogado.idUsuario ||
+      usuarioLogado.usuario?.idUsuario ||
+      1;
+
+    const idPerfilLogado =
+      usuarioLogado.idPerfil ||
+      usuarioLogado.usuario?.idPerfil ||
+      1;
+
+    function perfilNome(idPerfil){
+      switch(Number(idPerfil)){
+        case 1: return "ADMIN";
+        case 2: return "MT";
+        case 3: return "FT";
+        case 4: return "LG";
+        case 5: return "SA";
+        case 6: return "GERENTE";
+        case 7: return "EQF";
+        default: return "-";
+      }
+    }
+
+    function podeRegistrarSpps(){
+      return Number(idPerfilLogado) === 1 || Number(idPerfilLogado) === 3;
+    }
+
+    function validarAcessoTela(){
+      const perfil = Number(idPerfilLogado);
+
+      const podeAcessar =
+        perfil === 1 ||
+        perfil === 3 ||
+        perfil === 4 ||
+        perfil === 5 ||
+        perfil === 6;
+
+      if(!podeAcessar){
+        alert("Acesso restrito à Gestão SPPS.");
+        window.location.href = "home.html";
+        return false;
+      }
+
+      return true;
+    }
+
+    function formatarData(valor){
+      if(!valor) return "-";
+
+      const data = new Date(valor);
+
+      if(isNaN(data.getTime())) return "-";
+
+      return data.toLocaleString("pt-BR");
+    }
+
+    function calcularDias(valor){
+      if(!valor) return "-";
+
+      const data = new Date(valor);
+
+      if(isNaN(data.getTime())) return "-";
+
+      const hoje = new Date();
+      const diff = hoje - data;
+      const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+      return dias < 0 ? "0d" : `${dias}d`;
+    }
+
+    async function carregarFilaSpps(){
+      const tbody = document.getElementById("tbodySpps");
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="empty">Carregando fila SPPS...</td>
+        </tr>
+      `;
+
+      try{
+        const resposta = await fetch(`${API_BASE}/spps/pendentes-numero`);
+
+        if(!resposta.ok){
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="empty">Erro ao carregar fila SPPS.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        const dados = await resposta.json();
+
+        filaSpps = Array.isArray(dados) ? dados : [];
+
+        atualizarKpis();
+        renderizarTabela();
+      }
+      catch(erro){
+        console.error(erro);
+
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty">Erro de comunicação com API.</td>
+          </tr>
+        `;
+      }
+    }
+
+    function atualizarKpis(){
+        document.getElementById("kpiPendentes").innerText = filaSpps.length;
+        document.getElementById("kpiPerfil").innerText = perfilNome(idPerfilLogado);
+
+        const comData = filaSpps.filter(item => item.dataAprovacaoLg);
+
+        if(comData.length === 0){
+            document.getElementById("kpiMaisAntigo").innerText = "-";
+            return;
+        }
+
+        const ordenado = [...comData].sort((a,b) =>
+            new Date(a.dataAprovacaoLg) - new Date(b.dataAprovacaoLg)
+        );
+
+        document.getElementById("kpiMaisAntigo").innerText =
+            calcularDias(ordenado[0].dataAprovacaoLg);
+        }
+
+
+    function renderizarTabela(){
+      const tbody = document.getElementById("tbodySpps");
+      const totalTabela = document.getElementById("totalTabela");
+
+      totalTabela.innerText = `${filaSpps.length} registro(s)`;
+
+      if(filaSpps.length === 0){
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="empty">Nenhum RASP pendente de número SPPS.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = "";
+
+      filaSpps.forEach(item => {
+        const tr = document.createElement("tr");
+
+        const botaoAcao = `
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button
+      class="btn btn-secondary"
+      onclick="visualizarRasp(${item.idRasp})">
+      Visualizar RASP
+    </button>
+
+    ${
+      podeRegistrarSpps()
+        ? `<button class="btn btn-primary" onclick="abrirModalSpps(${item.idRasp})">Registrar SPPS</button>`
+        : `<span class="badge">Consulta</span>`
+    }
+  </div>
+`;
+
+
+        tr.innerHTML = `
+          <td><strong>${item.numeroRasp ?? "-"}</strong></td>
+          <td>${item.fornecedor ?? "-"}</td>
+          <td>${item.duns ?? "-"}</td>
+          <td>${item.mtResponsavel ?? "-"}</td>
+          <td>${item.aprovadorLg ?? "-"}</td>
+          <td>${formatarData(item.dataAprovacaoLg)}</td>
+          <td><strong>${calcularDias(item.dataAprovacaoLg)}</strong></td>
+          <td><span class="badge">Aguardando Nº SPPS</span></td>
+          <td>${botaoAcao}</td>
+
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function visualizarRasp(idRasp){
+        window.open(`index.html?idRasp=${idRasp}&modo=consulta&origem=spps`, "_blank");
+    }
+
+
+
+
+    function abrirModalSpps(idRasp){
+      raspSelecionado = filaSpps.find(x => x.idRasp === idRasp);
+
+      if(!raspSelecionado){
+        alert("RASP não localizado na fila.");
+        return;
+      }
+
+      document.getElementById("modalResumo").innerText =
+        `RASP ${raspSelecionado.numeroRasp} - ${raspSelecionado.fornecedor ?? "-"}`;
+
+      document.getElementById("inputSppsNumero").value = "";
+      document.getElementById("selectClassificacaoSpps").value = "1";
+      document.getElementById("selectStatusSpps").value = "2";
+      document.getElementById("mensagemErro").style.display = "none";
+
+      document.getElementById("modalSpps").style.display = "flex";
+    }
+
+    function fecharModalSpps(){
+      raspSelecionado = null;
+      document.getElementById("modalSpps").style.display = "none";
+    }
+
+    function mostrarErroModal(texto){
+      const erro = document.getElementById("mensagemErro");
+      erro.innerText = texto;
+      erro.style.display = "block";
+    }
+
+    async function registrarSpps(){
+      if(!raspSelecionado){
+        mostrarErroModal("Nenhum RASP selecionado.");
+        return;
+      }
+
+      const sppsNumero =
+        document.getElementById("inputSppsNumero").value.trim();
+
+      if(!/^[0-9]{6}$/.test(sppsNumero)){
+        mostrarErroModal("O número SPPS deve conter exatamente 6 dígitos numéricos.");
+        return;
+      }
+
+      const payload = {
+        idUsuarioExecutor: idUsuarioLogado,
+        sppsNumero: sppsNumero,
+        idSppsClassificacaoRasp:
+          parseInt(document.getElementById("selectClassificacaoSpps").value),
+        idSppsStatusRasp:
+          parseInt(document.getElementById("selectStatusSpps").value)
+      };
+
+      try{
+        const resposta = await fetch(`${API_BASE}/rasp/${raspSelecionado.idRasp}/registrar-spps`, {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify(payload)
+        });
+
+        if(!resposta.ok){
+          const erro = await resposta.text();
+          mostrarErroModal(erro);
+          return;
+        }
+
+        alert("Número SPPS registrado com sucesso.");
+
+        fecharModalSpps();
+
+        await carregarFilaSpps();
+      }
+      catch(erro){
+        console.error(erro);
+        mostrarErroModal("Erro de comunicação com API.");
+      }
+    }
+
+    /* =========================================================
+   IMPRESSÃO FILA SPPS
+   ========================================================= */
+function prepararImpressaoSpps() {
+  const agora = new Date();
+
+  document.getElementById("printDataSpps").innerText =
+    agora.toLocaleDateString("pt-BR");
+
+  document.getElementById("printHoraSpps").innerText =
+    agora.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+  document.getElementById("printUsuarioSpps").innerText =
+    document.getElementById("perfilTela")?.innerText || "Usuário logado";
+}
+
+document
+  .getElementById("btnImprimirFilaSpps")
+  ?.addEventListener("click", () => {
+    prepararImpressaoSpps();
+    window.print();
+  });
+
+window.onload = async () => {
+  if(!validarAcessoTela()){
+    return;
+  }
+
+  await carregarFilaSpps();
+};
+
+  </script>
+</body>
+</html>

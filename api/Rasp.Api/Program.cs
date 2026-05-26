@@ -1743,12 +1743,21 @@ app.MapPost("/rasp/{id:int}/retornar-analise", async (int id, AcaoFluxoRaspReque
 })
 .WithName("RetornarRaspParaAnalise");
 
-app.MapPost("/rasp/{id:int}/registrar-spps", async (int id, RegistrarSppsRequest req, RaspDbContext db) =>
+app.MapPost("/rasp/{id:int}/registrar-spps", async (
+    int id,
+    RegistrarSppsRequest req,
+    RaspDbContext db) =>
 {
     var item = await db.Rasp.FindAsync(id);
 
     if (item is null)
         return Results.NotFound("RASP não encontrado.");
+
+    if (item.IdStatusRasp != 4)
+        return Results.BadRequest("Somente RASP aprovado pelo LG para emissão de SPPS pode receber número SPPS.");
+
+    if (!string.IsNullOrWhiteSpace(item.SppsNumero))
+        return Results.BadRequest("Este RASP já possui número SPPS registrado.");
 
     if (req.IdUsuarioExecutor <= 0)
         return Results.BadRequest("IdUsuarioExecutor inválido.");
@@ -1779,8 +1788,13 @@ app.MapPost("/rasp/{id:int}/registrar-spps", async (int id, RegistrarSppsRequest
     if (!sppsNumero.All(char.IsDigit))
         return Results.BadRequest("SppsNumero deve conter somente números.");
 
-    if (!isAdmin && !string.IsNullOrWhiteSpace(item.SppsNumero))
-        return Results.BadRequest("Este RASP já possui SPPS registrado.");
+    var sppsJaExiste = await db.Rasp
+        .AnyAsync(r =>
+            r.IdRasp != id &&
+            r.SppsNumero == sppsNumero);
+
+    if (sppsJaExiste)
+        return Results.BadRequest("Este número SPPS já está vinculado a outro RASP.");
 
     item.SppsNumero = sppsNumero;
     item.IdSppsClassificacaoRasp = req.IdSppsClassificacaoRasp;
@@ -1809,7 +1823,58 @@ app.MapPost("/rasp/{id:int}/registrar-spps", async (int id, RegistrarSppsRequest
             $"Erro de banco ao registrar SPPS. Constraint: {pgEx.ConstraintName}");
     }
 })
-.WithName("RegistrarSppsNoRasp");
+.WithName("RegistrarSppsNoRasp")
+.WithTags("SPPS");
+
+app.MapGet("/spps/pendentes-numero", async (RaspDbContext db) =>
+{
+    var pendentes = await db.Rasp
+        .AsNoTracking()
+        .Where(r =>
+            r.IdStatusRasp == 4 &&
+            (r.SppsNumero == null || r.SppsNumero.Trim() == ""))
+        .OrderBy(r => r.DataAprovacaoLg)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.ResumoOcorrencia,
+            r.DataCriacao,
+            r.DataEnvioLg,
+            r.DataAprovacaoLg,
+            r.IdStatusRasp,
+            r.SppsNumero,
+            r.IdFornecedorRasp,
+
+            Fornecedor = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => f.Nome)
+                .FirstOrDefault(),
+
+            Duns = db.FornecedorRasp
+                .Where(f => f.IdFornecedor == r.IdFornecedorRasp)
+                .Select(f => f.Duns)
+                .FirstOrDefault(),
+
+            MtResponsavel = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdAnalistaMt)
+                .Select(u => (u.Nome + " " + u.Sobrenome).Trim())
+                .FirstOrDefault(),
+
+            AprovadorLg = db.Usuarios
+                .Where(u => u.IdUsuario == r.IdUsuarioAprovacaoLg)
+                .Select(u => (u.Nome + " " + u.Sobrenome).Trim())
+                .FirstOrDefault()
+        })
+        .ToListAsync();
+
+    return Results.Ok(pendentes);
+})
+.WithName("ListarSppsPendentesNumero")
+.WithTags("SPPS");
+
+
+
 
 // -----------------------------------------------------------------------------
 // 16. RASP_PN
