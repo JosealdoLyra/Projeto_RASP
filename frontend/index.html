@@ -832,97 +832,157 @@
 
   <script src="./sessao.js"></script>
 
-  <script>
-    protegerPagina();
-    preencherUsuarioLogadoNaTela();
+ <script>
+  protegerPagina();
+  preencherUsuarioLogadoNaTela();
 
-    async function carregarRaspPorUrl() {
-  const parametros = new URLSearchParams(window.location.search);
+  async function buscarSppsDoRasp(numeroRasp) {
+    if (!numeroRasp) return "------";
 
-  const idRasp = parametros.get("idRasp");
-  const modo = parametros.get("modo");
-  const origem = parametros.get("origem");
+    try {
+      const resposta = await fetch("http://localhost:5050/rasp");
 
-  const perfilUsuario = sessionStorage.getItem("perfilUsuario");
+      if (!resposta.ok) {
+        return "------";
+      }
 
-  if (origem === "spps" && perfilUsuario !== "MT") {
-    const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
-    const sppsBox = document.querySelector("#sppsNumeroDisplay").closest(".rasp-indicador-box");
+      const rasps = await resposta.json();
 
+      const raspEncontrado = rasps.find(r =>
+        String(r.numeroRasp).trim() === String(numeroRasp).trim()
+      );
 
-    if (btnVoltar) {
-      btnVoltar.style.display = "inline-flex";
-      btnVoltar.disabled = false;
-      btnVoltar.onclick = () => {
-        window.location.href = "gestao-spps.html";
-      };
-    }
+      const numeroSpps =
+        raspEncontrado?.sppsNumero ||
+        raspEncontrado?.spps_numero ||
+        raspEncontrado?.SppsNumero ||
+        "";
 
-    if (sppsBox) {
-      sppsBox.style.cursor = "pointer";
-      sppsBox.title = "Voltar para Gestão SPPS";
-      sppsBox.onclick = () => {
-        window.location.href = "gestao-spps.html";
-      };
+      return numeroSpps && String(numeroSpps).trim() !== ""
+        ? numeroSpps
+        : "------";
+
+    } catch (erro) {
+      console.error("Erro ao buscar SPPS:", erro);
+      return "------";
     }
   }
 
-  if (!idRasp) {
-    return;
+  async function atualizarCampoSpps(numeroRasp) {
+    const campoSpps = document.getElementById("sppsNumeroDisplay");
+
+    if (!campoSpps) return;
+
+    const numeroSpps = await buscarSppsDoRasp(numeroRasp);
+
+    campoSpps.innerText = numeroSpps;
   }
 
-  try {
-    const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
+  async function carregarRaspPorUrl() {
+    const parametros = new URLSearchParams(window.location.search);
 
-    if (!resposta.ok) {
-      alert("Não foi possível carregar o RASP informado.");
+    const idRasp = parametros.get("idRasp");
+    const modo = parametros.get("modo");
+    const origem = parametros.get("origem");
+    const perfilUsuario = sessionStorage.getItem("perfilUsuario");
+
+    if (origem === "spps" && perfilUsuario !== "MT") {
+      const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
+      const sppsDisplay = document.getElementById("sppsNumeroDisplay");
+      const sppsBox = sppsDisplay
+        ? sppsDisplay.closest(".rasp-indicador-box")
+        : null;
+
+      if (btnVoltar) {
+        btnVoltar.style.display = "inline-flex";
+        btnVoltar.disabled = false;
+        btnVoltar.onclick = () => {
+          window.location.href = "gestao-spps.html";
+        };
+      }
+
+      if (sppsBox) {
+        sppsBox.style.cursor = "pointer";
+        sppsBox.title = "Voltar para Gestão SPPS";
+        sppsBox.onclick = () => {
+          window.location.href = "gestao-spps.html";
+        };
+      }
+    }
+
+    if (!idRasp) {
       return;
     }
 
-    const rasp = await resposta.json();
+    try {
+      const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
 
-    const campoBusca = document.getElementById("buscarRaspNumero");
-    const botaoBusca = document.getElementById("btnBuscarRasp");
+      if (!resposta.ok) {
+        alert("Não foi possível carregar o RASP informado.");
+        return;
+      }
 
-    if (!campoBusca || !botaoBusca) {
-      alert("Campo de busca do RASP não localizado na tela.");
-      return;
-    }
+      const rasp = await resposta.json();
 
-    campoBusca.value = rasp.numeroRasp;
-    botaoBusca.click();
+      const campoBusca = document.getElementById("buscarRaspNumero");
+      const botaoBusca = document.getElementById("btnBuscarRasp");
 
-    if (modo === "consulta") {
+      if (!campoBusca || !botaoBusca) {
+        alert("Campo de busca do RASP não localizado na tela.");
+        return;
+      }
+
+      campoBusca.value = rasp.numeroRasp;
+      botaoBusca.click();
+
       setTimeout(() => {
-        document
-          .querySelectorAll("input, select, textarea, button")
-          .forEach(campo => {
+        atualizarCampoSpps(rasp.numeroRasp);
+      }, 1400);
 
-            if (
-              campo.id === "btnVoltarGestaoSpps" ||
-              campo.id === "buscarRaspNumero" ||
-              campo.id === "btnBuscarRasp" ||
-              campo.closest(".sidebar")
-            ) {
-              return;
-            }
+      if (modo === "consulta") {
+        setTimeout(() => {
+          document
+            .querySelectorAll("input, select, textarea, button")
+            .forEach(campo => {
+              if (
+                campo.id === "btnVoltarGestaoSpps" ||
+                campo.id === "buscarRaspNumero" ||
+                campo.id === "btnBuscarRasp" ||
+                campo.closest(".sidebar")
+              ) {
+                return;
+              }
 
-            campo.disabled = true;
-          });
-      }, 1200);
+              campo.disabled = true;
+            });
+        }, 1600);
+      }
+
+    } catch (erro) {
+      console.error(erro);
+      alert("Erro ao carregar RASP pela URL.");
     }
-
-  } catch (erro) {
-    console.error(erro);
-    alert("Erro ao carregar RASP pela URL.");
   }
-}
 
+  setTimeout(() => {
+    carregarRaspPorUrl();
+  }, 500);
 
-    setTimeout(() => {
-      carregarRaspPorUrl();
-    }, 500);
-  </script>
+  const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+
+  if (btnBuscarRasp) {
+    btnBuscarRasp.addEventListener("click", () => {
+      setTimeout(() => {
+        const numeroRasp =
+          document.getElementById("raspNumeroDisplay")?.innerText ||
+          document.getElementById("buscarRaspNumero")?.value;
+
+        atualizarCampoSpps(numeroRasp);
+      }, 1500);
+    });
+  }
+</script>
+
 
 </body>
 </html>

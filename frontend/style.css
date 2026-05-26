@@ -1050,6 +1050,15 @@ input[readonly] {
   flex-wrap: wrap;
 }
 
+#sppsNumeroDisplay {
+  color: #dc2626;
+  font-weight: 900;
+  letter-spacing: 1px;
+  background: #fee2e2;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
 
 /* ==========================================================
    CHIP DE DATA DO RASP
