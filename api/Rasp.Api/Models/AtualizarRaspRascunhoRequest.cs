@@ -36,6 +36,8 @@ namespace Rasp.Api.Models
         public string? SppsNumero { get; set; }
         public string? Procedencia { get; set; }
         public string? DescricaoProblema { get; set; }
+        public string? VinVeiculoProblema { get; set; }
+
         public string? BpTexto { get; set; }
         public string? BpSerie { get; set; }
         public string? BreakpointTexto { get; set; }

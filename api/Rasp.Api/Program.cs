@@ -8,6 +8,7 @@ using Rasp.Api.Models.Requests;
 using Rasp.Api.Models.Auth;
 using Rasp.Api.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // -----------------------------------------------------------------------------
@@ -3814,6 +3815,38 @@ app.MapPut("/rasp-arquivo/{id:int}", async (int id, AtualizarRaspArquivoRequest 
 })
 .WithName("AtualizarRaspArquivo");
 
+// -----------------------------------------------------------------------------
+// 20A.3 ONE PAGE RASP - ATUALIZAR
+// -----------------------------------------------------------------------------
+app.MapPut("/onepage-rasp/{idOnepage:int}", async (
+    int idOnepage,
+    AtualizarOnePageRaspRequest req,
+    RaspDbContext db) =>
+{
+    var onePage = await db.OnePageRasp
+        .FirstOrDefaultAsync(o => o.IdOnepageRasp == idOnepage);
+
+    if (onePage is null)
+        return Results.NotFound(new { mensagem = "One Page não encontrada." });
+
+    onePage.IssueDescription = req.IssueDescription;
+    onePage.PreliminaryRootCause = req.PreliminaryRootCause;
+    onePage.ContainmentAction = req.ContainmentAction;
+    onePage.RootCauseAnalysis = req.RootCauseAnalysis;
+    onePage.BreakingPoint = req.BreakingPoint;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "One Page atualizada com sucesso.",
+        onePage.IdOnepageRasp,
+        onePage.IdRasp
+    });
+})
+.WithName("AtualizarOnePageRasp");
+
+
 app.MapDelete("/rasp-arquivo/{id:int}", async (int id, RaspDbContext db) =>
 {
     if (id <= 0)
@@ -3868,15 +3901,6 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
         erro = "RASP não encontrado."
     });
 }
-
-if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoLg)
-{
-    return Results.BadRequest(new
-    {
-        erro = "Este RASP não está aguardando aprovação LG."
-    });
-}
-
 
     if (rasp is null)
         return Results.NotFound("RASP não encontrado.");
@@ -3954,6 +3978,21 @@ if (rasp.IdStatusRasp != StatusRaspConstantes.AguardandoLg)
         rasp.DescricaoProblema = descricao;
         alterou = true;
     }
+
+    // -------------------------------------------------------------------------
+// 04.1 VIN DO VEÍCULO PROBLEMA
+// -------------------------------------------------------------------------
+if (req.VinVeiculoProblema is not null)
+{
+    var vinVeiculoProblema = req.VinVeiculoProblema.Trim().ToUpper();
+
+    rasp.VinVeiculoProblema = string.IsNullOrWhiteSpace(vinVeiculoProblema)
+        ? null
+        : vinVeiculoProblema;
+
+    alterou = true;
+}
+
 
     // -------------------------------------------------------------------------
     // 05. DOMÍNIOS / FKs OPCIONAIS
@@ -4564,6 +4603,9 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
     AcaoFluxoRaspRequest req,
     RaspDbContext db) =>
 {
+    Console.WriteLine("ENTROU NA ROTA SUBMETER FT");
+
+
     if (id <= 0)
         return Results.BadRequest("Id do RASP inválido.");
 
@@ -4708,6 +4750,10 @@ var possuiPn = await db.RaspPn
 
     await db.SaveChangesAsync();
 
+    
+
+
+
     await RegistrarHistoricoFluxoAsync(
     db,
     rasp.IdRasp,
@@ -4732,6 +4778,329 @@ var possuiPn = await db.RaspPn
     });
 })
 .WithName("SubmeterRaspAoFt");
+
+// -----------------------------------------------------------------------------
+// 20A.1 ONE PAGE RASP - LISTAR
+// -----------------------------------------------------------------------------
+app.MapGet("/onepage-rasp", async (RaspDbContext db) =>
+{
+    var lista = await db.OnePageRasp
+        .OrderByDescending(o => o.IdOnepageRasp)
+        .Select(o => new
+        {
+            o.IdOnepageRasp,
+            o.IdRasp,
+            o.IssueDescription,
+            o.PreliminaryRootCause,
+            o.ContainmentAction,
+            o.RootCauseAnalysis,
+            o.BreakingPoint,
+            o.ImagemPath,
+            o.DataCriacao,
+            o.IdUsuarioCriacao
+        })
+        .ToListAsync();
+
+    return Results.Ok(lista);
+})
+.WithName("ListarOnePageRasp");
+
+// -----------------------------------------------------------------------------
+// ONE PAGE RASP - CONSULTAR DADOS COMPLETOS
+// -----------------------------------------------------------------------------
+app.MapGet("/onepage-rasp/rasp/{idRasp:int}", async (
+    int idRasp,
+    RaspDbContext db) =>
+{
+    var onePage = await db.OnePageRasp
+        .FirstOrDefaultAsync(o => o.IdRasp == idRasp);
+
+    if (onePage is null)
+        return Results.NotFound("One Page não encontrada.");
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == idRasp);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var origem = await db.IndiceOperacionalRasp
+        .FirstOrDefaultAsync(o =>
+            o.IdIndiceOperacionalRasp == rasp.IdIndiceOperacionalRasp);
+
+    var pnPrincipal = await db.RaspPn
+        .FirstOrDefaultAsync(p =>
+            p.IdRasp == rasp.IdRasp &&
+            p.OrdemExibicao == 1);
+
+    return Results.Ok(new
+    {
+        onePage.IdOnepageRasp,
+        onePage.IdRasp,
+
+        Origem = origem != null
+            ? origem.Descricao
+            : "SEM ORIGEM",
+
+        NomePeca = pnPrincipal != null
+            ? pnPrincipal.Pn
+            : "SEM PEÇA",
+
+        Titulo =
+            (origem != null ? origem.Descricao : "SEM ORIGEM")
+            + " - " +
+            (pnPrincipal != null ? pnPrincipal.Pn : "SEM PEÇA"),
+
+        IssueDescription = rasp.DescricaoProblema,
+
+        Vin = "TBD",
+
+        VehicleBuildDate = "",
+
+        PreliminaryRootCause =
+            onePage.PreliminaryRootCause ?? "TBD",
+
+        ContainmentAction =
+            onePage.ContainmentAction ?? "TBD",
+
+        RootCauseAnalysis =
+            onePage.RootCauseAnalysis ?? "",
+
+        BreakingPoint =
+            onePage.BreakingPoint ?? "",
+
+        ImagemPath = onePage.ImagemPath,
+
+        PlantIssueDate =
+            onePage.DataCriacao.HasValue
+                ? onePage.DataCriacao.Value.ToString("dd/MM/yyyy")
+                : "",
+
+        DataCriacao = onePage.DataCriacao
+    });
+})
+.WithName("ConsultarOnePageRaspDetalhado")
+.WithTags("One Page RASP");
+
+
+// -----------------------------------------------------------------------------
+// ONE PAGE RASP - GERAR MANUALMENTE
+//
+// Regras:
+// - MT não pode gerar One Page
+// - Somente ADMIN, FT ou LG podem gerar
+// - Só gera se o RASP for elegível
+// - Se já existir One Page para o RASP, retorna o registro existente
+// -----------------------------------------------------------------------------
+app.MapPost("/onepage-rasp/gerar/{idRasp:int}", async (
+    int idRasp,
+    AcaoFluxoRaspRequest req,
+    RaspDbContext db) =>
+{
+    if (idRasp <= 0)
+        return Results.BadRequest("IdRasp inválido.");
+
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var usuario = await db.Usuarios
+        .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioExecutor);
+
+    if (usuario is null)
+        return Results.BadRequest("Usuário executor não encontrado.");
+
+    if (!usuario.Ativo)
+        return Results.BadRequest("Usuário executor está inativo.");
+
+    var isAdmin = usuario.IdPerfil == 1 || usuario.Administrador == true;
+    var isFt = usuario.IdPerfil == 3;
+    var isLg = usuario.IdPerfil == 4;
+
+    if (!isAdmin && !isFt && !isLg)
+    {
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+    }
+
+    var rasp = await db.Rasp
+        .FirstOrDefaultAsync(r => r.IdRasp == idRasp);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var onePageExistente = await db.OnePageRasp
+        .FirstOrDefaultAsync(o => o.IdRasp == idRasp);
+
+    if (onePageExistente is not null)
+    {
+        return Results.Ok(new
+        {
+            mensagem = "One Page já existente para este RASP.",
+            geradoAgora = false,
+            onePageExistente.IdOnepageRasp,
+            onePageExistente.IdRasp
+        });
+    }
+
+    var origensOnePage = new[]
+    {
+        "DR",
+        "DRL",
+        "GCA5",
+        "GCA10",
+        "GCA20",
+        "GCA50",
+        "GDA"
+    };
+
+    var indiceOperacional = await db.IndiceOperacionalRasp
+        .FirstOrDefaultAsync(o => o.IdIndiceOperacionalRasp == rasp.IdIndiceOperacionalRasp);
+
+    var origemDescricao = indiceOperacional?.Descricao?.Trim().ToUpper();
+
+    var origemNormalizada = origemDescricao?
+        .Replace(".", "")
+        .Replace("-", "")
+        .Replace(" ", "");
+
+    if (origemNormalizada is null || !origensOnePage.Contains(origemNormalizada))
+    {
+        return Results.BadRequest(new
+        {
+            mensagem = "Este RASP não é elegível para geração de One Page.",
+            origem = origemDescricao,
+            origemNormalizada
+        });
+    }
+
+    var novoOnePage = new OnePageRaspEntity
+    {
+        IdRasp = rasp.IdRasp,
+        DataCriacao = DateTime.UtcNow,
+        IdUsuarioCriacao = req.IdUsuarioExecutor
+    };
+
+    db.OnePageRasp.Add(novoOnePage);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "One Page gerada com sucesso.",
+        geradoAgora = true,
+        novoOnePage.IdOnepageRasp,
+        novoOnePage.IdRasp
+    });
+})
+.WithName("GerarOnePageRasp")
+.WithTags("One Page RASP");
+
+
+app.MapGet("/onepage-rasp/{idRasp:int}", async (int idRasp, RaspDbContext db) =>
+{
+    var dadosBase = await (
+        from o in db.OnePageRasp
+        join r in db.Rasp on o.IdRasp equals r.IdRasp
+
+        join origem in db.IndiceOperacionalRasp
+            on r.IdIndiceOperacionalRasp equals origem.IdIndiceOperacionalRasp into origemJoin
+        from origem in origemJoin.DefaultIfEmpty()
+
+        join rp in db.RaspPn
+            on r.IdRasp equals rp.IdRasp into pnsJoin
+        from rp in pnsJoin.DefaultIfEmpty()
+
+        join pnCadastro in db.PnRasp
+            on rp.Pn equals pnCadastro.CodigoPn into pnJoin
+        from pnCadastro in pnJoin.DefaultIfEmpty()
+
+        where o.IdRasp == idRasp
+        orderby rp.OrdemExibicao
+
+        select new
+        {
+            o.IdOnepageRasp,
+            o.IdRasp,
+            o.IssueDescription,
+            o.PreliminaryRootCause,
+            o.ContainmentAction,
+            o.RootCauseAnalysis,
+            o.BreakingPoint,
+            o.ImagemPath,
+            o.DataCriacao,
+
+            Origem = origem != null ? origem.Descricao : "",
+            Pn = rp != null ? rp.Pn : "",
+            NomePeca = pnCadastro != null ? pnCadastro.NomePeca : "",
+
+            DescricaoProblema = r.DescricaoProblema,
+            ResumoOcorrencia = r.ResumoOcorrencia,
+
+            SppsNumero = r.SppsNumero,
+            SupplierAlert = r.SupplierAlert,
+
+            BpTexto = r.BpTexto,
+            BpSerie = r.BpSerie,
+            BpDatahora = r.BpDatahora,
+            BreakpointCodigo = r.BreakpointCodigo,
+            VinVeiculoProblema = r.VinVeiculoProblema
+
+        }
+    ).FirstOrDefaultAsync();
+
+    if (dadosBase is null)
+        return Results.NotFound(new { mensagem = "One Page não encontrada para este RASP." });
+
+    var breakingPointMontado = string.Join(" - ", new[]
+    {
+        !string.IsNullOrWhiteSpace(dadosBase.BpSerie)
+            ? "VIN (Linha)"
+            : !string.IsNullOrWhiteSpace(dadosBase.BreakpointCodigo)
+                ? "LOCAL"
+                : "",
+
+        dadosBase.BpDatahora.HasValue
+            ? dadosBase.BpDatahora.Value.ToString("dd/MM/yyyy")
+            : "",
+
+        dadosBase.BpDatahora.HasValue
+            ? dadosBase.BpDatahora.Value.ToString("HH:mm")
+            : "",
+
+        dadosBase.BpSerie ?? "",
+        dadosBase.BreakpointCodigo ?? "",
+        dadosBase.BpTexto ?? ""
+    }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+    return Results.Ok(new
+    {
+        dadosBase.IdOnepageRasp,
+        dadosBase.IdRasp,
+        dadosBase.IssueDescription,
+        dadosBase.PreliminaryRootCause,
+        dadosBase.ContainmentAction,
+        dadosBase.RootCauseAnalysis,
+
+        BreakingPoint = !string.IsNullOrWhiteSpace(dadosBase.BreakingPoint)
+            ? dadosBase.BreakingPoint
+            : breakingPointMontado,
+
+        dadosBase.ImagemPath,
+        dadosBase.DataCriacao,
+
+        dadosBase.Origem,
+        dadosBase.Pn,
+        dadosBase.NomePeca,
+        dadosBase.DescricaoProblema,
+        dadosBase.ResumoOcorrencia,
+
+        Vin = dadosBase.VinVeiculoProblema,
+        SppsNumero = dadosBase.SppsNumero
+    });
+})
+.WithName("ConsultarOnePageRaspPorId")
+.WithTags("One Page RASP");
+
+
+
 
 
 // ==========================================================
@@ -6467,6 +6836,9 @@ app.MapGet("/debug-model", (RaspDbContext db) =>
 })
 .WithName("DebugModel");
 
+
+
+
 app.Run();
 
 // -----------------------------------------------------------------------------
@@ -6546,11 +6918,12 @@ public record AtualizarRaspRequest(
 public record AtualizarRaspRascunhoRequest(
     int IdUsuarioExecutor,
     int? IdFornecedorRasp,
-
     string? ResumoOcorrencia,
     string? DescricaoProblema,
+    string? VinVeiculoProblema,
 
     int? IdModeloVeiculoRasp,
+
     int? IdSetorRasp,
     int? IdTurnoRasp,
     int? IdIndiceOperacionalRasp,
@@ -6851,3 +7224,14 @@ public record ValidarExecutorSelecaoRequest(
 );
 
 
+// -----------------------------------------------------------------------------
+// REQUEST - ATUALIZAR ONE PAGE RASP
+// -----------------------------------------------------------------------------
+public class AtualizarOnePageRaspRequest
+{
+    public string? IssueDescription { get; set; }
+    public string? PreliminaryRootCause { get; set; }
+    public string? ContainmentAction { get; set; }
+    public string? RootCauseAnalysis { get; set; }
+    public string? BreakingPoint { get; set; }
+}

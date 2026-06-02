@@ -25,6 +25,9 @@ namespace Rasp.Api.Data
         public DbSet<RaspArquivo> RaspArquivo => Set<RaspArquivo>();
         public DbSet<RaspEntity> Rasp => Set<RaspEntity>();
 
+        public DbSet<OnePageRaspEntity> OnePageRasp => Set<OnePageRaspEntity>();
+
+
         public DbSet<RaspHistoricoFluxoEntity> RaspHistoricoFluxo => Set<RaspHistoricoFluxoEntity>();
 
         public DbSet<RaspPnEntity> RaspPn => Set<RaspPnEntity>();
@@ -53,6 +56,7 @@ namespace Rasp.Api.Data
 
         public DbSet<RaspContencao> RaspContencao { get; set;}
 
+        
             protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
             // -----------------------------------------------------------------
@@ -306,6 +310,9 @@ modelBuilder.Entity<Usuario>(entity =>
     entity.HasKey(e => e.IdUsuario);
 
 
+    
+
+
     // =============================================================
     // IDENTIFICAÇÃO
     // =============================================================
@@ -376,6 +383,49 @@ modelBuilder.Entity<Usuario>(entity =>
     entity.Property(e => e.UltimoLogin)
         .HasColumnName("ultimo_login");
 });
+
+
+    // -----------------------------------------------------------------
+    // ONE PAGE
+    // -----------------------------------------------------------------//
+    //
+    //
+        modelBuilder.Entity<OnePageRaspEntity>(entity =>
+    {
+        entity.ToTable("onepage_rasp");
+
+        entity.HasKey(e => e.IdOnepageRasp);
+
+        entity.Property(e => e.IdOnepageRasp)
+            .HasColumnName("id_onepage_rasp");
+
+        entity.Property(e => e.IdRasp)
+            .HasColumnName("id_rasp");
+
+        entity.Property(e => e.IssueDescription)
+            .HasColumnName("issue_description");
+
+        entity.Property(e => e.PreliminaryRootCause)
+            .HasColumnName("preliminary_root_cause");
+
+        entity.Property(e => e.ContainmentAction)
+            .HasColumnName("containment_action");
+
+        entity.Property(e => e.RootCauseAnalysis)
+            .HasColumnName("root_cause_analysis");
+
+        entity.Property(e => e.BreakingPoint)
+            .HasColumnName("breaking_point");
+
+        entity.Property(e => e.ImagemPath)
+            .HasColumnName("imagem_path");
+
+        entity.Property(e => e.DataCriacao)
+            .HasColumnName("data_criacao");
+
+        entity.Property(e => e.IdUsuarioCriacao)
+            .HasColumnName("id_usuario_criacao");
+    });
 
 // -----------------------------------------------------------------
 // USUÁRIOS TERCEIROS
@@ -518,6 +568,10 @@ modelBuilder.Entity<UsuarioTerceiro>(entity =>
 
                 entity.Property(e => e.Procedencia)
                     .HasColumnName("procedencia");
+
+                entity.Property(e => e.VinVeiculoProblema)
+                    .HasColumnName("vin_veiculo_problema");
+
 
                 entity.Property(e => e.DescricaoProblema)
                     .HasColumnName("descricao_problema");

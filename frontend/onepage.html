@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>One Page RASP</title>
+
+  <style>
+
+    body{
+      margin:0;
+      padding:24px;
+      font-family:Arial, Helvetica, sans-serif;
+      background:#ffffff;
+      color:#111;
+    }
+
+    .onepage-container{
+      width:1400px;
+      margin:auto;
+      border:2px solid #111;
+      padding:24px;
+      box-sizing:border-box;
+      position:relative;
+      background:#fff;
+    }
+
+    .topo{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:24px;
+    }
+
+    .titulo{
+      font-size:46px;
+      font-weight:700;
+      text-align: center;
+      width: 100%
+    }
+
+    .logo-gm{
+      width:120px;
+      object-fit:contain;
+    }
+
+    .conteudo{
+      display:grid;
+      grid-template-columns: 45% 55%;
+      gap:24px;
+    }
+
+    .bloco{
+      margin-bottom:18px;
+    }
+
+    .bloco label{
+      font-weight:700;
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .texto{
+      border-left:6px solid #c7ff00;
+      padding-left:10px;
+      line-height:1.5;
+      font-size:18px;
+    }
+
+    .imagem-area{
+      border:2px dashed #999;
+      height:600px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#666;
+      font-size:24px;
+    }
+
+    #uploadImagemOnePage{
+      margin-top:12px;
+      font-size:16px;
+    }
+
+
+    textarea{
+      width:100%;
+      min-height:120px;
+      font-size:18px;
+      padding:12px;
+      box-sizing:border-box;
+      resize:vertical;
+    }
+
+    input[type="date"]{
+      width:220px;
+      height:38px;
+      font-size:18px;
+      padding:6px 10px;
+      box-sizing:border-box;
+    }
+
+    .bloco-curto{
+      margin-bottom:14px;
+    }
+
+
+    .rodape{
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom:4px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .gm-confidential{
+      font-weight:bold;
+      color:#3a7d00;
+    }
+
+    .acoes-onepage{
+  margin-top:25px;
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+.acoes-onepage button{
+  padding:12px 28px;
+  font-size:18px;
+  font-weight:bold;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+#btnSalvarOnePage{
+  background:#0b5ed7;
+  color:white;
+}
+
+#btnImprimirOnePage{
+  background:#444;
+  color:white;
+}
+
+.campo-data-curto{
+  width:220px;
+  height:36px;
+  font-size:16px;
+  padding:6px 10px;
+  box-sizing:border-box;
+}
+
+
+@page {
+  size: A4 landscape;
+  margin: 5mm;
+}
+
+@media print {
+  .onepage-container {
+    width: 100%;
+    min-height: 185mm;
+    padding: 12px;
+  }
+
+  .titulo {
+    font-size: 30px;
+  }
+
+  .logo-gm {
+    width: 70px;
+  }
+
+  .conteudo {
+    grid-template-columns: 44% 56%;
+    gap: 14px;
+  }
+
+  .bloco {
+    margin-bottom: 7px;
+  }
+
+  .bloco label,
+  label {
+    font-size: 12px;
+  }
+
+  .texto {
+    font-size: 12px;
+    line-height: 1.2;
+  }
+
+  textarea {
+    height: 58px;
+    min-height: 58px;
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  #breakingPoint {
+    height: 72px;
+    min-height: 72px;
+  }
+
+  .imagem-area {
+    height: 470px;
+    font-size: 18px;
+  }
+
+  input[type="date"],
+  .campo-data-curto {
+    width: 170px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .rodape {
+    margin-top: 6px;
+    font-size: 10px;
+  }
+
+  .acoes-onepage,
+  #uploadImagemOnePage,
+  #textoImagemOnePage {
+    display: none !important;
+  }
+}
+
+
+  </style>
+</head>
+
+<body>
+
+  <div class="onepage-container">
+
+    <div class="topo">
+
+      <div class="titulo" id="tituloOnePage">
+        DRR - Retrovisor Interno
+      </div>
+
+      <img
+        src="img/GM_Logo.png"
+        class="logo-gm"
+      />
+
+    </div>
+
+    <div class="conteudo">
+
+      <!-- ESQUERDA -->
+      <div>
+
+        <div class="bloco">
+          <label>Issue description</label>
+          <div class="texto" id="issueDescription">
+            Carregando...
+          </div>
+        </div>
+
+        <div class="bloco">
+          <label>VIN</label>
+          <div class="texto" id="vinOnePage">
+            TBD
+          </div>
+        </div>
+
+        <label>Vehicle build date</label>
+        <input
+            type="date"
+            id="vehicleBuildDate"
+            class="campo-data-curto"/>
+
+        <div class="bloco">
+            <label>SPPS</label>
+            <div class="texto" id="sppsNumero">
+                TBD
+            </div>
+        </div>
+
+        <div class="bloco">
+          <label>Preliminary root cause analysis</label>
+          <textarea id="preliminaryRootCause">TBD</textarea>
+        </div>
+
+
+        <div class="bloco">
+          <label>Containment</label>
+          <textarea id="containmentAction">TBD</textarea>
+        </div>
+
+
+        <div class="bloco">
+          <label>Root cause analysis</label>
+          <textarea id="rootCauseAnalysis"></textarea>
+        </div>
+
+        <div class="bloco">
+          <label>Breaking point</label>
+          <textarea id="breakingPoint"></textarea>
+        </div>
+
+      </div>
+
+      <!-- DIREITA -->
+      <div>
+
+        <div class="imagem-area" id="imagemAreaOnePage">
+        <span id="textoImagemOnePage">ÁREA DA IMAGEM</span>
+
+        <img
+          id="previewImagemOnePage"
+          src=""
+          alt="Imagem do problema"
+          style="display:none; max-width:100%; max-height:100%; object-fit:contain;"
+        />
+      </div>
+
+      <input
+        type="file"
+        id="uploadImagemOnePage"
+        accept="image/*"
+      />
+
+
+      </div>
+
+    </div>
+
+    <div class="acoes-onepage">
+    <button type="button" id="btnVoltarRasp">
+      Voltar ao RASP
+    </button>
+
+    <button type="button" id="btnMenuInicial">
+      Menu inicial
+    </button>
+
+    <button type="button" id="btnSalvarOnePage">
+      Salvar One Page
+    </button>
+
+    <button type="button" id="btnImprimirOnePage">
+      Imprimir / PDF
+    </button>
+  </div>
+
+
+
+    <div class="rodape">
+
+      <div class="gm-confidential">
+        GM Confidential
+      </div>
+
+      <div id="plantIssueDate">
+        Plant issue date: --
+      </div>
+
+    </div>
+
+  </div>
+
+<script>
+  const API_BASE_URL = "http://localhost:5050";
+  const idRasp = new URLSearchParams(window.location.search).get("idRasp");
+
+
+  function obterParametro(nome) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(nome);
+  }
+
+  function formatarDataPtBr(valor) {
+    if (!valor) return "--/--/----";
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) return "--/--/----";
+    return data.toLocaleDateString("pt-BR");
+  }
+
+async function carregarOnePage() {
+  const idRasp = obterParametro("idRasp");
+
+  if (!idRasp) {
+    alert("IdRasp não informado.");
+    return;
+  }
+
+  const response = await fetch(`${API_BASE_URL}/onepage-rasp/${idRasp}`);
+
+  if (!response.ok) {
+    alert("Não foi possível carregar os dados do One Page.");
+    return;
+  }
+
+  const dados = await response.json();
+  console.log("DADOS ONE PAGE:", dados);
+
+  const origem = dados.origem || "Origem";
+  const nomePeca = dados.nomePeca || dados.pn || "Peça";
+
+  document.getElementById("tituloOnePage").textContent =
+    `${origem} - ${nomePeca}`;
+
+  document.getElementById("issueDescription").textContent =
+    dados.resumoOcorrencia ||
+    dados.issueDescription ||
+    dados.descricaoProblema ||
+    "TBD";
+
+    document.getElementById("vinOnePage").textContent =
+    dados.vinVeiculoProblema ||
+    dados.vin_veiculo_problema ||
+    dados.vin ||
+    "TBD";
+
+
+  document.getElementById("preliminaryRootCause").value =
+    dados.preliminaryRootCause || "TBD";
+
+  document.getElementById("containmentAction").value =
+    dados.containmentAction || "TBD";
+
+  document.getElementById("sppsNumero").textContent =
+  dados.sppsNumero ||
+  dados.spps_numero ||
+  "TBD";
+
+
+  document.getElementById("rootCauseAnalysis").value =
+    dados.rootCauseAnalysis || "TBD";
+
+  document.getElementById("breakingPoint").value =
+    dados.breakingPoint || "TBD";
+
+  document.getElementById("plantIssueDate").textContent =
+    `Plant issue date: ${formatarDataPtBr(dados.dataCriacao)}`;
+}
+
+carregarOnePage();
+
+
+// ==========================================================
+// IMAGEM DO ONE PAGE - PREVIEW NA TELA
+// ==========================================================
+const uploadImagemOnePage = document.getElementById("uploadImagemOnePage");
+const previewImagemOnePage = document.getElementById("previewImagemOnePage");
+const textoImagemOnePage = document.getElementById("textoImagemOnePage");
+
+if (uploadImagemOnePage && previewImagemOnePage && textoImagemOnePage) {
+  uploadImagemOnePage.addEventListener("change", () => {
+    const arquivo = uploadImagemOnePage.files?.[0];
+
+    if (!arquivo) {
+      previewImagemOnePage.src = "";
+      previewImagemOnePage.style.display = "none";
+      textoImagemOnePage.style.display = "block";
+      return;
+    }
+
+    const leitor = new FileReader();
+
+    leitor.onload = (evento) => {
+      previewImagemOnePage.src = evento.target.result;
+      previewImagemOnePage.style.display = "block";
+      textoImagemOnePage.style.display = "none";
+    };
+
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+
+</script>
+
+<script>
+  const btnSalvarOnePage = document.getElementById("btnSalvarOnePage");
+  const btnImprimirOnePage = document.getElementById("btnImprimirOnePage");
+  const btnVoltarRasp = document.getElementById("btnVoltarRasp");
+  const btnMenuInicial = document.getElementById("btnMenuInicial");
+
+  if (btnVoltarRasp) {
+    btnVoltarRasp.addEventListener("click", () => {
+      window.location.href = `index.html?idRasp=${idRasp}`;
+    });
+  }
+
+  if (btnMenuInicial) {
+    btnMenuInicial.addEventListener("click", () => {
+      window.location.href = "home.html";
+    });
+  }
+
+
+
+  if (btnSalvarOnePage) {
+  btnSalvarOnePage.addEventListener("click", async () => {
+    const payload = {
+      issueDescription: document.getElementById("issueDescription")?.textContent?.trim() || null,
+      preliminaryRootCause: document.getElementById("preliminaryRootCause")?.textContent?.trim() || null,
+      containmentAction: document.getElementById("containmentAction")?.textContent?.trim() || null,
+      rootCauseAnalysis: document.getElementById("rootCauseAnalysis")?.value?.trim() || null,
+      breakingPoint: document.getElementById("breakingPoint")?.value?.trim() || null
+    };
+
+    const response = await fetch(`${API_BASE_URL}/onepage-rasp/${idRasp}/salvar`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      alert("Erro ao salvar One Page.");
+      return;
+    }
+
+    alert("One Page salva com sucesso.");
+  });
+}
+
+
+  if (btnImprimirOnePage) {
+    btnImprimirOnePage.addEventListener("click", () => {
+      window.print();
+    });
+  }
+</script>
+
+</body>
+</html>

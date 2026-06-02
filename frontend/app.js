@@ -5,8 +5,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // 01. CONFIGURAÇÕES GERAIS
   // ==========================================================
   const API_BASE_URL = "http://localhost:5050";
-  const ID_USUARIO_LOGADO = 1;
-  const NOME_USUARIO_LOGADO = "Usuário Logado";
+  const usuarioSessao = JSON.parse(sessionStorage.getItem("raspUsuarioLogado") || "{}");
+
+  const ID_USUARIO_LOGADO =
+    Number(usuarioSessao.idUsuario || usuarioSessao.IdUsuario || 1);
+
+  const NOME_USUARIO_LOGADO =
+    usuarioSessao.nomeCompleto ||
+    usuarioSessao.NomeCompleto ||
+    usuarioSessao.nome ||
+    usuarioSessao.Nome ||
+    "Usuário Logado";
+
 
   // ==========================================================
   // 02. REFERÊNCIAS PRINCIPAIS DO DOM
@@ -15,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const mensagemRasp = document.getElementById("mensagemRasp");
   const btnCriarRasp = form?.querySelector('button[type="submit"]');
   const btnLimpar = document.getElementById("btnLimpar");
+  const btnSubmeterFt = document.getElementById("btnSubmeterFt");
+  const btnGerarOnePage = document.getElementById("btnGerarOnePage");
+
 
   // ==========================================================
   // 03. CONTROLE DE ABAS DO RASP
@@ -42,6 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const dunsStatus = document.getElementById("dunsStatus");
   const setorSelect = document.getElementById("setor");
   const origemSelect = document.getElementById("origem");
+  const vinVeiculoProblemaInput = document.getElementById("vinVeiculoProblema");
+
 
   // ==========================================================
   // 06. SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
@@ -241,35 +256,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================================================
-  // 16. CONTROLE VISUAL DO BOTÃO CRIAR RASP
-  // ==========================================================
-  function marcarBotaoRaspComoCriado() {
-    if (btnCriarRasp) {
-      btnCriarRasp.disabled = true;
-      btnCriarRasp.textContent = "RASP criado";
-      btnCriarRasp.classList.remove("primary-btn");
-      btnCriarRasp.classList.add("success-btn");
-    }
-
-    if (btnLimpar) {
-      btnLimpar.disabled = false;
-      btnLimpar.classList.add("enabled-btn");
-    }
+// 16. CONTROLE VISUAL DO BOTÃO CRIAR RASP
+// ==========================================================
+async function marcarBotaoRaspComoCriado() {
+  if (btnCriarRasp) {
+    btnCriarRasp.disabled = true;
+    btnCriarRasp.textContent = "RASP criado";
+    btnCriarRasp.classList.remove("primary-btn");
+    btnCriarRasp.classList.add("success-btn");
   }
 
-  function restaurarBotaoCriarRasp() {
-    if (btnCriarRasp) {
-      btnCriarRasp.disabled = false;
-      btnCriarRasp.textContent = "Criar RASP";
-      btnCriarRasp.classList.remove("success-btn");
-      btnCriarRasp.classList.add("primary-btn");
-    }
-
-    if (btnLimpar) {
-      btnLimpar.disabled = true;
-      btnLimpar.classList.remove("enabled-btn");
-    }
+  if (btnLimpar) {
+    btnLimpar.disabled = false;
+    btnLimpar.classList.add("enabled-btn");
   }
+
+  atualizarBotaoSubmeterFt();
+  await atualizarBotaoOnePage();
+}
+
+function restaurarBotaoCriarRasp() {
+  if (btnCriarRasp) {
+    btnCriarRasp.disabled = false;
+    btnCriarRasp.textContent = "Criar RASP";
+    btnCriarRasp.classList.remove("success-btn");
+    btnCriarRasp.classList.add("primary-btn");
+  }
+
+  if (btnLimpar) {
+    btnLimpar.disabled = true;
+    btnLimpar.classList.remove("enabled-btn");
+  }
+
+  atualizarBotaoSubmeterFt();
+}
+
+function atualizarBotaoSubmeterFt() {
+  if (!btnSubmeterFt) return;
+
+  if (modoEdicao && idRaspEmEdicao) {
+    btnSubmeterFt.disabled = false;
+    btnSubmeterFt.textContent = "Submeter ao FT";
+  } else {
+    btnSubmeterFt.disabled = true;
+    btnSubmeterFt.textContent = "Submeter ao FT";
+  }
+}
+
 
   // ==========================================================
   // 16.1 BUSCA RÁPIDA DE RASP
@@ -350,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Detalhe completo do RASP:", detalhe);
 
         await preencherFormularioRasp(detalhe);
+        await atualizarBotaoOnePage();
 
         console.log("ENTREI NA preencherFormularioRasp");
         console.log("DETALHE RECEBIDO:", detalhe);
@@ -449,17 +483,19 @@ if (descricaoPnInput) {
   }
 
   function aplicarTravaBp() {
-    bloquearSelect(tipoReferenciaBp, bpOriginalTravado);
-    bloquearCampo(dataBp, bpOriginalTravado);
-    bloquearCampo(horaBp, bpOriginalTravado);
-    bloquearCampo(vinBp, bpOriginalTravado);
-    bloquearCampo(localCelulaBp, bpOriginalTravado);
-    bloquearCampo(comoIdentificadoBp, bpOriginalTravado);
 
-    if (!bpOriginalTravado) {
-      controlarTipoBp();
-    }
-  }
+  bloquearSelect(tipoReferenciaBp, bpOriginalTravado);
+  bloquearCampo(dataBp, bpOriginalTravado);
+  bloquearCampo(horaBp, bpOriginalTravado);
+  bloquearCampo(vinBp, bpOriginalTravado);
+  bloquearCampo(localCelulaBp, bpOriginalTravado);
+  bloquearCampo(comoIdentificadoBp, bpOriginalTravado);
+
+  controlarTipoBp();
+}
+
+
+  
 
   function limparEstadoEdicao() {
     modoEdicao = false;
@@ -508,9 +544,25 @@ if (descricaoPnInput) {
       return;
     }
 
-    idRaspEmEdicao = rasp.idRasp ?? null;
-    numeroRaspEmEdicao = rasp.numeroRasp ?? null;
-    modoEdicao = true;
+    idRaspEmEdicao =
+      rasp.idRasp ??
+      rasp.id_rasp ??
+      rasp.id ??
+      detalhe.idRasp ??
+      detalhe.id_rasp ??
+      null;
+
+    numeroRaspEmEdicao =
+      rasp.numeroRasp ??
+      rasp.numero_rasp ??
+      rasp.numero ??
+      null;
+
+    modoEdicao = !!idRaspEmEdicao;
+
+    atualizarBotaoSubmeterFt();
+      
+
 
     primeiroPnOriginal = pns.length > 0 ? normalizarNumero(pns[0].pn || "") : null;
     contatoOriginalTravado =
@@ -597,6 +649,11 @@ if (resumoInput) {
     // ==========================================================
     if (iniciativaFornecedorInput) {
       iniciativaFornecedorInput.checked = !!rasp.iniciativaFornecedor;
+
+      if (vinVeiculoProblemaInput) {
+        vinVeiculoProblemaInput.value = rasp.vinVeiculoProblema || "";
+      }
+
     }
 
     // ==========================================================
@@ -872,6 +929,9 @@ aplicarRegraIniciativaFornecedor();
       btnLimpar.disabled = false;
       btnLimpar.classList.add("enabled-btn");
     }
+
+    atualizarBotaoSubmeterFt();
+      await atualizarBotaoOnePage();
   }
 
   // ==========================================================
@@ -888,6 +948,34 @@ aplicarRegraIniciativaFornecedor();
     mensagemRasp.textContent = "";
     mensagemRasp.classList.add("oculto");
   }
+
+  function abrirModalPendenciasFt(pendencias) {
+  const modal = document.getElementById("modalPendencias");
+  const lista = document.getElementById("listaPendenciasFt");
+  const btnFechar = document.getElementById("btnFecharPendencias");
+
+  if (!modal || !lista) {
+    alert(pendencias.join("\n"));
+    return;
+  }
+
+  lista.innerHTML = "";
+
+  pendencias.forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    lista.appendChild(li);
+  });
+
+  modal.classList.remove("hidden");
+
+  if (btnFechar) {
+    btnFechar.onclick = () => {
+      modal.classList.add("hidden");
+    };
+  }
+}
+
 
   // ==========================================================
   // 17. INDICADOR VISUAL DO RASP
@@ -2048,16 +2136,48 @@ aplicarRegraIniciativaFornecedor();
     const tipo = tipoReferenciaBp?.value ?? "";
 
     if (tipo === "VIN") {
-      if (vinBp) vinBp.disabled = false;
-      if (localCelulaBp) localCelulaBp.disabled = true;
+      if (vinBp) {
+        vinBp.disabled = false;
+        vinBp.readOnly = false;
+        vinBp.classList.remove("system-field");
+      }
+
+      if (localCelulaBp) {
+        localCelulaBp.value = "";
+        localCelulaBp.disabled = true;
+        localCelulaBp.readOnly = false;
+        localCelulaBp.classList.remove("system-field");
+      }
     } else if (tipo === "LOCAL") {
-      if (vinBp) vinBp.disabled = true;
-      if (localCelulaBp) localCelulaBp.disabled = false;
+      if (vinBp) {
+        vinBp.value = "";
+        vinBp.disabled = true;
+        vinBp.readOnly = false;
+        vinBp.classList.remove("system-field");
+      }
+
+      if (localCelulaBp) {
+        localCelulaBp.disabled = false;
+        localCelulaBp.readOnly = false;
+        localCelulaBp.classList.remove("system-field");
+      }
     } else {
-      if (vinBp) vinBp.disabled = true;
-      if (localCelulaBp) localCelulaBp.disabled = true;
+      if (vinBp) {
+        vinBp.value = "";
+        vinBp.disabled = true;
+        vinBp.readOnly = false;
+        vinBp.classList.remove("system-field");
+      }
+
+      if (localCelulaBp) {
+        localCelulaBp.value = "";
+        localCelulaBp.disabled = true;
+        localCelulaBp.readOnly = false;
+        localCelulaBp.classList.remove("system-field");
+      }
     }
   }
+
 
   function validarBpEmTela() {
     const tipo = tipoReferenciaBp?.value ?? "";
@@ -2281,6 +2401,8 @@ aplicarRegraIniciativaFornecedor();
     }
     if (iniciativaFornecedorInput) {
       iniciativaFornecedorInput.checked = false;
+      vinVeiculoProblema: vinVeiculoProblemaInput?.value?.trim() || null;
+
     }
 
     if (modeloVeiculoSelect) modeloVeiculoSelect.value = "";
@@ -2307,6 +2429,7 @@ aplicarRegraIniciativaFornecedor();
 
     await carregarDominiosComplementares();
     await atualizarAprovadorFtPorTurno();
+    await atualizarBotaoOnePage();
 
     controlarTipoBp();
     validarBpEmTela();
@@ -2497,6 +2620,21 @@ async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
     const statusInicial = statusInicialInput?.value.trim() ?? "";
     const setor = setorSelect?.value ?? "";
     const origem = origemSelect?.value ?? "";
+
+    const origemTexto = origemSelect?.options[origemSelect.selectedIndex]?.textContent || "";
+    const origemNormalizada = origemTexto
+      .trim()
+      .toUpperCase()
+      .replace(".", "")
+      .replace("-", "")
+      .replace(/\s/g, "");
+
+    const origensGeramOnePage = ["DR", "DRL", "GCA5", "GCA10", "GCA20", "GCA50", "GDA"];
+
+    const origemGeraOnePage = origensGeramOnePage.includes(origemNormalizada);
+
+    const vinVeiculoProblema = vinVeiculoProblemaInput?.value?.trim() || "";
+
     const maiorImpacto = maiorImpactoSelect?.value ?? "";
     const impactoQualidade = impactoQualidadeSelect?.value ?? "";
     const impactoCliente = impactoClienteSelect?.value ?? "";
@@ -2536,6 +2674,15 @@ async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
     if (!statusInicial) erros.push("O campo Status inicial deve vir preenchido pelo sistema.");
     if (!setor) erros.push("Selecione o Setor.");
     if (!origem) erros.push("Selecione a Origem.");
+
+    if (origemGeraOnePage && !vinVeiculoProblema) {
+      erros.push("Informe o VIN do veículo problema para esta Origem.");
+    }
+
+    if (origemGeraOnePage && vinVeiculoProblema && !vinEhValido(vinVeiculoProblema)) {
+      erros.push("VIN do veículo problema inválido. Informe 17 caracteres alfanuméricos válidos.");
+    }
+
     if (!maiorImpacto) erros.push("Selecione o Maior impacto.");
     if (!impactoQualidade) erros.push("Selecione o Impacto qualidade.");
     if (!impactoCliente) erros.push("Selecione o Impacto cliente.");
@@ -2619,7 +2766,7 @@ async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
     const validacao = await validarFormularioAntesDoEnvio();
 
     if (!validacao.ok) {
-      alert(validacao.erros.join("\n"));
+      abrirModalPendenciasFt(validacao.erros);
       aplicarValidacoesPnEmTela();
       return false;
     }
@@ -2799,7 +2946,9 @@ if (modoEdicao && idRaspEmEdicao) {
         `RASP ${numeroRaspCriado || `ID ${idRaspCriado}`} criado com sucesso.`
       );
 
-      marcarBotaoRaspComoCriado();
+      await marcarBotaoRaspComoCriado();
+      atualizarBotaoSubmeterFt();
+    
 
       window.scrollTo({
         top: 0,
@@ -2879,6 +3028,196 @@ if (modoEdicao && idRaspEmEdicao) {
 
     return respostaJson;
   }
+
+  async function submeterRaspAoFt() {
+  if (!idRaspEmEdicao) {
+    alert("Crie ou carregue um RASP antes de submeter ao FT.");
+    return;
+  }
+
+  const salvou = await enviarFormularioRasp();
+
+  if (!salvou) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/rasp/${idRaspEmEdicao}/submeter-ft`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        idUsuarioExecutor: ID_USUARIO_LOGADO
+      })
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok) {
+      if (resultado?.pendencias) {
+        abrirModalPendenciasFt(resultado.pendencias);
+        return;
+      }
+
+      alert(resultado?.mensagem || resultado?.erro || "Erro ao submeter ao FT.");
+      return;
+    }
+
+    mostrarMensagemRasp(
+      `✅ RASP ${numeroRaspEmEdicao || idRaspEmEdicao} submetido ao FT com sucesso.`
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+
+    if (btnSubmeterFt) {
+      btnSubmeterFt.disabled = true;
+      btnSubmeterFt.textContent = "Submetido ao FT";
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Erro de comunicação ao submeter RASP ao FT.");
+  }
+}
+
+// =========================================================
+// GERAR ONE PAGE RASP
+// =========================================================
+async function gerarOnePageRasp() {
+  if (!idRaspEmEdicao) {
+    alert("Crie ou carregue um RASP antes de gerar o One Page.");
+    return;
+  }
+
+  const usuarioSessao = JSON.parse(
+    sessionStorage.getItem("raspUsuarioLogado") || "{}"
+  );
+
+  const perfil = String(usuarioSessao.perfil || "").toUpperCase();
+  const administrador = usuarioSessao.administrador === true;
+
+  if (!administrador && perfil !== "ADMIN" && perfil !== "FT" && perfil !== "LG") {
+    alert("One Page disponível somente para FT, LG ou Administrador.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/onepage-rasp/gerar/${idRaspEmEdicao}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        idUsuarioExecutor: ID_USUARIO_LOGADO
+      })
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok) {
+      alert(resultado?.mensagem || resultado?.erro || "Erro ao gerar One Page.");
+      return;
+    }
+
+    mostrarMensagemRasp("✅ One Page gerada com sucesso.");
+    btnGerarOnePage.textContent = "One Page gerada";
+    window.location.href = `onepage.html?idRasp=${idRaspEmEdicao}`;
+
+
+
+    btnGerarOnePage.disabled = true;
+
+    window.open(`onepage.html?idRasp=${idRaspEmEdicao}`, "_blank");
+
+    btnGerarOnePage.style.opacity = "0.55";
+    btnGerarOnePage.style.cursor = "not-allowed";
+
+
+  } catch (error) {
+    console.error(error);
+    alert("Erro de comunicação ao gerar One Page.");
+  }
+}
+
+
+
+
+
+// =========================================================
+// ATUALIZAR BOTÃO ONE PAGE
+// =========================================================
+async function atualizarBotaoOnePage() {
+  if (!btnGerarOnePage) return;
+
+  const usuarioSessao = JSON.parse(
+    sessionStorage.getItem("raspUsuarioLogado") || "{}"
+  );
+
+  const perfilUsuario = String(
+  usuarioSessao.perfil ||
+  usuarioSessao.Perfil ||
+  usuarioSessao.nomePerfil ||
+  usuarioSessao.NomePerfil ||
+  ""
+).trim().toUpperCase();
+
+const idPerfilUsuario = Number(
+  usuarioSessao.idPerfil ||
+  usuarioSessao.IdPerfil ||
+  0
+);
+
+const administradorUsuario =
+  usuarioSessao.administrador === true ||
+  usuarioSessao.Administrador === true;
+
+  const isAdmin = administradorUsuario || perfilUsuario === "ADMIN" || idPerfilUsuario === 1;
+  const isFt = perfilUsuario === "FT" || idPerfilUsuario === 3;
+  const isLg = perfilUsuario === "LG" || idPerfilUsuario === 4;
+
+
+  console.log("ONEPAGE - ID RASP:", idRaspEmEdicao);
+  console.log("ONEPAGE - USUÁRIO:", usuarioSessao);
+  console.log("ONEPAGE - PERFIL:", perfilUsuario);
+  console.log("ONEPAGE - ADMIN:", isAdmin);
+
+  if (!idRaspEmEdicao) {
+    btnGerarOnePage.disabled = true;
+    btnGerarOnePage.textContent = "Gerar One Page";
+    btnGerarOnePage.title = "Carregue um RASP antes de gerar o One Page.";
+    return;
+  }
+
+  if (!isAdmin && !isFt && !isLg) {
+    btnGerarOnePage.disabled = true;
+    btnGerarOnePage.textContent = "Gerar One Page";
+    btnGerarOnePage.title = "Disponível somente para FT, LG ou Administrador.";
+    return;
+  }
+
+  btnGerarOnePage.disabled = false;
+  btnGerarOnePage.removeAttribute("disabled");
+
+  btnGerarOnePage.className = "primary-btn";
+
+  btnGerarOnePage.style.opacity = "1";
+  btnGerarOnePage.style.cursor = "pointer";
+  btnGerarOnePage.style.pointerEvents = "auto";
+  btnGerarOnePage.style.filter = "none";
+
+  btnGerarOnePage.textContent = "Gerar One Page";
+  btnGerarOnePage.title = "Gerar One Page para este RASP.";
+
+
+}
+
+
+
  
   // ==========================================================
   // 45. EVENTOS - CAMPOS DE CONTATO
@@ -3231,12 +3570,12 @@ if (modoEdicao && idRaspEmEdicao) {
   // 50. EVENTOS - BP
   // ==========================================================
   if (tipoReferenciaBp) {
-    tipoReferenciaBp.addEventListener("change", () => {
-      if (bpOriginalTravado) return;
-      controlarTipoBp();
-      validarBpEmTela();
-    });
-  }
+  tipoReferenciaBp.addEventListener("change", () => {
+    controlarTipoBp();
+    validarBpEmTela();
+  });
+}
+
 
   if (dataBp) {
     dataBp.addEventListener("change", () => {
@@ -3251,6 +3590,13 @@ if (modoEdicao && idRaspEmEdicao) {
       validarBpEmTela();
     });
   }
+
+  if (vinVeiculoProblemaInput) {
+  vinVeiculoProblemaInput.addEventListener("input", () => {
+    vinVeiculoProblemaInput.value = normalizarVin(vinVeiculoProblemaInput.value);
+  });
+  }
+
 
   if (vinBp) {
     vinBp.addEventListener("input", () => {
@@ -3282,40 +3628,49 @@ if (modoEdicao && idRaspEmEdicao) {
   }
 
   // ==========================================================
-  // 52. EVENTOS - BOTÕES GERAIS
-  // ==========================================================
-  if (btnLimpar) {
-    btnLimpar.addEventListener("click", async () => {
-      await limparFormularioParaNovoRasp();
-      restaurarBotaoCriarRasp();
-    });
-  }
+// 52. EVENTOS - BOTÕES GERAIS
+// ==========================================================
+if (btnLimpar) {
+  btnLimpar.addEventListener("click", async () => {
+    await limparFormularioParaNovoRasp();
+    restaurarBotaoCriarRasp();
+  });
+}
 
-  if (form) {
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await enviarFormularioRasp();
-    });
-  }
+if (btnSubmeterFt) {
+  btnSubmeterFt.addEventListener("click", submeterRaspAoFt);
+}
 
-  if (raspIndicadorBox) {
-    raspIndicadorBox.addEventListener("click", async () => {
-      const numeroAtual = obterNumeroRaspAtual();
+if (btnGerarOnePage) {
+  btnGerarOnePage.addEventListener("click", gerarOnePageRasp);
+}
 
-      if (!numeroAtual || numeroAtual === "---") {
-        return;
-      }
+if (form) {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await enviarFormularioRasp();
+  });
+}
 
-      const copiou = await copiarTexto(numeroAtual);
+if (raspIndicadorBox) {
+  raspIndicadorBox.addEventListener("click", async () => {
+    const numeroAtual = obterNumeroRaspAtual();
 
-      if (copiou) {
-        destacarCopiaRasp();
-        alert(`Número copiado: ${numeroAtual}`);
-      } else {
-        alert("Não foi possível copiar o número do RASP.");
-      }
-    });
-  }
+    if (!numeroAtual || numeroAtual === "---") {
+      return;
+    }
+
+    const copiou = await copiarTexto(numeroAtual);
+
+    if (copiou) {
+      destacarCopiaRasp();
+      alert(`Número copiado: ${numeroAtual}`);
+    } else {
+      alert("Não foi possível copiar o número do RASP.");
+    }
+  });
+}
+
 
   // ==========================================================
   // 53. INICIALIZAÇÃO FINAL DA TELA

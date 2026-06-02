@@ -72,6 +72,9 @@ namespace Rasp.Api.Models
 
         public string? Procedencia { get; set; }
 
+        public string? VinVeiculoProblema { get; set; }
+
+
         // ==========================================================
         // INDICADORES / FLAGS DO PROCESSO
         // ==========================================================

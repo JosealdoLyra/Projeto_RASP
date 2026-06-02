@@ -134,8 +134,9 @@
     </li>
 
     <li>
-      <a href="#">Consulta</a>
+        <a href="consulta-onepage.html">One Page</a>
     </li>
+
 
     <li>
       <a href="#">Cadastros</a>
@@ -376,9 +377,9 @@
 
 
             <!-- ===============================================
-                 SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
-                 =============================================== -->
-            <section class="form-section">
+     SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
+     =============================================== -->
+<section class="form-section">
   <h3>3. Classificação inicial</h3>
 
   <div class="grid grid-2">
@@ -400,6 +401,23 @@
         <option value="">Selecione</option>
       </select>
     </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="form-group campo-vin-onepage">
+      <label for="vinVeiculoProblema" class="label-vin-obrigatorio">
+        VIN do veículo problema *
+      </label>
+      <input
+        type="text"
+        id="vinVeiculoProblema"
+        name="vinVeiculoProblema"
+        maxlength="17"
+        placeholder="Informe o VIN do veículo problema"
+      />
+    </div>
+
+    <div class="form-group"></div>
   </div>
 
   <div class="grid grid-3">
@@ -443,6 +461,7 @@
     </div>
   </div>
 </section>
+
 
 
 <!-- =========================================================
@@ -721,15 +740,23 @@
 </section>
 
 
-            <!-- ===============================================
-                 AÇÕES FINAIS DO FORMULÁRIO
-                 =============================================== -->
-            <div class="form-actions">
-              <button type="submit" class="primary-btn">Criar RASP</button>
-              <button type="button" id="btnLimpar" class="secondary-btn">Novo RASP</button>
-            </div>
-          </form>
-        </div>
+          <!-- ===============================================
+           AÇÕES FINAIS DO FORMULÁRIO
+            =============================================== -->
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Criar RASP</button>
+
+            <button type="button" id="btnSubmeterFt" class="primary-btn" disabled>
+              Submeter ao FT
+            </button>
+
+            <button type="button" id="btnGerarOnePage" class="secondary-btn" title="Gerar One Page">
+              Gerar One Page
+            </button>
+
+
+            <button type="button" id="btnLimpar" class="secondary-btn">Novo RASP</button>
+          </div>
 
         <!-- ===================================================
              ABA: COMPLEMENTOS
@@ -809,6 +836,22 @@
       </div>
     </div>
   </div>
+
+  <div id="modalPendencias" class="modal hidden">
+  <div class="modal-content modal-pendencias">
+    <h3>⚠️ Pendências para envio ao FT</h3>
+    <p>Complete os campos abaixo antes de submeter o RASP.</p>
+
+    <ul id="listaPendenciasFt"></ul>
+
+    <div class="modal-actions">
+      <button type="button" id="btnFecharPendencias" class="primary-btn">
+        Entendi
+      </button>
+    </div>
+  </div>
+</div>
+
 
   <!-- =========================================================
        ARQUIVO JAVASCRIPT

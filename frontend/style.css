@@ -2043,3 +2043,55 @@ button.btn-detalhes-linha:disabled {
     color: #fecaca;
 }
 
+.modal-pendencias {
+  max-width: 520px;
+  border-top: 5px solid #f59e0b;
+}
+
+.modal-pendencias h3 {
+  color: #92400e;
+  margin-bottom: 10px;
+}
+
+.modal-pendencias p {
+  color: #475569;
+  margin-bottom: 14px;
+}
+
+#listaPendenciasFt {
+  margin: 0;
+  padding-left: 20px;
+  color: #7f1d1d;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.campo-vin-onepage {
+  margin-top: 10px;
+}
+
+.label-vin-obrigatorio {
+  color: #b02a37;
+  font-weight: 700;
+}
+
+.campo-vin-onepage input {
+  width: 100%;
+  height: 42px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.campo-vin-onepage input:focus {
+  outline: none;
+  border-color: #b02a37;
+  box-shadow: 0 0 0 3px rgba(176, 42, 55, 0.12);
+}
+
+
+
