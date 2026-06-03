@@ -973,6 +973,15 @@
           Página Inicial
         </a>
 
+        <a class="nav-item" href="#" onclick="abrirModalImpressaoRasp()">
+          <span class="nav-icon">🖨</span>
+          Impressão RASP
+        </a>
+
+
+
+
+
         <a class="nav-item admin-only" href="admin/admin-home.html">
           <span class="nav-icon">⚙</span>
           Administração do Sistema
@@ -1350,6 +1359,38 @@
     }
 
     /* =========================================================
+   IMPRESSÃO RÁPIDA DE RASP
+   ========================================================= */
+function solicitarImpressaoRasp() {
+
+  const numeroRasp = prompt(
+    "Informe o número do RASP.\n\nExemplos:\n0078\n0078/26"
+  );
+
+  if (!numeroRasp) {
+    return;
+  }
+
+  fetch(`http://localhost:5050/rasp/numero/${encodeURIComponent(numeroRasp)}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      return response.json();
+    })
+    .then(rasp => {
+      window.location.href =
+        `http://localhost:5050/imprimir_rasp.html?id=${rasp.idRasp}`;
+    })
+    .catch(() => {
+      alert("RASP não encontrado.");
+    });
+}
+
+
+
+    /* =========================================================
        14.06 SAIR DO SISTEMA
        ========================================================= */
     function sairDoSistema() {
@@ -1369,5 +1410,8 @@
     atualizarDataHora();
     setInterval(atualizarDataHora, 1000);
   </script>
+
+  <script src="impressao-rapida.js"></script>
+
 </body>
 </html>

@@ -7,147 +7,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Título exibido na aba do navegador -->
   <title>RASP - Abertura</title>
 
-  <!-- Arquivo de estilos -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <!-- =========================================================
-       ESTRUTURA PRINCIPAL DA APLICAÇÃO
-       ========================================================= -->
   <div class="app">
 
     <!-- =======================================================
-     MENU LATERAL
-     ======================================================= -->
-<aside class="sidebar">
-  <div class="sidebar-brand">
-    <div class="sidebar-brand-top">
-      <h1>RASP</h1>
-      <span class="sidebar-brand-chip">Sistema de Qualidade</span>
-    </div>
+         MENU LATERAL
+         ======================================================= -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-top">
+          <h1>RASP</h1>
+          <span class="sidebar-brand-chip">Sistema de Qualidade</span>
+        </div>
 
-    <p class="sidebar-subtitle">
-      <span class="sidebar-line">
-        <span class="sigla-letra">R</span>elatório de
-      </span>
-      <span class="sidebar-line">
-        <span class="sigla-letra">A</span>nálise e
-      </span>
-      <span class="sidebar-line">
-        <span class="sigla-letra">S</span>olução de
-      </span>
-      <span class="sidebar-line">
-        <span class="sigla-letra">P</span>roblemas
-      </span>
-    </p>
+        <p class="sidebar-subtitle">
+          <span class="sidebar-line"><span class="sigla-letra">R</span>elatório de</span>
+          <span class="sidebar-line"><span class="sigla-letra">A</span>nálise e</span>
+          <span class="sidebar-line"><span class="sigla-letra">S</span>olução de</span>
+          <span class="sidebar-line"><span class="sigla-letra">P</span>roblemas</span>
+        </p>
 
-    <div class="sidebar-badge">SAC - S10 SJC</div>
-  </div>
+        <div class="sidebar-badge">SAC - S10 SJC</div>
+      </div>
 
-  <!-- =====================================================
-       ACESSO RÁPIDO
-       ===================================================== -->
-  <section class="sidebar-panel sidebar-quick-access">
-    <div class="sidebar-panel-header">
-      <h3>Acesso rápido</h3>
-      <span class="sidebar-panel-tag">RASP</span>
-    </div>
+      <!-- =====================================================
+           ACESSO RÁPIDO
+           ===================================================== -->
+      <section class="sidebar-panel sidebar-quick-access">
+        <div class="sidebar-panel-header">
+          <h3>Acesso rápido</h3>
+          <span class="sidebar-panel-tag">RASP</span>
+        </div>
 
-    <label for="buscarRaspNumero" class="sidebar-label">
-      Abrir RASP existente
-    </label>
+        <label for="buscarRaspNumero" class="sidebar-label">
+          Abrir RASP existente
+        </label>
 
-    <div class="sidebar-search-box">
-      <input
-        type="text"
-        id="buscarRaspNumero"
-        name="buscarRaspNumero"
-        placeholder="Ex.: 0052/26"
-        autocomplete="off"
-      />
-      <button type="button" id="btnBuscarRasp" class="sidebar-search-btn">
-        Abrir
-      </button>
-    </div>
+        <div class="sidebar-search-box">
+          <input
+            type="text"
+            id="buscarRaspNumero"
+            name="buscarRaspNumero"
+            placeholder="Ex.: 0052/26"
+            autocomplete="off"
+          />
 
-    <p class="sidebar-helper-text">
-      Digite o número do RASP para carregar e continuar a edição.
-    </p>
-  </section>
+          <button type="button" id="btnBuscarRasp" class="sidebar-search-btn">
+            Abrir
+          </button>
+        </div>
 
-        <!-- =====================================================
-     MENU DE NAVEGAÇÃO
-     ===================================================== -->
-<nav class="sidebar-nav">
-  <ul>
+        <p class="sidebar-helper-text">
+          Digite o número do RASP para carregar e continuar a edição.
+        </p>
+      </section>
 
-    <!-- =================================================
-         01. PÁGINA INICIAL / CENTRAL DO SISTEMA
-         ================================================= -->
-    <li>
-      <a href="home.html">
-        Página Inicial
-      </a>
-    </li>
+      <!-- =====================================================
+           MENU DE NAVEGAÇÃO
+           ===================================================== -->
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="home.html">Página Inicial</a>
+          </li>
 
-    <!-- =================================================
-         02. DASHBOARDS
-         ================================================= -->
-    <li class="sidebar-nav-group">
-      <button
-        type="button"
-        class="sidebar-dashboard-toggle"
-        id="btnDashboardMenu"
-      >
-        <span>Dashboard</span>
-        <span id="dashboardMenuIcon">▾</span>
-      </button>
+          <li class="sidebar-nav-group">
+            <button
+              type="button"
+              class="sidebar-dashboard-toggle"
+              id="btnDashboardMenu"
+            >
+              <span>Dashboard</span>
+              <span id="dashboardMenuIcon">▾</span>
+            </button>
 
-      <ul class="sidebar-submenu hidden" id="dashboardSubmenu">
-        <li>
-          <a href="dashboard-selecao.html">Seleção / Contenção</a>
-        </li>
+            <ul class="sidebar-submenu hidden" id="dashboardSubmenu">
+              <li>
+                <a href="dashboard-selecao.html">Seleção / Contenção</a>
+              </li>
 
-        <li>
-          <a href="#" class="disabled-link">RASP Geral</a>
-        </li>
+              <li>
+                <a href="#" class="disabled-link">RASP Geral</a>
+              </li>
 
-        <li>
-          <a href="#" class="disabled-link">Scrap</a>
-        </li>
+              <li>
+                <a href="#" class="disabled-link">Scrap</a>
+              </li>
 
-        <li>
-          <a href="#" class="disabled-link">Fornecedores</a>
-        </li>
-      </ul>
-    </li>
+              <li>
+                <a href="#" class="disabled-link">Fornecedores</a>
+              </li>
+            </ul>
+          </li>
 
-    <!-- =================================================
-         03. OPERAÇÃO RASP
-         ================================================= -->
-    <li>
-      <a href="#" class="active">Novo RASP</a>
-    </li>
+          <li>
+            <a href="#" class="active">Novo RASP</a>
+          </li>
 
-    <li>
-        <a href="consulta-onepage.html">One Page</a>
-    </li>
+          <li>
+            <a href="consulta-onepage.html">One Page</a>
+          </li>
 
-
-    <li>
-      <a href="#">Cadastros</a>
-    </li>
-
-  </ul>
-</nav>
-
-
-</aside>
-
+          <li>
+            <a href="#">Cadastros</a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
 
     <!-- =======================================================
          CONTEÚDO PRINCIPAL
@@ -164,20 +135,22 @@
         </div>
 
         <div class="topbar-actions">
-    <button type="button" class="ghost-btn">Salvar rascunho</button>
+          <button type="button" class="ghost-btn">Salvar rascunho</button>
 
-    <button
-    type="button" id="btnVoltarGestaoSpps" class="ghost-btn" style="display:none;"
-    onclick="window.location.href='gestao-spps.html'">
-    ← Voltar para Gestão SPPS
-  </button>
+          <button
+            type="button"
+            id="btnVoltarGestaoSpps"
+            class="ghost-btn"
+            style="display:none;"
+            onclick="window.location.href='gestao-spps.html'"
+          >
+            ← Voltar para Gestão SPPS
+          </button>
 
-
-    <button type="button" class="ghost-btn" onclick="sairDoSistema()">
-        Sair
-    </button>
-</div>
-
+          <button type="button" class="ghost-btn" onclick="sairDoSistema()">
+            Sair
+          </button>
+        </div>
       </header>
 
       <!-- =====================================================
@@ -187,6 +160,7 @@
         <button type="button" class="rasp-tab active" data-tab="abertura">
           Abertura
         </button>
+
         <button type="button" class="rasp-tab" data-tab="complementos">
           Complementos
         </button>
@@ -206,49 +180,34 @@
                TOPO DE INFORMAÇÕES DO RASP
                ================================================= -->
           <div class="rasp-topo-info">
+            <div class="rasp-indicadores-coluna">
 
-  <div class="rasp-indicadores-coluna">
+              <div
+                id="raspIndicadorBox"
+                class="rasp-indicador-box"
+                title="Clique para copiar o número do RASP"
+              >
+                <span class="rasp-indicador-titulo">RASP</span>
+                <span class="rasp-indicador-separador">•</span>
+                <span id="raspNumeroDisplay" class="rasp-indicador-valor">---</span>
+              </div>
 
-    <!-- INDICADOR PRINCIPAL DO RASP -->
-    <div
-      id="raspIndicadorBox"
-      class="rasp-indicador-box"
-      title="Clique para copiar o número do RASP"
-    >
-      <span class="rasp-indicador-titulo">RASP</span>
-      <span class="rasp-indicador-separador">•</span>
-      <span id="raspNumeroDisplay" class="rasp-indicador-valor">---</span>
-    </div>
+              <div class="rasp-indicador-box">
+                <span class="rasp-indicador-titulo">SPPS</span>
+                <span class="rasp-indicador-separador">•</span>
+                <span id="sppsNumeroDisplay" class="rasp-indicador-valor">------</span>
+              </div>
+            </div>
 
-    <!-- INDICADOR DO SPPS -->
-    <div class="rasp-indicador-box">
-      <span class="rasp-indicador-titulo">SPPS</span>
-      <span class="rasp-indicador-separador">•</span>
-      <span id="sppsNumeroDisplay" class="rasp-indicador-valor">------</span>
-    </div>
+            <div class="rasp-data-chip">
+              <span class="rasp-data-label">Criado em</span>
+              <span id="dataCriacaoRasp" class="rasp-data-valor">--/--/----</span>
+            </div>
+          </div>
 
-  </div>
+          <div id="mensagemRasp" class="mensagem-rasp oculto"></div>
 
-  <!-- DATA DE CRIAÇÃO -->
-  <div class="rasp-data-chip">
-    <span class="rasp-data-label">Criado em</span>
-    <span id="dataCriacaoRasp" class="rasp-data-valor">--/--/----</span>
-  </div>
-
-</div>
-
-
-
-
-
-          <!-- =================================================
-               FORMULÁRIO PRINCIPAL DO RASP
-               ================================================= -->
-              <!-- Mensagem de retorno do RASP-->
-               <div id="mensagemRasp"
-               class="mensagem-rasp oculto"></div>
-          
-               <form id="raspForm" class="rasp-form">
+          <form id="raspForm" class="rasp-form">
 
             <!-- ===============================================
                  SEÇÃO 1 - OCORRÊNCIA
@@ -278,485 +237,448 @@
                 </div>
               </div>
             </section>
+
             <div class="grid grid-2">
-  <div class="form-group full">
-    <label for="iniciativaFornecedor">Iniciativa do Fornecedor?</label>
+              <div class="form-group full">
+                <label for="iniciativaFornecedor">Iniciativa do Fornecedor?</label>
 
-    <div class="checkbox-inline">
-      <input
-        type="checkbox"
-        id="iniciativaFornecedor"
-        name="iniciativaFornecedor"
-      />
-      <span>Sim, a ocorrência já foi comunicada diretamente pelo fornecedor.</span>
-    </div>
-  </div>
-</div>
-
-
-            <!-- ===============================================
-     SEÇÃO 2 - DADOS BÁSICOS DO RASP
-     =============================================== -->
-<section class="form-section">
-  <h3>2. Dados básicos do RASP</h3>
-
-  <div class="grid grid-4 dados-basicos-grid-topo">
-    <div class="form-group">
-      <label for="duns">DUNS *</label>
-      <input
-        type="text"
-        id="duns"
-        name="duns"
-        maxlength="9"
-        placeholder="Digite 9 dígitos"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="nomeFornecedor">Nome do fornecedor</label>
-      <input
-        type="text"
-        id="nomeFornecedor"
-        name="nomeFornecedor"
-        class="system-field"
-        readonly
-        placeholder="Preenchido automaticamente pelo DUNS"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="gmAliado">GM aliado</label>
-      <select id="gmAliado" name="gmAliado">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="tipoFornecedor">Tipo do fornecedor</label>
-      <input
-        type="text"
-        id="tipoFornecedor"
-        name="tipoFornecedor"
-        class="system-field"
-        readonly
-        placeholder="LOCAL ou IMPORTADO"
-      />
-    </div>
-  </div>
-
-  <div class="grid grid-2">
-    <div class="form-group">
-      <label for="analista">Analista *</label>
-      <input
-        type="text"
-        id="analista"
-        name="analista"
-        class="system-field"
-        readonly
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="statusInicial">Status inicial</label>
-      <input
-        type="text"
-        id="statusInicial"
-        name="statusInicial"
-        class="system-field"
-        value="Em análise"
-        readonly
-      />
-    </div>
-  </div>
-
-  <!-- STATUS DA CONSULTA DE DUNS -->
-  <div id="dunsStatus" class="duns-status duns-status-neutral">
-    Informe um DUNS válido para localizar o fornecedor.
-  </div>
-</section>
-
+                <div class="checkbox-inline">
+                  <input
+                    type="checkbox"
+                    id="iniciativaFornecedor"
+                    name="iniciativaFornecedor"
+                  />
+                  <span>Sim, a ocorrência já foi comunicada diretamente pelo fornecedor.</span>
+                </div>
+              </div>
+            </div>
 
             <!-- ===============================================
-     SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
-     =============================================== -->
-<section class="form-section">
-  <h3>3. Classificação inicial</h3>
+                 SEÇÃO 2 - DADOS BÁSICOS DO RASP
+                 =============================================== -->
+            <section class="form-section">
+              <h3>2. Dados básicos do RASP</h3>
 
-  <div class="grid grid-2">
-    <div class="form-group">
-      <label for="setor">Setor *</label>
-      <select id="setor" name="setor">
-        <option value="">Selecione</option>
-        <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
-        <option value="montagem">Montagem</option>
-        <option value="funilaria">Funilaria</option>
-        <option value="pintura">Pintura</option>
-        <option value="outro">Outro</option>
-      </select>
-    </div>
+              <div class="grid grid-4 dados-basicos-grid-topo">
+                <div class="form-group">
+                  <label for="duns">DUNS *</label>
+                  <input
+                    type="text"
+                    id="duns"
+                    name="duns"
+                    maxlength="9"
+                    placeholder="Digite 9 dígitos"
+                  />
+                </div>
 
-    <div class="form-group">
-      <label for="origem">Origem *</label>
-      <select id="origem" name="origem">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-  </div>
+                <div class="form-group">
+                  <label for="nomeFornecedor">Nome do fornecedor</label>
+                  <input
+                    type="text"
+                    id="nomeFornecedor"
+                    name="nomeFornecedor"
+                    class="system-field"
+                    readonly
+                    placeholder="Preenchido automaticamente pelo DUNS"
+                  />
+                </div>
 
-  <div class="grid grid-2">
-    <div class="form-group campo-vin-onepage">
-      <label for="vinVeiculoProblema" class="label-vin-obrigatorio">
-        VIN do veículo problema *
-      </label>
-      <input
-        type="text"
-        id="vinVeiculoProblema"
-        name="vinVeiculoProblema"
-        maxlength="17"
-        placeholder="Informe o VIN do veículo problema"
-      />
-    </div>
+                <div class="form-group">
+                  <label for="gmAliado">GM aliado</label>
+                  <select id="gmAliado" name="gmAliado">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
 
-    <div class="form-group"></div>
-  </div>
+                <div class="form-group">
+                  <label for="tipoFornecedor">Tipo do fornecedor</label>
+                  <input
+                    type="text"
+                    id="tipoFornecedor"
+                    name="tipoFornecedor"
+                    class="system-field"
+                    readonly
+                    placeholder="LOCAL ou IMPORTADO"
+                  />
+                </div>
+              </div>
 
-  <div class="grid grid-3">
-    <div class="form-group">
-      <label for="maiorImpacto">Maior impacto *</label>
-      <select id="maiorImpacto" name="maiorImpacto">
-        <option value="">Selecione</option>
-        <option value="peca-nao-instalada">
-          Peça não instalada em submontagem / veículo / motor / transmissão
-        </option>
-        <option value="downtime">Downtime</option>
-        <option value="stockout">Stockout</option>
-        <option value="plant-disruption">Plant disruption</option>
-        <option value="na">N/A</option>
-      </select>
-    </div>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="analista">Analista *</label>
+                  <input
+                    type="text"
+                    id="analista"
+                    name="analista"
+                    class="system-field"
+                    readonly
+                  />
+                </div>
 
-    <div class="form-group">
-      <label for="impactoQualidade">Impacto qualidade *</label>
-      <select id="impactoQualidade" name="impactoQualidade">
-        <option value="">Selecione</option>
-        <option value="tempo-processamento">Tempo de processamento</option>
-        <option value="dimensional">Dimensional</option>
-        <option value="aparencia">Aparência</option>
-        <option value="funcional">Funcional</option>
-        <option value="outro">Outro</option>
-      </select>
-    </div>
+                <div class="form-group">
+                  <label for="statusInicial">Status inicial</label>
+                  <input
+                    type="text"
+                    id="statusInicial"
+                    name="statusInicial"
+                    class="system-field"
+                    value="Em análise"
+                    readonly
+                  />
+                </div>
+              </div>
 
-    <div class="form-group">
-      <label for="impactoCliente">Impacto cliente *</label>
-      <select id="impactoCliente" name="impactoCliente">
-        <option value="">Selecione</option>
-        <option value="line-accumulation">Line Accumulation</option>
-        <option value="supplier-initiated">Supplier Initiated</option>
-        <option value="single-occurrence">Single Occurrence</option>
-        <option value="multiple-occurrence">Multiple Occurrence</option>
-        <option value="repeat-occurrence">Repeat Occurrence</option>
-        <option value="program-management">Program Management</option>
-      </select>
-    </div>
-  </div>
-</section>
-
-
-
-<!-- =========================================================
-     SEÇÃO 04: PN(S) ENVOLVIDOS NO ATENDIMENTO INICIAL
-     Compatível com o app.js atual
-     - mantém ids esperados pela lógica antiga
-     - melhora o visual sem quebrar a funcionalidade
-     ========================================================= -->
-<section class="form-section pn-section">
-  <div class="section-title">
-    <h2>4. PN(s) envolvidos no atendimento inicial</h2>
-    <span>Controle de seleção no nível do PN</span>
-  </div>
-
-  <p style="margin-top: -4px; color: var(--cinza-500); font-size: 13px;">
-    Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
-    A seleção, trava e QHD são controlados por PN e independem do fluxo de aprovação.
-  </p>
-
-  <div class="alerta" style="margin-bottom: 14px;">
-    Após a saída da seleção, o sistema permitirá ajustes por até 1 hora.
-    Depois disso, o PN não poderá retornar à seleção no mesmo RASP.
-  </div>
-
-  <!-- =======================================================
-       AÇÕES PRINCIPAIS DA SEÇÃO 4
-       IDs compatíveis com app.js
-       ======================================================= -->
-  <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
-    <button id="addPnRow" class="primary-btn" type="button">+ Adicionar PN</button>
-    <button id="toggleMassPanel" class="primary-btn" type="button">Colar vários PNs</button>
-  </div>
-
-  <!-- =======================================================
-       PAINEL DE IMPORTAÇÃO EM MASSA
-       IDs compatíveis com app.js
-       ======================================================= -->
-  <div id="massPanel" class="mass-panel">
-    <div class="form-group full" style="margin-bottom: 10px;">
-      <label for="pnsLoteTextarea">Cole vários PNs</label>
-      <textarea
-        id="pnsLoteTextarea"
-        rows="5"
-        placeholder="Cole um PN por linha&#10;Ex.:&#10;11098761&#10;12345678&#10;87654321"
-      ></textarea>
-    </div>
-
-    <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
-      <button id="importMassPns" class="primary-btn" type="button">Importar PNs</button>
-    </div>
-  </div>
-
-  <!-- =======================================================
-       TABELA PRINCIPAL DE PNs
-       tbody compatível com app.js
-       ======================================================= -->
-  <div class="pn-tabela-wrap">
-    <table class="pn-tabela">
-      <thead>
-      <tr>
-        <th class="col-principal">Principal</th>
-        <th class="col-pn">PN *</th>
-        <th class="col-descricao">Descrição do PN</th>
-        <th class="col-data-lote">Data/Lote inicial *</th>
-        <th class="col-qtd">Qtd suspeita</th>
-        <th class="col-qtd">Qtd checada</th>
-        <th class="col-qtd">Qtd rejeitada</th>
-        <th class="col-badge">Seleção</th>
-        <th class="col-acao">Detalhes</th>
-        <th class="col-acao">Ação</th>
-      </tr>
-    </thead>
-
-
-      <tbody id="pnTableBody">
-        <!--
-          IMPORTANTE:
-          As linhas serão geradas pelo app.js com criarLinhaPn().
-          Não inserir linha manual fixa aqui.
-        -->
-      </tbody>
-    </table>
-  </div>
-
-  <!-- =======================================================
-       STATUS DOS PNs
-       ID compatível com app.js
-       ======================================================= -->
-  <div
-    id="pnStatus"
-    class="pn-status pn-status-neutral"
-    style="margin-top: 12px;"
-  >
-    Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
-  </div>
-</section>
-
-
-<!-- ===============================================
-     SEÇÃO 5 - DADOS COMPLEMENTARES PARA APROVAÇÃO
-     =============================================== -->
-<section class="form-section section-aprovacao">
-  <div class="section-aprovacao-header">
-    <h3>5. Dados complementares para aprovação</h3>
-    <p class="section-note">
-      Estes dados podem ser preenchidos já na abertura para permitir o avanço do RASP ao fluxo de aprovação quando aplicável.
-    </p>
-  </div>
-
-  <div class="aprovacao-grid">
-    <div class="form-group">
-      <label for="modeloVeiculo">Modelo do veículo</label>
-      <select id="modeloVeiculo" name="modeloVeiculo">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="turnoRasp">Turno</label>
-      <select id="turnoRasp" name="turnoRasp">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="pilotoRasp">Piloto</label>
-      <select id="pilotoRasp" name="pilotoRasp">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="majorRasp">Major</label>
-      <select id="majorRasp" name="majorRasp">
-        <option value="">Selecione</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="aprovadorFt">Aprovador (FT) *</label>
-      <input
-        type="text"
-        id="aprovadorFt"
-        name="aprovadorFt"
-        class="system-field"
-        readonly
-        placeholder="Preenchido automaticamente pelo turno"
-      />
-      <input type="hidden" id="aprovadorFtId" name="aprovadorFtId" />
-    </div>
-
-    <div class="form-group">
-      <label for="nomeContato">Nome da pessoa contatada</label>
-      <input
-        type="text"
-        id="nomeContato"
-        name="nomeContato"
-        value="Não Contatado"
-        placeholder="Ex.: João Silva"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="dataContato">Data do contato</label>
-      <input
-        type="date"
-        id="dataContato"
-        name="dataContato"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="rdNumero">RD Nº</label>
-      <input
-        type="text"
-        id="rdNumero"
-        name="rdNumero"
-        placeholder="Informe o número do relatório dimensional"
-      />
-    </div>
-
-    <div class="form-group">
-      <label for="campanhaNumero">Campanha nº</label>
-      <input
-        type="text"
-        id="campanhaNumero"
-        name="campanhaNumero"
-        placeholder="Informe o número da campanha"
-      />
-    </div>
-  </div>
-
-  <div class="aprovacao-alerta">
-    O campo Campanha nº poderá futuramente gerar pendência quando a Origem for GCA10, GCA20 ou GCA50.
-  </div>
-</section>
-
-
+              <div id="dunsStatus" class="duns-status duns-status-neutral">
+                Informe um DUNS válido para localizar o fornecedor.
+              </div>
+            </section>
 
             <!-- ===============================================
-     SEÇÃO 6 - BREAK POINT (BP)
-     =============================================== -->
-<section class="form-section section-bp">
-  <h3>6. Break Point (BP)</h3>
+                 SEÇÃO 3 - CLASSIFICAÇÃO INICIAL
+                 =============================================== -->
+            <section class="form-section">
+              <h3>3. Classificação inicial</h3>
 
-  <p class="section-note">
-    Pode permanecer pendente em rascunho, mas será obrigatório antes do envio para aprovação.
-  </p>
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="setor">Setor *</label>
+                  <select id="setor" name="setor">
+                    <option value="">Selecione</option>
+                    <option value="injetora-gmb-sjc">Injetora GMB - SJC</option>
+                    <option value="montagem">Montagem</option>
+                    <option value="funilaria">Funilaria</option>
+                    <option value="pintura">Pintura</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
 
-  <div class="grid grid-3">
-    <!-- Tipo de referência -->
-    <div class="form-group">
-      <label for="tipoReferenciaBp">Tipo de referência *</label>
-      <select id="tipoReferenciaBp" name="tipoReferenciaBp">
-        <option value="">Selecione</option>
-        <option value="VIN">VIN (Linha)</option>
-        <option value="LOCAL">Área / Célula</option>
-      </select>
-    </div>
+                <div class="form-group">
+                  <label for="origem">Origem *</label>
+                  <select id="origem" name="origem">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+              </div>
 
-    <!-- Data -->
-    <div class="form-group">
-      <label for="dataBp">Data do BP *</label>
-      <input type="date" id="dataBp" name="dataBp" />
-    </div>
+              <div class="grid grid-2">
+                <div class="form-group campo-vin-onepage">
+                  <label for="vinVeiculoProblema" class="label-vin-obrigatorio">
+                    VIN do veículo problema *
+                  </label>
+                  <input
+                    type="text"
+                    id="vinVeiculoProblema"
+                    name="vinVeiculoProblema"
+                    maxlength="17"
+                    placeholder="Informe o VIN do veículo problema"
+                  />
+                </div>
 
-    <!-- Hora -->
-    <div class="form-group">
-      <label for="horaBp">Hora do BP *</label>
-      <input type="time" id="horaBp" name="horaBp" />
-    </div>
-  </div>
+                <div class="form-group"></div>
+              </div>
 
-  <div class="grid grid-2">
-    <!-- VIN -->
-    <div class="form-group">
-      <label for="vinBp">VIN</label>
-      <input
-        type="text"
-        id="vinBp"
-        name="vinBp"
-        placeholder="Ex.: 9BGXXXXX..."
-        maxlength="17"
-        disabled
-      />
-    </div>
+              <div class="grid grid-3">
+                <div class="form-group">
+                  <label for="maiorImpacto">Maior impacto *</label>
+                  <select id="maiorImpacto" name="maiorImpacto">
+                    <option value="">Selecione</option>
+                    <option value="peca-nao-instalada">
+                      Peça não instalada em submontagem / veículo / motor / transmissão
+                    </option>
+                    <option value="downtime">Downtime</option>
+                    <option value="stockout">Stockout</option>
+                    <option value="plant-disruption">Plant disruption</option>
+                    <option value="na">N/A</option>
+                  </select>
+                </div>
 
-    <!-- Local / Célula -->
-    <div class="form-group">
-      <label for="localCelulaBp">Área / Célula</label>
-      <input
-        type="text"
-        id="localCelulaBp"
-        name="localCelulaBp"
-        placeholder="Ex.: Célula Injetora A"
-        disabled
-      />
-    </div>
-  </div>
+                <div class="form-group">
+                  <label for="impactoQualidade">Impacto qualidade *</label>
+                  <select id="impactoQualidade" name="impactoQualidade">
+                    <option value="">Selecione</option>
+                    <option value="tempo-processamento">Tempo de processamento</option>
+                    <option value="dimensional">Dimensional</option>
+                    <option value="aparencia">Aparência</option>
+                    <option value="funcional">Funcional</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
 
-  <!-- Como foi identificado -->
-  <div class="form-group full">
-    <label for="comoIdentificadoBp">Como foi identificado *</label>
-    <textarea
-      id="comoIdentificadoBp"
-      name="comoIdentificadoBp"
-      rows="3"
-      placeholder="Descreva como o problema foi identificado"
-    ></textarea>
-  </div>
+                <div class="form-group">
+                  <label for="impactoCliente">Impacto cliente *</label>
+                  <select id="impactoCliente" name="impactoCliente">
+                    <option value="">Selecione</option>
+                    <option value="line-accumulation">Line Accumulation</option>
+                    <option value="supplier-initiated">Supplier Initiated</option>
+                    <option value="single-occurrence">Single Occurrence</option>
+                    <option value="multiple-occurrence">Multiple Occurrence</option>
+                    <option value="repeat-occurrence">Repeat Occurrence</option>
+                    <option value="program-management">Program Management</option>
+                  </select>
+                </div>
+              </div>
+            </section>
 
-  <!-- Status -->
-  <div id="bpStatus" class="pn-status pn-status-neutral">
-    BP não informado.
-  </div>
-</section>
+            <!-- =========================================================
+                 SEÇÃO 4 - PNs ENVOLVIDOS
+                 ========================================================= -->
+            <section class="form-section pn-section">
+              <div class="section-title">
+                <h2>4. PN(s) envolvidos no atendimento inicial</h2>
+                <span>Controle de seleção no nível do PN</span>
+              </div>
 
+              <p style="margin-top: -4px; color: var(--cinza-500); font-size: 13px;">
+                Pelo menos 1 PN é obrigatório. Apenas 1 PN deve ser marcado como principal.
+                A seleção, trava e QHD são controlados por PN e independem do fluxo de aprovação.
+              </p>
 
-          <!-- ===============================================
-           AÇÕES FINAIS DO FORMULÁRIO
-            =============================================== -->
-          <div class="form-actions">
-            <button type="submit" class="primary-btn">Criar RASP</button>
+              <div class="alerta" style="margin-bottom: 14px;">
+                Após a saída da seleção, o sistema permitirá ajustes por até 1 hora.
+                Depois disso, o PN não poderá retornar à seleção no mesmo RASP.
+              </div>
 
-            <button type="button" id="btnSubmeterFt" class="primary-btn" disabled>
-              Submeter ao FT
-            </button>
+              <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
+                <button id="addPnRow" class="primary-btn" type="button">+ Adicionar PN</button>
+                <button id="toggleMassPanel" class="primary-btn" type="button">Colar vários PNs</button>
+              </div>
 
-            <button type="button" id="btnGerarOnePage" class="secondary-btn" title="Gerar One Page">
-              Gerar One Page
-            </button>
+              <div id="massPanel" class="mass-panel">
+                <div class="form-group full" style="margin-bottom: 10px;">
+                  <label for="pnsLoteTextarea">Cole vários PNs</label>
+                  <textarea
+                    id="pnsLoteTextarea"
+                    rows="5"
+                    placeholder="Cole um PN por linha&#10;Ex.:&#10;11098761&#10;12345678&#10;87654321"
+                  ></textarea>
+                </div>
 
+                <div class="form-actions" style="justify-content: flex-start; margin-bottom: 14px;">
+                  <button id="importMassPns" class="primary-btn" type="button">Importar PNs</button>
+                </div>
+              </div>
 
-            <button type="button" id="btnLimpar" class="secondary-btn">Novo RASP</button>
-          </div>
+              <div class="pn-tabela-wrap">
+                <table class="pn-tabela">
+                  <thead>
+                    <tr>
+                      <th class="col-principal">Principal</th>
+                      <th class="col-pn">PN *</th>
+                      <th class="col-descricao">Descrição do PN</th>
+                      <th class="col-data-lote">Data/Lote inicial *</th>
+                      <th class="col-qtd">Qtd suspeita</th>
+                      <th class="col-qtd">Qtd checada</th>
+                      <th class="col-qtd">Qtd rejeitada</th>
+                      <th class="col-badge">Seleção</th>
+                      <th class="col-acao">Detalhes</th>
+                      <th class="col-acao">Ação</th>
+                    </tr>
+                  </thead>
+
+                  <tbody id="pnTableBody"></tbody>
+                </table>
+              </div>
+
+              <div
+                id="pnStatus"
+                class="pn-status pn-status-neutral"
+                style="margin-top: 12px;"
+              >
+                Preencha pelo menos 1 PN. O PN principal deve ter Data/Lote inicial.
+              </div>
+            </section>
+
+            <!-- ===============================================
+                 SEÇÃO 5 - DADOS COMPLEMENTARES PARA APROVAÇÃO
+                 =============================================== -->
+            <section class="form-section section-aprovacao">
+              <div class="section-aprovacao-header">
+                <h3>5. Dados complementares para aprovação</h3>
+                <p class="section-note">
+                  Estes dados podem ser preenchidos já na abertura para permitir o avanço do RASP ao fluxo de aprovação quando aplicável.
+                </p>
+              </div>
+
+              <div class="aprovacao-grid">
+                <div class="form-group">
+                  <label for="modeloVeiculo">Modelo do veículo</label>
+                  <select id="modeloVeiculo" name="modeloVeiculo">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="turnoRasp">Turno</label>
+                  <select id="turnoRasp" name="turnoRasp">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="pilotoRasp">Piloto</label>
+                  <select id="pilotoRasp" name="pilotoRasp">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="majorRasp">Major</label>
+                  <select id="majorRasp" name="majorRasp">
+                    <option value="">Selecione</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="aprovadorFt">Aprovador (FT) *</label>
+                  <input
+                    type="text"
+                    id="aprovadorFt"
+                    name="aprovadorFt"
+                    class="system-field"
+                    readonly
+                    placeholder="Preenchido automaticamente pelo turno"
+                  />
+                  <input type="hidden" id="aprovadorFtId" name="aprovadorFtId" />
+                </div>
+
+                <div class="form-group">
+                  <label for="nomeContato">Nome da pessoa contatada</label>
+                  <input
+                    type="text"
+                    id="nomeContato"
+                    name="nomeContato"
+                    value="Não Contatado"
+                    placeholder="Ex.: João Silva"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="dataContato">Data do contato</label>
+                  <input type="date" id="dataContato" name="dataContato" />
+                </div>
+
+                <div class="form-group">
+                  <label for="rdNumero">RD Nº</label>
+                  <input
+                    type="text"
+                    id="rdNumero"
+                    name="rdNumero"
+                    placeholder="Informe o número do relatório dimensional"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="campanhaNumero">Campanha nº</label>
+                  <input
+                    type="text"
+                    id="campanhaNumero"
+                    name="campanhaNumero"
+                    placeholder="Informe o número da campanha"
+                  />
+                </div>
+              </div>
+
+              <div class="aprovacao-alerta">
+                O campo Campanha nº poderá futuramente gerar pendência quando a Origem for GCA10, GCA20 ou GCA50.
+              </div>
+            </section>
+
+            <!-- ===============================================
+                 SEÇÃO 6 - BREAK POINT
+                 =============================================== -->
+            <section class="form-section section-bp">
+              <h3>6. Break Point (BP)</h3>
+
+              <p class="section-note">
+                Pode permanecer pendente em rascunho, mas será obrigatório antes do envio para aprovação.
+              </p>
+
+              <div class="grid grid-3">
+                <div class="form-group">
+                  <label for="tipoReferenciaBp">Tipo de referência *</label>
+                  <select id="tipoReferenciaBp" name="tipoReferenciaBp">
+                    <option value="">Selecione</option>
+                    <option value="VIN">VIN (Linha)</option>
+                    <option value="LOCAL">Área / Célula</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="dataBp">Data do BP *</label>
+                  <input type="date" id="dataBp" name="dataBp" />
+                </div>
+
+                <div class="form-group">
+                  <label for="horaBp">Hora do BP *</label>
+                  <input type="time" id="horaBp" name="horaBp" />
+                </div>
+              </div>
+
+              <div class="grid grid-2">
+                <div class="form-group">
+                  <label for="vinBp">VIN</label>
+                  <input
+                    type="text"
+                    id="vinBp"
+                    name="vinBp"
+                    placeholder="Ex.: 9BGXXXXX..."
+                    maxlength="17"
+                    disabled
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="localCelulaBp">Área / Célula</label>
+                  <input
+                    type="text"
+                    id="localCelulaBp"
+                    name="localCelulaBp"
+                    placeholder="Ex.: Célula Injetora A"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <div class="form-group full">
+                <label for="comoIdentificadoBp">Como foi identificado *</label>
+                <textarea
+                  id="comoIdentificadoBp"
+                  name="comoIdentificadoBp"
+                  rows="3"
+                  placeholder="Descreva como o problema foi identificado"
+                ></textarea>
+              </div>
+
+              <div id="bpStatus" class="pn-status pn-status-neutral">
+                BP não informado.
+              </div>
+            </section>
+
+            <!-- ===============================================
+                 AÇÕES FINAIS DO FORMULÁRIO
+                 =============================================== -->
+            <div class="form-actions">
+              <button type="submit" class="primary-btn">Criar RASP</button>
+
+              <button type="button" id="btnSubmeterFt" class="primary-btn" disabled>
+                Submeter ao FT
+              </button>
+
+              <button type="button" id="btnGerarOnePage" class="secondary-btn" title="Gerar One Page">
+                Gerar One Page
+              </button>
+
+              <button type="button" class="primary-btn" onclick="imprimirRaspAtual()">
+                Imprimir RASP
+              </button>
+
+              <button type="button" id="btnLimpar" class="secondary-btn">
+                Novo RASP
+              </button>
+            </div>
+
+          </form>
+        </div>
 
         <!-- ===================================================
              ABA: COMPLEMENTOS
@@ -830,6 +752,7 @@
         <button type="button" id="salvarFornecedor" class="primary-btn">
           Salvar fornecedor
         </button>
+
         <button type="button" id="cancelarFornecedor" class="secondary-btn">
           Cancelar
         </button>
@@ -837,30 +760,35 @@
     </div>
   </div>
 
+  <!-- =========================================================
+       MODAL DE PENDÊNCIAS FT
+       ========================================================= -->
   <div id="modalPendencias" class="modal hidden">
-  <div class="modal-content modal-pendencias">
-    <h3>⚠️ Pendências para envio ao FT</h3>
-    <p>Complete os campos abaixo antes de submeter o RASP.</p>
+    <div class="modal-content modal-pendencias">
+      <h3>⚠️ Pendências para envio ao FT</h3>
+      <p>Complete os campos abaixo antes de submeter o RASP.</p>
 
-    <ul id="listaPendenciasFt"></ul>
+      <ul id="listaPendenciasFt"></ul>
 
-    <div class="modal-actions">
-      <button type="button" id="btnFecharPendencias" class="primary-btn">
-        Entendi
-      </button>
+      <div class="modal-actions">
+        <button type="button" id="btnFecharPendencias" class="primary-btn">
+          Entendi
+        </button>
+      </div>
     </div>
   </div>
-</div>
-
 
   <!-- =========================================================
-       ARQUIVO JAVASCRIPT
+       JAVASCRIPT PRINCIPAL
        ========================================================= -->
   <script src="app.js"></script>
+  <script src="./sessao.js"></script>
 
   <script>
+    /* =========================================================
+       01. MENU DASHBOARD
+       ========================================================= */
     document.addEventListener("DOMContentLoaded", () => {
-
       const botao = document.querySelector(".sidebar-dashboard-toggle");
       const submenu = document.querySelector(".sidebar-submenu");
 
@@ -869,164 +797,304 @@
           submenu.classList.toggle("hidden");
         });
       }
-
     });
-  </script>
 
-  <script src="./sessao.js"></script>
+    /* =========================================================
+       02. SESSÃO
+       ========================================================= */
+    protegerPagina();
+    preencherUsuarioLogadoNaTela();
 
- <script>
-  protegerPagina();
-  preencherUsuarioLogadoNaTela();
+    /* =========================================================
+       03. BUSCAR SPPS DO RASP
+       ========================================================= */
+    async function buscarSppsDoRasp(numeroRasp) {
+      if (!numeroRasp) return "------";
 
-  async function buscarSppsDoRasp(numeroRasp) {
-    if (!numeroRasp) return "------";
+      try {
+        const resposta = await fetch("http://localhost:5050/rasp");
 
-    try {
-      const resposta = await fetch("http://localhost:5050/rasp");
+        if (!resposta.ok) {
+          return "------";
+        }
 
-      if (!resposta.ok) {
+        const rasps = await resposta.json();
+
+        const raspEncontrado = rasps.find(r =>
+          String(r.numeroRasp).trim() === String(numeroRasp).trim()
+        );
+
+        const numeroSpps =
+          raspEncontrado?.sppsNumero ||
+          raspEncontrado?.spps_numero ||
+          raspEncontrado?.SppsNumero ||
+          "";
+
+        return numeroSpps && String(numeroSpps).trim() !== ""
+          ? numeroSpps
+          : "------";
+
+      } catch (erro) {
+        console.error("Erro ao buscar SPPS:", erro);
         return "------";
       }
-
-      const rasps = await resposta.json();
-
-      const raspEncontrado = rasps.find(r =>
-        String(r.numeroRasp).trim() === String(numeroRasp).trim()
-      );
-
-      const numeroSpps =
-        raspEncontrado?.sppsNumero ||
-        raspEncontrado?.spps_numero ||
-        raspEncontrado?.SppsNumero ||
-        "";
-
-      return numeroSpps && String(numeroSpps).trim() !== ""
-        ? numeroSpps
-        : "------";
-
-    } catch (erro) {
-      console.error("Erro ao buscar SPPS:", erro);
-      return "------";
     }
-  }
 
-  async function atualizarCampoSpps(numeroRasp) {
-    const campoSpps = document.getElementById("sppsNumeroDisplay");
+    async function atualizarCampoSpps(numeroRasp) {
+      const campoSpps = document.getElementById("sppsNumeroDisplay");
 
-    if (!campoSpps) return;
+      if (!campoSpps) return;
 
-    const numeroSpps = await buscarSppsDoRasp(numeroRasp);
+      const numeroSpps = await buscarSppsDoRasp(numeroRasp);
 
-    campoSpps.innerText = numeroSpps;
-  }
+      campoSpps.innerText = numeroSpps;
+    }
 
-  async function carregarRaspPorUrl() {
-    const parametros = new URLSearchParams(window.location.search);
+    /* =========================================================
+       04. CARREGAR RASP POR URL
+       ========================================================= */
+    async function carregarRaspPorUrl() {
+      const parametros = new URLSearchParams(window.location.search);
 
-    const idRasp = parametros.get("idRasp");
-    const modo = parametros.get("modo");
-    const origem = parametros.get("origem");
-    const perfilUsuario = sessionStorage.getItem("perfilUsuario");
+      const idRasp = parametros.get("idRasp") || parametros.get("id");
+      const modo = parametros.get("modo");
+      const origem = parametros.get("origem");
+      const perfilUsuario = sessionStorage.getItem("perfilUsuario");
 
-    if (origem === "spps" && perfilUsuario !== "MT") {
-      const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
-      const sppsDisplay = document.getElementById("sppsNumeroDisplay");
-      const sppsBox = sppsDisplay
-        ? sppsDisplay.closest(".rasp-indicador-box")
-        : null;
+      if (origem === "spps" && perfilUsuario !== "MT") {
+        const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
+        const sppsDisplay = document.getElementById("sppsNumeroDisplay");
+        const sppsBox = sppsDisplay
+          ? sppsDisplay.closest(".rasp-indicador-box")
+          : null;
 
-      if (btnVoltar) {
-        btnVoltar.style.display = "inline-flex";
-        btnVoltar.disabled = false;
-        btnVoltar.onclick = () => {
-          window.location.href = "gestao-spps.html";
-        };
+        if (btnVoltar) {
+          btnVoltar.style.display = "inline-flex";
+          btnVoltar.disabled = false;
+          btnVoltar.onclick = () => {
+            window.location.href = "gestao-spps.html";
+          };
+        }
+
+        if (sppsBox) {
+          sppsBox.style.cursor = "pointer";
+          sppsBox.title = "Voltar para Gestão SPPS";
+          sppsBox.onclick = () => {
+            window.location.href = "gestao-spps.html";
+          };
+        }
       }
 
-      if (sppsBox) {
-        sppsBox.style.cursor = "pointer";
-        sppsBox.title = "Voltar para Gestão SPPS";
-        sppsBox.onclick = () => {
-          window.location.href = "gestao-spps.html";
-        };
-      }
-    }
-
-    if (!idRasp) {
-      return;
-    }
-
-    try {
-      const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
-
-      if (!resposta.ok) {
-        alert("Não foi possível carregar o RASP informado.");
+      if (!idRasp) {
         return;
       }
 
-      const rasp = await resposta.json();
+      try {
+        const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
 
-      const campoBusca = document.getElementById("buscarRaspNumero");
-      const botaoBusca = document.getElementById("btnBuscarRasp");
+        if (!resposta.ok) {
+          mostrarAvisoImpressaoRasp(
+            "Carregar RASP",
+            "Não foi possível carregar o RASP informado."
+          );
+          return;
+        }
 
-      if (!campoBusca || !botaoBusca) {
-        alert("Campo de busca do RASP não localizado na tela.");
-        return;
-      }
+        const rasp = await resposta.json();
 
-      campoBusca.value = rasp.numeroRasp;
-      botaoBusca.click();
+        const campoBusca = document.getElementById("buscarRaspNumero");
+        const botaoBusca = document.getElementById("btnBuscarRasp");
 
-      setTimeout(() => {
-        atualizarCampoSpps(rasp.numeroRasp);
-      }, 1400);
+        if (!campoBusca || !botaoBusca) {
+          mostrarAvisoImpressaoRasp(
+            "Carregar RASP",
+            "Campo de busca do RASP não localizado na tela."
+          );
+          return;
+        }
 
-      if (modo === "consulta") {
+        campoBusca.value = rasp.numeroRasp;
+        botaoBusca.click();
+
         setTimeout(() => {
-          document
-            .querySelectorAll("input, select, textarea, button")
-            .forEach(campo => {
-              if (
-                campo.id === "btnVoltarGestaoSpps" ||
-                campo.id === "buscarRaspNumero" ||
-                campo.id === "btnBuscarRasp" ||
-                campo.closest(".sidebar")
-              ) {
-                return;
-              }
+          atualizarCampoSpps(rasp.numeroRasp);
+        }, 1400);
 
-              campo.disabled = true;
-            });
-        }, 1600);
+        if (modo === "consulta") {
+          setTimeout(() => {
+            document
+              .querySelectorAll("input, select, textarea, button")
+              .forEach(campo => {
+                if (
+                  campo.id === "btnVoltarGestaoSpps" ||
+                  campo.id === "buscarRaspNumero" ||
+                  campo.id === "btnBuscarRasp" ||
+                  campo.closest(".sidebar")
+                ) {
+                  return;
+                }
+
+                campo.disabled = true;
+              });
+          }, 1600);
+        }
+
+      } catch (erro) {
+        console.error(erro);
+
+        mostrarAvisoImpressaoRasp(
+          "Carregar RASP",
+          "Erro ao carregar RASP pela URL."
+        );
+      }
+    }
+
+    setTimeout(() => {
+      carregarRaspPorUrl();
+    }, 500);
+
+    const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+
+    if (btnBuscarRasp) {
+      btnBuscarRasp.addEventListener("click", () => {
+        setTimeout(() => {
+          const numeroRasp =
+            document.getElementById("raspNumeroDisplay")?.innerText ||
+            document.getElementById("buscarRaspNumero")?.value;
+
+          atualizarCampoSpps(numeroRasp);
+        }, 1500);
+      });
+    }
+
+    /* =========================================================
+       05. MODAL DE AVISO PADRÃO PARA IMPRESSÃO
+       ========================================================= */
+    function mostrarAvisoImpressaoRasp(titulo, mensagem) {
+      const modalExistente = document.getElementById("modalAvisoImpressaoRasp");
+
+      if (modalExistente) {
+        modalExistente.remove();
       }
 
-    } catch (erro) {
-      console.error(erro);
-      alert("Erro ao carregar RASP pela URL.");
+      const modal = document.createElement("div");
+
+      modal.innerHTML = `
+        <div id="modalAvisoImpressaoRasp" style="
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99999;
+          font-family: Segoe UI, Arial, sans-serif;
+        ">
+          <div style="
+            width: 420px;
+            background: #061b3a;
+            border: 1px solid #2f94ff;
+            border-radius: 14px;
+            box-shadow: 0 0 35px rgba(47,148,255,.45);
+            padding: 24px;
+            color: white;
+          ">
+            <h2 style="
+              margin: 0 0 10px;
+              color: #5bb6ff;
+              font-size: 22px;
+            ">
+              ${titulo}
+            </h2>
+
+            <p style="
+              font-size: 15px;
+              color: #c8d6ee;
+              margin-bottom: 22px;
+              line-height: 1.45;
+            ">
+              ${mensagem}
+            </p>
+
+            <div style="display:flex;justify-content:flex-end;">
+              <button
+                type="button"
+                onclick="document.getElementById('modalAvisoImpressaoRasp').remove()"
+                style="
+                  height: 38px;
+                  padding: 0 24px;
+                  border-radius: 8px;
+                  border: 1px solid #2f94ff;
+                  background: #0f6dff;
+                  color: white;
+                  cursor: pointer;
+                  font-weight: 800;
+                "
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
     }
-  }
 
-  setTimeout(() => {
-    carregarRaspPorUrl();
-  }, 500);
+    /* =========================================================
+       06. IMPRIMIR RASP ATUAL
+       ========================================================= */
+    async function imprimirRaspAtual() {
+      const params = new URLSearchParams(window.location.search);
 
-  const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+      let idRasp =
+        params.get("idRasp") ||
+        params.get("id");
 
-  if (btnBuscarRasp) {
-    btnBuscarRasp.addEventListener("click", () => {
-      setTimeout(() => {
-        const numeroRasp =
-          document.getElementById("raspNumeroDisplay")?.innerText ||
-          document.getElementById("buscarRaspNumero")?.value;
+      if (idRasp) {
+        window.location.href =
+          `http://localhost:5050/imprimir_rasp.html?id=${idRasp}`;
+        return;
+      }
 
-        atualizarCampoSpps(numeroRasp);
-      }, 1500);
-    });
-  }
-</script>
+      const numeroRasp =
+        document.getElementById("raspNumeroDisplay")?.innerText?.trim();
 
+      if (!numeroRasp || numeroRasp === "---") {
+        mostrarAvisoImpressaoRasp(
+          "Impressão RASP",
+          "Salve ou abra um RASP antes de utilizar a impressão."
+        );
+        return;
+      }
 
+      try {
+        const resposta = await fetch(
+          `http://localhost:5050/rasp/numero/${encodeURIComponent(numeroRasp)}`
+        );
+
+        if (!resposta.ok) {
+          mostrarAvisoImpressaoRasp(
+            "Impressão RASP",
+            "Não foi possível localizar o RASP para impressão."
+          );
+          return;
+        }
+
+        const rasp = await resposta.json();
+
+        window.location.href =
+          `http://localhost:5050/imprimir_rasp.html?id=${rasp.idRasp}`;
+
+      } catch (erro) {
+        console.error(erro);
+
+        mostrarAvisoImpressaoRasp(
+          "Impressão RASP",
+          "Erro ao consultar o RASP para impressão."
+        );
+      }
+    }
+  </script>
 </body>
 </html>
-

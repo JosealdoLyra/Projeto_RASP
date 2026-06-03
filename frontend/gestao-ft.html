@@ -12,9 +12,6 @@
        02. ESTILOS
        ========================================================= -->
   <style>
-    /* =========================================================
-       02.01 RESET
-       ========================================================= */
     *{
       margin:0;
       padding:0;
@@ -29,17 +26,11 @@
       overflow:hidden;
     }
 
-    /* =========================================================
-       02.02 LAYOUT PRINCIPAL
-       ========================================================= */
     .container{
       display:flex;
       height:100vh;
     }
 
-    /* =========================================================
-       02.03 MENU LATERAL
-       ========================================================= */
     .sidebar{
       width:380px;
       background:#0b1d35;
@@ -65,13 +56,10 @@
       font-size:13px;
     }
 
-    /* =========================================================
-       02.04 KPI
-       ========================================================= */
     .kpi-container{
       display:grid;
       grid-template-columns:repeat(3, 1fr);
-      gap: 10px;
+      gap:10px;
       padding:18px;
     }
 
@@ -87,7 +75,6 @@
       justify-content:center;
     }
 
-
     .kpi-title{
       font-size:12px;
       color:#93a9ca;
@@ -100,16 +87,12 @@
       line-height:1.15;
     }
 
-
     .kpi-value{
       font-size:29px;
       font-weight:700;
       color:#ffffff;
     }
 
-    /* =========================================================
-       02.05 DIAMANTE ORIGINAL RASP - SVG
-       ========================================================= */
     .diamond-ft-wrap{
       width:100%;
       display:flex;
@@ -120,15 +103,15 @@
     }
 
     .diamond-logo-ft{
-        width:118px;
-        height:98px;
-        transform-origin:center;
-        filter:
-            drop-shadow(0 0 6px rgba(125,211,252,1))
-            drop-shadow(0 0 18px rgba(59,130,246,0.95))
-            drop-shadow(0 0 38px rgba(37,99,235,0.75))
-            drop-shadow(0 0 60px rgba(14,165,233,0.35));
-        animation:diamondPulseFt 2.4s ease-in-out infinite;
+      width:118px;
+      height:98px;
+      transform-origin:center;
+      filter:
+        drop-shadow(0 0 6px rgba(125,211,252,1))
+        drop-shadow(0 0 18px rgba(59,130,246,0.95))
+        drop-shadow(0 0 38px rgba(37,99,235,0.75))
+        drop-shadow(0 0 60px rgba(14,165,233,0.35));
+      animation:diamondPulseFt 2.4s ease-in-out infinite;
     }
 
     .diamond-line-ft{
@@ -146,28 +129,12 @@
       opacity:0.95;
     }
 
-    .diamond-spark-ft{
-    fill:#ffffff;
-    transform-box:fill-box;
-    transform-origin:center;
-    filter:
-        drop-shadow(0 0 6px rgba(255,255,255,1))
-        drop-shadow(0 0 14px rgba(125,211,252,0.95));
-    animation:sparkPulseFt 1.4s ease-in-out infinite;
-    }
-
-
     @keyframes diamondPulseFt{
       0%{ transform:scale(1); opacity:0.92; }
       50%{ transform:scale(1.08); opacity:1; }
       100%{ transform:scale(1); opacity:0.92; }
     }
 
-    
-
-    /* =========================================================
-       02.06 FILA FT
-       ========================================================= */
     .fila-container{
       flex:1;
       overflow-y:auto;
@@ -237,9 +204,6 @@
       color:#7f95b5;
     }
 
-    /* =========================================================
-       02.06.01 CRITICIDADE VISUAL
-       ========================================================= */
     .criticidade-normal{
       border:1px solid rgba(34,197,94,0.22);
     }
@@ -258,12 +222,7 @@
 
     .criticidade-critico{
       border:1px solid rgba(239,68,68,0.45);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(127,29,29,0.30),
-          rgba(15,39,70,1)
-        );
+      background:linear-gradient(145deg,rgba(127,29,29,0.30),rgba(15,39,70,1));
     }
 
     .criticidade-critico:hover{
@@ -271,38 +230,34 @@
     }
 
     .fila-subtitle{
-  margin:14px 0 10px;
-  font-size:12px;
-  font-weight:800;
-  color:#7ea6ff;
-  letter-spacing:0.8px;
-  text-transform:uppercase;
-}
+      margin:14px 0 10px;
+      font-size:12px;
+      font-weight:800;
+      color:#7ea6ff;
+      letter-spacing:0.8px;
+      text-transform:uppercase;
+    }
 
-.fila-subtitle.retorno{
-  color:#fbbf24;
-}
+    .fila-subtitle.retorno{
+      color:#fbbf24;
+    }
 
-.rasp-card.retorno-lg-card{
-  border:1px solid rgba(245,158,11,0.55);
-  background:linear-gradient(145deg,rgba(120,53,15,0.32),#122744);
-}
+    .retorno-lg-card{
+      border:1px solid rgba(245,158,11,0.55);
+      background:linear-gradient(145deg,rgba(120,53,15,0.32),#122744);
+    }
 
-.badge-retorno-lg{
-  display:inline-block;
-  margin-top:10px;
-  padding:5px 9px;
-  border-radius:999px;
-  background:rgba(245,158,11,0.18);
-  color:#fbbf24;
-  font-size:11px;
-  font-weight:800;
-}
+    .badge-retorno-lg{
+      display:inline-block;
+      margin-top:10px;
+      padding:5px 9px;
+      border-radius:999px;
+      background:rgba(245,158,11,0.18);
+      color:#fbbf24;
+      font-size:11px;
+      font-weight:800;
+    }
 
-
-    /* =========================================================
-       02.07 RODAPÉ LATERAL
-       ========================================================= */
     .sidebar-footer{
       padding:18px;
       border-top:1px solid rgba(255,255,255,0.06);
@@ -312,18 +267,25 @@
     }
 
     .footer-buttons{
-      display:flex;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
       gap:10px;
     }
 
     .btn-retorno{
-      flex:1;
       height:44px;
       border:none;
       border-radius:12px;
       color:#ffffff;
       font-weight:700;
       cursor:pointer;
+      transition:0.2s;
+      font-size:12px;
+    }
+
+    .btn-retorno:hover{
+      transform:translateY(-2px);
+      box-shadow:0 0 16px rgba(59,130,246,0.35);
     }
 
     .btn-dashboard{
@@ -335,6 +297,12 @@
       border:1px solid rgba(255,255,255,0.08);
     }
 
+    .btn-print{
+      background:linear-gradient(135deg,#0f6dff,#0b3f93);
+      border:1px solid rgba(47,148,255,0.65);
+      box-shadow:0 0 14px rgba(47,148,255,0.30);
+    }
+
     .assinatura{
       text-align:center;
       font-size:12px;
@@ -344,9 +312,6 @@
       opacity:0.9;
     }
 
-    /* =========================================================
-       02.08 CONTEÚDO DIREITO
-       ========================================================= */
     .content{
       flex:1;
       display:flex;
@@ -372,9 +337,6 @@
       padding:30px;
     }
 
-    /* =========================================================
-       02.09 CARDS / TIMELINE
-       ========================================================= */
     .timeline{
       margin-bottom:30px;
       background:#10233f;
@@ -416,7 +378,6 @@
     .legenda-cor.complemento{ background:#a855f7; }
     .legenda-cor.reprovado{ background:#ef4444; }
     .legenda-cor.alerta{ background:#f59e0b; }
-
 
     .detail-grid{
       display:grid;
@@ -506,9 +467,6 @@
       font-weight:800;
     }
 
-    /* =========================================================
-       02.10 BOTÕES FT
-       ========================================================= */
     .btn-ft{
       border:none;
       padding:16px 24px;
@@ -525,32 +483,17 @@
     }
 
     .btn-ft:disabled{
-    opacity:0.45;
-    cursor:not-allowed;
-    filter:grayscale(0.35);
-    transform:none;
+      opacity:0.45;
+      cursor:not-allowed;
+      filter:grayscale(0.35);
+      transform:none;
     }
 
+    .btn-aprovar{ background:#22c55e; }
+    .btn-reprovar{ background:#ef4444; }
+    .btn-complemento{ background:#7c3aed; }
+    .btn-alert{ background:#f59e0b; }
 
-    .btn-aprovar{
-      background:#22c55e;
-    }
-
-    .btn-reprovar{
-      background:#ef4444;
-    }
-
-    .btn-complemento{
-      background:#7c3aed;
-    }
-
-    .btn-alert{
-      background: #f59e0b;
-    }
-
-    /* =========================================================
-       02.11 MODAIS
-       ========================================================= */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -609,50 +552,28 @@
     .modal-cancelar{ background:#334155; }
     .modal-confirmar{ background:#2563eb; }
 
-    .retorno-lg-card{
-  border:1px solid rgba(245,158,11,0.40);
-  background:linear-gradient(145deg,rgba(120,53,15,0.35),#10233f);
-  box-shadow:0 0 22px rgba(245,158,11,0.18);
-}
+    .alerta-retorno-lg{
+      margin-bottom:30px;
+      background:linear-gradient(145deg,rgba(120,53,15,0.35),#10233f);
+      border:1px solid rgba(245,158,11,0.35);
+      border-radius:18px;
+      padding:22px;
+      display:none;
+    }
 
-.badge-retorno-lg{
-  display:inline-block;
-  margin-top:10px;
-  padding:6px 10px;
-  border-radius:999px;
-  background:rgba(245,158,11,0.18);
-  color:#fbbf24;
-  font-size:12px;
-  font-weight:800;
-  letter-spacing:0.4px;
-}
+    .alerta-retorno-lg h3{
+      color:#fbbf24;
+      font-size:16px;
+      margin-bottom:12px;
+      text-transform:uppercase;
+    }
 
-.alerta-retorno-lg{
-  margin-bottom:30px;
-  background:linear-gradient(145deg,rgba(120,53,15,0.35),#10233f);
-  border:1px solid rgba(245,158,11,0.35);
-  border-radius:18px;
-  padding:22px;
-  display:none;
-}
+    .alerta-retorno-lg p{
+      color:#fde68a;
+      font-size:14px;
+      line-height:1.5;
+    }
 
-.alerta-retorno-lg h3{
-  color:#fbbf24;
-  font-size:16px;
-  margin-bottom:12px;
-  text-transform:uppercase;
-}
-
-.alerta-retorno-lg p{
-  color:#fde68a;
-  font-size:14px;
-  line-height:1.5;
-}
-
-
-    /* =========================================================
-       02.12 RESPONSIVO
-       ========================================================= */
     @media(max-width:1200px){
       .container{
         flex-direction:column;
@@ -667,16 +588,8 @@
 </head>
 
 <body>
-  <!-- =========================================================
-       03. CONTAINER PRINCIPAL
-       ========================================================= -->
   <div class="container">
-
-    <!-- =======================================================
-         03.01 SIDEBAR
-         ======================================================= -->
     <aside class="sidebar">
-
       <div class="sidebar-header">
         <h1>Gestão FT</h1>
         <p>Fila de análise técnica RASP</p>
@@ -694,14 +607,12 @@
         </div>
 
         <div class="kpi-card">
-           <div class="kpi-title">Retornos LG</div>
+          <div class="kpi-title">Retornos LG</div>
           <div id="kpiRetornosLgFt" class="kpi-value">0</div>
         </div>
-
       </div>
 
       <div class="fila-container">
-
         <div class="diamond-ft-wrap">
           <svg class="diamond-logo-ft" viewBox="0 0 120 100" aria-label="Diamante RASP">
             <path class="diamond-line-ft" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
@@ -709,7 +620,6 @@
             <path class="diamond-line-light-ft" d="M35 8 L48 30 L60 92" />
             <path class="diamond-line-light-ft" d="M85 8 L72 30 L60 92" />
             <path class="diamond-line-light-ft" d="M48 30 H72" />
-            
           </svg>
         </div>
 
@@ -728,9 +638,7 @@
         <div id="listaFilaFtRetornoLg"></div>
 
         <div id="listaFilaFt" style="display:none;"></div>
-
       </div>
-
 
       <div class="sidebar-footer">
         <div class="footer-buttons">
@@ -741,6 +649,10 @@
           <button class="btn-retorno btn-home" onclick="window.location.href='home.html'">
             Home
           </button>
+
+          <button class="btn-retorno btn-print" onclick="imprimirRaspSelecionadoFt()">
+            🖨 RASP
+          </button>
         </div>
 
         <div class="assinatura">
@@ -749,20 +661,12 @@
       </div>
     </aside>
 
-    <!-- =======================================================
-         03.02 CONTEÚDO PRINCIPAL
-         ======================================================= -->
     <main class="content">
-
       <div class="content-header">
         <h2>Detalhe Completo do RASP</h2>
       </div>
 
       <div class="content-body">
-
-        <!-- ===================================================
-             AÇÕES FT
-             =================================================== -->
         <div class="timeline">
           <h3>Ações FT</h3>
 
@@ -771,7 +675,6 @@
             <button id="btnReprovarFt" class="btn-ft btn-reprovar">Reprovar Procedência</button>
             <button id="btnComplementoFt" class="btn-ft btn-complemento">Solicitar Complemento</button>
             <button id="btnReenviarLg" class="btn-ft btn-alert">Reenviar ao LG</button>
-
           </div>
 
           <div style="margin-top:25px;">
@@ -799,18 +702,13 @@
         </div>
 
         <div id="alertaRetornoLg" class="alerta-retorno-lg">
-        <h3>⚠ Retorno do LG</h3>
-        <p id="textoRetornoLg">
-          Este RASP retornou do LG para complemento do FT.
-        </p>
+          <h3>⚠ Retorno do LG</h3>
+          <p id="textoRetornoLg">
+            Este RASP retornou do LG para complemento do FT.
+          </p>
         </div>
 
-
-        <!-- ===================================================
-             CARDS DE DETALHE
-             =================================================== -->
         <div class="detail-grid">
-
           <div class="detail-card">
             <h3>Informações Gerais</h3>
 
@@ -918,9 +816,6 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             OCORRÊNCIA / PROBLEMA
-             =================================================== -->
         <div class="timeline">
           <h3>Ocorrência / Problema</h3>
 
@@ -935,9 +830,6 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             PNs ENVOLVIDOS
-             =================================================== -->
         <div class="timeline">
           <h3>PNs envolvidos</h3>
 
@@ -949,20 +841,16 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             HISTÓRICO / TIMELINE
-             =================================================== -->
         <div class="timeline">
           <h3>Histórico / Timeline</h3>
 
           <div class="timeline-legenda">
-          <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
-          <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
-          <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
-          <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
-          <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
-        </div>
-
+            <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
+            <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
+            <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
+            <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
+            <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
+          </div>
 
           <div id="timelineConteudo">
             <div class="timeline-item">
@@ -972,20 +860,14 @@
             </div>
           </div>
         </div>
-
       </div>
     </main>
   </div>
 
-  <!-- =========================================================
-       04. MODAL CONFIRMAÇÃO
-       ========================================================= -->
   <div id="modalConfirmacao" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-diamond">◆</div>
-
       <h2>Confirmar ação FT</h2>
-
       <p id="textoModalConfirmacao">Deseja realmente registrar esta ação para o RASP selecionado?</p>
 
       <div class="modal-actions">
@@ -1000,15 +882,10 @@
     </div>
   </div>
 
-  <!-- =========================================================
-       05. MODAL SUCESSO / AVISO
-       ========================================================= -->
   <div id="modalSucesso" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-diamond">◆</div>
-
       <h2>Aviso</h2>
-
       <p id="mensagemSucesso">Operação realizada.</p>
 
       <div class="modal-actions">
@@ -1019,30 +896,15 @@
     </div>
   </div>
 
-  <!-- =========================================================
-       06. SCRIPTS
-       ========================================================= -->
   <script>
-    /* =========================================================
-       06.01 VARIÁVEIS GLOBAIS
-       ========================================================= */
     const API_BASE = "http://localhost:5050";
 
     let idRaspSelecionado = null;
-
-    /* Usuário 3 = FT Teste. Depois isso será substituído por login real. */
     let idUsuarioLogado = 3;
-
     let acaoPendenteFt = null;
-
     let raspSelecionadoEhRetornoLg = false;
 
-
-    /* =========================================================
-       06.02 TRAVA DE ACESSO FT
-       ========================================================= */
     async function validarAcessoFt(){
-
       const resposta = await fetch(`${API_BASE}/usuarios/${idUsuarioLogado}/perfil`);
 
       if(!resposta.ok){
@@ -1071,11 +933,7 @@
       return true;
     }
 
-    /* =========================================================
-       06.03 SELECIONAR RASP
-       ========================================================= */
     async function selecionarRasp(idRasp, elementoCard){
-
       idRaspSelecionado = idRasp;
 
       document
@@ -1114,11 +972,7 @@
       }
     }
 
-    /* =========================================================
-       06.04 LIMPAR CAMPOS ANTES DE CARREGAR
-       ========================================================= */
     function limparCamposAntesCarregar(numeroCard, fornecedorCard){
-
       document.getElementById("detNumeroRasp").innerText = numeroCard;
       document.getElementById("detFornecedor").innerText = fornecedorCard;
       document.getElementById("detDuns").innerText = "-";
@@ -1139,11 +993,7 @@
       document.getElementById("detScrap").innerText = "Em desenvolvimento";
     }
 
-    /* =========================================================
-       06.05 CARREGAR DETALHES GERAIS
-       ========================================================= */
     function carregarDetalhesGerais(dados, numeroCard, fornecedorCard){
-
       document.getElementById("detNumeroRasp").innerText =
         dados.numeroRasp ?? numeroCard;
 
@@ -1191,54 +1041,28 @@
         dados.idStatusRasp ??
         "-";
 
-        raspSelecionadoEhRetornoLg =
-        dados.idStatusRasp === 8;
-
-      const alertaRetornoLg =
-        document.getElementById("alertaRetornoLg");
-
-      const textoRetornoLg =
-        document.getElementById("textoRetornoLg");
+      raspSelecionadoEhRetornoLg = dados.idStatusRasp === 8;
 
       if(raspSelecionadoEhRetornoLg){
-        alertaRetornoLg.style.display = "none";
-
-        textoRetornoLg.innerText =
-          "Este RASP retornou do LG para complemento. Verifique a observação no histórico, complemente a análise e utilize o botão Reenviar ao LG.";
-
-        document.getElementById("btnAprovarFt").innerText =
-          "Reenviar ao LG";
-        
+        document.getElementById("btnAprovarFt").innerText = "Reenviar ao LG";
         document.getElementById("btnAprovarFt").disabled = true;
         document.getElementById("btnReprovarFt").disabled = true;
-
       }
       else{
-        alertaRetornoLg.style.display = "none";
-
-        document.getElementById("btnAprovarFt").innerText =
-          "Aprovar Procedência";
-        
+        document.getElementById("btnAprovarFt").innerText = "Aprovar Procedência";
         document.getElementById("btnAprovarFt").disabled = false;
         document.getElementById("btnReprovarFt").disabled = false;
-
       }
-
     }
 
-    /* =========================================================
-       06.06 CARREGAR CAMPOS OPERACIONAIS
-       ========================================================= */
     function carregarCamposOperacionais(dados){
-
       document.getElementById("detOrigem").innerText =
         dados.origemFabricacaoDescricao ??
         dados.origemDescricao ??
         "-";
 
       document.getElementById("detSetor").innerText =
-        dados.setorDescricao ??
-        "-";
+        dados.setorDescricao ?? "-";
 
       document.getElementById("detEmpresaSelecao").innerText =
         dados.empresaSelecao?.nomeEmpresa ??
@@ -1258,11 +1082,7 @@
         dados.temScrap === true ? "Sim" : "Em desenvolvimento";
     }
 
-    /* =========================================================
-       06.07 CARREGAR OCORRÊNCIA
-       ========================================================= */
     function carregarOcorrencia(dados){
-
       document.getElementById("detResumoOcorrencia").innerText =
         dados.resumoOcorrencia ?? "-";
 
@@ -1270,26 +1090,17 @@
         dados.descricaoProblema ?? "-";
     }
 
-    /* =========================================================
-       06.08 CARREGAR PNs
-       ========================================================= */
     function carregarPns(dados){
-
       const listaPns = document.getElementById("listaPnsRasp");
 
       if(dados.pns && dados.pns.length > 0){
-
         listaPns.innerHTML = "";
 
         dados.pns.forEach(pn => {
           listaPns.innerHTML += `
             <div class="timeline-item">
               <div class="timeline-title">PN ${pn.pn ?? "-"}</div>
-
-              <div class="timeline-date">
-                Lote inicial: ${formatarData(pn.dataLoteInicial)}
-              </div>
-
+              <div class="timeline-date">Lote inicial: ${formatarData(pn.dataLoteInicial)}</div>
               <div class="timeline-text">
                 Suspeita: ${pn.quantidadeSuspeita ?? 0} |
                 Checada: ${pn.quantidadeChecada ?? 0} |
@@ -1312,19 +1123,13 @@
       }
     }
 
-    /* =========================================================
-       06.09 CARREGAR HISTÓRICO
-       ========================================================= */
     function carregarHistorico(dados){
-
       const timeline = document.getElementById("timelineConteudo");
 
       if(dados.historicoFluxo && dados.historicoFluxo.length > 0){
-
         timeline.innerHTML = "";
 
         dados.historicoFluxo.forEach(item => {
-
           let classeTimeline = "ft";
 
           if(item.origemEvento === "LG"){
@@ -1363,199 +1168,162 @@
       }
     }
 
-    /* =========================================================
-   06.10 FILA FT
-   ========================================================= */
-async function carregarFilaFt(){
+    async function carregarFilaFt(){
+      const containerNovos = document.getElementById("listaFilaFtNovos");
+      const containerRetorno = document.getElementById("listaFilaFtRetornoLg");
 
-  const containerNovos =
-    document.getElementById("listaFilaFtNovos");
+      try{
+        const resposta = await fetch(`${API_BASE}/ft/fila-operacional/${idUsuarioLogado}`);
 
-  const containerRetorno =
-    document.getElementById("listaFilaFtRetornoLg");
+        if(!resposta.ok){
+          containerNovos.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Erro ao carregar fila FT</div>
+              <div class="timeline-date">API indisponível</div>
+              <div class="timeline-text">Verifique o endpoint /ft/fila-operacional/${idUsuarioLogado}.</div>
+            </div>
+          `;
+          containerRetorno.innerHTML = "";
+          return;
+        }
 
-  try{
-    const resposta =
-      await fetch(`${API_BASE}/ft/fila-operacional/${idUsuarioLogado}`);
+        const dados = await resposta.json();
 
-    if(!resposta.ok){
-      containerNovos.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Erro ao carregar fila FT</div>
-          <div class="timeline-date">API indisponível</div>
-          <div class="timeline-text">Verifique o endpoint /ft/fila-operacional/${idUsuarioLogado}.</div>
-        </div>
-      `;
+        atualizarKpisFt(dados);
 
-      containerRetorno.innerHTML = "";
-      return;
+        containerNovos.innerHTML = "";
+        containerRetorno.innerHTML = "";
+
+        if(!dados || dados.length === 0){
+          containerNovos.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Nenhum RASP aguardando FT</div>
+              <div class="timeline-date">Fila limpa</div>
+              <div class="timeline-text">Não há documentos pendentes para análise técnica FT.</div>
+            </div>
+          `;
+          return;
+        }
+
+        dados.forEach(item => {
+          const card = document.createElement("div");
+          const dias = calcularDiasAguardando(item.dataEnvioFt);
+
+          let criticidadeTexto = "Normal";
+          let criticidadeIcone = "🟢";
+          let criticidadeClasse = "criticidade-normal";
+
+          if(dias >= 2){
+            criticidadeTexto = "Atenção";
+            criticidadeIcone = "🟡";
+            criticidadeClasse = "criticidade-atencao";
+          }
+
+          if(dias >= 4){
+            criticidadeTexto = "Crítico";
+            criticidadeIcone = "🔴";
+            criticidadeClasse = "criticidade-critico";
+          }
+
+          const statusRasp =
+            Number(
+              item.idStatusRasp ??
+              item.idStatus ??
+              item.statusAtual ??
+              item.status ??
+              0
+            );
+
+          const statusDescricao =
+            String(
+              item.statusDescricao ??
+              item.statusTexto ??
+              ""
+            ).toUpperCase();
+
+          const ehRetornoLg =
+            item.ehRetornoLg === true ||
+            statusRasp === 8 ||
+            statusDescricao.includes("LG");
+
+          card.className = ehRetornoLg
+            ? `rasp-card ${criticidadeClasse} retorno-lg-card`
+            : `rasp-card ${criticidadeClasse}`;
+
+          card.setAttribute("data-id-rasp", item.idRasp);
+
+          card.onclick = () => selecionarRasp(item.idRasp, card);
+
+          card.innerHTML = `
+            <div class="rasp-numero">RASP ${item.numeroRasp ?? "-"}</div>
+            <div class="rasp-fornecedor">${item.fornecedor ?? "-"}</div>
+            ${ehRetornoLg ? `<span class="badge-retorno-lg">RETORNO LG</span>` : ""}
+            <div class="rasp-info">
+              <span>${criticidadeIcone} ${criticidadeTexto}</span>
+              <span>${dias} dias</span>
+            </div>
+          `;
+
+          if(ehRetornoLg){
+            containerRetorno.appendChild(card);
+          }
+          else{
+            containerNovos.appendChild(card);
+          }
+        });
+
+        if(containerNovos.innerHTML.trim() === ""){
+          containerNovos.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Nenhum RASP novo</div>
+              <div class="timeline-text">Não há novos RASPs aguardando primeira análise FT.</div>
+            </div>
+          `;
+        }
+
+        if(containerRetorno.innerHTML.trim() === ""){
+          containerRetorno.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Nenhum retorno do LG</div>
+              <div class="timeline-text">Não há RASPs devolvidos pelo LG neste momento.</div>
+            </div>
+          `;
+        }
+      }
+      catch(erro){
+        console.error(erro);
+
+        containerNovos.innerHTML = `
+          <div class="timeline-item">
+            <div class="timeline-title">Erro de comunicação</div>
+            <div class="timeline-date">Frontend sem conexão</div>
+            <div class="timeline-text">Não foi possível carregar a fila FT.</div>
+          </div>
+        `;
+
+        containerRetorno.innerHTML = "";
+      }
     }
 
-    const dados = await resposta.json();
+    function atualizarKpisFt(dados){
+      const total = dados?.length ?? 0;
 
-    atualizarKpisFt(dados);
-
-    containerNovos.innerHTML = "";
-    containerRetorno.innerHTML = "";
-
-    if(!dados || dados.length === 0){
-      containerNovos.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Nenhum RASP aguardando FT</div>
-          <div class="timeline-date">Fila limpa</div>
-          <div class="timeline-text">Não há documentos pendentes para análise técnica FT.</div>
-        </div>
-      `;
-      return;
+      const criticos = dados
+        ? dados.filter(item => calcularDiasAguardando(item.dataEnvioFt) >= 4).length
+        : 0;
 
       const retornosLg = dados
-      ? dados.filter(item =>
-          item.idStatusRasp === 8 ||
-          item.statusAtual === 8 ||
-          item.status === 8
-        ).length
-      : 0;
+        ? dados.filter(item =>
+            Number(item.idStatusRasp ?? item.statusAtual ?? item.status) === 8
+          ).length
+        : 0;
 
-    document.getElementById("kpiRetornosLgFt").innerText = retornosLg;
-
+      document.getElementById("kpiAguardandoFt").innerText = total;
+      document.getElementById("kpiSlaCriticoFt").innerText = criticos;
+      document.getElementById("kpiRetornosLgFt").innerText = retornosLg;
     }
 
-    dados.forEach(item => {
-
-      const card = document.createElement("div");
-
-      const dias =
-        calcularDiasAguardando(item.dataEnvioFt);
-
-      let criticidadeTexto = "Normal";
-      let criticidadeIcone = "🟢";
-      let criticidadeClasse = "criticidade-normal";
-
-      if(dias >= 2){
-        criticidadeTexto = "Atenção";
-        criticidadeIcone = "🟡";
-        criticidadeClasse = "criticidade-atencao";
-      }
-
-      if(dias >= 4){
-        criticidadeTexto = "Crítico";
-        criticidadeIcone = "🔴";
-        criticidadeClasse = "criticidade-critico";
-      }
-
-      const statusRasp =
-        Number(
-          item.idStatusRasp ??
-          item.idStatus ??
-          item.statusAtual ??
-          item.status ??
-          0
-        );
-
-      const statusDescricao =
-        String(
-          item.statusDescricao ??
-          item.statusTexto ??
-          ""
-        ).toUpperCase();
-
-      const ehRetornoLg =
-        item.ehRetornoLg === true ||
-        statusRasp === 8 ||
-        statusDescricao.includes("LG");
-
-      card.className = ehRetornoLg
-        ? `rasp-card ${criticidadeClasse} retorno-lg-card`
-        : `rasp-card ${criticidadeClasse}`;
-
-      card.setAttribute("data-id-rasp", item.idRasp);
-
-      card.onclick = () =>
-        selecionarRasp(item.idRasp, card);
-
-      card.innerHTML = `
-        <div class="rasp-numero">RASP ${item.numeroRasp ?? "-"}</div>
-
-        <div class="rasp-fornecedor">${item.fornecedor ?? "-"}</div>
-
-        ${ehRetornoLg ? `<span class="badge-retorno-lg">RETORNO LG</span>` : ""}
-
-        <div class="rasp-info">
-          <span>${criticidadeIcone} ${criticidadeTexto}</span>
-          <span>${dias} dias</span>
-        </div>
-      `;
-
-      if(ehRetornoLg){
-        containerRetorno.appendChild(card);
-      }
-      else{
-        containerNovos.appendChild(card);
-      }
-    });
-
-    if(containerNovos.innerHTML.trim() === ""){
-      containerNovos.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Nenhum RASP novo</div>
-          <div class="timeline-text">Não há novos RASPs aguardando primeira análise FT.</div>
-        </div>
-      `;
-    }
-
-    if(containerRetorno.innerHTML.trim() === ""){
-      containerRetorno.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Nenhum retorno do LG</div>
-          <div class="timeline-text">Não há RASPs devolvidos pelo LG neste momento.</div>
-        </div>
-      `;
-    }
-  }
-  catch(erro){
-    console.error(erro);
-
-    containerNovos.innerHTML = `
-      <div class="timeline-item">
-        <div class="timeline-title">Erro de comunicação</div>
-        <div class="timeline-date">Frontend sem conexão</div>
-        <div class="timeline-text">Não foi possível carregar a fila FT.</div>
-      </div>
-    `;
-
-    containerRetorno.innerHTML = "";
-  }
-}
-
-
-    /* =========================================================
-       06.11 ATUALIZAR KPIs FT
-       ========================================================= */
-    function atualizarKpisFt(dados){
-
-  const total = dados?.length ?? 0;
-
-  const criticos = dados
-    ? dados.filter(item => calcularDiasAguardando(item.dataEnvioFt) >= 4).length
-    : 0;
-
-  const retornosLg = dados
-    ? dados.filter(item =>
-        Number(item.idStatusRasp ?? item.statusAtual ?? item.status) === 8
-      ).length
-    : 0;
-
-  document.getElementById("kpiAguardandoFt").innerText = total;
-  document.getElementById("kpiSlaCriticoFt").innerText = criticos;
-  document.getElementById("kpiRetornosLgFt").innerText = retornosLg;
-}
-
-
-    /* =========================================================
-       06.12 LIMPAR DETALHE
-       ========================================================= */
     function limparDetalheRasp(){
-
       idRaspSelecionado = null;
 
       document
@@ -1599,19 +1367,11 @@ async function carregarFilaFt(){
       `;
 
       raspSelecionadoEhRetornoLg = false;
-
       document.getElementById("alertaRetornoLg").style.display = "none";
-
-      document.getElementById("btnAprovarFt").innerText =
-        "Aprovar Procedência";
-
+      document.getElementById("btnAprovarFt").innerText = "Aprovar Procedência";
     }
 
-    /* =========================================================
-       06.13 MODAIS
-       ========================================================= */
     function abrirModalConfirmacao(acaoFt){
-
       acaoPendenteFt = acaoFt;
 
       const texto = document.getElementById("textoModalConfirmacao");
@@ -1625,6 +1385,9 @@ async function carregarFilaFt(){
       else if(acaoFt === "REPROVAR"){
         texto.innerText = "Deseja reprovar a procedência técnica deste RASP?";
       }
+      else if(acaoFt === "REENVIAR_LG"){
+        texto.innerText = "Deseja reenviar este RASP ao LG?";
+      }
 
       document.getElementById("modalConfirmacao").style.display = "flex";
     }
@@ -1635,28 +1398,14 @@ async function carregarFilaFt(){
     }
 
     function confirmarAcaoFt(){
-
       const acao = acaoPendenteFt;
 
       fecharModalConfirmacao();
 
-      if(acao === "APROVAR"){
-        aprovarFt();
-      }
-
-      if(acao === "COMPLEMENTO"){
-        solicitarComplementoFt();
-      }
-
-      if(acao === "REPROVAR"){
-        reprovarFt();
-      }
-
-      if(acao === "REENVIAR_LG"){
-        reenviarComplementoLg();
-      }
-
-
+      if(acao === "APROVAR") aprovarFt();
+      if(acao === "COMPLEMENTO") solicitarComplementoFt();
+      if(acao === "REPROVAR") reprovarFt();
+      if(acao === "REENVIAR_LG") reenviarComplementoLg();
     }
 
     function abrirModalSucesso(mensagem){
@@ -1668,18 +1417,13 @@ async function carregarFilaFt(){
       document.getElementById("modalSucesso").style.display = "none";
     }
 
-    /* =========================================================
-       06.14 AÇÕES FT
-       ========================================================= */
     async function aprovarFt(){
-
       if(!idRaspSelecionado){
         abrirModalSucesso("Selecione um RASP antes de aprovar.");
         return;
       }
 
-      const observacaoFt =
-        document.getElementById("observacaoFt").value.trim();
+      const observacaoFt = document.getElementById("observacaoFt").value.trim();
 
       if(!observacaoFt){
         abrirModalSucesso("Digite a observação FT.");
@@ -1689,9 +1433,7 @@ async function carregarFilaFt(){
       try{
         const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/aprovar-ft`, {
           method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
+          headers:{ "Content-Type":"application/json" },
           body:JSON.stringify({
             idUsuarioExecutor:idUsuarioLogado,
             observacaoFt:observacaoFt
@@ -1705,11 +1447,9 @@ async function carregarFilaFt(){
         }
 
         abrirModalSucesso("Procedência aprovada e RASP enviado ao LG.");
-
         document.getElementById("observacaoFt").value = "";
 
         await carregarFilaFt();
-
         limparDetalheRasp();
       }
       catch(erro){
@@ -1717,64 +1457,55 @@ async function carregarFilaFt(){
         abrirModalSucesso("Erro inesperado ao aprovar FT.");
       }
     }
-    
+
     async function reprovarFt(){
-
-    if(!idRaspSelecionado){
-      abrirModalSucesso("Selecione um RASP antes de reprovar.");
-      return;
-    }
-
-    const observacaoFt =
-      document.getElementById("observacaoFt").value.trim();
-
-    if(!observacaoFt){
-      abrirModalSucesso("Digite a justificativa da reprovação FT.");
-      return;
-    }
-
-    try{
-      const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/reprovar-ft`, {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          idUsuarioExecutor:idUsuarioLogado,
-          observacaoFt:observacaoFt
-        })
-      });
-
-      if(!resposta.ok){
-        const erro = await resposta.text();
-        abrirModalSucesso("Erro ao reprovar FT: " + erro);
+      if(!idRaspSelecionado){
+        abrirModalSucesso("Selecione um RASP antes de reprovar.");
         return;
       }
 
-      abrirModalSucesso("Procedência técnica reprovada pelo FT.");
+      const observacaoFt = document.getElementById("observacaoFt").value.trim();
 
-      document.getElementById("observacaoFt").value = "";
+      if(!observacaoFt){
+        abrirModalSucesso("Digite a justificativa da reprovação FT.");
+        return;
+      }
 
-      await carregarFilaFt();
+      try{
+        const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/reprovar-ft`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({
+            idUsuarioExecutor:idUsuarioLogado,
+            observacaoFt:observacaoFt
+          })
+        });
 
-      limparDetalheRasp();
+        if(!resposta.ok){
+          const erro = await resposta.text();
+          abrirModalSucesso("Erro ao reprovar FT: " + erro);
+          return;
+        }
+
+        abrirModalSucesso("Procedência técnica reprovada pelo FT.");
+        document.getElementById("observacaoFt").value = "";
+
+        await carregarFilaFt();
+        limparDetalheRasp();
+      }
+      catch(erro){
+        console.error(erro);
+        abrirModalSucesso("Erro inesperado ao reprovar FT.");
+      }
     }
-    catch(erro){
-      console.error(erro);
-      abrirModalSucesso("Erro inesperado ao reprovar FT.");
-    }
-  }
-
 
     async function solicitarComplementoFt(){
-
       if(!idRaspSelecionado){
         abrirModalSucesso("Selecione um RASP antes de solicitar complemento.");
         return;
       }
 
-      const motivoComplemento =
-        document.getElementById("observacaoFt").value.trim();
+      const motivoComplemento = document.getElementById("observacaoFt").value.trim();
 
       if(!motivoComplemento){
         abrirModalSucesso("Digite o motivo do complemento.");
@@ -1784,9 +1515,7 @@ async function carregarFilaFt(){
       try{
         const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/solicitar-complemento-ft`, {
           method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
+          headers:{ "Content-Type":"application/json" },
           body:JSON.stringify({
             idUsuarioExecutor:idUsuarioLogado,
             motivoComplemento:motivoComplemento
@@ -1800,11 +1529,9 @@ async function carregarFilaFt(){
         }
 
         abrirModalSucesso("Complemento solicitado ao MT com sucesso.");
-
         document.getElementById("observacaoFt").value = "";
 
         await carregarFilaFt();
-
         limparDetalheRasp();
       }
       catch(erro){
@@ -1814,125 +1541,108 @@ async function carregarFilaFt(){
     }
 
     async function reenviarComplementoLg(){
+      if(!idRaspSelecionado){
+        abrirModalSucesso("Selecione um RASP antes de reenviar ao LG.");
+        return;
+      }
 
-  if(!idRaspSelecionado){
-    abrirModalSucesso("Selecione um RASP antes de reenviar ao LG.");
-    return;
-  }
+      const observacaoReenvio = document.getElementById("observacaoFt").value.trim();
 
-  const observacaoReenvio =
-    document.getElementById("observacaoFt").value.trim();
+      if(!observacaoReenvio){
+        abrirModalSucesso("Digite a observação de reenvio ao LG.");
+        return;
+      }
 
-  if(!observacaoReenvio){
-    abrirModalSucesso("Digite a observação de reenvio ao LG.");
-    return;
-  }
+      try{
+        const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/reenviar-complemento-lg`, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({
+            idUsuarioExecutor:idUsuarioLogado,
+            observacaoReenvio:observacaoReenvio
+          })
+        });
 
-  try{
-    const resposta = await fetch(`${API_BASE}/rasp/${idRaspSelecionado}/reenviar-complemento-lg`, {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        idUsuarioExecutor:idUsuarioLogado,
-        observacaoReenvio:observacaoReenvio
-      })
-    });
+        if(!resposta.ok){
+          const erro = await resposta.text();
+          abrirModalSucesso("Erro ao reenviar ao LG: " + erro);
+          return;
+        }
 
-    if(!resposta.ok){
-      const erro = await resposta.text();
-      abrirModalSucesso("Erro ao reenviar ao LG: " + erro);
-      return;
+        abrirModalSucesso("Complemento reenviado ao LG com sucesso.");
+        document.getElementById("observacaoFt").value = "";
+
+        await carregarFilaFt();
+        limparDetalheRasp();
+      }
+      catch(erro){
+        console.error(erro);
+        abrirModalSucesso("Erro inesperado ao reenviar ao LG.");
+      }
     }
 
-    abrirModalSucesso("Complemento reenviado ao LG com sucesso.");
-
-    document.getElementById("observacaoFt").value = "";
-
-    await carregarFilaFt();
-
-    limparDetalheRasp();
-  }
-  catch(erro){
-    console.error(erro);
-    abrirModalSucesso("Erro inesperado ao reenviar ao LG.");
-  }
-}
-
-
-    /* =========================================================
-       06.15 UTILITÁRIOS
-       ========================================================= */
     function formatarData(valor){
-
-      if(!valor){
-        return "-";
-      }
+      if(!valor) return "-";
 
       const data = new Date(valor);
 
-      if(isNaN(data.getTime())){
-        return "-";
-      }
+      if(isNaN(data.getTime())) return "-";
 
       return data.toLocaleString("pt-BR");
     }
 
     function calcularDiasAguardando(valor){
-
-      if(!valor){
-        return 0;
-      }
+      if(!valor) return 0;
 
       const dataInicio = new Date(valor);
 
-      if(isNaN(dataInicio.getTime())){
-        return 0;
-      }
+      if(isNaN(dataInicio.getTime())) return 0;
 
       const agora = new Date();
-
       const diferenca = agora - dataInicio;
-
       const dias = Math.floor(diferenca / (1000 * 60 * 60 * 24));
 
       return dias < 0 ? 0 : dias;
     }
 
     function calcularTempoAguardando(valor){
-
-      if(!valor){
-        return "-";
-      }
+      if(!valor) return "-";
 
       const dataInicio = new Date(valor);
 
-      if(isNaN(dataInicio.getTime())){
-        return "-";
-      }
+      if(isNaN(dataInicio.getTime())) return "-";
 
       const agora = new Date();
-
       const horas = Math.round(((agora - dataInicio) / (1000 * 60 * 60)) * 10) / 10;
 
       return horas < 0 ? "0 h" : `${horas} h`;
     }
 
-    /* =========================================================
-       06.16 EVENTOS
-       ========================================================= */
-    document
-    .getElementById("btnAprovarFt")
-    .addEventListener("click", () => {
-      if(raspSelecionadoEhRetornoLg){
-        abrirModalConfirmacao("REENVIAR_LG");
+    function imprimirRaspSelecionadoFt(){
+      if(idRaspSelecionado){
+        window.location.href =
+          `${API_BASE}/imprimir_rasp.html?id=${idRaspSelecionado}`;
         return;
       }
 
-      abrirModalConfirmacao("APROVAR");
-    });
+      if(typeof abrirModalImpressaoRasp === "function"){
+        abrirModalImpressaoRasp();
+        return;
+      }
 
+      abrirModalSucesso("Selecione um RASP antes de imprimir.");
+    }
+
+    document
+      .getElementById("btnAprovarFt")
+      .addEventListener("click", () => {
+        if(raspSelecionadoEhRetornoLg){
+          abrirModalConfirmacao("REENVIAR_LG");
+          return;
+        }
+
+        abrirModalConfirmacao("APROVAR");
+      });
 
     document
       .getElementById("btnReprovarFt")
@@ -1942,16 +1652,11 @@ async function carregarFilaFt(){
       .getElementById("btnComplementoFt")
       .addEventListener("click", () => abrirModalConfirmacao("COMPLEMENTO"));
 
-      document
+    document
       .getElementById("btnReenviarLg")
       .addEventListener("click", () => abrirModalConfirmacao("REENVIAR_LG"));
 
-
-    /* =========================================================
-       06.17 INICIALIZAÇÃO
-       ========================================================= */
     window.onload = async () => {
-
       if(!await validarAcessoFt()){
         return;
       }
@@ -1959,5 +1664,7 @@ async function carregarFilaFt(){
       await carregarFilaFt();
     };
   </script>
+
+  <script src="impressao-rapida.js"></script>
 </body>
 </html>

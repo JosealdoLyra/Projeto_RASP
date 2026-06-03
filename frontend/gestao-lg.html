@@ -12,9 +12,6 @@
        02. ESTILOS
        ========================================================= -->
   <style>
-    /* =========================================================
-       02.01 RESET
-       ========================================================= */
     *{
       margin:0;
       padding:0;
@@ -29,17 +26,11 @@
       overflow:hidden;
     }
 
-    /* =========================================================
-       02.02 LAYOUT PRINCIPAL
-       ========================================================= */
     .container{
       display:flex;
       height:100vh;
     }
 
-    /* =========================================================
-       02.03 MENU LATERAL
-       ========================================================= */
     .sidebar{
       width:380px;
       background:#0b1d35;
@@ -65,9 +56,6 @@
       font-size:13px;
     }
 
-    /* =========================================================
-       02.04 KPI
-       ========================================================= */
     .kpi-container{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -87,7 +75,6 @@
       justify-content:center;
     }
 
-
     .kpi-title{
       font-size:12px;
       color:#93a9ca;
@@ -100,18 +87,13 @@
       line-height:1.15;
     }
 
-
-
     .kpi-value{
       font-size:29px;
       font-weight:700;
       color:#ffffff;
-      line-height: 1;
+      line-height:1;
     }
 
-    /* =========================================================
-       02.05 DIAMANTE ORIGINAL RASP - SVG
-       ========================================================= */
     .diamond-lg-wrap{
       width:100%;
       display:flex;
@@ -133,7 +115,6 @@
       animation:diamondPulseLg 2.4s ease-in-out infinite;
     }
 
-
     .diamond-line-lg{
       fill:none;
       stroke:#7dd3fc;
@@ -150,15 +131,14 @@
     }
 
     .diamond-spark-lg{
-    fill:#ffffff;
-    transform-box:fill-box;
-    transform-origin:center;
-    filter:
-      drop-shadow(0 0 6px rgba(255,255,255,1))
-      drop-shadow(0 0 14px rgba(125,211,252,0.95));
-    animation:sparkPulseLg 1.4s ease-in-out infinite;
-  }
-
+      fill:#ffffff;
+      transform-box:fill-box;
+      transform-origin:center;
+      filter:
+        drop-shadow(0 0 6px rgba(255,255,255,1))
+        drop-shadow(0 0 14px rgba(125,211,252,0.95));
+      animation:sparkPulseLg 1.4s ease-in-out infinite;
+    }
 
     @keyframes diamondPulseLg{
       0%{ transform:scale(1); opacity:0.92; }
@@ -166,10 +146,6 @@
       100%{ transform:scale(1); opacity:0.92; }
     }
 
-    
-    /* =========================================================
-       02.06 FILA LG
-       ========================================================= */
     .fila-container{
       flex:1;
       overflow-y:auto;
@@ -239,52 +215,35 @@
       color:#7f95b5;
     }
 
-    /* =========================================================
-        02.06.01 CRITICIDADE VISUAL LG
-        ========================================================= */
+    .criticidade-normal{
+      border:1px solid rgba(34,197,94,0.22);
+    }
 
-        .criticidade-normal{
-        border:1px solid rgba(34,197,94,0.22);
-        }
+    .criticidade-normal:hover{
+      box-shadow:0 0 18px rgba(34,197,94,0.22);
+    }
 
-        .criticidade-normal:hover{
-        box-shadow:
-            0 0 18px rgba(34,197,94,0.22);
-        }
+    .criticidade-atencao{
+      border:1px solid rgba(245,158,11,0.30);
+    }
 
-        .criticidade-atencao{
-        border:1px solid rgba(245,158,11,0.30);
-        }
+    .criticidade-atencao:hover{
+      box-shadow:0 0 18px rgba(245,158,11,0.30);
+    }
 
-        .criticidade-atencao:hover{
-        box-shadow:
-            0 0 18px rgba(245,158,11,0.30);
-        }
+    .criticidade-critico{
+      border:1px solid rgba(239,68,68,0.45);
+      background:linear-gradient(145deg,rgba(127,29,29,0.30),rgba(15,39,70,1));
+    }
 
-        .criticidade-critico{
-        border:1px solid rgba(239,68,68,0.45);
-        background:
-            linear-gradient(
-            145deg,
-            rgba(127,29,29,0.30),
-            rgba(15,39,70,1)
-            );
-        }
+    .criticidade-critico:hover{
+      box-shadow:0 0 22px rgba(239,68,68,0.42);
+    }
 
-        .criticidade-critico:hover{
-        box-shadow:
-            0 0 22px rgba(239,68,68,0.42);
-        }
-
-     .rasp-card.reprovado-ft-card{
-      border:1px solid rgba(239,68,68,0.55);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(127,29,29,0.35),
-          #122744
-        );
-      box-shadow:0 0 20px rgba(239,68,68,0.20);
+    .rasp-card.reprovado-ft-card{
+      border:1px solid rgba(239,68,68,0.75) !important;
+      background:linear-gradient(145deg,rgba(127,29,29,0.48),#122744) !important;
+      box-shadow:0 0 24px rgba(239,68,68,0.35) !important;
     }
 
     .badge-reprovado-ft{
@@ -292,44 +251,13 @@
       margin-top:10px;
       padding:6px 10px;
       border-radius:999px;
-      background:rgba(239,68,68,0.18);
-      color:#fca5a5;
-      font-size:12px;
+      background:rgba(239,68,68,0.22);
+      color:#fecaca;
+      font-size:11px;
       font-weight:800;
       letter-spacing:0.4px;
     }
 
-    /* =========================================================
-   02.06.02 REPROVADO PELO FT - VISUAL LG
-   ========================================================= */
-.rasp-card.reprovado-ft-card{
-  border:1px solid rgba(239,68,68,0.75) !important;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(127,29,29,0.48),
-      #122744
-    ) !important;
-
-  box-shadow:
-    0 0 24px rgba(239,68,68,0.35) !important;
-}
-
-.badge-reprovado-ft{
-  display:inline-block;
-  margin-top:10px;
-  padding:6px 10px;
-  border-radius:999px;
-  background:rgba(239,68,68,0.22);
-  color:#fecaca;
-  font-size:11px;
-  font-weight:800;
-  letter-spacing:0.4px;
-}
-
-    /* =========================================================
-       02.07 RODAPÉ LATERAL
-       ========================================================= */
     .sidebar-footer{
       padding:18px;
       border-top:1px solid rgba(255,255,255,0.06);
@@ -362,6 +290,12 @@
       border:1px solid rgba(255,255,255,0.08);
     }
 
+    .btn-print{
+      background:linear-gradient(135deg,#0f6dff,#0b3f93);
+      border:1px solid rgba(47,148,255,0.65);
+      box-shadow:0 0 14px rgba(47,148,255,0.30);
+    }
+
     .assinatura{
       text-align:center;
       font-size:12px;
@@ -371,9 +305,6 @@
       opacity:0.9;
     }
 
-    /* =========================================================
-       02.08 CONTEÚDO DIREITO
-       ========================================================= */
     .content{
       flex:1;
       display:flex;
@@ -399,9 +330,6 @@
       padding:30px;
     }
 
-    /* =========================================================
-       02.09 CARDS / TIMELINE
-       ========================================================= */
     .timeline{
       margin-bottom:30px;
       background:#10233f;
@@ -443,7 +371,6 @@
     .legenda-cor.complemento{ background:#a855f7; }
     .legenda-cor.reprovado{ background:#ef4444; }
     .legenda-cor.alerta{ background:#f59e0b; }
-
 
     .detail-grid{
       display:grid;
@@ -533,9 +460,6 @@
       font-weight:800;
     }
 
-    /* =========================================================
-       02.10 BOTÕES LG
-       ========================================================= */
     .btn-lg{
       border:none;
       padding:16px 24px;
@@ -556,9 +480,6 @@
     .btn-nao{ background:#ef4444; }
     .btn-complemento{ background:#7c3aed; }
 
-    /* =========================================================
-       02.11 MODAIS
-       ========================================================= */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -617,9 +538,6 @@
     .modal-cancelar{ background:#334155; }
     .modal-confirmar{ background:#2563eb; }
 
-    /* =========================================================
-       02.12 RESPONSIVO
-       ========================================================= */
     @media(max-width:1200px){
       .container{
         flex-direction:column;
@@ -634,27 +552,13 @@
 </head>
 
 <body>
-  <!-- =========================================================
-       03. CONTAINER PRINCIPAL
-       ========================================================= -->
   <div class="container">
-
-    <!-- =======================================================
-         03.01 SIDEBAR
-         ======================================================= -->
     <aside class="sidebar">
-
-      <!-- =====================================================
-           03.01.01 HEADER
-           ===================================================== -->
       <div class="sidebar-header">
         <h1>Gestão LG</h1>
         <p>Fila de análise e aprovação RASP</p>
       </div>
 
-      <!-- =====================================================
-           03.01.02 KPI
-           ===================================================== -->
       <div class="kpi-container">
         <div class="kpi-card">
           <div class="kpi-title">Aguardando LG</div>
@@ -667,17 +571,12 @@
         </div>
 
         <div class="kpi-card">
-        <div class="kpi-title">Reprovados FT</div>
-        <div id="kpiReprovadosFt" class="kpi-value">0</div>
+          <div class="kpi-title">Reprovados FT</div>
+          <div id="kpiReprovadosFt" class="kpi-value">0</div>
+        </div>
       </div>
 
-      </div>
-
-      <!-- =====================================================
-           03.01.03 FILA LG
-           ===================================================== -->
       <div class="fila-container">
-
         <div class="diamond-lg-wrap">
           <svg class="diamond-logo-lg" viewBox="0 0 120 100" aria-label="Diamante RASP">
             <path class="diamond-line-lg" d="M15 30 L35 8 H85 L105 30 L60 92 Z" />
@@ -685,7 +584,6 @@
             <path class="diamond-line-light-lg" d="M35 8 L48 30 L60 92" />
             <path class="diamond-line-light-lg" d="M85 8 L72 30 L60 92" />
             <path class="diamond-line-light-lg" d="M48 30 H72" />
-            
           </svg>
         </div>
 
@@ -700,9 +598,6 @@
         </div>
       </div>
 
-      <!-- =====================================================
-           03.01.04 RODAPÉ
-           ===================================================== -->
       <div class="sidebar-footer">
         <div class="footer-buttons">
           <button class="btn-retorno btn-dashboard" onclick="window.location.href='dashboard.html'">
@@ -712,6 +607,10 @@
           <button class="btn-retorno btn-home" onclick="window.location.href='home.html'">
             Home
           </button>
+
+          <button class="btn-retorno btn-print" onclick="imprimirRaspSelecionadoLg()">
+            🖨 RASP
+          </button>
         </div>
 
         <div class="assinatura">
@@ -720,20 +619,12 @@
       </div>
     </aside>
 
-    <!-- =======================================================
-         03.02 CONTEÚDO PRINCIPAL
-         ======================================================= -->
     <main class="content">
-
       <div class="content-header">
         <h2>Detalhe Completo do RASP</h2>
       </div>
 
       <div class="content-body">
-
-        <!-- ===================================================
-             AÇÕES LG
-             =================================================== -->
         <div class="timeline">
           <h3>Ações LG</h3>
 
@@ -768,11 +659,7 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             CARDS DE DETALHE
-             =================================================== -->
         <div class="detail-grid">
-
           <div class="detail-card">
             <h3>Informações Gerais</h3>
 
@@ -875,9 +762,6 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             OCORRÊNCIA / PROBLEMA
-             =================================================== -->
         <div class="timeline">
           <h3>Ocorrência / Problema</h3>
 
@@ -892,9 +776,6 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             PNs ENVOLVIDOS
-             =================================================== -->
         <div class="timeline">
           <h3>PNs envolvidos</h3>
 
@@ -906,20 +787,16 @@
           </div>
         </div>
 
-        <!-- ===================================================
-             HISTÓRICO / TIMELINE
-             =================================================== -->
         <div class="timeline">
           <h3>Histórico / Timeline</h3>
 
           <div class="timeline-legenda">
-          <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
-          <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
-          <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
-          <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
-          <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
-        </div>
-
+            <span class="legenda-item"><span class="legenda-cor ft"></span>FT</span>
+            <span class="legenda-item"><span class="legenda-cor lg"></span>LG</span>
+            <span class="legenda-item"><span class="legenda-cor complemento"></span>Complemento</span>
+            <span class="legenda-item"><span class="legenda-cor reprovado"></span>Reprovado</span>
+            <span class="legenda-item"><span class="legenda-cor alerta"></span>Supplier Alert</span>
+          </div>
 
           <div id="timelineConteudo">
             <div class="timeline-item">
@@ -929,14 +806,10 @@
             </div>
           </div>
         </div>
-
       </div>
     </main>
   </div>
 
-  <!-- =========================================================
-       04. MODAL CONFIRMAÇÃO
-       ========================================================= -->
   <div id="modalConfirmacao" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-diamond">◆</div>
@@ -957,9 +830,6 @@
     </div>
   </div>
 
-  <!-- =========================================================
-       05. MODAL SUCESSO / AVISO
-       ========================================================= -->
   <div id="modalSucesso" class="modal-overlay">
     <div class="modal-box">
       <div class="modal-diamond">◆</div>
@@ -976,55 +846,39 @@
     </div>
   </div>
 
-  <!-- =========================================================
-       06. SCRIPTS
-       ========================================================= -->
   <script>
-    /* =========================================================
-       06.01 VARIÁVEIS GLOBAIS
-       ========================================================= */
     const API_BASE = "http://localhost:5050";
 
     let idRaspSelecionado = null;
     let idUsuarioLogado = 1;
     let decisaoPendenteLg = null;
 
-    /* =========================================================
-        06.01.01 TRAVA DE ACESSO LG
-        ========================================================= */
-        async function validarAcessoLg(){
+    async function validarAcessoLg(){
+      const resposta = await fetch(`${API_BASE}/usuarios/${idUsuarioLogado}/perfil`);
 
-        const resposta = await fetch(`${API_BASE}/usuarios/${idUsuarioLogado}/perfil`);
+      if(!resposta.ok){
+        alert("Usuário não localizado.");
+        window.location.href = "home.html";
+        return false;
+      }
 
-        if(!resposta.ok){
-            alert("Usuário não localizado.");
-            window.location.href = "home.html";
-            return false;
-        }
+      const usuario = await resposta.json();
 
-        const usuario = await resposta.json();
+      const acessoPermitido =
+        usuario.administrador === true ||
+        usuario.perfil === "LG" ||
+        usuario.idPerfil === 4;
 
-        const acessoPermitido =
-            usuario.administrador === true ||
-            usuario.perfil === "LG" ||
-            usuario.idPerfil === 4;
+      if(!acessoPermitido){
+        alert("Acesso restrito ao LG ou Administrador.");
+        window.location.href = "home.html";
+        return false;
+      }
 
-        if(!acessoPermitido){
-            alert("Acesso restrito ao LG ou Administrador.");
-            window.location.href = "home.html";
-            return false;
-        }
+      return true;
+    }
 
-        return true;
-        }
-
-
-
-    /* =========================================================
-       06.02 SELECIONAR RASP
-       ========================================================= */
     async function selecionarRasp(idRasp, elementoCard){
-
       idRaspSelecionado = idRasp;
 
       document
@@ -1063,11 +917,7 @@
       }
     }
 
-    /* =========================================================
-       06.03 LIMPAR CAMPOS ANTES DE CARREGAR
-       ========================================================= */
     function limparCamposAntesCarregar(numeroCard, fornecedorCard){
-
       document.getElementById("detNumeroRasp").innerText = numeroCard;
       document.getElementById("detFornecedor").innerText = fornecedorCard;
       document.getElementById("detDuns").innerText = "-";
@@ -1087,11 +937,7 @@
       document.getElementById("detScrap").innerText = "Em desenvolvimento";
     }
 
-    /* =========================================================
-       06.04 CARREGAR DETALHES GERAIS
-       ========================================================= */
     function carregarDetalhesGerais(dados, numeroCard, fornecedorCard){
-
       document.getElementById("detNumeroRasp").innerText =
         dados.numeroRasp ?? numeroCard;
 
@@ -1137,11 +983,7 @@
         "-";
     }
 
-    /* =========================================================
-       06.05 CARREGAR CAMPOS OPERACIONAIS
-       ========================================================= */
     function carregarCamposOperacionais(dados){
-
       document.getElementById("detOrigem").innerText =
         dados.origemFabricacaoDescricao ??
         dados.origemDescricao ??
@@ -1169,11 +1011,7 @@
         dados.temScrap === true ? "Sim" : "Em desenvolvimento";
     }
 
-    /* =========================================================
-       06.06 CARREGAR OCORRÊNCIA
-       ========================================================= */
     function carregarOcorrencia(dados){
-
       document.getElementById("detResumoOcorrencia").innerText =
         dados.resumoOcorrencia ?? "-";
 
@@ -1181,15 +1019,10 @@
         dados.descricaoProblema ?? "-";
     }
 
-    /* =========================================================
-       06.07 CARREGAR PNs
-       ========================================================= */
     function carregarPns(dados){
-
       const listaPns = document.getElementById("listaPnsRasp");
 
       if(dados.pns && dados.pns.length > 0){
-
         listaPns.innerHTML = "";
 
         dados.pns.forEach(pn => {
@@ -1223,19 +1056,13 @@
       }
     }
 
-    /* =========================================================
-       06.08 CARREGAR HISTÓRICO
-       ========================================================= */
     function carregarHistorico(dados){
-
       const timeline = document.getElementById("timelineConteudo");
 
       if(dados.historicoFluxo && dados.historicoFluxo.length > 0){
-
         timeline.innerHTML = "";
 
         dados.historicoFluxo.forEach(item => {
-
           let classeTimeline = "ft";
 
           if(item.origemEvento === "LG"){
@@ -1274,11 +1101,7 @@
       }
     }
 
-    /* =========================================================
-       06.09 DASHBOARD LG
-       ========================================================= */
     async function carregarDashboardLg(){
-
       try{
         const resposta = await fetch(`${API_BASE}/lg/dashboard`);
 
@@ -1299,136 +1122,123 @@
       }
     }
 
-    /* =========================================================
-   06.10 FILA LG
-   ========================================================= */
-async function carregarFilaLg(){
+    async function carregarFilaLg(){
+      const container = document.getElementById("listaFilaLg");
 
-  const container = document.getElementById("listaFilaLg");
+      try{
+        const resposta = await fetch(`${API_BASE}/lg/fila-operacional`);
 
-  try{
-    const resposta = await fetch(`${API_BASE}/lg/fila-operacional`);
-
-    if(!resposta.ok){
-      container.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Erro ao carregar fila LG</div>
-          <div class="timeline-date">API indisponível</div>
-          <div class="timeline-text">
-            Verifique o endpoint /lg/fila-operacional.
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    const dados = await resposta.json();
-
-    document.getElementById("kpiReprovadosFt").innerText =
-    dados.filter(item =>
-      item.foiReprovadoFt === true ||
-      item.FoiReprovadoFt === true
-    ).length;
-
-    
-
-    if(!dados || dados.length === 0){
-      container.innerHTML = `
-        <div class="timeline-item">
-          <div class="timeline-title">Nenhum RASP aguardando LG</div>
-          <div class="timeline-date">Fila limpa</div>
-          <div class="timeline-text">
-            Não há documentos pendentes para decisão LG.
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = "";
-
-    dados.forEach(item => {
-
-      const card = document.createElement("div");
-
-      let criticidadeTexto = "Normal";
-      let criticidadeIcone = "🟢";
-      let criticidadeClasse = "criticidade-normal";
-
-      if(item.criticidade === "Atenção"){
-        criticidadeTexto = "Atenção";
-        criticidadeIcone = "🟡";
-        criticidadeClasse = "criticidade-atencao";
-      }
-
-      if(item.criticidade === "Crítico"){
-        criticidadeTexto = "Crítico";
-        criticidadeIcone = "🔴";
-        criticidadeClasse = "criticidade-critico";
-      }
-
-      const foiReprovadoFt =
-        item.foiReprovadoFt === true ||
-        item.FoiReprovadoFt === true;
-
-      card.className = foiReprovadoFt
-        ? `rasp-card ${criticidadeClasse} reprovado-ft-card`
-        : `rasp-card ${criticidadeClasse}`;
-
-      card.setAttribute("data-id-rasp", item.idRasp);
-      card.onclick = () => selecionarRasp(item.idRasp, card);
-
-      card.innerHTML = `
-        <div class="rasp-numero">
-          RASP ${item.numeroRasp ?? "-"}
-        </div>
-
-        <div class="rasp-fornecedor">
-          ${item.fornecedor ?? "-"}
-        </div>
-
-        ${foiReprovadoFt
-          ? `<span class="badge-reprovado-ft">REPROVADO PELO FT</span>`
-          : ""
+        if(!resposta.ok){
+          container.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Erro ao carregar fila LG</div>
+              <div class="timeline-date">API indisponível</div>
+              <div class="timeline-text">
+                Verifique o endpoint /lg/fila-operacional.
+              </div>
+            </div>
+          `;
+          return;
         }
 
-        <div class="rasp-info">
-          <span>
-            ${criticidadeIcone}
-            ${criticidadeTexto}
-          </span>
+        const dados = await resposta.json();
 
-          <span>
-            ${item.diasAguardandoLg ?? 0} dias
-          </span>
-        </div>
-      `;
+        document.getElementById("kpiReprovadosFt").innerText =
+          dados.filter(item =>
+            item.foiReprovadoFt === true ||
+            item.FoiReprovadoFt === true
+          ).length;
 
-      container.appendChild(card);
-    });
-  }
-  catch(erro){
-    console.error(erro);
+        if(!dados || dados.length === 0){
+          container.innerHTML = `
+            <div class="timeline-item">
+              <div class="timeline-title">Nenhum RASP aguardando LG</div>
+              <div class="timeline-date">Fila limpa</div>
+              <div class="timeline-text">
+                Não há documentos pendentes para decisão LG.
+              </div>
+            </div>
+          `;
+          return;
+        }
 
-    container.innerHTML = `
-      <div class="timeline-item">
-        <div class="timeline-title">Erro de comunicação</div>
-        <div class="timeline-date">Frontend sem conexão</div>
-        <div class="timeline-text">
-          Não foi possível carregar a fila LG.
-        </div>
-      </div>
-    `;
-  }
-}
+        container.innerHTML = "";
 
+        dados.forEach(item => {
+          const card = document.createElement("div");
 
+          let criticidadeTexto = "Normal";
+          let criticidadeIcone = "🟢";
+          let criticidadeClasse = "criticidade-normal";
 
-    /* =========================================================
-       06.11 LIMPAR DETALHE
-       ========================================================= */
+          if(item.criticidade === "Atenção"){
+            criticidadeTexto = "Atenção";
+            criticidadeIcone = "🟡";
+            criticidadeClasse = "criticidade-atencao";
+          }
+
+          if(item.criticidade === "Crítico"){
+            criticidadeTexto = "Crítico";
+            criticidadeIcone = "🔴";
+            criticidadeClasse = "criticidade-critico";
+          }
+
+          const foiReprovadoFt =
+            item.foiReprovadoFt === true ||
+            item.FoiReprovadoFt === true;
+
+          card.className = foiReprovadoFt
+            ? `rasp-card ${criticidadeClasse} reprovado-ft-card`
+            : `rasp-card ${criticidadeClasse}`;
+
+          card.setAttribute("data-id-rasp", item.idRasp);
+          card.onclick = () => selecionarRasp(item.idRasp, card);
+
+          card.innerHTML = `
+            <div class="rasp-numero">
+              RASP ${item.numeroRasp ?? "-"}
+            </div>
+
+            <div class="rasp-fornecedor">
+              ${item.fornecedor ?? "-"}
+            </div>
+
+            ${foiReprovadoFt
+              ? `<span class="badge-reprovado-ft">REPROVADO PELO FT</span>`
+              : ""
+            }
+
+            <div class="rasp-info">
+              <span>
+                ${criticidadeIcone}
+                ${criticidadeTexto}
+              </span>
+
+              <span>
+                ${item.diasAguardandoLg ?? 0} dias
+              </span>
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      }
+      catch(erro){
+        console.error(erro);
+
+        container.innerHTML = `
+          <div class="timeline-item">
+            <div class="timeline-title">Erro de comunicação</div>
+            <div class="timeline-date">Frontend sem conexão</div>
+            <div class="timeline-text">
+              Não foi possível carregar a fila LG.
+            </div>
+          </div>
+        `;
+      }
+    }
+
     function limparDetalheRasp(){
-
       idRaspSelecionado = null;
 
       document
@@ -1471,9 +1281,6 @@ async function carregarFilaLg(){
       `;
     }
 
-    /* =========================================================
-       06.12 MODAIS
-       ========================================================= */
     function abrirModalConfirmacao(decisaoLg){
       decisaoPendenteLg = decisaoLg;
       document.getElementById("modalConfirmacao").style.display = "flex";
@@ -1499,15 +1306,11 @@ async function carregarFilaLg(){
       document.getElementById("modalSucesso").style.display = "none";
     }
 
-    /* =========================================================
-       06.13 DECISÃO LG
-       ========================================================= */
     function decidirLg(decisaoLg){
       abrirModalConfirmacao(decisaoLg);
     }
 
     async function executarDecisaoLg(decisaoLg){
-
       if(!idRaspSelecionado){
         abrirModalSucesso("Selecione um RASP antes de registrar a decisão.");
         return;
@@ -1555,11 +1358,7 @@ async function carregarFilaLg(){
       }
     }
 
-    /* =========================================================
-       06.14 SOLICITAR COMPLEMENTO LG
-       ========================================================= */
     async function solicitarComplementoLg(){
-
       if(!idRaspSelecionado){
         abrirModalSucesso("Selecione um RASP antes de solicitar complemento.");
         return;
@@ -1606,11 +1405,22 @@ async function carregarFilaLg(){
       }
     }
 
-    /* =========================================================
-       06.15 UTILITÁRIOS
-       ========================================================= */
-    function formatarData(valor){
+    function imprimirRaspSelecionadoLg(){
+      if(idRaspSelecionado){
+        window.location.href =
+          `${API_BASE}/imprimir_rasp.html?id=${idRaspSelecionado}`;
+        return;
+      }
 
+      if(typeof abrirModalImpressaoRasp === "function"){
+        abrirModalImpressaoRasp();
+        return;
+      }
+
+      abrirModalSucesso("Selecione um RASP antes de imprimir.");
+    }
+
+    function formatarData(valor){
       if(!valor){
         return "-";
       }
@@ -1624,9 +1434,6 @@ async function carregarFilaLg(){
       return data.toLocaleString("pt-BR");
     }
 
-    /* =========================================================
-       06.16 EVENTOS
-       ========================================================= */
     document
       .getElementById("btnSpps")
       .addEventListener("click", () => decidirLg(3));
@@ -1643,19 +1450,16 @@ async function carregarFilaLg(){
       .getElementById("btnComplemento")
       .addEventListener("click", solicitarComplementoLg);
 
-    /* =========================================================
-       06.17 INICIALIZAÇÃO
-       ========================================================= */
-        window.onload = async () => {
+    window.onload = async () => {
+      if(!await validarAcessoLg()){
+        return;
+      }
 
-        if(!validarAcessoLg()){
-            return;
-        }
-
-        await carregarDashboardLg();
-        await carregarFilaLg();
-        };
-
+      await carregarDashboardLg();
+      await carregarFilaLg();
+    };
   </script>
+
+  <script src="impressao-rapida.js"></script>
 </body>
 </html>
