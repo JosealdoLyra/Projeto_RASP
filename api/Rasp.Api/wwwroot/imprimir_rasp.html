@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impressão RASP</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul: #0b2f63;
+      --azul-claro: #eaf1fb;
+      --cinza: #f3f4f6;
+      --borda: #cfd8e3;
+      --texto: #111827;
+      --muted: #6b7280;
+      --verde-bg: #dcfce7;
+      --verde-borda: #22c55e;
+      --vermelho-bg: #fee2e2;
+      --vermelho-borda: #dc2626;
+      --vermelho-texto: #991b1b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #d1d5db;
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+    }
+
+    .toolbar {
+      padding: 12px;
+      text-align: center;
+      background: #111827;
+    }
+
+    .toolbar button {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .pagina {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 12px auto;
+      padding: 9mm;
+      background: white;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+
+    .cabecalho {
+      display: grid;
+      grid-template-columns: 90px 1fr 120px;
+      gap: 10px;
+      align-items: center;
+      border: 2px solid var(--azul);
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+
+    .logo {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      width: 80px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin-top: 12px;
+    }
+
+    .titulo {
+      text-align: center;
+    }
+
+    .titulo h1 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--azul);
+      white-space: nowrap;
+    }
+
+    .titulo p {
+      margin: 3px 0 0;
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .numero {
+      text-align: center;
+      border-left: 1px solid var(--borda);
+      padding-left: 8px;
+    }
+
+    .numero strong {
+      display: block;
+      font-size: 16px;
+      color: var(--azul);
+    }
+
+    .secao {
+      border: 1px solid var(--borda);
+      margin-bottom: 7px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .secao-titulo {
+      background: var(--azul);
+      color: white;
+      font-weight: 700;
+      padding: 5px 7px;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .campo {
+      padding: 6px;
+      border-right: 1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
+      min-height: 34px;
+    }
+
+    .campo label {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .campo span {
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .campo-dinamico {
+      min-height: 58px;
+    }
+
+    .texto-longo {
+      padding: 7px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .texto-problema {
+      min-height: 28px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--azul-claro);
+      color: var(--azul);
+      font-size: 10px;
+      text-align: left;
+      padding: 5px;
+      border: 1px solid var(--borda);
+    }
+
+    td {
+      padding: 5px;
+      border: 1px solid var(--borda);
+      font-size: 10px;
+    }
+
+    .flags {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      padding: 7px;
+    }
+
+    .flag {
+      border: 1px solid var(--borda);
+      padding: 5px;
+      text-align: center;
+      font-weight: 700;
+      background: var(--cinza);
+      min-height: 34px;
+    }
+
+    .flag.ativo {
+      background: var(--verde-bg);
+      border-color: var(--verde-borda);
+    }
+
+    .flag-alerta {
+      background: var(--vermelho-bg);
+      border-color: var(--vermelho-borda);
+      color: var(--vermelho-texto);
+    }
+
+    .status-qhd {
+      background: var(--vermelho-bg);
+      color: var(--vermelho-texto);
+      font-weight: 700;
+    }
+
+    .evidencias {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 8px;
+    }
+
+    .foto-box {
+      height: 95mm;
+      border: 1px dashed var(--borda);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .rodape {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    @page {
+      size: A4;
+      margin: 6mm;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .toolbar {
+        display: none;
+      }
+
+      .pagina {
+        margin: 0;
+        box-shadow: none;
+        width: auto;
+        min-height: auto;
+        padding: 7mm;
+        page-break-after: auto;
+      }
+
+      .pagina:last-child {
+        page-break-after: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =========================================================
+       03. BOTÃO DE IMPRESSÃO
+       ========================================================= -->
+  <div class="toolbar">
+     <button onclick="window.print()">Imprimir RASP</button>
+     <button onclick="fecharTela()">Fechar</button>
+
+  </div>
+
+
+  <!-- =========================================================
+       04. CONTEÚDO GERADO DINAMICAMENTE
+       ========================================================= -->
+  <main id="conteudo"></main>
+
+  <!-- =========================================================
+       05. SCRIPT PRINCIPAL
+       ========================================================= -->
+  <script>
+    const API_BASE = "http://localhost:5050";
+
+    function fecharTela() {
+    window.close();
+}
+
+
+
+
+    function obterIdRasp() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    function valor(v) {
+      if (v === null || v === undefined || v === "") return "-";
+      return v;
+    }
+
+    function simNao(v) {
+      return v === true ? "SIM" : "NÃO";
+    }
+
+    function dataBR(v) {
+      if (!v) return "-";
+      const d = new Date(v);
+      if (isNaN(d)) return v;
+      return d.toLocaleDateString("pt-BR");
+    }
+
+    function dataHoraBR(v) {
+      if (!v) return "-";
+      const d = new Date(v);
+      if (isNaN(d)) return v;
+      return d.toLocaleString("pt-BR");
+    }
+
+    function nomePeca(pn) {
+      if (!pn) return "-";
+
+      return valor(
+        pn.nomePeca ||
+        pn.NomePeca ||
+        pn.descricaoPeca ||
+        pn.DescricaoPeca ||
+        pn.pecaNome ||
+        pn.PecaNome ||
+        pn.descricao ||
+        pn.Descricao ||
+        pn.descricaoPn ||
+        pn.DescricaoPn
+      );
+    }
+
+    async function carregarRasp() {
+      const id = obterIdRasp();
+
+      if (!id) {
+        document.getElementById("conteudo").innerHTML =
+          "<div class='pagina'><h2>ID do RASP não informado.</h2></div>";
+        return;
+      }
+
+      const resposta = await fetch(`${API_BASE}/rasp/${id}/impressao`);
+
+      if (!resposta.ok) {
+        document.getElementById("conteudo").innerHTML =
+          "<div class='pagina'><h2>RASP não encontrado.</h2></div>";
+        return;
+      }
+
+      const dados = await resposta.json();
+      montarImpressao(dados);
+    }
+
+    function montarImpressao(dados) {
+      const r = dados.rasp;
+      const pns = dados.pns || [];
+      const arquivos = dados.arquivos || [];
+
+      document.getElementById("conteudo").innerHTML = `
+        ${paginaPrincipal(r, pns, dados)}
+        ${paginaEvidencias(r, pns, arquivos)}
+      `;
+    }
+
+    function paginaPrincipal(r, pns, dados) {
+      const pnPrincipal = pns.length > 0 ? pns[0] : null;
+
+      return `
+        <section class="pagina">
+          <!-- 01. CABEÇALHO -->
+          <div class="cabecalho">
+            <div class="logo">
+              <img src="/img/GM_Logo.png" alt="GM">
+            </div>
+
+            <div class="titulo">
+              <h1>RASP - Relatório de Análise e Solução de Problemas</h1>
+              <p>SAC S10 SJC</p>
+            </div>
+
+            <div class="numero">
+              <span>RASP Nº</span>
+              <strong>${valor(r.numeroRasp)}</strong>
+            </div>
+          </div>
+
+          <!-- 02. IDENTIFICAÇÃO -->
+          <div class="secao">
+            <div class="secao-titulo">01. Identificação do RASP</div>
+
+            <div class="grid-4">
+              <div class="campo"><label>Data Criação</label><span>${dataBR(r.dataCriacao)}</span></div>
+              <div class="campo"><label>Fornecedor</label><span>${valor(dados.fornecedorNome)}</span></div>
+              <div class="campo"><label>DUNS</label><span>${valor(dados.fornecedorDuns || (pnPrincipal ? pnPrincipal.duns : null))}</span></div>
+              <div class="campo"><label>Origem Fabricação</label><span>${valor(dados.origemDescricao)}</span></div>
+
+              <div class="campo"><label>Modelo Veículo</label><span>${valor(dados.modeloDescricao)}</span></div>
+              <div class="campo"><label>Setor</label><span>${valor(dados.setorDescricao)}</span></div>
+              <div class="campo"><label>Turno</label><span>${valor(dados.turnoDescricao)}</span></div>
+              <div class="campo"><label>Piloto</label><span>${valor(dados.pilotoDescricao)}</span></div>
+
+              <div class="campo"><label>Analista MT</label><span>${valor(dados.analistaMtNome)}</span></div>
+              <div class="campo"><label>GM Aliado</label><span>${valor(dados.gmAliadoDescricao)}</span></div>
+              <div class="campo"><label>VIN Veículo Problema</label><span>${valor(r.vinVeiculoProblema)}</span></div>
+              <div class="campo"><label>SPPS Nº</label><span>${valor(r.sppsNumero)}</span></div>
+            </div>
+          </div>
+
+          <!-- 03. IMPACTOS E CLASSIFICAÇÃO -->
+          <div class="secao">
+            <div class="secao-titulo">02. Impactos e Classificação</div>
+
+            <div class="grid-4">
+              <div class="campo campo-dinamico"><label>Impacto Cliente</label><span>${valor(dados.impactoClienteDescricao)}</span></div>
+              <div class="campo campo-dinamico"><label>Impacto Qualidade</label><span>${valor(dados.impactoQualidadeDescricao)}</span></div>
+              <div class="campo campo-dinamico"><label>Maior Impacto</label><span>${valor(dados.maiorImpactoDescricao)}</span></div>
+              <div class="campo campo-dinamico"><label>Major</label><span>${valor(dados.majorDescricao)}</span></div>
+
+              <div class="campo"><label>Índice Operacional</label><span>${valor(dados.indiceOperacionalDescricao)}</span></div>
+              <div class="campo"><label>Campanha Nº</label><span>${valor(r.campanhaNumero)}</span></div>
+              <div class="campo"><label>RD Nº</label><span>${valor(r.rdNumero)}</span></div>
+              <div class="campo"><label>Aprovado LG</label><span>${simNao(r.aprovadoLg)}</span></div>
+            </div>
+
+            <div class="flags">
+              <div class="flag ${r.supplierAlert ? "ativo" : ""}">Supplier Alert<br>${simNao(r.supplierAlert)}</div>
+              <div class="flag ${r.safety ? "flag-alerta" : ""}">Safety<br>${simNao(r.safety)}</div>
+              <div class="flag ${r.reversao ? "ativo" : ""}">Reversão<br>${simNao(r.reversao)}</div>
+              <div class="flag ${r.iniciativaFornecedor ? "ativo" : ""}">Inic. Fornecedor<br>${simNao(r.iniciativaFornecedor)}</div>
+              <div class="flag ${r.aprovadoLg ? "ativo" : ""}">Aprovado LG<br>${simNao(r.aprovadoLg)}</div>
+            </div>
+          </div>
+
+          <!-- 04. DESCRIÇÃO DO PROBLEMA -->
+          <div class="secao">
+            <div class="secao-titulo">03. Descrição do Problema</div>
+
+            <div class="campo">
+              <label>Resumo da Ocorrência</label>
+              <span>${valor(r.resumoOcorrencia)}</span>
+            </div>
+
+            <div class="texto-longo texto-problema">${valor(r.descricaoProblema)}</div>
+          </div>
+
+          <!-- 05. APROVAÇÃO FT -->
+          <div class="secao">
+            <div class="secao-titulo">04. Aprovação FT</div>
+
+            <div class="grid-2">
+              <div class="campo"><label>Aprovador FT</label><span>${valor(dados.aprovadorFtNome)}</span></div>
+              <div class="campo"><label>Justificativa FT</label><span>${valor(r.justificativaFt || r.observacaoFt)}</span></div>
+            </div>
+          </div>
+
+          <!-- 06. PEÇA PRINCIPAL -->
+          <div class="secao">
+            <div class="secao-titulo">05. Peça Principal / PN Principal</div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>PN</th>
+                  <th>Nome Peça</th>
+                  <th>DUNS</th>
+                  <th>Qtd Suspeita</th>
+                  <th>Qtd Checada</th>
+                  <th>Qtd Rejeitada</th>
+                  <th>Seleção</th>
+                  <th>Trava</th>
+                  <th>QHD</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${pnPrincipal ? `
+                  <tr>
+                    <td>${valor(pnPrincipal.pn)}</td>
+                    <td>${nomePeca(pnPrincipal)}</td>
+                    <td>${valor(pnPrincipal.duns)}</td>
+                    <td>${valor(pnPrincipal.quantidadeSuspeita)}</td>
+                    <td>${valor(pnPrincipal.quantidadeChecada)}</td>
+                    <td>${valor(pnPrincipal.quantidadeRejeitada)}</td>
+                    <td>${simNao(pnPrincipal.entrouSelecao)}</td>
+                    <td>${simNao(pnPrincipal.travaAtiva)}</td>
+                    <td class="${pnPrincipal.qhdAtivo ? 'status-qhd' : ''}">${simNao(pnPrincipal.qhdAtivo)}</td>
+                  </tr>
+                ` : `
+                  <tr><td colspan="9">Nenhum PN cadastrado.</td></tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 07. BREAK POINT -->
+          <div class="secao">
+            <div class="secao-titulo">06. Break Point</div>
+
+            <div class="grid-4">
+              <div class="campo"><label>Como foi identificado</label><span>${valor(r.bpTexto)}</span></div>
+              <div class="campo"><label>Área / Célula</label><span>${valor(r.breakpointCodigo)}</span></div>
+              <div class="campo"><label>VIN</label><span>${valor(r.vinVeiculoProblema)}</span></div>
+              <div class="campo"><label>BP Data/Hora</label><span>${dataHoraBR(r.bpDatahora || r.breakpointDatahora)}</span></div>
+            </div>
+          </div>
+
+          <!-- 08. CONTATO -->
+          <div class="secao">
+            <div class="secao-titulo">07. Contato / Observações</div>
+
+            <div class="grid-2">
+              <div class="campo"><label>Nome Contato</label><span>${valor(r.nomeContato)}</span></div>
+              <div class="campo"><label>Data Contato</label><span>${dataBR(r.dataContato)}</span></div>
+            </div>
+          </div>
+
+          <!-- 09. RODAPÉ -->
+          <div class="rodape">
+            <span>Versão 1.0 - Sistema RASP</span>
+            <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
+          </div>
+        </section>
+      `;
+    }
+
+    function paginaEvidencias(r, pns, arquivos) {
+      const precisaVerso = pns.length > 1 || arquivos.length > 0;
+
+      if (!precisaVerso) {
+        return "";
+      }
+
+      return `
+        <section class="pagina">
+          <!-- 01. CABEÇALHO DO VERSO -->
+          <div class="cabecalho">
+            <div class="logo">
+              <img src="/img/GM_Logo.png" alt="GM">
+            </div>
+
+            <div class="titulo">
+              <h1>Evidências e Peças Envolvidas</h1>
+              <p>SAC S10 SJC</p>
+            </div>
+
+            <div class="numero">
+              <span>RASP Nº</span>
+              <strong>${valor(r.numeroRasp)}</strong>
+            </div>
+          </div>
+
+          <!-- 02. EVIDÊNCIAS FOTOGRÁFICAS -->
+          <div class="secao">
+            <div class="secao-titulo">Evidências Fotográficas</div>
+
+            <div class="evidencias">
+              ${
+                arquivos.length > 0
+                  ? arquivos.slice(0, 4).map((a, i) => `
+                      <div class="foto-box">
+                        Arquivo ${i + 1}<br>
+                        ${valor(a.nomeArquivo || a.arquivo || a.filename)}
+                      </div>
+                    `).join("")
+                  : `
+                      <div class="foto-box">Espaço reservado para imagem 1</div>
+                      <div class="foto-box">Espaço reservado para imagem 2</div>
+                    `
+              }
+            </div>
+          </div>
+
+          <!-- 03. LISTA DE PNS -->
+          <div class="secao">
+            <div class="secao-titulo">Lista de PNs Envolvidos</div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Ordem</th>
+                  <th>PN</th>
+                  <th>Nome Peça</th>
+                  <th>DUNS</th>
+                  <th>Qtd Suspeita</th>
+                  <th>Qtd Checada</th>
+                  <th>Qtd Rejeitada</th>
+                  <th>Seleção</th>
+                  <th>Trava</th>
+                  <th>QHD</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                ${pns.map(p => `
+                  <tr>
+                    <td>${valor(p.ordemExibicao)}</td>
+                    <td>${valor(p.pn)}</td>
+                    <td>${nomePeca(p)}</td>
+                    <td>${valor(p.duns)}</td>
+                    <td>${valor(p.quantidadeSuspeita)}</td>
+                    <td>${valor(p.quantidadeChecada)}</td>
+                    <td>${valor(p.quantidadeRejeitada)}</td>
+                    <td>${simNao(p.entrouSelecao)}</td>
+                    <td>${simNao(p.travaAtiva)}</td>
+                    <td class="${p.qhdAtivo ? 'status-qhd' : ''}">${simNao(p.qhdAtivo)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 04. RODAPÉ DO VERSO -->
+          <div class="rodape">
+            <span>Versão 1.0 - Sistema RASP</span>
+            <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
+          </div>
+        </section>
+      `;
+    }
+
+    carregarRasp();
+  </script>
+</body>
+</html>

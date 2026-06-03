@@ -111,6 +111,7 @@ if (tempoFaseMinutos < 0)
 
 
 var app = builder.Build();
+app.UseStaticFiles();
 
 //Console.WriteLine(SenhaService.GerarHash("123456"));
 
@@ -2049,12 +2050,43 @@ app.MapGet("/rasp/{id:int}/detalhe", async (int id, RaspDbContext db) =>
     if (rasp is null)
         return Results.NotFound($"RASP com id {id} não encontrado.");
 
-    var pns = await db.RaspPn
-        .AsNoTracking()
-        .Where(rp => rp.IdRasp == id)
-        .OrderBy(rp => rp.OrdemExibicao)
-        .ThenBy(rp => rp.IdRaspPn)
-        .ToListAsync();
+    var pns = await (
+    from rp in db.RaspPn.AsNoTracking()
+
+    join pnCadastro in db.PnRasp.AsNoTracking()
+        on rp.Pn.Trim() equals pnCadastro.CodigoPn.Trim() into pnJoin
+
+    from pnCadastro in pnJoin.DefaultIfEmpty()
+
+    where rp.IdRasp == id
+
+    orderby rp.OrdemExibicao, rp.IdRaspPn
+
+    select new
+    {
+        idRaspPn = rp.IdRaspPn,
+        idRasp = rp.IdRasp,
+        pn = rp.Pn,
+        nomePeca = pnCadastro != null ? pnCadastro.NomePeca : null,
+        dataLoteInicial = rp.DataLoteInicial,
+        quantidadeSuspeita = rp.QuantidadeSuspeita,
+        quantidadeChecada = rp.QuantidadeChecada,
+        quantidadeRejeitada = rp.QuantidadeRejeitada,
+        emContencao = rp.EmContencao,
+        duns = rp.Duns,
+        ordemExibicao = rp.OrdemExibicao,
+        entrouSelecao = rp.EntrouSelecao,
+        statusSelecao = rp.StatusSelecao,
+        dataHoraEntradaSelecao = rp.DataHoraEntradaSelecao,
+        dataHoraSaidaSelecao = rp.DataHoraSaidaSelecao,
+        travaAtiva = rp.TravaAtiva,
+        dataHoraSolicitacaoTrava = rp.DataHoraSolicitacaoTrava,
+        dataHoraRemocaoTrava = rp.DataHoraRemocaoTrava,
+        qhdAtivo = rp.QhdAtivo,
+        dataHoraQhd = rp.DataHoraQhd
+    }
+).ToListAsync();
+
 
     var arquivos = await db.RaspArquivo
         .AsNoTracking()
@@ -2077,6 +2109,172 @@ app.MapGet("/rasp/{id:int}/detalhe", async (int id, RaspDbContext db) =>
     });
 })
 .WithName("ObterRaspDetalhe");
+
+app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
+{
+    var dados = await (
+        from r in db.Rasp.AsNoTracking()
+
+        join f in db.FornecedorRasp.AsNoTracking()
+            on r.IdFornecedorRasp equals f.IdFornecedor into fornecedorJoin
+        from f in fornecedorJoin.DefaultIfEmpty()
+
+        join s in db.StatusRasp.AsNoTracking()
+            on r.IdStatusRasp equals s.IdStatusRasp into statusJoin
+        from s in statusJoin.DefaultIfEmpty()
+
+        join m in db.ModeloVeiculoRasp.AsNoTracking()
+            on r.IdModeloVeiculoRasp equals m.IdModeloVeiculoRasp into modeloJoin
+        from m in modeloJoin.DefaultIfEmpty()
+
+        join setor in db.SetorRasp.AsNoTracking()
+            on r.IdSetorRasp equals setor.IdSetorRasp into setorJoin
+        from setor in setorJoin.DefaultIfEmpty()
+
+        join turno in db.TurnoRasp.AsNoTracking()
+            on r.IdTurnoRasp equals turno.IdTurnoRasp into turnoJoin
+        from turno in turnoJoin.DefaultIfEmpty()
+
+        join origem in db.OrigemFabricacaoRasp.AsNoTracking()
+            on r.IdOrigemFabricacaoRasp equals origem.IdOrigemFabricacaoRasp into origemJoin
+        from origem in origemJoin.DefaultIfEmpty()
+
+        join piloto in db.PilotoRasp.AsNoTracking()
+            on r.IdPilotoRasp equals piloto.IdPilotoRasp into pilotoJoin
+        from piloto in pilotoJoin.DefaultIfEmpty()
+
+        join impactoCliente in db.ImpactoClienteRasp.AsNoTracking()
+            on r.IdImpactoClienteRasp equals impactoCliente.IdImpactoCliente into impactoClienteJoin
+        from impactoCliente in impactoClienteJoin.DefaultIfEmpty()
+
+        join impactoQualidade in db.ImpactoQualidadeRasp.AsNoTracking()
+            on r.IdImpactoQualidadeRasp equals impactoQualidade.IdImpactoQualidadeRasp into impactoQualidadeJoin
+        from impactoQualidade in impactoQualidadeJoin.DefaultIfEmpty()
+
+        join maiorImpacto in db.MaiorImpactoRasp.AsNoTracking()
+            on r.IdMaiorImpactoRasp equals maiorImpacto.IdMaiorImpactoRasp into maiorImpactoJoin
+        from maiorImpacto in maiorImpactoJoin.DefaultIfEmpty()
+
+        join major in db.MajorRasp.AsNoTracking()
+            on r.IdMajorRasp equals major.IdMajorRasp into majorJoin
+        from major in majorJoin.DefaultIfEmpty()
+
+        join indice in db.IndiceOperacionalRasp.AsNoTracking()
+            on r.IdIndiceOperacionalRasp equals indice.IdIndiceOperacionalRasp into indiceJoin
+        from indice in indiceJoin.DefaultIfEmpty()
+
+        join gmAliado in db.GmAliadoRasp.AsNoTracking()
+            on r.IdGmAliadoRasp equals gmAliado.IdGmAliadoRasp into gmAliadoJoin
+        from gmAliado in gmAliadoJoin.DefaultIfEmpty()
+
+        join analistaMt in db.Usuarios.AsNoTracking()
+            on r.IdAnalistaMt equals analistaMt.IdUsuario into analistaMtJoin
+        from analistaMt in analistaMtJoin.DefaultIfEmpty()
+
+        join aprovadorFt in db.Usuarios.AsNoTracking()
+            on r.IdAprovadorFt equals aprovadorFt.IdUsuario into aprovadorFtJoin
+        from aprovadorFt in aprovadorFtJoin.DefaultIfEmpty()
+
+        where r.IdRasp == id
+
+        select new
+        {
+            rasp = r,
+
+            fornecedorNome = f != null ? f.Nome : null,
+            fornecedorDuns = f != null ? f.Duns : null,
+
+            statusDescricao = s != null ? s.Descricao : null,
+            modeloDescricao = m != null ? m.NomeModelo : null,
+            setorDescricao = setor != null ? setor.Descricao : null,
+            turnoDescricao = turno != null ? turno.Descricao : null,
+            origemDescricao = origem != null ? origem.Descricao : null,
+            pilotoDescricao = piloto != null ? piloto.Descricao : null,
+
+            impactoClienteDescricao = impactoCliente != null ? impactoCliente.Descricao : null,
+            impactoQualidadeDescricao = impactoQualidade != null ? impactoQualidade.Descricao : null,
+            maiorImpactoDescricao = maiorImpacto != null ? maiorImpacto.Descricao : null,
+            majorDescricao = major != null ? major.Descricao : null,
+            indiceOperacionalDescricao = indice != null ? indice.Descricao : null,
+
+            gmAliadoDescricao = gmAliado != null ? gmAliado.Descricao : null,
+            analistaMtNome = analistaMt != null ? analistaMt.Nome : null,
+            aprovadorFtNome = aprovadorFt != null ? aprovadorFt.Nome : null
+        }
+    ).FirstOrDefaultAsync();
+
+    if (dados is null)
+        return Results.NotFound($"RASP com id {id} não encontrado.");
+
+    var pns = await (
+    from rp in db.RaspPn.AsNoTracking()
+
+    join pnCadastro in db.PnRasp.AsNoTracking()
+        on rp.Pn.Trim() equals pnCadastro.CodigoPn.Trim() into pnJoin
+    from pnCadastro in pnJoin.DefaultIfEmpty()
+
+    where rp.IdRasp == id
+
+    orderby rp.OrdemExibicao, rp.IdRaspPn
+
+    select new
+    {
+        idRaspPn = rp.IdRaspPn,
+        idRasp = rp.IdRasp,
+        pn = rp.Pn,
+        nomePeca = pnCadastro != null ? pnCadastro.NomePeca : null,
+        dataLoteInicial = rp.DataLoteInicial,
+        quantidadeSuspeita = rp.QuantidadeSuspeita,
+        quantidadeChecada = rp.QuantidadeChecada,
+        quantidadeRejeitada = rp.QuantidadeRejeitada,
+        emContencao = rp.EmContencao,
+        duns = rp.Duns,
+        ordemExibicao = rp.OrdemExibicao,
+        entrouSelecao = rp.EntrouSelecao,
+        statusSelecao = rp.StatusSelecao,
+        dataHoraEntradaSelecao = rp.DataHoraEntradaSelecao,
+        dataHoraSaidaSelecao = rp.DataHoraSaidaSelecao,
+        travaAtiva = rp.TravaAtiva,
+        dataHoraSolicitacaoTrava = rp.DataHoraSolicitacaoTrava,
+        dataHoraRemocaoTrava = rp.DataHoraRemocaoTrava,
+        qhdAtivo = rp.QhdAtivo,
+        dataHoraQhd = rp.DataHoraQhd
+    }
+).ToListAsync();
+
+    
+    var arquivos = await db.RaspArquivo
+        .AsNoTracking()
+        .Where(a => a.IdRasp == id)
+        .OrderBy(a => a.IdArquivoRasp)
+        .ToListAsync();
+
+    return Results.Ok(new
+    {
+        dados.rasp,
+        dados.fornecedorNome,
+        dados.fornecedorDuns,
+        dados.statusDescricao,
+        dados.modeloDescricao,
+        dados.setorDescricao,
+        dados.turnoDescricao,
+        dados.origemDescricao,
+        dados.pilotoDescricao,
+        dados.impactoClienteDescricao,
+        dados.impactoQualidadeDescricao,
+        dados.maiorImpactoDescricao,
+        dados.majorDescricao,
+        dados.indiceOperacionalDescricao,
+        dados.gmAliadoDescricao,
+        dados.analistaMtNome,
+        dados.aprovadorFtNome,
+        pns,
+        arquivos
+    });
+})
+.WithName("ObterRaspImpressao");
+
+
 
 app.MapGet("/rasp/numero/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
 {
