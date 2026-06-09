@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // 01. CONFIGURAÇÕES GERAIS
   // ==========================================================
-  const API_BASE_URL = "http://localhost:5050";
+  const API_BASE_URL = "http://10.97.16.141:5050";
   const usuarioSessao = JSON.parse(sessionStorage.getItem("raspUsuarioLogado") || "{}");
 
   const ID_USUARIO_LOGADO =
