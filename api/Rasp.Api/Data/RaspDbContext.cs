@@ -58,6 +58,8 @@ namespace Rasp.Api.Data
 
         public DbSet<RaspContencao> RaspContencao { get; set;}
 
+        public DbSet<RaspAnexo> RaspAnexos => Set<RaspAnexo>();
+
         
             protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
@@ -310,6 +312,30 @@ modelBuilder.Entity<Usuario>(entity =>
 
 
     entity.HasKey(e => e.IdUsuario);
+
+
+// -----------------------------------------------------------------
+// ANEXOS RASP
+// -----------------------------------------------------------------
+    modelBuilder.Entity<RaspAnexo>(entity =>
+{
+    entity.ToTable("rasp_anexos");
+
+    entity.HasKey(e => e.IdAnexo);
+
+    entity.Property(e => e.IdAnexo).HasColumnName("id_anexo");
+    entity.Property(e => e.IdRasp).HasColumnName("id_rasp");
+    entity.Property(e => e.NumeroRasp).HasColumnName("numero_rasp");
+    entity.Property(e => e.TipoAnexo).HasColumnName("tipo_anexo");
+    entity.Property(e => e.Posicao).HasColumnName("posicao");
+    entity.Property(e => e.NomeOriginal).HasColumnName("nome_original");
+    entity.Property(e => e.NomeArquivo).HasColumnName("nome_arquivo");
+    entity.Property(e => e.CaminhoArquivo).HasColumnName("caminho_arquivo");
+    entity.Property(e => e.Extensao).HasColumnName("extensao");
+    entity.Property(e => e.DataUpload).HasColumnName("data_upload");
+    entity.Property(e => e.Ativo).HasColumnName("ativo");
+});
+
 
 
     

@@ -8212,6 +8212,239 @@ app.MapGet("/debug-model", (RaspDbContext db) =>
 
 
 
+// ---------------------------------------------------------------------
+// RASP - CONFIGURAÇÃO DOS ANEXOS
+// ---------------------------------------------------------------------
+const string PastaRaizAnexosRasp =
+    @"\\laam.corp.gm.com\gmb\gmbrasil\data\S10_QualitySystem\SAC-S10\RASP2026";
+
+
+
+static string LimparNumeroRaspParaArquivo(string numeroRasp)
+{
+    return numeroRasp
+        .Replace("/", "-")
+        .Replace("\\", "-")
+        .Replace(" ", "")
+        .Trim();
+}
+
+static string ObterSubpastaAnexo(string tipoAnexo)
+{
+    return tipoAnexo.ToUpper() switch
+    {
+        "FOTO" => "FOTO",
+        "DIMENSIONAL" => "DIMENSIONAL",
+        "APRESENTACAO" => "APRESENTACAO",
+        _ => "FOTO"
+    };
+}
+
+static string ObterNomeArquivoAnexo(string numeroRasp, string tipoAnexo, int posicao, string extensao)
+{
+    var raspLimpo = LimparNumeroRaspParaArquivo(numeroRasp);
+    var tipo = tipoAnexo.ToUpper();
+
+    return tipo switch
+    {
+        "FOTO" => $"RASP_{raspLimpo}_FOTO_{posicao:00}{extensao}",
+        "DIMENSIONAL" => $"RASP_{raspLimpo}_DIMENSIONAL_{posicao:00}{extensao}",
+        "APRESENTACAO" => $"RASP_{raspLimpo}_APRESENTACAO_{posicao:00}{extensao}",
+        _ => $"RASP_{raspLimpo}_ANEXO_{posicao:00}{extensao}"
+    };
+}
+
+// ---------------------------------------------------------------------
+// RASP - LISTAR ANEXOS
+// ---------------------------------------------------------------------
+app.MapGet("/rasp/{idRasp:int}/anexos", async (
+    int idRasp,
+    RaspDbContext db) =>
+{
+    var anexos = await db.RaspAnexos
+        .AsNoTracking()
+        .Where(a => a.IdRasp == idRasp && a.Ativo)
+        .OrderBy(a => a.TipoAnexo)
+        .ThenBy(a => a.Posicao)
+        .Select(a => new
+        {
+            a.IdAnexo,
+            a.IdRasp,
+            a.NumeroRasp,
+            a.TipoAnexo,
+            a.Posicao,
+            a.NomeOriginal,
+            a.NomeArquivo,
+            a.CaminhoArquivo,
+            a.Extensao,
+            a.DataUpload,
+            UrlVisualizar = $"/rasp/anexos/{a.IdAnexo}/visualizar"
+        })
+        .ToListAsync();
+
+    return Results.Ok(anexos);
+})
+.WithName("RaspListarAnexos");
+
+// ---------------------------------------------------------------------
+// RASP - UPLOAD ANEXO
+// ---------------------------------------------------------------------
+app.MapPost("/rasp/{idRasp:int}/anexos", async (
+    int idRasp,
+    IFormFile arquivo,
+    string tipoAnexo,
+    int posicao,
+    RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.IdRasp == idRasp);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    if (arquivo is null || arquivo.Length == 0)
+        return Results.BadRequest("Arquivo não enviado.");
+
+    tipoAnexo = tipoAnexo.ToUpper().Trim();
+
+    if (string.IsNullOrWhiteSpace(tipoAnexo))
+        return Results.BadRequest("Tipo do anexo é obrigatório.");
+
+    if (posicao <= 0)
+        return Results.BadRequest("Posição do anexo é obrigatória.");
+
+    if (tipoAnexo == "FOTO" && posicao > 4)
+        return Results.BadRequest("São permitidas no máximo 4 fotos.");
+
+    if (tipoAnexo != "FOTO" &&
+        tipoAnexo != "DIMENSIONAL" &&
+        tipoAnexo != "APRESENTACAO")
+        return Results.BadRequest("Tipo de anexo inválido.");
+
+    var extensao = Path.GetExtension(arquivo.FileName).ToLower();
+
+    var extensoesPermitidas = new[]
+    {
+        ".jpg", ".jpeg", ".png", ".webp",
+        ".pdf", ".ppt", ".pptx", ".xls", ".xlsx", ".doc", ".docx"
+    };
+
+    if (!extensoesPermitidas.Contains(extensao))
+        return Results.BadRequest("Extensão de arquivo não permitida.");
+
+    if (tipoAnexo == "FOTO" &&
+        extensao != ".jpg" &&
+        extensao != ".jpeg" &&
+        extensao != ".png" &&
+        extensao != ".webp")
+        return Results.BadRequest("Foto deve ser JPG, JPEG, PNG ou WEBP.");
+
+    var numeroRasp = string.IsNullOrWhiteSpace(rasp.NumeroRasp)
+        ? $"ID_{idRasp}"
+        : rasp.NumeroRasp;
+
+    var subpasta = ObterSubpastaAnexo(tipoAnexo);
+    var pastaDestino = Path.Combine(PastaRaizAnexosRasp, subpasta);
+
+    if (!Directory.Exists(pastaDestino))
+        Directory.CreateDirectory(pastaDestino);
+
+    var nomeArquivo = ObterNomeArquivoAnexo(numeroRasp, tipoAnexo, posicao, extensao);
+    var caminhoCompleto = Path.Combine(pastaDestino, nomeArquivo);
+
+    var anexoExistente = await db.RaspAnexos
+        .FirstOrDefaultAsync(a =>
+            a.IdRasp == idRasp &&
+            a.TipoAnexo == tipoAnexo &&
+            a.Posicao == posicao &&
+            a.Ativo);
+
+    if (anexoExistente is not null)
+    {
+        anexoExistente.Ativo = false;
+    }
+
+    using (var stream = new FileStream(caminhoCompleto, FileMode.Create))
+    {
+        await arquivo.CopyToAsync(stream);
+    }
+
+    var anexo = new RaspAnexo
+    {
+        IdRasp = idRasp,
+        NumeroRasp = numeroRasp,
+        TipoAnexo = tipoAnexo,
+        Posicao = posicao,
+        NomeOriginal = arquivo.FileName,
+        NomeArquivo = nomeArquivo,
+        CaminhoArquivo = caminhoCompleto,
+        Extensao = extensao,
+        DataUpload = DateTime.UtcNow,
+        Ativo = true
+    };
+
+    db.RaspAnexos.Add(anexo);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        anexo.IdAnexo,
+        anexo.IdRasp,
+        anexo.NumeroRasp,
+        anexo.TipoAnexo,
+        anexo.Posicao,
+        anexo.NomeOriginal,
+        anexo.NomeArquivo,
+        anexo.CaminhoArquivo,
+        anexo.Extensao,
+        anexo.DataUpload,
+        UrlVisualizar = $"/rasp/anexos/{anexo.IdAnexo}/visualizar"
+    });
+})
+.Accepts<IFormFile>("multipart/form-data")
+.WithName("RaspUploadAnexo")
+.DisableAntiforgery();
+
+// ---------------------------------------------------------------------
+// RASP - VISUALIZAR ANEXO
+// ---------------------------------------------------------------------
+app.MapGet("/rasp/anexos/{idAnexo:int}/visualizar", async (
+    int idAnexo,
+    RaspDbContext db) =>
+{
+    var anexo = await db.RaspAnexos
+        .AsNoTracking()
+        .FirstOrDefaultAsync(a => a.IdAnexo == idAnexo && a.Ativo);
+
+    if (anexo is null)
+        return Results.NotFound("Anexo não encontrado.");
+
+    if (!System.IO.File.Exists(anexo.CaminhoArquivo))
+        return Results.NotFound("Arquivo físico não localizado no drive.");
+
+    var contentType = anexo.Extensao?.ToLower() switch
+    {
+        ".jpg" or ".jpeg" => "image/jpeg",
+        ".png" => "image/png",
+        ".webp" => "image/webp",
+        ".pdf" => "application/pdf",
+        ".ppt" => "application/vnd.ms-powerpoint",
+        ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ".xls" => "application/vnd.ms-excel",
+        ".xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ".doc" => "application/msword",
+        ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        _ => "application/octet-stream"
+    };
+
+    var bytes = await System.IO.File.ReadAllBytesAsync(anexo.CaminhoArquivo);
+
+    return Results.File(bytes, contentType, anexo.NomeArquivo);
+})
+.WithName("RaspVisualizarAnexo");
+
+
 
 app.Run();
 
@@ -8424,6 +8657,22 @@ public record ScrapAtualizarNotaFiscalRequest(
     string NotaFiscalNumero,
     int IdUsuario
 );
+
+public class RaspAnexo
+{
+    public int IdAnexo { get; set; }
+    public int IdRasp { get; set; }
+    public string NumeroRasp { get; set; } = "";
+    public string TipoAnexo { get; set; } = "";
+    public int Posicao { get; set; }
+    public string? NomeOriginal { get; set; }
+    public string NomeArquivo { get; set; } = "";
+    public string CaminhoArquivo { get; set; } = "";
+    public string? Extensao { get; set; }
+    public DateTime DataUpload { get; set; }
+    public bool Ativo { get; set; }
+}
+
 
 
 

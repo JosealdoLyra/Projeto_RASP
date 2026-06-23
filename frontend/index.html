@@ -686,11 +686,89 @@
         </div>
 
         <!-- ===================================================
-             ABA: COMPLEMENTOS
-             =================================================== -->
-        <div class="rasp-tab-content" id="tab-complementos">
-          <!-- Conteúdo futuro -->
-        </div>
+     ABA: COMPLEMENTOS
+     =================================================== -->
+<div class="rasp-tab-content" id="tab-complementos">
+
+  <section class="form-section">
+    <h3>Complementos do RASP</h3>
+    <p class="section-note">
+      Anexe evidências fotográficas, relatório dimensional e apresentação vinculados ao RASP.
+    </p>
+
+    <div id="anexosStatus" class="pn-status pn-status-neutral">
+      Abra ou salve um RASP para habilitar os anexos.
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h3>1. Evidências fotográficas</h3>
+
+    <div class="grid grid-4">
+      <div class="form-group">
+        <label>Foto 1</label>
+        <input type="file" id="foto1" accept=".jpg,.jpeg,.png,.webp" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('FOTO', 1, 'foto1')">
+          Enviar Foto 1
+        </button>
+        <div id="previewFoto1" class="preview-anexo">Sem imagem</div>
+      </div>
+
+      <div class="form-group">
+        <label>Foto 2</label>
+        <input type="file" id="foto2" accept=".jpg,.jpeg,.png,.webp" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('FOTO', 2, 'foto2')">
+          Enviar Foto 2
+        </button>
+        <div id="previewFoto2" class="preview-anexo">Sem imagem</div>
+      </div>
+
+      <div class="form-group">
+        <label>Foto 3</label>
+        <input type="file" id="foto3" accept=".jpg,.jpeg,.png,.webp" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('FOTO', 3, 'foto3')">
+          Enviar Foto 3
+        </button>
+        <div id="previewFoto3" class="preview-anexo">Sem imagem</div>
+      </div>
+
+      <div class="form-group">
+        <label>Foto 4</label>
+        <input type="file" id="foto4" accept=".jpg,.jpeg,.png,.webp" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('FOTO', 4, 'foto4')">
+          Enviar Foto 4
+        </button>
+        <div id="previewFoto4" class="preview-anexo">Sem imagem</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h3>2. Documentos técnicos</h3>
+
+    <div class="grid grid-2">
+      <div class="form-group">
+        <label>Relatório dimensional</label>
+        <input type="file" id="arquivoDimensional" accept=".pdf,.xls,.xlsx,.doc,.docx" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('DIMENSIONAL', 1, 'arquivoDimensional')">
+          Enviar Dimensional
+        </button>
+        <div id="previewDimensional" class="preview-anexo">Sem arquivo</div>
+      </div>
+
+      <div class="form-group">
+        <label>Apresentação / PDF</label>
+        <input type="file" id="arquivoApresentacao" accept=".pdf,.ppt,.pptx" />
+        <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('APRESENTACAO', 1, 'arquivoApresentacao')">
+          Enviar Apresentação
+        </button>
+        <div id="previewApresentacao" class="preview-anexo">Sem arquivo</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
       </section>
     </main>
   </div>
