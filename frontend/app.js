@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // 01. CONFIGURAÇÕES GERAIS
   // ==========================================================
-  const API_BASE_URL = "http://10.97.16.141:5050";
+  const API_BASE_URL = "http://localhost:5050";
   const usuarioSessao = JSON.parse(sessionStorage.getItem("raspUsuarioLogado") || "{}");
 
   const ID_USUARIO_LOGADO =
@@ -128,6 +128,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const localCelulaBp = document.getElementById("localCelulaBp");
   const comoIdentificadoBp = document.getElementById("comoIdentificadoBp");
   const bpStatus = document.getElementById("bpStatus");
+
+  const btnEmitirRejeitado = document.getElementById("btnEmitirRejeitado");
+
+if (btnEmitirRejeitado) {
+  btnEmitirRejeitado.addEventListener("click", () => {
+    const numeroRasp =
+      document.getElementById("raspNumeroDisplay")?.innerText?.trim();
+
+    if (!numeroRasp || numeroRasp === "---") {
+      alert("Abra ou salve um RASP antes de emitir rejeitado.");
+      return;
+    }
+
+    window.location.href =
+      `emissao-scrap.html?rasp=${encodeURIComponent(numeroRasp)}`;
+  });
+}
+
 
   // ==========================================================
   // 12. CAMPOS DE TEXTO PRINCIPAIS
@@ -348,9 +366,26 @@ function atualizarBotaoSubmeterFt() {
         : numeroDigitado;
 
       try {
-        const responseBusca = await fetch(
-          `${API_BASE_URL}/rasp/numero/${encodeURIComponent(numeroNormalizado)}`
-        );
+        // ======================================================
+// Busca do RASP por número
+// Observação:
+// - Local normal: 0081/26
+// - A barra "/" pode quebrar a rota em alguns cenários.
+// - Por isso tentamos primeiro o padrão antigo.
+// - Se falhar, tentamos com a barra protegida.
+// ======================================================
+let responseBusca = await fetch(
+  `${API_BASE_URL}/rasp/numero/${encodeURIComponent(numeroNormalizado)}`
+);
+
+if (!responseBusca.ok && numeroNormalizado.includes("/")) {
+  const numeroProtegido = encodeURIComponent(numeroNormalizado).replace("%2F", "%252F");
+
+  responseBusca = await fetch(
+    `${API_BASE_URL}/rasp/numero/${numeroProtegido}`
+  );
+}
+
 
         if (!responseBusca.ok) {
           alert("RASP não encontrado.");
@@ -859,9 +894,8 @@ aplicarRegraIniciativaFornecedor();
             if (
               typeof processarPnDaLinha === "function" &&
               pnInput &&
-              pnInput.value &&
-              descricaoPnInput &&
-              !descricaoPnInput.value
+              pnInput.value
+            
             ) {
               await processarPnDaLinha(linha);
             }

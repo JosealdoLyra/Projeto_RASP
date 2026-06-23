@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão Scrap - RASP</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,Arial,sans-serif}
+body{background:#071426;color:#e5eefc;min-height:100vh;padding:24px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+h1{font-size:28px;color:#5bb6ff}
+.sub{color:#9fb7d8;font-size:14px;margin-top:4px}
+.btn{border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;color:#fff}
+.btn-green{background:#16a34a}
+.btn-gray{background:#475569}
+.btn-orange{background:#f59e0b;color:#111}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px}
+.card{background:#0d1f38;border:1px solid #1e88e5;border-radius:14px;padding:18px;box-shadow:0 0 18px rgba(30,136,229,.18)}
+.card-title{font-size:13px;color:#9fb7d8}
+.card-value{font-size:30px;font-weight:900;margin-top:8px;color:#fff}
+.tabs{display:flex;gap:10px;margin-bottom:16px}
+.tab{background:#10233e;border:1px solid #1e88e5;color:#cfe6ff;border-radius:9px;padding:10px 18px;font-weight:800;cursor:pointer}
+.tab.active{background:#0f6dff;color:#fff}
+.panel{display:none}
+.panel.active{display:block}
+.box{background:#0d1f38;border:1px solid #1e88e5;border-radius:14px;padding:16px}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{border-bottom:1px solid #1f3554;padding:10px;text-align:left;font-size:13px}
+th{color:#5bb6ff;background:#08182c}
+td{color:#e5eefc}
+.status{font-weight:900;color:#facc15}
+.empty{padding:20px;color:#9fb7d8;text-align:center}
+.msg{margin-top:14px;background:#111827;border:1px solid #2f94ff;color:#e5eefc;padding:12px;border-radius:10px}
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(2,8,23,.75);z-index:9999;align-items:center;justify-content:center}
+.popup-overlay.popup-show{display:flex}
+.popup-box{width:430px;background:linear-gradient(180deg,#061b3a,#020817);border:1px solid #2f94ff;border-radius:14px;box-shadow:0 0 40px rgba(47,148,255,.45);padding:24px;color:#f4f8ff;text-align:center}
+.popup-title{color:#5bb6ff;font-size:22px;font-weight:900;margin-bottom:14px}
+.popup-text{font-size:16px;line-height:1.45;margin-bottom:22px}
+.popup-actions{display:flex;gap:12px;justify-content:center}
+.popup-btn{background:#0f6dff;border:1px solid #5bb6ff;border-radius:8px;padding:10px 26px;color:white;font-weight:800;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>
+    <h1>Gestão Scrap</h1>
+    <div class="sub">Fluxo Emissor / Baixa MGO / FT / LG</div>
+  </div>
+  <button class="btn btn-gray" onclick="window.location.href='home.html'">Voltar</button>
+</div>
+
+<div class="cards">
+  <div class="card"><div class="card-title">Rascunhos</div><div class="card-value" id="cardRascunhos">0</div></div>
+  <div class="card"><div class="card-title">Em FT</div><div class="card-value" id="cardFt">0</div></div>
+  <div class="card"><div class="card-title">Em LG</div><div class="card-value" id="cardLg">0</div></div>
+  <div class="card"><div class="card-title">Baixados</div><div class="card-value" id="cardBaixados">0</div></div>
+  <div class="card"><div class="card-title">Baixa Pendente</div><div class="card-value" id="cardBaixaPendente">0</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="abrirAba('andamento')">Em Andamento</button>
+  <button class="tab" onclick="abrirAba('mgo')">Baixa MGO</button>
+  <button class="tab" onclick="abrirAba('ft')">Fila FT</button>
+  <button class="tab" onclick="abrirAba('lg')">Fila LG</button>
+</div>
+
+<div id="painelAndamento" class="panel active">
+  <div class="box">
+    <h2>Scraps em andamento</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nº Scrap</th><th>RASP</th><th>PN</th><th>Peça</th><th>Qtd</th>
+          <th>Fornecedor</th><th>DUNS</th><th>Origem</th><th>Tipo</th><th>Falha</th>
+          <th>Bruneta</th><th>Nota Fiscal</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyAndamento"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="painelMgo" class="panel">
+  <div class="box">
+    <h2>Baixa MGO pendente</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nº Scrap</th><th>RASP</th><th>PN</th><th>Peça</th><th>Qtd</th>
+          <th>Fornecedor</th><th>DUNS</th><th>Origem</th><th>Tipo</th><th>Status</th><th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyMgo"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="painelFt" class="panel">
+  <div class="box">
+    <h2>Scraps aguardando FT</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nº Scrap</th><th>RASP</th><th>PN</th><th>Peça</th><th>Qtd</th>
+          <th>Fornecedor</th><th>Origem</th><th>Tipo</th><th>Falha</th>
+          <th>Bruneta</th><th>Nota Fiscal</th><th>Status</th><th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyFt"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="painelLg" class="panel">
+  <div class="box">
+    <h2>Scraps aguardando LG</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nº Scrap</th><th>RASP</th><th>PN</th><th>Peça</th><th>Qtd</th>
+          <th>Fornecedor</th><th>Origem</th><th>Tipo</th><th>Falha</th>
+          <th>Bruneta</th><th>Nota Fiscal</th><th>Status</th><th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyLg"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="msg" id="mensagem">Carregando Gestão Scrap...</div>
+
+<div id="modalConfirmacao" class="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-title">Confirmação</div>
+    <div id="modalConfirmacaoTexto" class="popup-text"></div>
+    <div class="popup-actions">
+      <button class="popup-btn" onclick="confirmarModal()">Confirmar</button>
+      <button class="btn btn-gray" onclick="fecharModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:5050";
+let acaoConfirmada = null;
+
+function msg(t){ document.getElementById("mensagem").innerText = t; }
+
+function valor(obj, ...campos){
+  for(const campo of campos){
+    if(obj && obj[campo] !== undefined && obj[campo] !== null) return obj[campo];
+  }
+  return "";
+}
+
+function abrirModalConfirmacao(texto, callback){
+  document.getElementById("modalConfirmacaoTexto").innerText = texto;
+  acaoConfirmada = callback;
+  document.getElementById("modalConfirmacao").classList.add("popup-show");
+}
+
+function fecharModal(){
+  document.getElementById("modalConfirmacao").classList.remove("popup-show");
+  acaoConfirmada = null;
+}
+
+function confirmarModal(){
+  const acao = acaoConfirmada;
+  fecharModal();
+  if(acao) acao();
+}
+
+function abrirAba(aba){
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+
+  const mapa = {
+    andamento: ["painelAndamento", 0],
+    mgo: ["painelMgo", 1],
+    ft: ["painelFt", 2],
+    lg: ["painelLg", 3]
+  };
+
+  document.querySelectorAll(".tab")[mapa[aba][1]].classList.add("active");
+  document.getElementById(mapa[aba][0]).classList.add("active");
+}
+
+async function carregarDashboard(){
+  const resp = await fetch(`${API_BASE}/scrap/dashboard`);
+  if(!resp.ok){ msg("Erro ao carregar dashboard Scrap."); return; }
+
+  const d = await resp.json();
+  document.getElementById("cardRascunhos").innerText = valor(d,"rascunhos","Rascunhos") || 0;
+  document.getElementById("cardFt").innerText = valor(d,"emFt","EmFt") || 0;
+  document.getElementById("cardLg").innerText = valor(d,"emLg","EmLg") || 0;
+  document.getElementById("cardBaixados").innerText = valor(d,"baixados","Baixados") || 0;
+  document.getElementById("cardBaixaPendente").innerText = valor(d,"baixaPendente","BaixaPendente") || 0;
+}
+
+async function carregarFilaAndamento(){
+  const tbody = document.getElementById("tbodyAndamento");
+  tbody.innerHTML = "";
+
+  const resp = await fetch(`${API_BASE}/scrap/fila-andamento`);
+  if(!resp.ok){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Erro ao carregar em andamento.</td></tr>`;
+    return;
+  }
+
+  const lista = await resp.json();
+  if(lista.length === 0){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Nenhum Scrap em andamento.</td></tr>`;
+    return;
+  }
+
+  lista.forEach(s => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${valor(s,"numeroScrap","NumeroScrap")}</td>
+        <td>${valor(s,"numeroRasp","NumeroRasp")}</td>
+        <td>${valor(s,"pn","Pn")}</td>
+        <td>${valor(s,"nomePeca","NomePeca")}</td>
+        <td>${valor(s,"quantidade","Quantidade")}</td>
+        <td>${valor(s,"fornecedorNome","FornecedorNome")}</td>
+        <td>${valor(s,"fornecedorDuns","FornecedorDuns")}</td>
+        <td>${valor(s,"origemPeca","OrigemPeca")}</td>
+        <td>${valor(s,"tipoDestinacao","TipoDestinacao")}</td>
+        <td>${valor(s,"observacao","Observacao")}</td>
+        <td>${valor(s,"brunetaNumero","BrunetaNumero") || "-"}</td>
+        <td>${valor(s,"notaFiscalNumero","NotaFiscalNumero") || "-"}</td>
+        <td class="status">${valor(s,"statusScrap","StatusScrap")}</td>
+      </tr>
+    `;
+  });
+}
+
+async function carregarFilaMgo(){
+  const tbody = document.getElementById("tbodyMgo");
+  tbody.innerHTML = "";
+
+  const resp = await fetch(`${API_BASE}/scrap/fila-baixa-mgo`);
+  if(!resp.ok){
+    tbody.innerHTML = `<tr><td colspan="11" class="empty">Erro ao carregar Baixa MGO.</td></tr>`;
+    return;
+  }
+
+  const lista = await resp.json();
+  if(lista.length === 0){
+    tbody.innerHTML = `<tr><td colspan="11" class="empty">Nenhum Scrap pendente de Baixa MGO.</td></tr>`;
+    return;
+  }
+
+  lista.forEach(s => {
+    const id = valor(s,"idScrap","IdScrap");
+    tbody.innerHTML += `
+      <tr>
+        <td>${valor(s,"numeroScrap","NumeroScrap")}</td>
+        <td>${valor(s,"numeroRasp","NumeroRasp")}</td>
+        <td>${valor(s,"pn","Pn")}</td>
+        <td>${valor(s,"nomePeca","NomePeca")}</td>
+        <td>${valor(s,"quantidade","Quantidade")}</td>
+        <td>${valor(s,"fornecedorNome","FornecedorNome")}</td>
+        <td>${valor(s,"fornecedorDuns","FornecedorDuns")}</td>
+        <td>${valor(s,"origemPeca","OrigemPeca")}</td>
+        <td>${valor(s,"tipoDestinacao","TipoDestinacao")}</td>
+        <td class="status">${valor(s,"statusScrap","StatusScrap")}</td>
+        <td><button class="btn btn-orange" onclick="confirmarBaixaMgo(${id})">Confirmar Baixa MGO</button></td>
+      </tr>
+    `;
+  });
+}
+
+async function carregarFilaFt(){
+  const tbody = document.getElementById("tbodyFt");
+  tbody.innerHTML = "";
+
+  const resp = await fetch(`${API_BASE}/scrap/fila-ft`);
+  if(!resp.ok){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Erro ao carregar fila FT.</td></tr>`;
+    return;
+  }
+
+  const lista = await resp.json();
+  if(lista.length === 0){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Nenhum Scrap pendente no FT.</td></tr>`;
+    return;
+  }
+
+  lista.forEach(s => {
+    const id = valor(s,"idScrap","IdScrap");
+    tbody.innerHTML += `
+      <tr>
+        <td>${valor(s,"numeroScrap","NumeroScrap")}</td>
+        <td>${valor(s,"numeroRasp","NumeroRasp")}</td>
+        <td>${valor(s,"pn","Pn")}</td>
+        <td>${valor(s,"nomePeca","NomePeca")}</td>
+        <td>${valor(s,"quantidade","Quantidade")}</td>
+        <td>${valor(s,"fornecedorNome","FornecedorNome")}</td>
+        <td>${valor(s,"origemPeca","OrigemPeca")}</td>
+        <td>${valor(s,"tipoDestinacao","TipoDestinacao")}</td>
+        <td>${valor(s,"observacao","Observacao")}</td>
+        <td>${valor(s,"brunetaNumero","BrunetaNumero") || "-"}</td>
+        <td>${valor(s,"notaFiscalNumero","NotaFiscalNumero") || "-"}</td>
+        <td class="status">${valor(s,"statusScrap","StatusScrap")}</td>
+        <td><button class="btn btn-green" onclick="aprovarFt(${id})">Aprovar FT</button></td>
+      </tr>
+    `;
+  });
+}
+
+async function carregarFilaLg(){
+  const tbody = document.getElementById("tbodyLg");
+  tbody.innerHTML = "";
+
+  const resp = await fetch(`${API_BASE}/scrap/fila-lg`);
+  if(!resp.ok){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Erro ao carregar fila LG.</td></tr>`;
+    return;
+  }
+
+  const lista = await resp.json();
+  if(lista.length === 0){
+    tbody.innerHTML = `<tr><td colspan="13" class="empty">Nenhum Scrap pendente no LG.</td></tr>`;
+    return;
+  }
+
+  lista.forEach(s => {
+    const id = valor(s,"idScrap","IdScrap");
+    tbody.innerHTML += `
+      <tr>
+        <td>${valor(s,"numeroScrap","NumeroScrap")}</td>
+        <td>${valor(s,"numeroRasp","NumeroRasp")}</td>
+        <td>${valor(s,"pn","Pn")}</td>
+        <td>${valor(s,"nomePeca","NomePeca")}</td>
+        <td>${valor(s,"quantidade","Quantidade")}</td>
+        <td>${valor(s,"fornecedorNome","FornecedorNome")}</td>
+        <td>${valor(s,"origemPeca","OrigemPeca")}</td>
+        <td>${valor(s,"tipoDestinacao","TipoDestinacao")}</td>
+        <td>${valor(s,"observacao","Observacao")}</td>
+        <td>${valor(s,"brunetaNumero","BrunetaNumero") || "-"}</td>
+        <td>${valor(s,"notaFiscalNumero","NotaFiscalNumero") || "-"}</td>
+        <td class="status">${valor(s,"statusScrap","StatusScrap")}</td>
+        <td><button class="btn btn-green" onclick="aprovarLg(${id})">Aprovar LG</button></td>
+      </tr>
+    `;
+  });
+}
+
+async function aprovarFt(idScrap){
+  abrirModalConfirmacao("Confirmar aprovação FT e envio ao LG?", async () => {
+    const respFt = await fetch(`${API_BASE}/scrap/${idScrap}/aprovar-ft`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({idUsuarioFt:3,observacaoFt:"Aprovado via Gestão Scrap"})
+    });
+
+    if(!respFt.ok){ msg(await respFt.text()); return; }
+
+    const respLg = await fetch(`${API_BASE}/scrap/${idScrap}/enviar-lg`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({idUsuarioFt:3})
+    });
+
+    if(!respLg.ok){ msg(await respLg.text()); return; }
+
+    msg("FT aprovado e Scrap enviado ao LG com sucesso.");
+    await carregarTudo();
+  });
+}
+
+async function aprovarLg(idScrap){
+  abrirModalConfirmacao("Confirmar aprovação LG?", async () => {
+    const resp = await fetch(`${API_BASE}/scrap/${idScrap}/aprovar-lg`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({idUsuarioLg:3,observacaoLg:"Aprovado via Gestão Scrap"})
+    });
+
+    if(!resp.ok){ msg(await resp.text()); return; }
+
+    msg("LG aprovado com sucesso.");
+    await carregarTudo();
+  });
+}
+
+async function confirmarBaixaMgo(idScrap){
+  abrirModalConfirmacao("Confirmar que a baixa foi executada no MGO?", async () => {
+    const resp = await fetch(`${API_BASE}/scrap/${idScrap}/confirmar-baixa-mgo`,{
+      method:"POST"
+    });
+
+    if(!resp.ok){ msg(await resp.text()); return; }
+
+    msg("Baixa MGO confirmada com sucesso.");
+    await carregarTudo();
+  });
+}
+
+async function carregarTudo(){
+  await carregarDashboard();
+  await carregarFilaAndamento();
+  await carregarFilaMgo();
+  await carregarFilaFt();
+  await carregarFilaLg();
+  msg("Gestão Scrap carregada com sucesso.");
+}
+
+carregarTudo();
+</script>
+
+</body>
+</html>

@@ -20,10 +20,19 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://127.0.0.1:5500",
-                "http://localhost:5500",
-                "http://10.97.16.141:5500"
-            )
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+
+    // =====================================================
+    // REDE INTERNA
+    // Quando for usar em outro computador, trocar/adicionar
+    // aqui o IP da máquina onde o front estiver rodando.
+    // Exemplo:
+    // "http://192.168.0.120:5500"
+    // =====================================================
+    "http://10.97.16.141:5500"
+)
+
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -1218,7 +1227,7 @@ app.MapPost("/admin/usuarios-gm", async (
             : null,
         PrimeiroAcesso = true,
         Administrador = req.Administrador,
-        DataCriacao = DateTime.UtcNow
+        DataCriacao = DateTime.Now,
     };
 
     db.Usuarios.Add(usuario);
@@ -1528,6 +1537,299 @@ app.MapGet("/rasp/{id:int}", async (int id, RaspDbContext db) =>
 })
 .WithName("ObterRaspPorId");
 
+// ---------------------------------------------------------------------
+// SCRAP - CARREGAR DADOS DO RASP PARA EMISSÃO
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/carregar-dados-rasp/{idRasp:int}", async (int idRasp, RaspDbContext db) =>
+{
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.IdRasp == idRasp);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var fornecedor = await db.FornecedorRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(f => f.IdFornecedor == rasp.IdFornecedorRasp);
+
+    if (fornecedor is null)
+        return Results.NotFound("Fornecedor do RASP não encontrado.");
+
+    var modelo = await db.ModeloVeiculoRasp
+    .AsNoTracking()
+    .FirstOrDefaultAsync(m =>
+        m.IdModeloVeiculoRasp == rasp.IdModeloVeiculoRasp);
+
+    var origem = await db.OrigemFabricacaoRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(o =>
+            o.IdOrigemFabricacaoRasp == rasp.IdOrigemFabricacaoRasp);
+
+
+    var pns = await (
+        from rp in db.RaspPn.AsNoTracking()
+        join pn in db.PnRasp.AsNoTracking()
+            on rp.Pn.Trim() equals pn.CodigoPn.Trim()
+            into pnJoin
+        from pn in pnJoin.DefaultIfEmpty()
+        where rp.IdRasp == idRasp
+        orderby rp.OrdemExibicao
+        select new
+        {
+            rp.IdRaspPn,
+            rp.Pn,
+            NomePeca = pn != null ? pn.NomePeca : null,
+            rp.QuantidadeSuspeita,
+            rp.QuantidadeChecada,
+            rp.QuantidadeRejeitada,
+            rp.Duns,
+            rp.EntrouSelecao,
+            rp.StatusSelecao
+        }
+    ).ToListAsync();
+
+    var origemPeca = fornecedor.TipoFornecedor == "IMPORTADO"
+        ? "IMPORTADO"
+        : "NACIONAL";
+
+    var tipoDestinacao = origemPeca == "IMPORTADO"
+        ? "SCRAP"
+        : "DEVOLUCAO";
+
+    return Results.Ok(new
+    {
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.SppsNumero,
+        rasp.IdTurnoRasp,
+        rasp.IdAnalistaMt,
+        rasp.VinVeiculoProblema,
+
+        Fornecedor = new
+        {
+            fornecedor.IdFornecedor,
+            fornecedor.Nome,
+            fornecedor.Duns,
+            fornecedor.TipoFornecedor,
+            OrigemPeca = origemPeca,
+            TipoDestinacao = tipoDestinacao
+        },
+
+        Pns = pns
+    });
+})
+.WithName("ScrapCarregarDadosRasp");
+
+// ---------------------------------------------------------------------
+// SCRAP - CARREGAR DADOS DO RASP PELO NÚMERO
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/carregar-dados-rasp-numero/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
+{
+    var numeroLimpo = Uri.UnescapeDataString(numeroRasp).Trim();
+
+    if (string.IsNullOrWhiteSpace(numeroLimpo))
+        return Results.BadRequest("Número do RASP é obrigatório.");
+
+    if (!System.Text.RegularExpressions.Regex.IsMatch(numeroLimpo, @"^\d{4}/\d{2}$"))
+        return Results.BadRequest("Número do RASP deve estar no formato 0000/00.");
+
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var usuarioMt = await db.Usuarios
+        .AsNoTracking()
+        .FirstOrDefaultAsync(u => u.IdUsuario == rasp.IdAnalistaMt);
+
+    var fornecedor = await db.FornecedorRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(f => f.IdFornecedor == rasp.IdFornecedorRasp);
+
+    if (fornecedor is null)
+        return Results.NotFound("Fornecedor do RASP não encontrado.");
+
+    var modelo = await db.ModeloVeiculoRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(m =>
+            m.IdModeloVeiculoRasp == rasp.IdModeloVeiculoRasp);
+
+    var origemFabricacao = await db.OrigemFabricacaoRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(o =>
+            o.IdOrigemFabricacaoRasp == rasp.IdOrigemFabricacaoRasp);
+
+    var pns = await (
+        from rp in db.RaspPn.AsNoTracking()
+        join pn in db.PnRasp.AsNoTracking()
+            on rp.Pn.Trim() equals pn.CodigoPn.Trim()
+            into pnJoin
+        from pn in pnJoin.DefaultIfEmpty()
+        where rp.IdRasp == rasp.IdRasp
+        orderby rp.OrdemExibicao
+        select new
+        {
+            rp.IdRaspPn,
+            rp.Pn,
+            NomePeca = pn != null ? pn.NomePeca : null,
+            rp.QuantidadeSuspeita,
+            rp.QuantidadeChecada,
+            rp.QuantidadeRejeitada,
+            rp.Duns,
+            rp.EntrouSelecao,
+            rp.StatusSelecao
+        }
+    ).ToListAsync();
+
+    var origemPeca = fornecedor.TipoFornecedor == "IMPORTADO"
+        ? "IMPORTADO"
+        : "NACIONAL";
+
+    var tipoDestinacao = origemPeca == "IMPORTADO"
+        ? "SCRAP"
+        : "AMOSTRA";
+
+    return Results.Ok(new
+    {
+        rasp.IdRasp,
+        rasp.NumeroRasp,
+        rasp.SppsNumero,
+        rasp.IdTurnoRasp,
+        rasp.IdAnalistaMt,
+        rasp.VinVeiculoProblema,
+
+        Modelo = modelo?.NomeModelo,
+        OrigemFabricacao = origemFabricacao?.Descricao,
+
+        UsuarioMt = usuarioMt == null ? null : new
+        {
+            usuarioMt.IdUsuario,
+            usuarioMt.Nome,
+            usuarioMt.Gmin
+        },
+
+        Fornecedor = new
+        {
+            fornecedor.IdFornecedor,
+            fornecedor.Nome,
+            fornecedor.Duns,
+            fornecedor.TipoFornecedor,
+            OrigemPeca = origemPeca,
+            TipoDestinacao = tipoDestinacao
+        },
+
+        Pns = pns
+    });
+})
+.WithName("ScrapCarregarDadosRaspNumero");
+
+
+
+
+// ---------------------------------------------------------------------
+// SCRAP - SALVAR RASCUNHO
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/salvar-rascunho", async (ScrapSalvarRascunhoRequest request, RaspDbContext db) =>
+{
+    if (request.IdRasp <= 0)
+        return Results.BadRequest("IdRasp é obrigatório.");
+
+    if (!request.IdRaspPn.HasValue || request.IdRaspPn.Value <= 0)
+        return Results.BadRequest("Selecione o PN antes de salvar o rascunho.");
+
+    if (!request.IdRaspPn.HasValue || request.IdRaspPn.Value <= 0)
+    return Results.BadRequest("Selecione o PN antes de salvar o rascunho.");
+
+    var idRaspPn = request.IdRaspPn.Value;
+    var quantidade = request.Quantidade ?? 0;
+
+    var rasp = await db.Rasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(r => r.IdRasp == request.IdRasp);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    var fornecedor = await db.FornecedorRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(f => f.IdFornecedor == rasp.IdFornecedorRasp);
+
+    if (fornecedor is null)
+        return Results.NotFound("Fornecedor do RASP não encontrado.");
+
+    var raspPn = await db.RaspPn
+        .AsNoTracking()
+        .FirstOrDefaultAsync(p =>
+            p.IdRaspPn == idRaspPn &&
+            p.IdRasp == request.IdRasp);
+
+    if (raspPn is null)
+        return Results.NotFound("PN não encontrado para este RASP.");
+
+    var pnCadastro = await db.PnRasp
+        .AsNoTracking()
+        .FirstOrDefaultAsync(p => p.CodigoPn.Trim() == raspPn.Pn.Trim());
+
+    var numeroScrap = await db.Database
+        .SqlQueryRaw<string>("SELECT LPAD(nextval('scrap_table_numero_seq')::text, 6, '0') AS \"Value\"")
+        .FirstAsync();
+
+    var origemPeca = fornecedor.TipoFornecedor == "IMPORTADO"
+        ? "IMPORTADO"
+        : "NACIONAL";
+
+    var tipoDestinacao = string.IsNullOrWhiteSpace(request.TipoDestinacao)
+        ? null
+        : request.TipoDestinacao.Trim().ToUpper();
+
+    var novoScrap = new ScrapTable
+    {
+        NumeroScrap = numeroScrap,
+        IdRasp = rasp.IdRasp,
+        IdRaspPn = raspPn.IdRaspPn,
+        NumeroRasp = rasp.NumeroRasp,
+        NumeroSpps = rasp.SppsNumero,
+        IdFornecedor = fornecedor.IdFornecedor,
+        FornecedorNome = fornecedor.Nome,
+        FornecedorDuns = fornecedor.Duns,
+        OrigemPeca = origemPeca,
+        Pn = raspPn.Pn,
+        NomePeca = pnCadastro?.NomePeca,
+        Quantidade = quantidade,
+        TipoDestinacao = tipoDestinacao ??"",
+        StatusScrap = "RASCUNHO",
+        BaixaEstoqueRealizada = false,
+        BaixaEstoqueAutomatica = false,
+        DataCriacao = DateTime.Now,
+        IdUsuarioCriacao = rasp.IdAnalistaMt,
+        IdUsuarioMt = rasp.IdAnalistaMt,
+        Observacao = request.Observacao,
+        BloqueadoEdicao = false
+    };
+
+    db.ScrapTable.Add(novoScrap);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        novoScrap.IdScrap,
+        novoScrap.NumeroScrap,
+        novoScrap.NumeroRasp,
+        novoScrap.Pn,
+        novoScrap.Quantidade,
+        novoScrap.OrigemPeca,
+        novoScrap.TipoDestinacao,
+        novoScrap.StatusScrap
+    });
+})
+.WithName("ScrapSalvarRascunho");
+
+
+
+
 app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfiguration config) =>
 {
     if (req.IdFornecedorRasp <= 0)
@@ -1624,6 +1926,878 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     });
 })
 .WithName("CriarRasp");
+
+// ---------------------------------------------------------------------
+// SCRAP - LISTAR TODOS / PENDÊNCIAS
+// ---------------------------------------------------------------------
+app.MapGet("/scrap", async (RaspDbContext db) =>
+{
+    var lista = await db.ScrapTable
+        .AsNoTracking()
+        .OrderByDescending(s => s.IdScrap)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.BaixaEstoqueRealizada,
+            s.Estornado,
+            s.BloqueadoEdicao,
+            s.DataCriacao
+        })
+        .ToListAsync();
+
+    return Results.Ok(lista);
+})
+.WithName("ScrapListarTodos");
+
+// ---------------------------------------------------------------------
+// SCRAP - OBTER POR ID
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/{idScrap:int}", async (int idScrap, RaspDbContext db) =>
+{
+    var scrap = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s => s.IdScrap == idScrap)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+
+            s.Quantidade,
+
+            s.IdFornecedor,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+
+            s.OrigemPeca,
+            s.TipoDestinacao,
+
+            s.StatusScrap,
+
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+
+            s.BaixaEstoqueRealizada,
+            s.BaixaEstoqueAutomatica,
+            s.DataBaixaEstoque,
+
+            s.DataCriacao,
+            s.Observacao,
+
+            s.IdUsuarioCriacao,
+            s.IdUsuarioFt,
+            s.IdUsuarioLg,
+
+            s.DataEnvioFt,
+            s.DataAprovacaoFt,
+
+            s.DataEnvioLg,
+            s.DataAprovacaoLg,
+
+            s.BloqueadoEdicao
+        })
+        .FirstOrDefaultAsync();
+
+    return scrap is null
+        ? Results.NotFound("Scrap não encontrado.")
+        : Results.Ok(scrap);
+})
+.WithName("ScrapConsultarPorId");
+
+// ---------------------------------------------------------------------
+// SCRAP - REGISTRAR BRUNETA
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/registrar-bruneta", async (
+    int idScrap,
+    ScrapRegistrarBrunetaRequest request,
+    RaspDbContext db) =>
+{
+    var bruneta = (request.BrunetaNumero ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(bruneta))
+        return Results.BadRequest("Número da Bruneta é obrigatório.");
+
+    if (bruneta.Length != 10)
+        return Results.BadRequest("Número da Bruneta deve conter exatamente 10 dígitos.");
+
+    if (!bruneta.All(char.IsDigit))
+        return Results.BadRequest("Número da Bruneta deve conter somente números.");
+
+    if (request.IdUsuario <= 0)
+        return Results.BadRequest("IdUsuario é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.BloqueadoEdicao)
+        return Results.BadRequest("Este Scrap já foi enviado ao fluxo e está bloqueado para edição.");
+
+    if (scrap.OrigemPeca != "NACIONAL")
+        return Results.BadRequest("Bruneta só é obrigatória para peças nacionais.");
+
+    scrap.BrunetaNumero = bruneta;
+    scrap.DataBruneta = DateTime.Now;
+    scrap.IdUsuarioBruneta = request.IdUsuario;
+
+    if (scrap.TipoDestinacao == "DEVOLUCAO")
+    {
+        scrap.StatusScrap = "PRONTO_ENVIO_FT";
+    }
+    else if (scrap.TipoDestinacao == "AMOSTRA")
+    {
+        scrap.StatusScrap = string.IsNullOrWhiteSpace(scrap.NotaFiscalNumero)
+            ? "PENDENTE_NOTA_FISCAL"
+            : "PRONTO_ENVIO_FT";
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.BrunetaNumero,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap,
+        scrap.DataBruneta
+    });
+})
+.WithName("ScrapRegistrarBruneta");
+
+// ---------------------------------------------------------------------
+// SCRAP - REGISTRAR NOTA FISCAL
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/registrar-nota-fiscal", async (
+    int idScrap,
+    ScrapRegistrarNotaFiscalRequest request,
+    RaspDbContext db) =>
+{
+    var notaFiscal = (request.NotaFiscalNumero ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(notaFiscal))
+        return Results.BadRequest("Número da Nota Fiscal é obrigatório.");
+
+    if (request.IdUsuario <= 0)
+        return Results.BadRequest("IdUsuario é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.BloqueadoEdicao)
+        return Results.BadRequest("Este Scrap já foi enviado ao fluxo e está bloqueado para edição.");
+
+    if (scrap.OrigemPeca != "NACIONAL")
+        return Results.BadRequest("Nota Fiscal só se aplica para peças nacionais.");
+
+    if (scrap.TipoDestinacao != "AMOSTRA")
+        return Results.BadRequest("Nota Fiscal só é obrigatória para nacional do tipo AMOSTRA.");
+
+    if (string.IsNullOrWhiteSpace(scrap.BrunetaNumero))
+        return Results.BadRequest("Registre a Bruneta antes da Nota Fiscal.");
+
+    scrap.NotaFiscalNumero = notaFiscal;
+    scrap.DataNotaFiscal = DateTime.Now;
+    scrap.IdUsuarioNotaFiscal = request.IdUsuario;
+    scrap.StatusScrap = "PRONTO_ENVIO_FT";
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.BrunetaNumero,
+        scrap.NotaFiscalNumero,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap,
+        scrap.DataNotaFiscal
+    });
+})
+.WithName("ScrapRegistrarNotaFiscal");
+
+// ---------------------------------------------------------------------
+// SCRAP - ENVIAR PARA FT
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/enviar-ft", async (
+    int idScrap,
+    ScrapEnviarFtRequest request,
+    RaspDbContext db) =>
+{
+    if (request.IdUsuarioFt <= 0)
+        return Results.BadRequest("IdUsuarioFt é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.BloqueadoEdicao)
+        return Results.BadRequest("Este Scrap já foi enviado ao fluxo e está bloqueado para edição.");
+
+    if (scrap.Estornado)
+        return Results.BadRequest("Scrap estornado não pode ser enviado para FT.");
+
+    if (scrap.TipoDestinacao == "DEVOLUCAO")
+{
+    if (string.IsNullOrWhiteSpace(scrap.BrunetaNumero))
+        return Results.BadRequest("DEVOLUCAO exige Bruneta antes do envio ao FT.");
+}
+
+if (scrap.TipoDestinacao == "AMOSTRA")
+{
+    if (string.IsNullOrWhiteSpace(scrap.BrunetaNumero))
+        return Results.BadRequest("AMOSTRA exige Bruneta antes do envio ao FT.");
+
+    if (string.IsNullOrWhiteSpace(scrap.NotaFiscalNumero))
+        return Results.BadRequest("AMOSTRA exige Nota Fiscal antes do envio ao FT.");
+}
+
+if (scrap.TipoDestinacao == "SCRAP")
+{
+    // SCRAP não exige Bruneta nem Nota Fiscal
+}
+
+
+    if (scrap.OrigemPeca == "IMPORTADO")
+    {
+        if (scrap.TipoDestinacao != "SCRAP")
+            return Results.BadRequest("Peça importada deve estar classificada como SCRAP.");
+    }
+
+    scrap.StatusScrap = "ENVIADO_FT";
+    scrap.DataEnvioFt = DateTime.Now;
+    scrap.IdUsuarioFt = request.IdUsuarioFt;
+    scrap.BloqueadoEdicao = true;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.NumeroRasp,
+        scrap.Pn,
+        scrap.OrigemPeca,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap,
+        scrap.DataEnvioFt,
+        scrap.IdUsuarioFt,
+        scrap.BloqueadoEdicao
+    });
+})
+.WithName("ScrapEnviarFt");
+
+// ---------------------------------------------------------------------
+// SCRAP - FILA DO FT
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/fila-ft", async (RaspDbContext db) =>
+{
+    var fila = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s => s.StatusScrap == "ENVIADO_FT")
+        .OrderBy(s => s.DataEnvioFt)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.DataEnvioFt,
+            s.IdUsuarioFt,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.BaixaEstoqueRealizada,
+            s.Observacao,
+            s.BloqueadoEdicao
+        })
+        .ToListAsync();
+
+    return Results.Ok(fila);
+})
+.WithName("ScrapFilaFt");
+
+
+// ---------------------------------------------------------------------
+// SCRAP - APROVAR FT
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/aprovar-ft", async (
+    int idScrap,
+    ScrapAprovarFtRequest request,
+    RaspDbContext db) =>
+{
+    if (request.IdUsuarioFt <= 0)
+        return Results.BadRequest("IdUsuarioFt é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.StatusScrap != "ENVIADO_FT")
+        return Results.BadRequest("Somente Scrap com status ENVIADO_FT pode ser aprovado pelo FT.");
+
+    if (scrap.Estornado)
+        return Results.BadRequest("Scrap estornado não pode ser aprovado.");
+
+    scrap.StatusScrap = "APROVADO_FT";
+    scrap.DataAprovacaoFt = DateTime.Now;
+    scrap.IdUsuarioFt = request.IdUsuarioFt;
+    scrap.ObservacaoFt = request.ObservacaoFt;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.StatusScrap,
+        scrap.DataAprovacaoFt,
+        scrap.IdUsuarioFt,
+        scrap.ObservacaoFt
+    });
+})
+.WithName("ScrapAprovarFt");
+
+// ---------------------------------------------------------------------
+// SCRAP - ENVIAR PARA LG
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/enviar-lg", async (
+    int idScrap,
+    ScrapEnviarLgRequest request,
+    RaspDbContext db) =>
+{
+    if (request.IdUsuarioFt <= 0)
+        return Results.BadRequest("IdUsuarioFt é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.StatusScrap != "APROVADO_FT")
+        return Results.BadRequest("Somente Scrap aprovado pelo FT pode ser enviado ao LG.");
+
+    if (scrap.Estornado)
+        return Results.BadRequest("Scrap estornado não pode ser enviado ao LG.");
+
+    scrap.StatusScrap = "ENVIADO_LG";
+    scrap.DataEnvioLg = DateTime.Now;
+    scrap.IdUsuarioFt = request.IdUsuarioFt;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.StatusScrap,
+        scrap.DataEnvioLg,
+        scrap.IdUsuarioFt
+    });
+})
+.WithName("ScrapEnviarLg");
+
+// ---------------------------------------------------------------------
+// SCRAP - FILA DO LG
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/fila-lg", async (RaspDbContext db) =>
+{
+    var fila = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s => s.StatusScrap == "ENVIADO_LG")
+        .OrderBy(s => s.DataEnvioLg)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.DataEnvioLg,
+            s.IdUsuarioFt,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.ObservacaoFt,
+            s.Observacao,
+            s.BloqueadoEdicao
+        })
+        .ToListAsync();
+
+    return Results.Ok(fila);
+})
+.WithName("ScrapFilaLg");
+
+// ---------------------------------------------------------------------
+// SCRAP - APROVAR LG
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/aprovar-lg", async (
+    int idScrap,
+    ScrapAprovarLgRequest request,
+    RaspDbContext db) =>
+{
+    if (request.IdUsuarioLg <= 0)
+        return Results.BadRequest("IdUsuarioLg é obrigatório.");
+
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.StatusScrap != "ENVIADO_LG")
+        return Results.BadRequest("Somente Scrap enviado ao LG pode ser aprovado.");
+
+    if (scrap.Estornado)
+        return Results.BadRequest("Scrap estornado não pode ser aprovado pelo LG.");
+
+    scrap.StatusScrap = "APROVADO_LG";
+    scrap.DataAprovacaoLg = DateTime.Now;
+    scrap.IdUsuarioLg = request.IdUsuarioLg;
+    scrap.ObservacaoLg = request.ObservacaoLg;
+
+    if (scrap.OrigemPeca == "IMPORTADO")
+    {
+        scrap.StatusScrap = "BAIXA_PENDENTE";
+        scrap.BaixaEstoqueRealizada = false;
+        scrap.BaixaEstoqueAutomatica = false;
+    }
+
+    if (scrap.OrigemPeca == "NACIONAL")
+    {
+        scrap.BaixaEstoqueRealizada = true;
+        scrap.BaixaEstoqueAutomatica = true;
+        scrap.DataBaixaEstoque = DateTime.Now;
+        scrap.StatusScrap = "BAIXADO";
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.OrigemPeca,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap,
+        scrap.DataAprovacaoLg,
+        scrap.IdUsuarioLg,
+        scrap.BaixaEstoqueRealizada,
+        scrap.BaixaEstoqueAutomatica,
+        scrap.DataBaixaEstoque,
+        scrap.ObservacaoLg
+    });
+})
+.WithName("ScrapAprovarLg");
+
+// ---------------------------------------------------------------------
+// SCRAP - GESTÃO EMISSOR
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/gestao-emissor", async (RaspDbContext db) =>
+{
+    const string dunsDepartamental = "000000001";
+
+    var lista = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s =>
+            s.StatusScrap == "RASCUNHO" ||
+            s.StatusScrap == "PENDENTE_BRUNETA" ||
+            s.StatusScrap == "PENDENTE_NOTA_FISCAL" ||
+            s.StatusScrap == "PRONTO_ENVIO_FT")
+        .OrderByDescending(s => s.IdScrap)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.Observacao,
+            s.DataCriacao,
+            Pendencia =
+                s.FornecedorDuns == dunsDepartamental
+                    ? "PRONTO_FT"
+                    : s.TipoDestinacao == "DEVOLUCAO" && string.IsNullOrWhiteSpace(s.BrunetaNumero)
+                        ? "FALTA_BRUNETA"
+                    : s.TipoDestinacao == "AMOSTRA" && string.IsNullOrWhiteSpace(s.BrunetaNumero)
+                        ? "FALTA_BRUNETA"
+                    : s.TipoDestinacao == "AMOSTRA" && !string.IsNullOrWhiteSpace(s.BrunetaNumero) && string.IsNullOrWhiteSpace(s.NotaFiscalNumero)
+                        ? "FALTA_NF"
+                    : "PRONTO_FT"
+        })
+        .ToListAsync();
+
+    return Results.Ok(lista);
+})
+.WithName("ScrapGestaoEmissor");
+
+
+// ---------------------------------------------------------------------
+// SCRAP - GESTÃO EMISSOR - RESUMO
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/gestao-emissor/resumo", async (RaspDbContext db) =>
+{
+    const string dunsDepartamental = "000000001";
+
+    var lista = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s =>
+            s.StatusScrap == "RASCUNHO" ||
+            s.StatusScrap == "PENDENTE_BRUNETA" ||
+            s.StatusScrap == "PENDENTE_NOTA_FISCAL" ||
+            s.StatusScrap == "PRONTO_ENVIO_FT")
+        .Select(s => new
+        {
+            s.FornecedorDuns,
+            s.TipoDestinacao,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero
+        })
+        .ToListAsync();
+
+    var rascunhos = lista.Count();
+
+    var faltaBruneta = lista.Count(s =>
+        s.FornecedorDuns != dunsDepartamental &&
+        (s.TipoDestinacao == "DEVOLUCAO" || s.TipoDestinacao == "AMOSTRA") &&
+        string.IsNullOrWhiteSpace(s.BrunetaNumero));
+
+    var faltaNotaFiscal = lista.Count(s =>
+        s.FornecedorDuns != dunsDepartamental &&
+        s.TipoDestinacao == "AMOSTRA" &&
+        !string.IsNullOrWhiteSpace(s.BrunetaNumero) &&
+        string.IsNullOrWhiteSpace(s.NotaFiscalNumero));
+
+    var prontoFt = lista.Count(s =>
+        s.FornecedorDuns == dunsDepartamental ||
+        s.TipoDestinacao == "SCRAP" ||
+        (s.TipoDestinacao == "DEVOLUCAO" && !string.IsNullOrWhiteSpace(s.BrunetaNumero)) ||
+        (s.TipoDestinacao == "AMOSTRA" &&
+            !string.IsNullOrWhiteSpace(s.BrunetaNumero) &&
+            !string.IsNullOrWhiteSpace(s.NotaFiscalNumero)));
+
+    return Results.Ok(new
+    {
+        Rascunhos = rascunhos,
+        FaltaBruneta = faltaBruneta,
+        FaltaNotaFiscal = faltaNotaFiscal,
+        ProntoFt = prontoFt
+    });
+})
+.WithName("ScrapGestaoEmissorResumo");
+
+// ---------------------------------------------------------------------
+// SCRAP - FILA EM ANDAMENTO
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/fila-andamento", async (RaspDbContext db) =>
+{
+    var fila = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s =>
+            s.StatusScrap == "RASCUNHO" ||
+            s.StatusScrap == "PENDENTE_BRUNETA" ||
+            s.StatusScrap == "PENDENTE_NOTA_FISCAL" ||
+            s.StatusScrap == "PRONTO_ENVIO_FT")
+        .OrderByDescending(s => s.IdScrap)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.Observacao,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.BloqueadoEdicao
+        })
+        .ToListAsync();
+
+    return Results.Ok(fila);
+})
+.WithName("ScrapFilaAndamento");
+
+// ---------------------------------------------------------------------
+// SCRAP - FILA BAIXA MGO
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/fila-baixa-mgo", async (RaspDbContext db) =>
+{
+    var fila = await db.ScrapTable
+        .AsNoTracking()
+        .Where(s => s.StatusScrap == "BAIXA_PENDENTE")
+        .OrderByDescending(s => s.IdScrap)
+        .Select(s => new
+        {
+            s.IdScrap,
+            s.NumeroScrap,
+            s.NumeroRasp,
+            s.NumeroSpps,
+            Pn = s.Pn.Trim(),
+            s.NomePeca,
+            s.Quantidade,
+            s.FornecedorNome,
+            s.FornecedorDuns,
+            s.OrigemPeca,
+            s.TipoDestinacao,
+            s.StatusScrap,
+            s.Observacao,
+            s.BrunetaNumero,
+            s.NotaFiscalNumero,
+            s.BaixaEstoqueRealizada,
+            s.BaixaEstoqueAutomatica,
+            s.DataBaixaEstoque
+        })
+        .ToListAsync();
+
+    return Results.Ok(fila);
+})
+.WithName("ScrapFilaBaixaMgo");
+
+
+// ---------------------------------------------------------------------
+// SCRAP - CONFIRMAR BAIXA MGO
+// ---------------------------------------------------------------------
+app.MapPost("/scrap/{idScrap:int}/confirmar-baixa-mgo", async (
+    int idScrap,
+    RaspDbContext db) =>
+{
+    var scrap = await db.ScrapTable
+        .FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.StatusScrap != "BAIXA_PENDENTE")
+        return Results.BadRequest("Somente Scrap com baixa pendente pode ser confirmado no MGO.");
+
+    scrap.StatusScrap = "BAIXADO";
+    scrap.BaixaEstoqueRealizada = true;
+    scrap.BaixaEstoqueAutomatica = false;
+    scrap.DataBaixaEstoque = DateTime.Now;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.StatusScrap,
+        scrap.BaixaEstoqueRealizada,
+        scrap.BaixaEstoqueAutomatica,
+        scrap.DataBaixaEstoque
+    });
+})
+.WithName("ScrapConfirmarBaixaMgo");
+
+
+// ---------------------------------------------------------------------
+// SCRAP - GESTÃO EMISSOR - ATUALIZAR BRUNETA
+// ---------------------------------------------------------------------
+app.MapPut("/scrap/{idScrap:int}/bruneta", async (
+    int idScrap,
+    ScrapAtualizarBrunetaRequest request,
+    RaspDbContext db) =>
+{
+    var bruneta = (request.BrunetaNumero ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(bruneta))
+        return Results.BadRequest("Número da Bruneta é obrigatório.");
+
+    if (bruneta.Length != 10 || !bruneta.All(char.IsDigit))
+        return Results.BadRequest("Número da Bruneta deve conter exatamente 10 dígitos.");
+
+    if (request.IdUsuario <= 0)
+        return Results.BadRequest("IdUsuario é obrigatório.");
+
+    var scrap = await db.ScrapTable.FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.FornecedorDuns == "000000001")
+        return Results.BadRequest("DUNS departamental não exige Bruneta.");
+
+    if (scrap.TipoDestinacao != "DEVOLUCAO" && scrap.TipoDestinacao != "AMOSTRA")
+        return Results.BadRequest("Bruneta só é exigida para DEVOLUCAO ou AMOSTRA.");
+
+    scrap.BrunetaNumero = bruneta;
+    scrap.DataBruneta = DateTime.Now;
+    scrap.IdUsuarioBruneta = request.IdUsuario;
+
+    if (scrap.TipoDestinacao == "DEVOLUCAO")
+        scrap.StatusScrap = "PRONTO_ENVIO_FT";
+
+    if (scrap.TipoDestinacao == "AMOSTRA")
+        scrap.StatusScrap = string.IsNullOrWhiteSpace(scrap.NotaFiscalNumero)
+            ? "PENDENTE_NOTA_FISCAL"
+            : "PRONTO_ENVIO_FT";
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.BrunetaNumero,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap
+    });
+})
+.WithName("ScrapAtualizarBrunetaGestaoEmissor");
+
+
+// ---------------------------------------------------------------------
+// SCRAP - GESTÃO EMISSOR - ATUALIZAR NOTA FISCAL
+// ---------------------------------------------------------------------
+app.MapPut("/scrap/{idScrap:int}/nota-fiscal", async (
+    int idScrap,
+    ScrapAtualizarNotaFiscalRequest request,
+    RaspDbContext db) =>
+{
+    var notaFiscal = (request.NotaFiscalNumero ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(notaFiscal))
+        return Results.BadRequest("Número da Nota Fiscal é obrigatório.");
+
+    if (request.IdUsuario <= 0)
+        return Results.BadRequest("IdUsuario é obrigatório.");
+
+    var scrap = await db.ScrapTable.FirstOrDefaultAsync(s => s.IdScrap == idScrap);
+
+    if (scrap is null)
+        return Results.NotFound("Scrap não encontrado.");
+
+    if (scrap.FornecedorDuns == "000000001")
+        return Results.BadRequest("DUNS departamental não exige Nota Fiscal.");
+
+    if (scrap.TipoDestinacao != "AMOSTRA")
+        return Results.BadRequest("Nota Fiscal só é exigida para AMOSTRA.");
+
+    if (string.IsNullOrWhiteSpace(scrap.BrunetaNumero))
+        return Results.BadRequest("Registre a Bruneta antes da Nota Fiscal.");
+
+    scrap.NotaFiscalNumero = notaFiscal;
+    scrap.DataNotaFiscal = DateTime.Now;
+    scrap.IdUsuarioNotaFiscal = request.IdUsuario;
+    scrap.StatusScrap = "PRONTO_ENVIO_FT";
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        scrap.IdScrap,
+        scrap.NumeroScrap,
+        scrap.BrunetaNumero,
+        scrap.NotaFiscalNumero,
+        scrap.TipoDestinacao,
+        scrap.StatusScrap
+    });
+})
+.WithName("ScrapAtualizarNotaFiscalGestaoEmissor");
+
+
+
+// ---------------------------------------------------------------------
+// SCRAP - DASHBOARD
+// ---------------------------------------------------------------------
+app.MapGet("/scrap/dashboard", async (RaspDbContext db) =>
+{
+    var rascunhos =
+        await db.ScrapTable.CountAsync(s =>
+            s.StatusScrap == "RASCUNHO");
+
+    var ft =
+        await db.ScrapTable.CountAsync(s =>
+            s.StatusScrap == "ENVIADO_FT");
+
+    var lg =
+        await db.ScrapTable.CountAsync(s =>
+            s.StatusScrap == "ENVIADO_LG");
+
+    var baixados =
+        await db.ScrapTable.CountAsync(s =>
+            s.StatusScrap == "BAIXADO");
+
+    var baixaPendente =
+        await db.ScrapTable.CountAsync(s =>
+            s.StatusScrap == "BAIXA_PENDENTE");
+
+    return Results.Ok(new
+    {
+        Rascunhos = rascunhos,
+        EmFt = ft,
+        EmLg = lg,
+        Baixados = baixados,
+        BaixaPendente = baixaPendente
+    });
+})
+.WithName("ScrapDashboard");
+
+
+
+
+
+
+
+
+
+
 
    // -----------------------------------------------------------------------------
 // 13. BP DO RASP
@@ -7172,6 +8346,15 @@ public record AtualizarRaspRascunhoRequest(
 );
 
 
+public record ScrapSalvarRascunhoRequest(
+    int IdRasp,
+    int? IdRaspPn,
+    int? Quantidade,
+    string? TipoDestinacao,
+    string? Observacao
+);
+
+
 
 // -----------------------------------------------------------------------------
 // Request padrão para ações de fluxo
@@ -7231,6 +8414,17 @@ public class AprovarLgRequest
 
     public string MotivoComplemento { get; set; } = string.Empty;
 }
+
+public record ScrapAtualizarBrunetaRequest(
+    string BrunetaNumero,
+    int IdUsuario
+);
+
+public record ScrapAtualizarNotaFiscalRequest(
+    string NotaFiscalNumero,
+    int IdUsuario
+);
+
 
 
 
@@ -7435,3 +8629,36 @@ public class AtualizarOnePageRaspRequest
     public string? RootCauseAnalysis { get; set; }
     public string? BreakingPoint { get; set; }
 }
+
+public record ScrapRegistrarBrunetaRequest(
+    string BrunetaNumero,
+    int IdUsuario
+);
+
+public record ScrapRegistrarNotaFiscalRequest(
+    string NotaFiscalNumero,
+    int IdUsuario
+);
+
+public record ScrapEnviarFtRequest(
+    int IdUsuarioFt
+);
+
+public record ScrapAprovarFtRequest(
+    int IdUsuarioFt,
+    string? ObservacaoFt
+);
+
+public record ScrapEnviarLgRequest(
+    int IdUsuarioFt
+);
+
+public record ScrapAprovarLgRequest(
+    int IdUsuarioLg,
+    string? ObservacaoLg
+);
+
+
+
+
+

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gestão Emissor Scrap</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,Arial,sans-serif}
+body{background:#0b1220;color:#e5eefc;padding:24px}
+h1{color:#5bb6ff;margin-bottom:4px}
+.sub{color:#9fb7d8;margin-bottom:20px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+button{border:0;border-radius:8px;padding:9px 14px;font-weight:800;cursor:pointer;color:white}
+.btn-gray{background:#475569}
+.btn-blue{background:#0f6dff}
+.btn-green{background:#16a34a}
+.btn-orange{background:#f59e0b;color:#111}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.card{border:1px solid #2f94ff;border-radius:12px;padding:16px;background:rgba(15,23,42,.85)}
+.card span{display:block;color:#9fb7d8;font-size:13px}
+.card strong{font-size:28px;color:#fff}
+.filtros{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:16px}
+input,select{width:100%;padding:9px;border-radius:8px;border:1px solid #2f94ff;background:#071426;color:white}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{background:#1e293b;border:1px solid #2f94ff}
+.tab.active{background:#0f6dff}
+.box{border:1px solid #2f94ff;border-radius:12px;overflow:hidden;background:rgba(15,23,42,.75)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px;border-bottom:1px solid rgba(47,148,255,.25);text-align:left}
+th{color:#5bb6ff;background:rgba(30,41,59,.75)}
+.status{font-weight:900;color:#facc15}
+.empty{text-align:center;color:#9fb7d8;padding:22px}
+.msg{margin-top:14px;border:1px solid #2f94ff;border-radius:8px;padding:10px;color:#e5eefc}
+.acao-input{width:135px;margin-right:6px}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div>
+    <h1>Gestão Emissor Scrap</h1>
+    <div class="sub">Pendências do emissor: Bruneta, Nota Fiscal e envio ao FT</div>
+  </div>
+  <button class="btn-gray" onclick="window.location.href='home.html'">Voltar</button>
+</div>
+
+<div class="cards">
+  <div class="card"><span>Rascunhos</span><strong id="cardRascunhos">0</strong></div>
+  <div class="card"><span>Falta Bruneta</span><strong id="cardBruneta">0</strong></div>
+  <div class="card"><span>Falta Nota Fiscal</span><strong id="cardNf">0</strong></div>
+  <div class="card"><span>Pronto FT</span><strong id="cardPronto">0</strong></div>
+</div>
+
+<div class="filtros">
+  <input id="fScrap" placeholder="Nº Scrap">
+  <input id="fRasp" placeholder="RASP">
+  <input id="fPn" placeholder="PN">
+  <input id="fDuns" placeholder="DUNS">
+  <input id="fFornecedor" placeholder="Fornecedor">
+  <input id="fDataIni" type="date">
+  <input id="fDataFim" type="date">
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="filtrarAba('TODOS', this)">Todos</button>
+  <button class="tab" onclick="filtrarAba('FALTA_BRUNETA', this)">Falta Bruneta</button>
+  <button class="tab" onclick="filtrarAba('FALTA_NF', this)">Falta NF</button>
+  <button class="tab" onclick="filtrarAba('PRONTO_FT', this)">Pronto FT</button>
+</div>
+
+<div class="box">
+  <table>
+    <thead>
+      <tr>
+        <th>Scrap</th>
+        <th>RASP</th>
+        <th>PN</th>
+        <th>Fornecedor</th>
+        <th>DUNS</th>
+        <th>Tipo</th>
+        <th>Bruneta</th>
+        <th>NF</th>
+        <th>Pendência</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="msg" id="msg">Carregando...</div>
+
+<script>
+const API_BASE = "http://localhost:5050";
+let listaOriginal = [];
+let abaAtual = "TODOS";
+
+function valor(obj,...campos){
+  for(const c of campos){
+    if(obj && obj[c] !== undefined && obj[c] !== null) return obj[c];
+  }
+  return "";
+}
+
+function msg(t){
+  document.getElementById("msg").innerText = t;
+}
+
+async function carregar(){
+  const resp = await fetch(`${API_BASE}/scrap/gestao-emissor`);
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  listaOriginal = await resp.json();
+  atualizarCards();
+  renderizar();
+  msg("Gestão Emissor Scrap carregada com sucesso.");
+}
+
+function atualizarCards(){
+  document.getElementById("cardRascunhos").innerText = listaOriginal.length;
+  document.getElementById("cardBruneta").innerText =
+    listaOriginal.filter(x => valor(x,"pendencia","Pendencia") === "FALTA_BRUNETA").length;
+  document.getElementById("cardNf").innerText =
+    listaOriginal.filter(x => valor(x,"pendencia","Pendencia") === "FALTA_NF").length;
+  document.getElementById("cardPronto").innerText =
+    listaOriginal.filter(x => valor(x,"pendencia","Pendencia") === "PRONTO_FT").length;
+}
+
+function aplicarFiltros(lista){
+  const fScrap = document.getElementById("fScrap").value.trim().toLowerCase();
+  const fRasp = document.getElementById("fRasp").value.trim().toLowerCase();
+  const fPn = document.getElementById("fPn").value.trim().toLowerCase();
+  const fDuns = document.getElementById("fDuns").value.trim().toLowerCase();
+  const fFornecedor = document.getElementById("fFornecedor").value.trim().toLowerCase();
+
+  return lista.filter(s => {
+    const pend = valor(s,"pendencia","Pendencia");
+
+    if(abaAtual !== "TODOS" && pend !== abaAtual) return false;
+
+    if(fScrap && !String(valor(s,"numeroScrap","NumeroScrap")).toLowerCase().includes(fScrap)) return false;
+    if(fRasp && !String(valor(s,"numeroRasp","NumeroRasp")).toLowerCase().includes(fRasp)) return false;
+    if(fPn && !String(valor(s,"pn","Pn")).toLowerCase().includes(fPn)) return false;
+    if(fDuns && !String(valor(s,"fornecedorDuns","FornecedorDuns")).toLowerCase().includes(fDuns)) return false;
+    if(fFornecedor && !String(valor(s,"fornecedorNome","FornecedorNome")).toLowerCase().includes(fFornecedor)) return false;
+
+    return true;
+  });
+}
+
+function renderizar(){
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  const lista = aplicarFiltros(listaOriginal);
+
+  if(lista.length === 0){
+    tbody.innerHTML = `<tr><td colspan="10" class="empty">Nenhuma pendência encontrada.</td></tr>`;
+    return;
+  }
+
+  lista.forEach(s => {
+    const id = valor(s,"idScrap","IdScrap");
+    const pend = valor(s,"pendencia","Pendencia");
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${valor(s,"numeroScrap","NumeroScrap")}</td>
+        <td>${valor(s,"numeroRasp","NumeroRasp")}</td>
+        <td>${valor(s,"pn","Pn")}</td>
+        <td>${valor(s,"fornecedorNome","FornecedorNome")}</td>
+        <td>${valor(s,"fornecedorDuns","FornecedorDuns")}</td>
+        <td>${valor(s,"tipoDestinacao","TipoDestinacao")}</td>
+        <td>${valor(s,"brunetaNumero","BrunetaNumero") || "-"}</td>
+        <td>${valor(s,"notaFiscalNumero","NotaFiscalNumero") || "-"}</td>
+        <td class="status">${pend}</td>
+        <td>${montarAcao(id, pend)}</td>
+      </tr>
+    `;
+  });
+}
+
+function montarAcao(id, pend){
+  if(pend === "FALTA_BRUNETA"){
+    return `
+      <input class="acao-input" id="bruneta_${id}" maxlength="10" placeholder="10 dígitos">
+      <button class="btn-orange" onclick="salvarBruneta(${id})">Salvar</button>
+    `;
+  }
+
+  if(pend === "FALTA_NF"){
+    return `
+      <input class="acao-input" id="nf_${id}" placeholder="Nota Fiscal">
+      <button class="btn-orange" onclick="salvarNf(${id})">Salvar</button>
+    `;
+  }
+
+  if(pend === "PRONTO_FT"){
+    return `<button class="btn-green" onclick="enviarFt(${id})">Enviar FT</button>`;
+  }
+
+  return "-";
+}
+
+async function salvarBruneta(id){
+  const v = document.getElementById(`bruneta_${id}`).value.trim();
+
+  const resp = await fetch(`${API_BASE}/scrap/${id}/bruneta`,{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({brunetaNumero:v,idUsuario:3})
+  });
+
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  msg("Bruneta salva com sucesso.");
+  await carregar();
+}
+
+async function salvarNf(id){
+  const v = document.getElementById(`nf_${id}`).value.trim();
+
+  const resp = await fetch(`${API_BASE}/scrap/${id}/nota-fiscal`,{
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({notaFiscalNumero:v,idUsuario:3})
+  });
+
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  msg("Nota Fiscal salva com sucesso.");
+  await carregar();
+}
+
+async function enviarFt(id){
+  const resp = await fetch(`${API_BASE}/scrap/${id}/enviar-ft`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({idUsuarioFt:3})
+  });
+
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  msg("Scrap enviado ao FT com sucesso.");
+  await carregar();
+}
+
+function filtrarAba(aba, botao){
+  abaAtual = aba;
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  botao.classList.add("active");
+  renderizar();
+}
+
+["fScrap","fRasp","fPn","fDuns","fFornecedor","fDataIni","fDataFim"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", renderizar);
+});
+
+carregar();
+</script>
+
+</body>
+</html>

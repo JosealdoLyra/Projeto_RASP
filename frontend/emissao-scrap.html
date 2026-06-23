@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Emissão de Rejeitado - RASP</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif}
+body{background:#0b1220;padding:24px;color:#111}
+.page-wrap{max-width:820px;margin:0 auto}
+.top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+button{border:0;border-radius:8px;padding:10px 18px;font-weight:bold;cursor:pointer;color:white}
+.btn-blue{background:#2563eb}
+.btn-green{background:#16a34a}
+.btn-gray{background:#475569}
+.formulario{width:700px;margin:0 auto;background:white;border:2px solid #222;padding:10px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.cabecalho{display:grid;grid-template-columns:135px 1fr 160px;gap:10px;align-items:center;margin-bottom:8px}
+.logo-box{height:82px;display:flex;align-items:center;justify-content:center}
+.logo-box img{max-width:100%;max-height:100%;object-fit:contain}
+.plantas label{display:block;font-size:15px;font-weight:bold;line-height:22px}
+.quadrado{display:inline-block;width:17px;height:17px;border:2px solid #222;margin-right:6px;vertical-align:middle;position:relative}
+.quadrado.marcado-preto{
+  background:#111;
+}
+.quadrado.checked{ background: #d1d5db;
+  } 
+.quadrado.checked::after{content:"✓";position:absolute;left:2px;top:-7px;font-size:19px;font-weight:bold; color: #111;}
+.numero-box{font-size:18px;font-weight:bold;text-align:center}
+.numero-box input{width:100%;border:0;background:white;color:#d72626;font-size:26px;font-weight:bold;text-align:center}
+.titulo{background:#e6352f;color:#111;border:2px solid #222;text-align:center;font-size:36px;font-weight:900;font-style:italic;padding:10px 0;margin-bottom:8px}
+.linha{border:1.5px solid #222;border-bottom:0;min-height:36px;display:grid;grid-template-columns:260px 1fr;align-items:center}
+.linha:last-child{border-bottom:1.5px solid #222}
+.rotulo{padding:7px 9px;font-size:15px;font-weight:bold;border-right:1.5px solid #222;height:100%;display:flex;align-items:center;white-space:nowrap}
+.campo{padding:4px 8px}
+input,select{width:100%;border:0;outline:0;font-size:15px;background:#f8fafc;padding:5px}
+.linha-cheia{display:block;min-height:36px}
+.linha-cheia .rotulo-cheio{padding:7px 9px;font-size:15px;font-weight:bold;white-space:nowrap}
+.linha-falha{display:block;min-height:82px}
+.linha-falha .rotulo-cheio{padding:7px 9px 2px;font-size:15px;font-weight:bold}
+.linha-falha .campo{padding:3px 9px 7px}
+.linha-14{display:grid;grid-template-columns:435px 1fr;min-height:58px}
+.linha-14 .rotulo{border-right:0}
+.campo-responsavel{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:4px 8px}
+.linha-15a{display:grid;grid-template-columns:145px 1fr}
+.linha-15b{display:grid;grid-template-columns:190px 1fr}
+.linha-16{display:grid;grid-template-columns:450px 1fr}
+.linha-16 .rotulo{border-right:0}
+.campo-devolver{display:flex;align-items:center;justify-content:flex-end;gap:7px;padding-right:8px}
+.checkbox-text{font-weight:bold;font-size:15px;white-space:nowrap}
+.check{width:17px;height:17px;vertical-align:middle}
+.linha-nome-visto{display:block;min-height:50px}
+.nome-visto{padding:8px 9px;font-size:15px;font-weight:bold}
+.msg{margin:14px auto 12px;background:#111827;color:#e5eefc;padding:10px 14px;border-radius:8px;font-size:14px}
+.bottom-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:12px}
+
+.popup-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(2,8,23,.72);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+}
+
+.popup-overlay.popup-show{
+  display:flex;
+}
+
+.popup-box{
+  width:420px;
+  background:linear-gradient(180deg,#061b3a,#020817);
+  border:1px solid #2f94ff;
+  border-radius:14px;
+  box-shadow:0 0 40px rgba(47,148,255,.45);
+  padding:24px;
+  color:#f4f8ff;
+  text-align:center;
+}
+
+.popup-title{
+  color:#5bb6ff;
+  font-size:22px;
+  font-weight:900;
+  margin-bottom:14px;
+}
+
+.popup-text{
+  font-size:16px;
+  line-height:1.45;
+  margin-bottom:22px;
+}
+
+.popup-btn{
+  background:#0f6dff;
+  border:1px solid #5bb6ff;
+  border-radius:8px;
+  padding:10px 32px;
+  color:white;
+  font-weight:800;
+}
+
+
+
+@media print{
+  @page{size:auto;margin:0.55cm 0.35cm 0.25cm 0.35cm}
+  body{background:white;padding:0}
+  .page-wrap{max-width:none;margin:0}
+  .top-actions,.msg,.bottom-actions{display:none}
+  .formulario{width:8.5cm;height:18.6cm;margin:0 auto;padding:3px;border:2px solid #222;box-shadow:none;overflow:hidden}
+  .cabecalho{grid-template-columns:1.35cm 1fr 1.35cm;gap:2px;margin-bottom:2px}
+  .logo-box{height:1cm}
+  .plantas label{font-size:8.5px;line-height:10px}
+  .quadrado{width:8.5px;height:8.5px;border:1.3px solid #222;margin-right:3px}
+  .quadrado.checked{
+    background: #d1d5db !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .numero-box{font-size:11px}
+  .numero-box input{font-size:16px}
+  .titulo{font-size:22px;padding:4px 0;margin-bottom:2px}
+  .linha{min-height:0.48cm;grid-template-columns:3.15cm 1fr}
+  .rotulo{font-size:8.8px;padding:2px 3px}
+  input,select{font-size:8.8px;padding:1px}
+  select{appearance:none;-webkit-appearance:none;-moz-appearance:none;background:#f8fafc!important}
+  .linha-cheia{min-height:0.5cm}
+  .linha-cheia .rotulo-cheio{font-size:8.8px;padding:2px 3px}
+  .linha-cheia .campo{padding:1px 3px}
+  .linha-falha{min-height:1.05cm}
+  .linha-falha .rotulo-cheio{font-size:8.8px;padding:2px 3px 1px}
+  .linha-falha .campo{padding:1px 3px 2px}
+  .linha-14{min-height:0.82cm;grid-template-columns:4.85cm 1fr}
+  .linha-15a{grid-template-columns:1.55cm 1fr}
+  .linha-15b{grid-template-columns:2.15cm 1fr}
+  .linha-16{grid-template-columns:5.35cm 1fr}
+  .checkbox-text{font-size:8.8px}
+  .check{width:10px;height:10px}
+  .campo-responsavel{gap:1px;padding:1px 3px}
+  .campo-devolver{gap:2px;padding-right:2px}
+  .linha-nome-visto{min-height:0.55cm}
+  .nome-visto{font-size:8.8px;padding:3px}
+}
+
+.quadrado.marcado-preto{
+  background:#111 !important;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+</style>
+</head>
+
+<body>
+<div class="page-wrap">
+  <div class="top-actions">
+    <button class="btn-gray" onclick="window.location.href='home.html'">Voltar</button>
+  </div>
+
+  <div class="formulario">
+    <div class="cabecalho">
+      <div class="logo-box"><img src="img/GM_Logo.png" alt="GM" /></div>
+
+      <div class="plantas">
+        <label><span class="quadrado"></span>S.C.S</label>
+        <label><span class="quadrado marcado-preto"></span>S.J.C</label>
+        <label><span class="quadrado"></span>GRAVATAÍ</label>
+        <label><span class="quadrado"></span>MOGI</label>
+      </div>
+
+      <div class="numero-box">
+        Nº
+        <input id="numeroScrapVisual" readonly placeholder="AUTO" />
+      </div>
+    </div>
+
+    <div class="titulo">REJEITADO</div>
+
+    <div class="linha">
+      <div class="rotulo">01 - PLANTA:</div>
+      <div class="campo">
+        <select id="planta" onchange="atualizarAreas()">
+          <option value="">Selecione</option>
+          <option value="4J">4J</option>
+          <option value="C2">C2</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="linha">
+      <div class="rotulo">02 - PN:</div>
+      <div class="campo">
+        <select id="idRaspPn"></select>
+      </div>
+    </div>
+
+    <div class="linha">
+      <div class="rotulo">03 - QUANTIDADE:</div>
+      <div class="campo">
+        <input id="quantidade" type="text" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+      </div>
+    </div>
+
+    <div class="linha linha-cheia">
+      <div class="rotulo-cheio">04 - DESCRIÇÃO DA PEÇA:</div>
+      <div class="campo"><input id="descricaoPeca" readonly /></div>
+    </div>
+
+    <div class="linha"><div class="rotulo">05 - MODELO:</div><div class="campo"><input id="modelo" readonly /></div></div>
+    <div class="linha"><div class="rotulo">06 - ORIGEM:</div><div class="campo"><input id="origemFabricacao" readonly /></div></div>
+    <div class="linha"><div class="rotulo">07 - DATA:</div><div class="campo"><input id="dataAtual" readonly /></div></div>
+    <div class="linha"><div class="rotulo">08 - TURNO:</div><div class="campo"><input id="turno" readonly /></div></div>
+
+    <div class="linha">
+      <div class="rotulo">09 - ÁREA:</div>
+      <div class="campo"><select id="area"></select></div>
+    </div>
+
+    <div class="linha"><div class="rotulo">10 - RASP:</div><div class="campo"><input id="numeroRasp" readonly /></div></div>
+
+    <div class="linha linha-falha">
+      <div class="rotulo-cheio">11 - DESCRIÇÃO DA FALHA:</div>
+      <div class="campo"><input id="observacao" /></div>
+    </div>
+
+    <div class="linha"><div class="rotulo">12 - PREENCHIDO POR:</div><div class="campo"><input id="preenchidoPor" /></div></div>
+    <div class="linha"><div class="rotulo">13 - REGISTRO:</div><div class="campo"><input id="registro" /></div></div>
+
+    <div class="linha linha-14">
+  <div class="rotulo">14 - RESPONSÁVEL PELA FALHA:</div>
+
+  <div class="campo-responsavel">
+    <label class="checkbox-text">
+      <input id="respGmb" class="check" type="checkbox" /> GMB
+    </label>
+
+    <label class="checkbox-text">
+      <input id="respFornecedor" class="check" type="checkbox" /> FORNECEDOR
+    </label>
+  </div>
+</div>
+
+<div class="linha linha-15a">
+  <div class="rotulo">15 - DUNS:</div>
+  <div class="campo">
+    <input id="fornecedorDunsNumero" readonly />
+  </div>
+</div>
+
+<div class="linha linha-15b">
+  <div class="rotulo">FORNECEDOR:</div>
+  <div class="campo">
+    <input id="fornecedorNome" readonly />
+  </div>
+</div>
+
+<div class="linha linha-16">
+  <div class="rotulo">16 - DEVOLVER P/O FORNECEDOR:</div>
+
+  <div class="campo-devolver">
+    <span class="checkbox-text">SIM</span>
+    <input id="devolverSim" class="check" type="checkbox" />
+
+    <span class="checkbox-text">NÃO</span>
+    <input id="devolverNao" class="check" type="checkbox" />
+  </div>
+</div>
+
+
+    <div class="linha linha-cheia"><div class="rotulo-cheio">17 - DEPTO. FALTOSO (GMB):</div><div class="campo"><input id="deptoFaltoso" /></div></div>
+    <div class="linha linha-cheia"><div class="rotulo-cheio">18 - RESPONSÁVEL DEPTO. FALTOSO (GMB)</div></div>
+    <div class="linha linha-nome-visto"><div class="nome-visto">Nome e visto:</div></div>
+    <div class="linha linha-cheia"><div class="rotulo-cheio">19 - AUDITOR CQPC:</div></div>
+    <div class="linha linha-nome-visto"><div class="nome-visto">Nome e visto:</div></div>
+
+    <div class="linha"><div class="rotulo">BRUNETA:</div><div class="campo"><input id="brunetaNumero" maxlength="10" placeholder="10 dígitos" /></div></div>
+    <div class="linha"><div class="rotulo">NOTA FISCAL:</div><div class="campo"><input id="notaFiscalNumero" /></div></div>
+
+    <div class="linha">
+      <div class="rotulo">TIPO:</div>
+      <div class="campo">
+        <select id="tipoDestinacao">
+          <option value="">Selecione</option>
+          <option value="SCRAP">SCRAP</option>
+          <option value="AMOSTRA">AMOSTRA</option>
+          <option value="DEVOLUCAO">DEVOLUÇÃO</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg" id="mensagem">Carregando dados do RASP...</div>
+
+  <div class="bottom-actions">
+    <button class="btn-green" onclick="salvarRascunho()">Salvar Rascunho</button>
+    <button class="btn-blue" onclick="enviarFt()">Enviar FT</button>
+  </div>
+</div>
+
+<script>
+const API_BASE = "http://localhost:5050";
+
+let dadosRasp = null;
+let scrapAtual = null;
+
+function msg(t) {
+  const mensagem = document.getElementById("mensagem");
+  if (mensagem) {
+    mensagem.innerText = t;
+  }
+
+  const popup = document.getElementById("popupMensagem");
+  const popupTexto = document.getElementById("popupMensagemTexto");
+
+  if (popup && popupTexto) {
+    popupTexto.innerText = t;
+    popup.classList.add("popup-show");
+  }
+}
+
+
+function fecharPopup() {
+  document.getElementById("popupMensagem").classList.remove("popup-show");
+}
+
+
+function valor(obj, ...campos) {
+  for (const campo of campos) {
+    if (obj && obj[campo] !== undefined && obj[campo] !== null) {
+      return obj[campo];
+    }
+  }
+  return "";
+}
+
+function ajustarTipoPorOrigem(){
+  const origem = document.getElementById("origemFabricacao").value;
+  const tipo = document.getElementById("tipoDestinacao");
+
+  if(origem === "IMPORTADO"){
+    tipo.innerHTML = `
+      <option value="SCRAP">SCRAP</option>
+    `;
+    tipo.value = "SCRAP";
+    return;
+  }
+
+  tipo.innerHTML = `
+    <option value="">Selecione</option>
+    <option value="SCRAP">SCRAP</option>
+    <option value="AMOSTRA">AMOSTRA</option>
+    <option value="DEVOLUCAO">DEVOLUÇÃO</option>
+  `;
+}
+
+
+document.getElementById("dataAtual").value =
+  new Date().toLocaleDateString("pt-BR");
+
+async function carregarRasp() {
+  const params = new URLSearchParams(window.location.search);
+  const numeroRasp = params.get("rasp");
+
+  if (!numeroRasp) {
+    msg("Número do RASP não informado na URL.");
+    return;
+  }
+
+  try {
+    const url = `${API_BASE}/scrap/carregar-dados-rasp-numero/${encodeURIComponent(numeroRasp)}`;
+    console.log("URL SCRAP:", url);
+
+    const resp = await fetch(url);
+
+    if (!resp.ok) {
+      msg(await resp.text());
+      return;
+    }
+
+    dadosRasp = await resp.json();
+    console.log("DADOS RASP:", dadosRasp);
+
+    document.getElementById("numeroRasp").value =
+      valor(dadosRasp, "numeroRasp", "NumeroRasp");
+
+    document.getElementById("modelo").value =
+      valor(dadosRasp, "modelo", "Modelo","nomeModelo", "NomeModelo");
+
+    document.getElementById("turno").value =
+      valor(dadosRasp, "turno", "Turno", "descricaoTurno", "DescricaoTurno", "idTurnoRasp");
+
+    // 06 - ORIGEM: não preencher automaticamente
+    document.getElementById("origemFabricacao").value =
+  valor(dadosRasp.fornecedor, "tipoFornecedor", "TipoFornecedor", "origemPeca", "OrigemPeca");
+  
+  ajustarTipoPorOrigem();
+
+    const usuarioLogado = JSON.parse(
+      sessionStorage.getItem("raspUsuarioLogado") || "{}"
+    );
+
+    document.getElementById("preenchidoPor").value =
+      usuarioLogado.nomeCompleto ||
+      usuarioLogado.NomeCompleto ||
+      usuarioLogado.nome ||
+      usuarioLogado.Nome ||
+      valor(dadosRasp.usuarioMt, "nome", "Nome");
+
+    document.getElementById("registro").value =
+      usuarioLogado.gmin ||
+      usuarioLogado.Gmin ||
+      usuarioLogado.gmim ||
+      usuarioLogado.Gmim ||
+      valor(dadosRasp.usuarioMt, "gmin", "Gmin");
+
+    document.getElementById("fornecedorDunsNumero").value =
+      valor(dadosRasp.fornecedor, "duns", "Duns");
+
+    document.getElementById("fornecedorNome").value =
+      valor(dadosRasp.fornecedor, "nome", "Nome");
+
+    // 01 - Planta não preencher
+    document.getElementById("planta").value = "";
+
+    // 16 - Não marcar nada
+    document.getElementById("devolverSim").checked = false;
+    document.getElementById("devolverNao").checked = false;
+
+    // Tipo não vir escolhido
+    document.getElementById("tipoDestinacao").value = "";
+
+    const select = document.getElementById("idRaspPn");
+    select.innerHTML = `<option value="">Selecione</option>`;
+
+    const pns = dadosRasp.pns || dadosRasp.Pns || [];
+
+    pns.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = valor(p, "idRaspPn", "IdRaspPn");
+      opt.dataset.nome = valor(p, "nomePeca", "NomePeca", "descricao", "Descricao");
+      opt.textContent = valor(p, "pn", "Pn").trim();
+      select.appendChild(opt);
+    });
+
+    select.onchange = atualizarDescricaoPeca;
+    atualizarDescricaoPeca();
+
+    atualizarAreas();
+
+    msg(`RASP ${dadosRasp.numeroRasp} carregado com sucesso.`);
+  } catch (e) {
+    console.error("ERRO FRONT:", e);
+    msg("Erro ao carregar dados do RASP.");
+  }
+}
+
+function atualizarDescricaoPeca() {
+  const select = document.getElementById("idRaspPn");
+  const opt = select.options[select.selectedIndex];
+
+  document.getElementById("descricaoPeca").value =
+    opt ? opt.dataset.nome || "" : "";
+}
+
+function atualizarAreas() {
+  const planta = document.getElementById("planta").value;
+  const area = document.getElementById("area");
+
+  area.innerHTML = `<option value="">Selecione</option>`;
+
+  let opcoes = [];
+
+  if (planta === "C2") {
+    opcoes = ["SAC 10"];
+  }
+
+  if (planta === "4J") {
+    opcoes = ["SAC 10", "GPS", "Injetoras", "Fundições"];
+  }
+
+  opcoes.forEach(a => {
+    const opt = document.createElement("option");
+    opt.value = a;
+    opt.textContent = a;
+    area.appendChild(opt);
+  });
+}
+
+async function salvarRascunho(){
+  if(!dadosRasp){
+    msg("Carregue um RASP antes.");
+    return;
+  }
+
+  const quantidadeTexto = document.getElementById("quantidade").value.trim();
+
+  const body = {
+    idRasp: dadosRasp.idRasp,
+    idRaspPn: document.getElementById("idRaspPn").value
+      ? Number(document.getElementById("idRaspPn").value)
+      : null,
+    quantidade: quantidadeTexto ? Number(quantidadeTexto) : null,
+    planta: document.getElementById("planta").value || null,
+    area: document.getElementById("area").value || null,
+    tipoDestinacao: document.getElementById("tipoDestinacao").value || null,
+    observacao: document.getElementById("observacao").value || null
+  };
+
+  const resp = await fetch(`${API_BASE}/scrap/salvar-rascunho`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(body)
+  });
+
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  scrapAtual = await resp.json();
+
+  document.getElementById("numeroScrapVisual").value =
+    scrapAtual.numeroScrap || "AUTO";
+
+  msg(`Rascunho salvo. Scrap Nº ${scrapAtual.numeroScrap || "gerado"}`);
+}
+
+async function enviarFt(){
+  if(!scrapAtual){
+    msg("Salve o rascunho antes de enviar ao FT.");
+    return;
+  }
+
+  if(!document.getElementById("planta").value){
+    msg("Para enviar ao FT, selecione a planta.");
+    return;
+  }
+
+  if(!document.getElementById("idRaspPn").value){
+    msg("Para enviar ao FT, selecione o PN.");
+    return;
+  }
+
+  if(!document.getElementById("quantidade").value){
+    msg("Para enviar ao FT, informe a quantidade.");
+    return;
+  }
+
+  if(!document.getElementById("area").value){
+    msg("Para enviar ao FT, selecione a área.");
+    return;
+  }
+
+  if(!document.getElementById("observacao").value.trim()){
+    msg("Para enviar ao FT, preencha o campo 11 - Descrição da falha.");
+    return;
+  }
+
+  const respGmb = document.getElementById("respGmb").checked;
+  const respFornecedor = document.getElementById("respFornecedor").checked;
+
+  if(!respGmb && !respFornecedor){
+    msg("Para enviar ao FT, marque o responsável pela falha: GMB ou Fornecedor.");
+    return;
+  }
+
+  if(!document.getElementById("devolverSim").checked && !document.getElementById("devolverNao").checked){
+    msg("Para enviar ao FT, marque SIM ou NÃO em devolver para o fornecedor.");
+    return;
+  }
+
+  if(!document.getElementById("tipoDestinacao").value){
+    msg("Para enviar ao FT, selecione o tipo.");
+    return;
+  }
+
+  const resp = await fetch(`${API_BASE}/scrap/${scrapAtual.idScrap}/enviar-ft`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({idUsuarioFt:3})
+  });
+
+  if(!resp.ok){
+    msg(await resp.text());
+    return;
+  }
+
+  const r = await resp.json();
+  msg(`Enviado ao FT com sucesso. Status: ${r.statusScrap}`);
+}
+
+
+atualizarAreas();
+carregarRasp();
+
+</script>
+
+<div id="popupMensagem" class="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-title">Atenção</div>
+    <div id="popupMensagemTexto" class="popup-text"></div>
+    <button class="popup-btn" onclick="fecharPopup()">OK</button>
+  </div>
+</div>
+
+</body>
+</html>

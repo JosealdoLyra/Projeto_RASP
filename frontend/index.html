@@ -22,7 +22,7 @@
       <div class="sidebar-brand">
         <div class="sidebar-brand-top">
           <h1>RASP</h1>
-          <span class="sidebar-brand-chip">Sistema de Qualidade</span>
+          <span class="sidebar-brand-chip">Sistema da Qualidade S10</span>
         </div>
 
         <p class="sidebar-subtitle">
@@ -668,6 +668,11 @@
                 Gerar One Page
               </button>
 
+              <button type="button" id="btnEmitirRejeitado" class="primary-btn">
+                Emitir Rejeitado
+              </button>
+
+
               <button type="button" class="primary-btn" onclick="imprimirRaspAtual()">
                 Imprimir RASP
               </button>
@@ -785,6 +790,15 @@
   <script src="./sessao.js"></script>
 
   <script>
+
+    // =========================================================
+// CONFIGURAÇÃO DA API
+// LOCAL: usar http://localhost:5050
+// REDE INTERNA: trocar localhost pelo IP da máquina servidora
+// Exemplo rede: http://192.168.0.120:5050
+// =========================================================
+const API_BASE_INDEX = "http://localhost:5050";
+
     /* =========================================================
        01. MENU DASHBOARD
        ========================================================= */
@@ -812,7 +826,7 @@
       if (!numeroRasp) return "------";
 
       try {
-        const resposta = await fetch("http://localhost:5050/rasp");
+        const resposta = await fetch(`${API_BASE_INDEX}/rasp`);
 
         if (!resposta.ok) {
           return "------";
@@ -890,7 +904,8 @@
       }
 
       try {
-        const resposta = await fetch(`http://localhost:5050/rasp/${idRasp}`);
+      const resposta = await fetch(`${API_BASE_INDEX}/rasp/${idRasp}`);
+
 
         if (!resposta.ok) {
           mostrarAvisoImpressaoRasp(
@@ -1053,7 +1068,7 @@
 
       if (idRasp) {
         window.location.href =
-          `http://localhost:5050/imprimir_rasp.html?id=${idRasp}`;
+          `${API_BASE_INDEX}/imprimir_rasp.html?id=${idRasp}`;
         return;
       }
 
@@ -1070,7 +1085,7 @@
 
       try {
         const resposta = await fetch(
-          `http://localhost:5050/rasp/numero/${encodeURIComponent(numeroRasp)}`
+          `${API_BASE_INDEX}/rasp/numero/${encodeURIComponent(numeroRasp)}`
         );
 
         if (!resposta.ok) {
@@ -1084,7 +1099,7 @@
         const rasp = await resposta.json();
 
         window.location.href =
-          `http://localhost:5050/imprimir_rasp.html?id=${rasp.idRasp}`;
+          `${API_BASE_INDEX}/imprimir_rasp.html?id=${rasp.idRasp}`;
 
       } catch (erro) {
         console.error(erro);
@@ -1095,6 +1110,32 @@
         );
       }
     }
+
+    document
+  .getElementById("btnEmitirRejeitado")
+  ?.addEventListener("click", emitirRejeitadoAtual);
+
+function emitirRejeitadoAtual() {
+
+  const numeroRasp =
+    document.getElementById("raspNumeroDisplay")
+    ?.innerText
+    ?.trim();
+
+  if (!numeroRasp || numeroRasp === "---") {
+
+    mostrarAvisoImpressaoRasp(
+      "Emissão de Rejeitado",
+      "Abra ou salve um RASP antes de emitir rejeitado."
+    );
+
+    return;
+  }
+
+  window.location.href =
+    `emissao-scrap.html?rasp=${encodeURIComponent(numeroRasp)}`;
+}
+
   </script>
 </body>
 </html>

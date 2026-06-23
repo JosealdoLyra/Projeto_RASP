@@ -53,6 +53,8 @@ namespace Rasp.Api.Data
 
         public DbSet<RaspLgHistoricoEntity> RaspLgHistorico => Set<RaspLgHistoricoEntity>();
 
+        public DbSet<ScrapTable> ScrapTable => Set<ScrapTable>();
+
 
         public DbSet<RaspContencao> RaspContencao { get; set;}
 
@@ -748,6 +750,134 @@ modelBuilder.Entity<RaspPnEntity>(entity =>
     entity.Property(e => e.OrdemExibicao)
         .HasColumnName("ordem_exibicao");
 });
+
+// -----------------------------------------------------------------
+// SCRAP TABLE
+// -----------------------------------------------------------------
+modelBuilder.Entity<ScrapTable>(entity =>
+{
+    entity.ToTable("scrap_table");
+
+    entity.HasKey(e => e.IdScrap);
+
+    entity.Property(e => e.IdScrap)
+        .HasColumnName("id_scrap");
+
+    entity.Property(e => e.NumeroScrap)
+        .HasColumnName("numero_scrap");
+
+    entity.Property(e => e.IdRasp)
+        .HasColumnName("id_rasp");
+
+    entity.Property(e => e.IdRaspPn)
+        .HasColumnName("id_rasp_pn");
+
+    entity.Property(e => e.NumeroRasp)
+        .HasColumnName("numero_rasp");
+
+    entity.Property(e => e.NumeroSpps)
+        .HasColumnName("numero_spps");
+
+    entity.Property(e => e.IdFornecedor)
+        .HasColumnName("id_fornecedor");
+
+    entity.Property(e => e.FornecedorNome)
+        .HasColumnName("fornecedor_nome");
+
+    entity.Property(e => e.FornecedorDuns)
+        .HasColumnName("fornecedor_duns");
+
+    entity.Property(e => e.OrigemPeca)
+        .HasColumnName("origem_peca");
+
+    entity.Property(e => e.Pn)
+        .HasColumnName("pn");
+
+    entity.Property(e => e.NomePeca)
+        .HasColumnName("nome_peca");
+
+    entity.Property(e => e.Quantidade)
+        .HasColumnName("quantidade");
+
+    entity.Property(e => e.TipoDestinacao)
+        .HasColumnName("tipo_destinacao");
+
+    entity.Property(e => e.StatusScrap)
+        .HasColumnName("status_scrap");
+
+    entity.Property(e => e.BrunetaNumero)
+        .HasColumnName("bruneta_numero");
+
+    entity.Property(e => e.NotaFiscalNumero)
+        .HasColumnName("nota_fiscal_numero");
+
+    entity.Property(e => e.BaixaEstoqueRealizada)
+        .HasColumnName("baixa_estoque_realizada");
+
+    entity.Property(e => e.BaixaEstoqueAutomatica)
+        .HasColumnName("baixa_estoque_automatica");
+
+    entity.Property(e => e.DataBaixaEstoque)
+        .HasColumnName("data_baixa_estoque");
+
+    entity.Property(e => e.IdUsuarioBaixa)
+        .HasColumnName("id_usuario_baixa");
+
+    entity.Property(e => e.ObservacaoBaixa)
+        .HasColumnName("observacao_baixa");
+
+    entity.Property(e => e.DataCriacao)
+        .HasColumnName("data_criacao");
+
+    entity.Property(e => e.IdUsuarioCriacao)
+        .HasColumnName("id_usuario_criacao");
+
+    entity.Property(e => e.Observacao)
+        .HasColumnName("observacao");
+
+    entity.Property(e => e.IdUsuarioMt)
+        .HasColumnName("id_usuario_mt");
+
+    entity.Property(e => e.DataEnvioFt)
+        .HasColumnName("data_envio_ft");
+
+    entity.Property(e => e.IdUsuarioFt)
+        .HasColumnName("id_usuario_ft");
+
+    entity.Property(e => e.DataAprovacaoFt)
+        .HasColumnName("data_aprovacao_ft");
+
+    entity.Property(e => e.ObservacaoFt)
+        .HasColumnName("observacao_ft");
+
+    entity.Property(e => e.DataEnvioLg)
+        .HasColumnName("data_envio_lg");
+
+    entity.Property(e => e.IdUsuarioLg)
+        .HasColumnName("id_usuario_lg");
+
+    entity.Property(e => e.DataAprovacaoLg)
+        .HasColumnName("data_aprovacao_lg");
+
+    entity.Property(e => e.ObservacaoLg)
+        .HasColumnName("observacao_lg");
+
+    entity.Property(e => e.DataBruneta)
+        .HasColumnName("data_bruneta");
+
+    entity.Property(e => e.IdUsuarioBruneta)
+        .HasColumnName("id_usuario_bruneta");
+
+    entity.Property(e => e.DataNotaFiscal)
+        .HasColumnName("data_nota_fiscal");
+
+    entity.Property(e => e.IdUsuarioNotaFiscal)
+        .HasColumnName("id_usuario_nota_fiscal");
+
+    entity.Property(e => e.BloqueadoEdicao)
+        .HasColumnName("bloqueado_edicao");
+});
+
 
             // -----------------------------------------------------------------
             // RASP ANOTAÇÃO

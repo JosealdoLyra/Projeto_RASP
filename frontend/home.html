@@ -1162,42 +1162,75 @@
   </div>
 
   <!-- =================================================
-       13.02.03.05 HISTÓRICO GERAL
-       Tela de consulta histórica geral
-       ================================================= -->
-  <div class="module-card">
-    <div class="module-icon">↺</div>
+     13.02.03.05 HISTÓRICO GERAL
+     Tela de consulta histórica geral
+     ================================================= -->
+<div class="module-card">
+  <div class="module-icon">↺</div>
+  <h3>Histórico Geral</h3>
+  <p>Consulte o histórico completo de todos os RASPs.</p>
+  <button onclick="abrirTela('historico-geral.html')">
+    Acessar →
+  </button>
+</div>
 
-    <h3>Histórico Geral</h3>
+<!-- =================================================
+     13.02.03.06 DASHBOARD
+     Dashboard de seleção/contenção
+     ================================================= -->
+<div class="module-card">
+  <div class="module-icon">▥</div>
+  <h3>Dashboard</h3>
+  <p>Indicadores e gráficos de acompanhamento.</p>
+  <button onclick="abrirTela('dashboard-selecao.html')">
+    Acessar →
+  </button>
+</div>
 
-    <p>Consulte o histórico completo de todos os RASPs.</p>
-
-    <button onclick="abrirTela('historico-geral.html')">
-      Acessar →
-    </button>
-  </div>
-
-  <!-- =================================================
-       13.02.03.06 DASHBOARD
-       Dashboard de seleção/contenção
-       ================================================= -->
-  <div class="module-card">
-    <div class="module-icon">▥</div>
-
-    <h3>Dashboard</h3>
-
-    <p>Indicadores e gráficos de acompanhamento.</p>
-
-    <button onclick="abrirTela('dashboard-selecao.html')">
-      Acessar →
-    </button>
-  </div>
-
-  <div class="module-card">
+<!-- =================================================
+     13.02.03.07 ONE PAGE
+     Consulta, edição e impressão
+     ================================================= -->
+<div class="module-card">
   <div class="module-icon">📄</div>
   <h3>One Page</h3>
   <p>Consulta, edição e impressão de One Pages geradas.</p>
-  <button onclick="window.location.href='consulta-onepage.html'">
+  <button onclick="abrirTela('consulta-onepage.html')">
+    Acessar →
+  </button>
+</div>
+
+<!-- =================================================
+     13.02.03.08 GESTÃO SCRAP
+     Fluxo FT / LG do rejeitado
+     ================================================= -->
+<div class="module-card">
+  <div class="module-icon">♻</div>
+  <h3>Gestão Scrap</h3>
+  <p>Acompanhe o fluxo FT / LG dos rejeitados.</p>
+  <button onclick="abrirTela('gestao-scrap.html')">
+    Acessar →
+  </button>
+</div>
+
+<!-- =================================================
+     13.02.03.09 EMISSÃO DE REJEITADO / SCRAP
+     Abre a tela de busca do RASP para emissão do rejeitado
+     ================================================= -->
+<div class="module-card">
+  <div class="module-icon">🏷</div>
+  <h3>Emissão Rejeitado</h3>
+  <p>Emitir formulário de rejeitado / scrap vinculado ao RASP.</p>
+  <button onclick="abrirEmissaoScrap()">
+    Acessar →
+  </button>
+</div>
+
+<div class="module-card">
+  <div class="module-icon">🧾</div>
+  <h3>Gestão Emissor Scrap</h3>
+  <p>Gerencie pendências de Bruneta, Nota Fiscal e envio ao FT.</p>
+  <button onclick="abrirTela('gestao-emissor-scrap.html')">
     Acessar →
   </button>
 </div>
@@ -1219,13 +1252,8 @@
     </button>
   </div>
 
-  <!-- =================================================
-       13.02.03.08 ÁREA RESERVADA
-       Mantida para equilíbrio visual da grade
-       ================================================= -->
-  <div class="empty-card" id="cardVazio">
-    ÁREA RESERVADA
-  </div>
+
+
 
 </div>
 </section>
@@ -1256,6 +1284,8 @@
 
     </main>
   </div>
+
+
 
   <!-- =========================================================
        14. SCRIPTS
@@ -1409,6 +1439,12 @@ function solicitarImpressaoRasp() {
     carregarUsuario();
     atualizarDataHora();
     setInterval(atualizarDataHora, 1000);
+
+ function abrirEmissaoScrap(){
+  window.location.href = "emissao-scrap-busca.html";
+}
+
+
   </script>
 
   <script src="impressao-rapida.js"></script>
