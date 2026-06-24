@@ -254,11 +254,21 @@
 
     .rodape {
       margin-top: 8px;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       font-size: 9px;
       color: var(--muted);
     }
+
+    .rodape span:nth-child(2) {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .rodape span:nth-child(3) {
+      text-align: right;
+    }
+
 
     @page {
       size: A4;
@@ -280,8 +290,15 @@
         width: auto;
         min-height: auto;
         padding: 7mm;
-        page-break-after: auto;
+        page-break-after: always;
+        break-after: page;
       }
+
+      .pagina:last-child {
+        page-break-after: auto;
+        break-after: auto;
+      }
+
 
       .pagina:last-child {
         page-break-after: auto;
@@ -367,25 +384,41 @@
     }
 
     async function carregarRasp() {
-      const id = obterIdRasp();
+  const id = obterIdRasp();
 
-      if (!id) {
-        document.getElementById("conteudo").innerHTML =
-          "<div class='pagina'><h2>ID do RASP não informado.</h2></div>";
-        return;
-      }
+  if (!id) {
+    document.getElementById("conteudo").innerHTML =
+      "<div class='pagina'><h2>ID do RASP não informado.</h2></div>";
+    return;
+  }
 
-      const resposta = await fetch(`${API_BASE}/rasp/${id}/impressao`);
+  const resposta = await fetch(`${API_BASE}/rasp/${id}/impressao`);
 
-      if (!resposta.ok) {
-        document.getElementById("conteudo").innerHTML =
-          "<div class='pagina'><h2>RASP não encontrado.</h2></div>";
-        return;
-      }
+  if (!resposta.ok) {
+    document.getElementById("conteudo").innerHTML =
+      "<div class='pagina'><h2>RASP não encontrado.</h2></div>";
+    return;
+  }
 
-      const dados = await resposta.json();
-      montarImpressao(dados);
+  const dados = await resposta.json();
+
+  let anexos = [];
+
+  try {
+    const respAnexos = await fetch(`${API_BASE}/rasp/${id}/anexos`);
+
+    if (respAnexos.ok) {
+      anexos = await respAnexos.json();
     }
+  } catch (erro) {
+    console.error("Erro ao carregar anexos da impressão:", erro);
+  }
+
+  dados.arquivos = anexos;
+
+  montarImpressao(dados);
+}
+
 
     function montarImpressao(dados) {
       const r = dados.rasp;
@@ -553,8 +586,10 @@
           <!-- 09. RODAPÉ -->
           <div class="rodape">
             <span>Versão 1.0 - Sistema RASP</span>
+            <span>Developed by Josealdo Lyra</span>
             <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
           </div>
+
         </section>
       `;
     }
@@ -591,18 +626,33 @@
 
             <div class="evidencias">
               ${
-                arquivos.length > 0
-                  ? arquivos.slice(0, 4).map((a, i) => `
+                  [1, 2, 3, 4].map(posicao => {
+                    const foto = arquivos.find(a =>
+                      (a.tipoAnexo || a.TipoAnexo) === "FOTO" &&
+                      Number(a.posicao || a.Posicao) === posicao
+                    );
+
+                    if (!foto) {
+                      return `
+                        <div class="foto-box">
+                          Espaço reservado para imagem ${posicao}
+                        </div>
+                      `;
+                    }
+
+                    const idAnexo = foto.idAnexo || foto.IdAnexo;
+
+                    return `
                       <div class="foto-box">
-                        Arquivo ${i + 1}<br>
-                        ${valor(a.nomeArquivo || a.arquivo || a.filename)}
+                        <img
+                          src="${API_BASE}/rasp/anexos/${idAnexo}/visualizar?v=${idAnexo}"
+                          style="max-width:100%; max-height:100%; object-fit:contain;"
+                        />
                       </div>
-                    `).join("")
-                  : `
-                      <div class="foto-box">Espaço reservado para imagem 1</div>
-                      <div class="foto-box">Espaço reservado para imagem 2</div>
-                    `
-              }
+                    `;
+                  }).join("")
+                }
+
             </div>
           </div>
 
@@ -648,8 +698,10 @@
           <!-- 04. RODAPÉ DO VERSO -->
           <div class="rodape">
             <span>Versão 1.0 - Sistema RASP</span>
+            <span>Developed by Josealdo Lyra</span>
             <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
           </div>
+
         </section>
       `;
     }

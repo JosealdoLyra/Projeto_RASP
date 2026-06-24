@@ -415,9 +415,32 @@ if (!responseBusca.ok && numeroNormalizado.includes("/")) {
         }
 
         const detalhe = await responseDetalhe.json();
-        console.log("Detalhe completo do RASP:", detalhe);
+console.log("Detalhe completo do RASP:", detalhe);
 
-        await preencherFormularioRasp(detalhe);
+window.raspAtual = detalhe?.rasp || raspEncontrado;
+window.idRaspAtual = idRaspEncontrado;
+
+sessionStorage.setItem("idRaspAtual", idRaspEncontrado);
+
+window.history.replaceState(
+  null,
+  "",
+  `index.html?idRasp=${idRaspEncontrado}`
+);
+
+if (typeof carregarAnexosRasp === "function") {
+  setTimeout(() => {
+    carregarAnexosRasp();
+  }, 300);
+}
+
+
+await preencherFormularioRasp(detalhe);
+
+if (typeof carregarAnexosRasp === "function") {
+  await carregarAnexosRasp();
+}
+
         await atualizarBotaoOnePage();
 
         console.log("ENTREI NA preencherFormularioRasp");

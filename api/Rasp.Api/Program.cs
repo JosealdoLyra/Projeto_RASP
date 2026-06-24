@@ -8444,6 +8444,32 @@ app.MapGet("/rasp/anexos/{idAnexo:int}/visualizar", async (
 })
 .WithName("RaspVisualizarAnexo");
 
+// ---------------------------------------------------------------------
+// RASP - REMOVER ANEXO
+// ---------------------------------------------------------------------
+app.MapDelete("/rasp/anexos/{idAnexo:int}", async (
+    int idAnexo,
+    RaspDbContext db) =>
+{
+    var anexo = await db.RaspAnexos
+        .FirstOrDefaultAsync(a => a.IdAnexo == idAnexo && a.Ativo);
+
+    if (anexo is null)
+        return Results.NotFound("Anexo não encontrado.");
+
+    anexo.Ativo = false;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Anexo removido com sucesso.",
+        idAnexo
+    });
+})
+.WithName("RaspRemoverAnexo");
+
+
 
 
 app.Run();

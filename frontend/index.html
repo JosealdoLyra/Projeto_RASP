@@ -709,7 +709,7 @@
         <label>Foto 1</label>
         <input type="file" id="foto1" accept=".jpg,.jpeg,.png,.webp" />
         <button type="button" class="secondary-btn" onclick="uploadAnexoRasp('FOTO', 1, 'foto1')">
-          Enviar Foto 1
+          Salvar Foto 1
         </button>
         <div id="previewFoto1" class="preview-anexo">Sem imagem</div>
       </div>
@@ -943,122 +943,133 @@ const API_BASE_INDEX = "http://localhost:5050";
     }
 
     /* =========================================================
-       04. CARREGAR RASP POR URL
-       ========================================================= */
-    async function carregarRaspPorUrl() {
-      const parametros = new URLSearchParams(window.location.search);
+   04. CARREGAR RASP POR URL
+   ========================================================= */
+async function carregarRaspPorUrl() {
+  const parametros = new URLSearchParams(window.location.search);
 
-      const idRasp = parametros.get("idRasp") || parametros.get("id");
-      const modo = parametros.get("modo");
-      const origem = parametros.get("origem");
-      const perfilUsuario = sessionStorage.getItem("perfilUsuario");
+  const idRasp = parametros.get("idRasp") || parametros.get("id");
+  const modo = parametros.get("modo");
+  const origem = parametros.get("origem");
+  const perfilUsuario = sessionStorage.getItem("perfilUsuario");
 
-      if (origem === "spps" && perfilUsuario !== "MT") {
-        const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
-        const sppsDisplay = document.getElementById("sppsNumeroDisplay");
-        const sppsBox = sppsDisplay
-          ? sppsDisplay.closest(".rasp-indicador-box")
-          : null;
+  if (origem === "spps" && perfilUsuario !== "MT") {
+    const btnVoltar = document.getElementById("btnVoltarGestaoSpps");
+    const sppsDisplay = document.getElementById("sppsNumeroDisplay");
+    const sppsBox = sppsDisplay
+      ? sppsDisplay.closest(".rasp-indicador-box")
+      : null;
 
-        if (btnVoltar) {
-          btnVoltar.style.display = "inline-flex";
-          btnVoltar.disabled = false;
-          btnVoltar.onclick = () => {
-            window.location.href = "gestao-spps.html";
-          };
-        }
-
-        if (sppsBox) {
-          sppsBox.style.cursor = "pointer";
-          sppsBox.title = "Voltar para Gestão SPPS";
-          sppsBox.onclick = () => {
-            window.location.href = "gestao-spps.html";
-          };
-        }
-      }
-
-      if (!idRasp) {
-        return;
-      }
-
-      try {
-      const resposta = await fetch(`${API_BASE_INDEX}/rasp/${idRasp}`);
-
-
-        if (!resposta.ok) {
-          mostrarAvisoImpressaoRasp(
-            "Carregar RASP",
-            "Não foi possível carregar o RASP informado."
-          );
-          return;
-        }
-
-        const rasp = await resposta.json();
-
-        const campoBusca = document.getElementById("buscarRaspNumero");
-        const botaoBusca = document.getElementById("btnBuscarRasp");
-
-        if (!campoBusca || !botaoBusca) {
-          mostrarAvisoImpressaoRasp(
-            "Carregar RASP",
-            "Campo de busca do RASP não localizado na tela."
-          );
-          return;
-        }
-
-        campoBusca.value = rasp.numeroRasp;
-        botaoBusca.click();
-
-        setTimeout(() => {
-          atualizarCampoSpps(rasp.numeroRasp);
-        }, 1400);
-
-        if (modo === "consulta") {
-          setTimeout(() => {
-            document
-              .querySelectorAll("input, select, textarea, button")
-              .forEach(campo => {
-                if (
-                  campo.id === "btnVoltarGestaoSpps" ||
-                  campo.id === "buscarRaspNumero" ||
-                  campo.id === "btnBuscarRasp" ||
-                  campo.closest(".sidebar")
-                ) {
-                  return;
-                }
-
-                campo.disabled = true;
-              });
-          }, 1600);
-        }
-
-      } catch (erro) {
-        console.error(erro);
-
-        mostrarAvisoImpressaoRasp(
-          "Carregar RASP",
-          "Erro ao carregar RASP pela URL."
-        );
-      }
+    if (btnVoltar) {
+      btnVoltar.style.display = "inline-flex";
+      btnVoltar.disabled = false;
+      btnVoltar.onclick = () => {
+        window.location.href = "gestao-spps.html";
+      };
     }
+
+    if (sppsBox) {
+      sppsBox.style.cursor = "pointer";
+      sppsBox.title = "Voltar para Gestão SPPS";
+      sppsBox.onclick = () => {
+        window.location.href = "gestao-spps.html";
+      };
+    }
+  }
+
+  if (!idRasp) {
+    return;
+  }
+
+  try {
+    const resposta = await fetch(`${API_BASE_INDEX}/rasp/${idRasp}`);
+
+    if (!resposta.ok) {
+      mostrarAvisoImpressaoRasp(
+        "Carregar RASP",
+        "Não foi possível carregar o RASP informado."
+      );
+      return;
+    }
+
+    const rasp = await resposta.json();
+
+    window.raspAtual = rasp;
+    window.idRaspAtual = rasp.idRasp || rasp.IdRasp || rasp.id || idRasp;
+
+    sessionStorage.setItem("idRaspAtual", window.idRaspAtual);
+
+    const campoBusca = document.getElementById("buscarRaspNumero");
+    const botaoBusca = document.getElementById("btnBuscarRasp");
+
+    if (!campoBusca || !botaoBusca) {
+      mostrarAvisoImpressaoRasp(
+        "Carregar RASP",
+        "Campo de busca do RASP não localizado na tela."
+      );
+      return;
+    }
+
+    campoBusca.value = rasp.numeroRasp || rasp.NumeroRasp || "";
+
+    botaoBusca.click();
 
     setTimeout(() => {
-      carregarRaspPorUrl();
-    }, 500);
+      atualizarCampoSpps(rasp.numeroRasp || rasp.NumeroRasp);
+    }, 1400);
 
-    const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+    setTimeout(() => {
+      carregarAnexosRasp();
+    }, 1700);
 
-    if (btnBuscarRasp) {
-      btnBuscarRasp.addEventListener("click", () => {
-        setTimeout(() => {
-          const numeroRasp =
-            document.getElementById("raspNumeroDisplay")?.innerText ||
-            document.getElementById("buscarRaspNumero")?.value;
+    if (modo === "consulta") {
+      setTimeout(() => {
+        document
+          .querySelectorAll("input, select, textarea, button")
+          .forEach(campo => {
+            if (
+              campo.id === "btnVoltarGestaoSpps" ||
+              campo.id === "buscarRaspNumero" ||
+              campo.id === "btnBuscarRasp" ||
+              campo.closest(".sidebar")
+            ) {
+              return;
+            }
 
-          atualizarCampoSpps(numeroRasp);
-        }, 1500);
-      });
+            campo.disabled = true;
+          });
+      }, 1600);
     }
+  } catch (erro) {
+    console.error(erro);
+
+    mostrarAvisoImpressaoRasp(
+      "Carregar RASP",
+      "Erro ao carregar RASP pela URL."
+    );
+  }
+}
+
+setTimeout(() => {
+  carregarRaspPorUrl();
+}, 500);
+
+const btnBuscarRasp = document.getElementById("btnBuscarRasp");
+
+if (btnBuscarRasp) {
+  btnBuscarRasp.addEventListener("click", () => {
+    setTimeout(() => {
+      const numeroRasp =
+        document.getElementById("raspNumeroDisplay")?.innerText ||
+        document.getElementById("buscarRaspNumero")?.value;
+
+      atualizarCampoSpps(numeroRasp);
+
+      carregarAnexosRasp();
+    }, 1500);
+  });
+}
+
 
     /* =========================================================
        05. MODAL DE AVISO PADRÃO PARA IMPRESSÃO
@@ -1176,6 +1187,15 @@ const API_BASE_INDEX = "http://localhost:5050";
 
         const rasp = await resposta.json();
 
+        window.raspAtual = rasp;
+        window.idRaspAtual = rasp.idRasp || rasp.IdRasp || rasp.id;
+
+        sessionStorage.setItem(
+            "idRaspAtual",
+            window.idRaspAtual
+        );
+
+
         window.location.href =
           `${API_BASE_INDEX}/imprimir_rasp.html?id=${rasp.idRasp}`;
 
@@ -1213,6 +1233,264 @@ function emitirRejeitadoAtual() {
   window.location.href =
     `emissao-scrap.html?rasp=${encodeURIComponent(numeroRasp)}`;
 }
+
+// =====================================================
+// ANEXOS RASP
+// =====================================================
+
+function obterIdRaspAtual() {
+  const params = new URLSearchParams(window.location.search);
+
+  const idUrl =
+    params.get("idRasp") ||
+    params.get("id");
+
+  if (idUrl) return idUrl;
+
+  if (window.idRaspAtual) return window.idRaspAtual;
+
+  if (window.raspAtual?.idRasp) return window.raspAtual.idRasp;
+  if (window.raspAtual?.IdRasp) return window.raspAtual.IdRasp;
+  if (window.raspAtual?.id) return window.raspAtual.id;
+
+  const idStorage =
+    sessionStorage.getItem("idRaspAtual") ||
+    localStorage.getItem("idRaspAtual");
+
+  if (idStorage) return idStorage;
+
+  return null;
+}
+
+
+async function uploadAnexoRasp(tipoAnexo, posicao, inputId) {
+
+    const idRasp = obterIdRaspAtual();
+
+    if (!idRasp) {
+        mostrarAvisoImpressaoRasp(
+            "Anexos",
+            "Salve ou abra um RASP antes de anexar arquivos."
+        );
+        return;
+    }
+
+    const input = document.getElementById(inputId);
+
+    if (!input || !input.files.length) {
+        mostrarAvisoImpressaoRasp(
+            "Anexos",
+            "Selecione um arquivo."
+        );
+        return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("arquivo", input.files[0]);
+
+    const resposta = await fetch(
+        `${API_BASE_INDEX}/rasp/${idRasp}/anexos?tipoAnexo=${tipoAnexo}&posicao=${posicao}`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!resposta.ok) {
+
+        const erro = await resposta.text();
+
+        mostrarAvisoImpressaoRasp(
+            "Upload",
+            erro
+        );
+
+        return;
+    }
+
+    await carregarAnexosRasp();
+
+    mostrarAvisoImpressaoRasp(
+        "Upload",
+        "Arquivo enviado com sucesso."
+    );
+}
+
+function limparPreviewsAnexos() {
+  for (let i = 1; i <= 4; i++) {
+    const preview = document.getElementById(`previewFoto${i}`);
+    const input = document.getElementById(`foto${i}`);
+
+    if (preview) preview.innerHTML = "Sem imagem";
+    if (input) input.value = "";
+  }
+
+  const dimensional = document.getElementById("previewDimensional");
+  const inputDimensional = document.getElementById("arquivoDimensional");
+
+  if (dimensional) dimensional.innerHTML = "Sem arquivo";
+  if (inputDimensional) inputDimensional.value = "";
+
+  const apresentacao = document.getElementById("previewApresentacao");
+  const inputApresentacao = document.getElementById("arquivoApresentacao");
+
+  if (apresentacao) apresentacao.innerHTML = "Sem arquivo";
+  if (inputApresentacao) inputApresentacao.value = "";
+}
+
+
+async function carregarAnexosRasp() {
+  const idRasp = obterIdRaspAtual();
+
+  limparPreviewsAnexos();
+
+  if (!idRasp) return;
+
+  const status = document.getElementById("anexosStatus");
+  if (status) {
+    status.innerText = `Anexos vinculados ao RASP ID ${idRasp}.`;
+  }
+
+  const resposta = await fetch(
+    `${API_BASE_INDEX}/rasp/${idRasp}/anexos`
+  );
+
+  if (!resposta.ok) return;
+
+  const anexos = await resposta.json();
+
+  if (!anexos || anexos.length === 0) {
+    if (status) {
+      status.innerText = `RASP ID ${idRasp} sem anexos cadastrados.`;
+    }
+    return;
+  }
+
+  anexos.forEach(a => {
+    const url =
+      `${API_BASE_INDEX}/rasp/anexos/${a.idAnexo}/visualizar`;
+
+    if (a.tipoAnexo === "FOTO") {
+      const preview =
+        document.getElementById(`previewFoto${a.posicao}`);
+
+      if (!preview) return;
+
+      preview.innerHTML =
+      `
+        <img
+          src="${url}"
+          onclick="abrirImagemAnexo('${url}')"
+        />
+      `;
+    }
+
+    if (a.tipoAnexo === "DIMENSIONAL") {
+      const preview = document.getElementById("previewDimensional");
+
+      if (preview) {
+        preview.innerHTML =
+        `<a href="${url}" target="_blank">
+          Abrir documento dimensional
+        </a>`;
+      }
+    }
+
+    if (a.tipoAnexo === "APRESENTACAO") {
+      const preview = document.getElementById("previewApresentacao");
+
+      if (preview) {
+        preview.innerHTML =
+        `<a href="${url}" target="_blank">
+          Abrir apresentação
+        </a>`;
+      }
+    }
+  });
+}
+
+
+function abrirImagemAnexo(url) {
+
+    let modal =
+        document.getElementById("modalImagemAnexo");
+
+    if (!modal) {
+
+        modal = document.createElement("div");
+
+        modal.id = "modalImagemAnexo";
+
+        modal.className = "modal-imagem-anexo";
+
+        modal.innerHTML =
+        `
+        <button
+            class="modal-imagem-fechar"
+            onclick="fecharImagemAnexo()"
+        >
+            Fechar
+        </button>
+
+        <img id="imagemAnexoGrande" />
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    document
+        .getElementById("imagemAnexoGrande")
+        .src = url;
+
+    modal.classList.add("ativo");
+}
+
+function fecharImagemAnexo() {
+
+    const modal =
+        document.getElementById("modalImagemAnexo");
+
+    if (modal) {
+        modal.classList.remove("ativo");
+    }
+}
+
+setTimeout(() => {
+    carregarAnexosRasp();
+}, 1500);
+
+["foto1", "foto2", "foto3", "foto4"].forEach((id, index) => {
+  const input = document.getElementById(id);
+  const preview = document.getElementById(`previewFoto${index + 1}`);
+
+  if (input && preview) {
+    input.addEventListener("change", () => {
+      if (!input.files.length) return;
+
+      const urlLocal = URL.createObjectURL(input.files[0]);
+
+      preview.innerHTML = `
+        <img
+          src="${urlLocal}"
+          title="Prévia local. Clique em Enviar Foto para salvar."
+        />
+      `;
+    });
+  }
+});
+
+function habilitarBotoesAnexos() {
+  document
+    .querySelectorAll("#tab-complementos button, #tab-complementos input")
+    .forEach(campo => {
+      campo.disabled = false;
+      campo.removeAttribute("disabled");
+    });
+}
+
+setInterval(habilitarBotoesAnexos, 1000);
+
 
   </script>
 </body>
