@@ -1310,6 +1310,12 @@ async function uploadAnexoRasp(tipoAnexo, posicao, inputId) {
     }
 
     await carregarAnexosRasp();
+    const botaoEnviar = input.parentElement.querySelector("button");
+
+    if (botaoEnviar) {
+      botaoEnviar.classList.remove("btn-anexo-pendente");
+    }
+
 
     mostrarAvisoImpressaoRasp(
         "Upload",
@@ -1348,6 +1354,7 @@ async function carregarAnexosRasp() {
   if (!idRasp) return;
 
   const status = document.getElementById("anexosStatus");
+
   if (status) {
     status.innerText = `Anexos vinculados ao RASP ID ${idRasp}.`;
   }
@@ -1368,43 +1375,79 @@ async function carregarAnexosRasp() {
   }
 
   anexos.forEach(a => {
-    const url =
-      `${API_BASE_INDEX}/rasp/anexos/${a.idAnexo}/visualizar`;
+    const idAnexo = a.idAnexo || a.IdAnexo;
+    const tipoAnexo = a.tipoAnexo || a.TipoAnexo;
+    const posicao = a.posicao || a.Posicao;
 
-    if (a.tipoAnexo === "FOTO") {
-      const preview =
-        document.getElementById(`previewFoto${a.posicao}`);
+    const url = `${API_BASE_INDEX}/rasp/anexos/${idAnexo}/visualizar`;
+
+    if (tipoAnexo === "FOTO") {
+      const preview = document.getElementById(`previewFoto${posicao}`);
 
       if (!preview) return;
 
-      preview.innerHTML =
-      `
-        <img
-          src="${url}"
-          onclick="abrirImagemAnexo('${url}')"
-        />
+      preview.innerHTML = `
+        <div style="
+            position: relative;
+            display: inline-block;
+        ">
+            <img
+                src="${url}"
+                onclick="abrirImagemAnexo('${url}')"
+            />
+
+            <div style="
+                position:absolute;
+                right:-600px;
+                top:50%;
+                transform:translateY(-50%);
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+            ">
+                <button
+                    type="button"
+                    class="btn-substituir-anexo"
+                    onclick="document.getElementById('foto${posicao}').click()"
+                    title="Substituir anexo">
+                    🔁
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-remover-anexo"
+                    onclick="removerAnexo(${idAnexo})"
+                    title="Remover anexo">
+                    🗑️
+                </button>
+            </div>
+        </div>
       `;
+
+
     }
 
-    if (a.tipoAnexo === "DIMENSIONAL") {
+    if (tipoAnexo === "DIMENSIONAL") {
       const preview = document.getElementById("previewDimensional");
 
       if (preview) {
-        preview.innerHTML =
-        `<a href="${url}" target="_blank">
-          Abrir documento dimensional
-        </a>`;
+        preview.innerHTML = `
+          <a href="${url}" target="_blank">
+            Abrir documento dimensional
+          </a>
+        `;
       }
     }
 
-    if (a.tipoAnexo === "APRESENTACAO") {
+    if (tipoAnexo === "APRESENTACAO") {
       const preview = document.getElementById("previewApresentacao");
 
       if (preview) {
-        preview.innerHTML =
-        `<a href="${url}" target="_blank">
-          Abrir apresentação
-        </a>`;
+        preview.innerHTML = `
+          <a href="${url}" target="_blank">
+            Abrir apresentação
+          </a>
+        `;
       }
     }
   });
@@ -1456,6 +1499,9 @@ function fecharImagemAnexo() {
     }
 }
 
+
+
+
 setTimeout(() => {
     carregarAnexosRasp();
 }, 1500);
@@ -1466,17 +1512,48 @@ setTimeout(() => {
 
   if (input && preview) {
     input.addEventListener("change", () => {
-      if (!input.files.length) return;
+  if (!input.files.length) return;
 
-      const urlLocal = URL.createObjectURL(input.files[0]);
+  const urlLocal = URL.createObjectURL(input.files[0]);
 
-      preview.innerHTML = `
+  preview.innerHTML = `
+    <div style="
+        position: relative;
+        display: inline-block;
+    ">
         <img
-          src="${urlLocal}"
-          title="Prévia local. Clique em Enviar Foto para salvar."
+            src="${urlLocal}"
+            title="Prévia local. Clique em Enviar Foto para salvar."
         />
-      `;
-    });
+
+        <div style="
+            position:absolute;
+            right:-600px;
+            top:50%;
+            transform:translateY(-50%);
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        ">
+            <button
+                type="button"
+                class="btn-substituir-anexo"
+                onclick="document.getElementById('foto${index + 1}').click()"
+                title="Trocar imagem selecionada">
+                🔁
+            </button>
+        </div>
+    </div>
+  `;
+
+  const botaoEnviar = input.parentElement.querySelector("button");
+
+  if (botaoEnviar) {
+    botaoEnviar.classList.add("btn-anexo-pendente");
+    botaoEnviar.innerText = `Enviar Foto ${index + 1}`;
+  }
+});
+
   }
 });
 
@@ -1491,6 +1568,104 @@ function habilitarBotoesAnexos() {
 
 setInterval(habilitarBotoesAnexos, 1000);
 
+async function removerAnexo(idAnexo) {
+  const confirmar = await confirmarRemocaoAnexo();
+
+  if (!confirmar) return;
+
+  const resposta = await fetch(
+    `${API_BASE_INDEX}/rasp/anexos/${idAnexo}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  if (!resposta.ok) {
+    mostrarAvisoImpressaoRasp(
+      "Remover anexo",
+      "Não foi possível remover o anexo."
+    );
+    return;
+  }
+
+  await carregarAnexosRasp();
+  
+
+  mostrarAvisoImpressaoRasp(
+    "Remover anexo",
+    "Anexo removido com sucesso."
+  );
+}
+
+function confirmarRemocaoAnexo() {
+  return new Promise((resolve) => {
+    const modalExistente = document.getElementById("modalConfirmarRemoverAnexo");
+    if (modalExistente) modalExistente.remove();
+
+    const modal = document.createElement("div");
+
+    modal.innerHTML = `
+      <div id="modalConfirmarRemoverAnexo" style="
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        font-family: Segoe UI, Arial, sans-serif;
+      ">
+        <div style="
+          width: 420px;
+          background: #061b3a;
+          border: 1px solid #2f94ff;
+          border-radius: 14px;
+          box-shadow: 0 0 35px rgba(47,148,255,.45);
+          padding: 24px;
+          color: white;
+        ">
+          <h2 style="margin:0 0 10px;color:#5bb6ff;font-size:22px;">
+            Remover anexo
+          </h2>
+
+          <p style="font-size:15px;color:#c8d6ee;margin-bottom:22px;">
+            Deseja realmente remover este anexo?
+          </p>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;">
+            <button type="button" id="btnCancelarRemoverAnexo" style="
+              height:38px;padding:0 20px;border-radius:8px;
+              border:1px solid #64748b;background:#334155;color:white;
+              cursor:pointer;font-weight:800;
+            ">
+              Cancelar
+            </button>
+
+            <button type="button" id="btnConfirmarRemoverAnexo" style="
+              height:38px;padding:0 20px;border-radius:8px;
+              border:1px solid #dc2626;background:#dc2626;color:white;
+              cursor:pointer;font-weight:800;
+            ">
+              Remover
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("btnCancelarRemoverAnexo").onclick = () => {
+      document.getElementById("modalConfirmarRemoverAnexo").remove();
+      resolve(false);
+    };
+
+    document.getElementById("btnConfirmarRemoverAnexo").onclick = () => {
+      document.getElementById("modalConfirmarRemoverAnexo").remove();
+      resolve(true);
+    };
+  });
+}
 
   </script>
 </body>

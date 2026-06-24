@@ -2166,7 +2166,57 @@ button.btn-detalhes-linha:disabled {
   cursor: pointer;
 }
 
+.btn-remover-anexo {
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+}
 
+.btn-remover-anexo:hover {
+    background: #b91c1c;
+    transform: scale(1.05);
+}
 
+.btn-substituir-anexo {
+  background: #0f6dff;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.btn-substituir-anexo:hover {
+  background: #0b5ed7;
+  transform: scale(1.05);
+}
+
+.anexo-preview-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.anexo-preview-conteudo img {
+  max-width: 280px;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.btn-anexo-pendente {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
 
 
