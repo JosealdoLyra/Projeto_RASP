@@ -1428,28 +1428,62 @@ async function carregarAnexosRasp() {
     }
 
     if (tipoAnexo === "DIMENSIONAL") {
-      const preview = document.getElementById("previewDimensional");
+  const preview = document.getElementById("previewDimensional");
 
-      if (preview) {
-        preview.innerHTML = `
-          <a href="${url}" target="_blank">
-            Abrir documento dimensional
-          </a>
-        `;
-      }
-    }
+  if (preview) {
+    preview.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px;">
+        <a href="${url}" target="_blank">Abrir documento dimensional</a>
+
+        <button
+          type="button"
+          class="btn-substituir-anexo"
+          onclick="document.getElementById('arquivoDimensional').click()"
+          title="Substituir dimensional">
+          🔁
+        </button>
+
+        <button
+          type="button"
+          class="btn-remover-anexo"
+          onclick="removerAnexo(${idAnexo})"
+          title="Remover dimensional">
+          🗑️
+        </button>
+      </div>
+    `;
+  }
+}
+
 
     if (tipoAnexo === "APRESENTACAO") {
-      const preview = document.getElementById("previewApresentacao");
+  const preview = document.getElementById("previewApresentacao");
 
-      if (preview) {
-        preview.innerHTML = `
-          <a href="${url}" target="_blank">
-            Abrir apresentação
-          </a>
-        `;
-      }
-    }
+  if (preview) {
+    preview.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:center; gap:12px;">
+        <a href="${url}" target="_blank">Abrir apresentação</a>
+
+        <button
+          type="button"
+          class="btn-substituir-anexo"
+          onclick="document.getElementById('arquivoApresentacao').click()"
+          title="Substituir apresentação">
+          🔁
+        </button>
+
+        <button
+          type="button"
+          class="btn-remover-anexo"
+          onclick="removerAnexo(${idAnexo})"
+          title="Remover apresentação">
+          🗑️
+        </button>
+      </div>
+    `;
+  }
+}
+
   });
 }
 
@@ -1596,6 +1630,33 @@ async function removerAnexo(idAnexo) {
     "Anexo removido com sucesso."
   );
 }
+
+[
+  {
+    inputId: "arquivoDimensional",
+    textoBotao: "Enviar Dimensional"
+  },
+  {
+    inputId: "arquivoApresentacao",
+    textoBotao: "Enviar Apresentação"
+  }
+].forEach(item => {
+  const input = document.getElementById(item.inputId);
+
+  if (input) {
+    input.addEventListener("change", () => {
+      if (!input.files.length) return;
+
+      const botaoEnviar = input.parentElement.querySelector("button");
+
+      if (botaoEnviar) {
+        botaoEnviar.classList.add("btn-anexo-pendente");
+        botaoEnviar.innerText = item.textoBotao;
+      }
+    });
+  }
+});
+
 
 function confirmarRemocaoAnexo() {
   return new Promise((resolve) => {
