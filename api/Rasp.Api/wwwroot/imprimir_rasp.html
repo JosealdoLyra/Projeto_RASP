@@ -595,116 +595,98 @@
     }
 
     function paginaEvidencias(r, pns, arquivos) {
-      const precisaVerso = pns.length > 1 || arquivos.length > 0;
+  const fotos = (arquivos || [])
+    .filter(a => (a.tipoAnexo || a.TipoAnexo) === "FOTO")
+    .sort((a, b) => Number(a.posicao || a.Posicao) - Number(b.posicao || b.Posicao));
 
-      if (!precisaVerso) {
-        return "";
-      }
+  const precisaVerso = pns.length > 1 || fotos.length > 0;
 
-      return `
-        <section class="pagina">
-          <!-- 01. CABEÇALHO DO VERSO -->
-          <div class="cabecalho">
-            <div class="logo">
-              <img src="/img/GM_Logo.png" alt="GM">
-            </div>
+  if (!precisaVerso) {
+    return "";
+  }
 
-            <div class="titulo">
-              <h1>Evidências e Peças Envolvidas</h1>
-              <p>SAC S10 SJC</p>
-            </div>
+  return `
+    <section class="pagina">
+      <div class="cabecalho">
+        <div class="logo">
+          <img src="/img/GM_Logo.png" alt="GM">
+        </div>
+        <div class="titulo">
+          <h1>Evidências e Peças Envolvidas</h1>
+          <p>SAC S10 SJC</p>
+        </div>
+        <div class="numero">
+          <span>RASP Nº</span>
+          <strong>${valor(r.numeroRasp)}</strong>
+        </div>
+      </div>
 
-            <div class="numero">
-              <span>RASP Nº</span>
-              <strong>${valor(r.numeroRasp)}</strong>
-            </div>
+      ${fotos.length > 0 ? `
+        <div class="secao">
+          <div class="secao-titulo">Evidências Fotográficas</div>
+          <div class="evidencias" style="
+            grid-template-columns: ${fotos.length === 1 ? "1fr" : "repeat(2, 1fr)"};
+          ">
+            ${fotos.map((foto, index) => {
+              const idAnexo = foto.idAnexo || foto.IdAnexo;
+              return `
+                <div class="foto-box">
+                  <img
+                    src="${API_BASE}/rasp/anexos/${idAnexo}/visualizar?v=${idAnexo}"
+                    style="max-width:100%; max-height:100%; object-fit:contain;"
+                  />
+                </div>
+              `;
+            }).join("")}
           </div>
+        </div>
+      ` : ""}
 
-          <!-- 02. EVIDÊNCIAS FOTOGRÁFICAS -->
-          <div class="secao">
-            <div class="secao-titulo">Evidências Fotográficas</div>
+      <div class="secao">
+        <div class="secao-titulo">Lista de PNs Envolvidos</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Ordem</th>
+              <th>PN</th>
+              <th>Nome Peça</th>
+              <th>DUNS</th>
+              <th>Qtd Suspeita</th>
+              <th>Qtd Checada</th>
+              <th>Qtd Rejeitada</th>
+              <th>Seleção</th>
+              <th>Trava</th>
+              <th>QHD</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pns.map(p => `
+              <tr>
+                <td>${valor(p.ordemExibicao)}</td>
+                <td>${valor(p.pn)}</td>
+                <td>${nomePeca(p)}</td>
+                <td>${valor(p.duns)}</td>
+                <td>${valor(p.quantidadeSuspeita)}</td>
+                <td>${valor(p.quantidadeChecada)}</td>
+                <td>${valor(p.quantidadeRejeitada)}</td>
+                <td>${simNao(p.entrouSelecao)}</td>
+                <td>${simNao(p.travaAtiva)}</td>
+                <td class="${p.qhdAtivo ? 'status-qhd' : ''}">${simNao(p.qhdAtivo)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
 
-            <div class="evidencias">
-              ${
-                  [1, 2, 3, 4].map(posicao => {
-                    const foto = arquivos.find(a =>
-                      (a.tipoAnexo || a.TipoAnexo) === "FOTO" &&
-                      Number(a.posicao || a.Posicao) === posicao
-                    );
+      <div class="rodape">
+        <span>Versão 1.0 - Sistema RASP</span>
+        <span>Developed by Josealdo Lyra</span>
+        <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
+      </div>
+    </section>
+  `;
+}
 
-                    if (!foto) {
-                      return `
-                        <div class="foto-box">
-                          Espaço reservado para imagem ${posicao}
-                        </div>
-                      `;
-                    }
-
-                    const idAnexo = foto.idAnexo || foto.IdAnexo;
-
-                    return `
-                      <div class="foto-box">
-                        <img
-                          src="${API_BASE}/rasp/anexos/${idAnexo}/visualizar?v=${idAnexo}"
-                          style="max-width:100%; max-height:100%; object-fit:contain;"
-                        />
-                      </div>
-                    `;
-                  }).join("")
-                }
-
-            </div>
-          </div>
-
-          <!-- 03. LISTA DE PNS -->
-          <div class="secao">
-            <div class="secao-titulo">Lista de PNs Envolvidos</div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Ordem</th>
-                  <th>PN</th>
-                  <th>Nome Peça</th>
-                  <th>DUNS</th>
-                  <th>Qtd Suspeita</th>
-                  <th>Qtd Checada</th>
-                  <th>Qtd Rejeitada</th>
-                  <th>Seleção</th>
-                  <th>Trava</th>
-                  <th>QHD</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                ${pns.map(p => `
-                  <tr>
-                    <td>${valor(p.ordemExibicao)}</td>
-                    <td>${valor(p.pn)}</td>
-                    <td>${nomePeca(p)}</td>
-                    <td>${valor(p.duns)}</td>
-                    <td>${valor(p.quantidadeSuspeita)}</td>
-                    <td>${valor(p.quantidadeChecada)}</td>
-                    <td>${valor(p.quantidadeRejeitada)}</td>
-                    <td>${simNao(p.entrouSelecao)}</td>
-                    <td>${simNao(p.travaAtiva)}</td>
-                    <td class="${p.qhdAtivo ? 'status-qhd' : ''}">${simNao(p.qhdAtivo)}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
-
-          <!-- 04. RODAPÉ DO VERSO -->
-          <div class="rodape">
-            <span>Versão 1.0 - Sistema RASP</span>
-            <span>Developed by Josealdo Lyra</span>
-            <span>Impresso em: ${new Date().toLocaleString("pt-BR")}</span>
-          </div>
-
-        </section>
-      `;
-    }
 
     carregarRasp();
   </script>

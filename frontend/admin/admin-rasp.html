@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administração de RASP</title>
+
+  <style>
+    :root {
+      --azul-950: #06152d;
+      --azul-900: #082046;
+      --azul-800: #0d2d63;
+      --azul-700: #0f3f8f;
+      --azul-600: #2563eb;
+      --verde: #22c55e;
+      --amarelo: #f59e0b;
+      --vermelho: #ef4444;
+      --texto: #e5eefc;
+      --texto-suave: #9fb7d9;
+      --card: rgba(255,255,255,.08);
+      --card-hover: rgba(255,255,255,.13);
+      --borda: rgba(255,255,255,.14);
+      --radius: 20px;
+      --sombra: 0 22px 60px rgba(0,0,0,.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(37,99,235,.28), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(34,197,94,.15), transparent 28%),
+        linear-gradient(135deg, var(--azul-950), var(--azul-900) 55%, #020617);
+      color: var(--texto);
+    }
+
+    .topbar {
+      height: 78px;
+      padding: 0 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--borda);
+      background: rgba(2,6,23,.34);
+      backdrop-filter: blur(14px);
+    }
+
+    .marca {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #60a5fa, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 0 26px rgba(96,165,250,.35);
+    }
+
+    .marca h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .marca p {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--texto-suave);
+    }
+
+    .acoes-topo {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pill {
+      border: 1px solid var(--borda);
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .btn-topo,
+    button {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(96,165,250,.35);
+      background: rgba(37,99,235,.25);
+      color: white;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover,
+    .btn-topo:hover {
+      background: rgba(37,99,235,.42);
+    }
+
+    .btn-verde {
+      background: rgba(34,197,94,.22);
+      border-color: rgba(34,197,94,.45);
+    }
+
+    .btn-amarelo {
+      background: rgba(245,158,11,.22);
+      border-color: rgba(245,158,11,.45);
+    }
+
+    .btn-vermelho {
+      background: rgba(239,68,68,.22);
+      border-color: rgba(239,68,68,.45);
+    }
+
+    .container {
+      padding: 34px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      margin-bottom: 22px;
+      padding: 28px;
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.07);
+      border: 1px solid var(--borda);
+      box-shadow: var(--sombra);
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      color: var(--texto-suave);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .alerta-admin {
+      margin-bottom: 22px;
+      padding: 16px 18px;
+      border-left: 5px solid var(--amarelo);
+      background: rgba(245,158,11,.10);
+      border-radius: 14px;
+      border: 1px solid rgba(245,158,11,.20);
+      line-height: 1.5;
+    }
+
+    .painel {
+      background: var(--card);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--sombra);
+      padding: 22px;
+      margin-bottom: 22px;
+    }
+
+    .painel h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+    }
+
+    .linha {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .linha-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .linha-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .campo {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--texto-suave);
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(2,6,23,.42);
+      color: var(--texto);
+      padding: 10px 12px;
+      outline: none;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(96,165,250,.65);
+    }
+
+    .barra-busca {
+      display: grid;
+      grid-template-columns: 180px 1fr 140px 140px 140px;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .abas {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .aba {
+      border: 1px solid var(--borda);
+      background: rgba(255,255,255,.07);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .aba.ativa {
+      background: rgba(37,99,235,.38);
+      border-color: rgba(96,165,250,.55);
+    }
+
+    .secao {
+      display: none;
+    }
+
+    .secao.ativa {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      margin-top: 12px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      padding: 10px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--texto-suave);
+      background: rgba(2,6,23,.35);
+    }
+
+    .acoes-form {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .resultado-vazio {
+      color: var(--texto-suave);
+      font-size: 14px;
+      padding: 18px;
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 14px;
+      text-align: center;
+    }
+
+    .rodape {
+      margin-top: 34px;
+      color: var(--texto-suave);
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1000px) {
+      .linha,
+      .linha-2,
+      .linha-3,
+      .barra-busca {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        height: auto;
+        padding: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .acoes-topo {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="marca">
+      <div class="logo">R</div>
+      <div>
+        <h1>Administração de RASP</h1>
+        <p>Modo administrador • Sistema de Qualidade</p>
+      </div>
+    </div>
+
+    <div class="acoes-topo">
+      <div class="pill" id="usuarioLogado">Administrador</div>
+      <a href="admin-home.html" class="btn-topo">← Administração</a>
+      <a href="../home.html" class="btn-topo">Página Inicial</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <h2>Manutenção Avançada de RASP</h2>
+      <p>
+        Central administrativa para pesquisar, criar, editar, duplicar e corrigir registros RASP.
+        Esta tela permite manutenção completa dos dados principais, SPPS, emissor, fornecedor,
+        classificações, peças, One Page, histórico e auditoria.
+      </p>
+    </section>
+
+    <div class="alerta-admin">
+      <strong>⚠ Modo Administrador</strong><br>
+      Todas as alterações realizadas nesta tela poderão impactar diretamente os registros oficiais do sistema.
+    </div>
+
+    <!-- BUSCA -->
+    <section class="painel">
+      <h3>Pesquisar RASP</h3>
+
+      <div class="barra-busca">
+        <div class="campo">
+          <label>Pesquisar por</label>
+          <select id="tipoPesquisa">
+            <option value="rasp">Número RASP</option>
+            <option value="spps">SPPS</option>
+            <option value="pn">PN</option>
+            <option value="fornecedor">Fornecedor</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Valor</label>
+          <input id="txtPesquisa" placeholder="Exemplo: 052226, 245016, PN ou fornecedor" />
+        </div>
+
+        <button onclick="buscarRasp()">Buscar</button>
+        <button class="btn-verde" onclick="novoRasp()">Novo RASP</button>
+        <button class="btn-amarelo" onclick="limparTela()">Limpar</button>
+      </div>
+    </section>
+
+    <!-- RESULTADO / FORMULÁRIO -->
+    <section class="painel">
+      <div class="abas">
+        <div class="aba ativa" onclick="abrirAba('geral', this)">Geral</div>
+        <div class="aba" onclick="abrirAba('classificacoes', this)">Classificações</div>
+        <div class="aba" onclick="abrirAba('pecas', this)">Peças / PNs</div>
+        <div class="aba" onclick="abrirAba('onepage', this)">One Page</div>
+        <div class="aba" onclick="abrirAba('historico', this)">Histórico</div>
+        <div class="aba" onclick="abrirAba('auditoria', this)">Auditoria</div>
+      </div>
+
+      <!-- ABA GERAL -->
+      <div id="aba-geral" class="secao ativa">
+        <h3>Dados Gerais</h3>
+
+        <div class="linha">
+          <div class="campo">
+            <label>Número RASP</label>
+            <input id="numeroRasp" />
+          </div>
+
+          <div class="campo">
+            <label>Data de Criação</label>
+            <input id="dataCriacao" type="date" />
+          </div>
+
+          <div class="campo">
+            <label>SPPS</label>
+            <input id="sppsNumero" maxlength="6" />
+          </div>
+
+          <div class="campo">
+            <label>Status</label>
+            <select id="statusRasp">
+              <option value="">Selecione</option>
+              <option value="Em análise">Em análise</option>
+              <option value="Aprovado">Aprovado</option>
+              <option value="Reprovado">Reprovado</option>
+              <option value="Cancelado">Cancelado</option>
+              <option value="Rascunho">Rascunho</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="linha">
+          <div class="campo">
+            <label>Fornecedor</label>
+            <input id="fornecedor" />
+          </div>
+
+          <div class="campo">
+            <label>DUNS</label>
+            <input id="duns" />
+          </div>
+
+          <div class="campo">
+            <label>Emissor</label>
+            <input id="emissor" />
+          </div>
+
+          <div class="campo">
+            <label>FT / Analista</label>
+            <input id="analista" />
+          </div>
+        </div>
+
+        <div class="linha">
+          <div class="campo">
+            <label>Setor</label>
+            <select id="setor"></select>
+          </div>
+
+          <div class="campo">
+            <label>Origem</label>
+            <select id="origem"></select>
+          </div>
+
+          <div class="campo">
+            <label>Modelo</label>
+            <select id="modelo"></select>
+          </div>
+
+          <div class="campo">
+            <label>GM Aliado</label>
+            <select id="gmAliado">
+              <option value="">Selecione</option>
+              <option value="1">Sim</option>
+              <option value="2">Não</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="linha-2">
+          <div class="campo">
+            <label>Descrição do Problema</label>
+            <textarea id="descricaoProblema"></textarea>
+          </div>
+
+          <div class="campo">
+            <label>Conclusão</label>
+            <textarea id="conclusao"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABA CLASSIFICAÇÕES -->
+      <div id="aba-classificacoes" class="secao">
+        <h3>Classificações</h3>
+
+        <div class="linha-3">
+          <div class="campo">
+            <label>Impacto Cliente</label>
+            <select id="impactoCliente"></select>
+          </div>
+
+          <div class="campo">
+            <label>Impacto Qualidade</label>
+            <select id="impactoQualidade"></select>
+          </div>
+
+          <div class="campo">
+            <label>Maior Impacto</label>
+            <select id="maiorImpacto"></select>
+          </div>
+        </div>
+
+        <div class="linha-3">
+          <div class="campo">
+            <label>Laboratório?</label>
+            <select id="laboratorio">
+              <option value="">Selecione</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>TAC Medição?</label>
+            <select id="tacMedicao">
+              <option value="">Selecione</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+
+          <div class="campo">
+            <label>Peça J/K</label>
+            <select id="pecaJk">
+              <option value="">Selecione</option>
+              <option value="Nacional">Nacional</option>
+              <option value="Importado">Importado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Maior Impacto - Descrição detalhada</label>
+          <textarea id="maiorImpactoTexto"></textarea>
+        </div>
+      </div>
+
+      <!-- ABA PEÇAS -->
+      <div id="aba-pecas" class="secao">
+        <h3>Peças / PNs</h3>
+
+        <div class="linha-2">
+          <div class="campo">
+            <label>Nome da Peça</label>
+            <input id="nomePeca" />
+          </div>
+
+          <div class="campo">
+            <label>Adicionar novo PN</label>
+            <button class="btn-verde" onclick="adicionarLinhaPn()">Adicionar PN</button>
+          </div>
+        </div>
+
+        <table id="tabelaPns">
+          <thead>
+            <tr>
+              <th>Ordem</th>
+              <th>PN</th>
+              <th>Qtd Suspeita</th>
+              <th>Qtd Checada</th>
+              <th>Qtd Rejeitada</th>
+              <th>Data Lote</th>
+              <th>Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyPns">
+            <tr>
+              <td colspan="7" class="resultado-vazio">Nenhum PN carregado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ABA ONE PAGE -->
+      <div id="aba-onepage" class="secao">
+        <h3>One Page</h3>
+
+        <div class="linha">
+          <button onclick="abrirOnePage()">Abrir One Page</button>
+          <button onclick="imprimirOnePage()">Imprimir</button>
+          <button onclick="regenerarOnePage()">Regenerar</button>
+          <button class="btn-amarelo" onclick="marcarComoRevisar()">Marcar para Revisão</button>
+        </div>
+
+        <div class="resultado-vazio">
+          A integração da One Page será ligada ao backend na próxima etapa.
+        </div>
+      </div>
+
+      <!-- ABA HISTÓRICO -->
+      <div id="aba-historico" class="secao">
+        <h3>Histórico</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Usuário</th>
+              <th>Ação</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyHistorico">
+            <tr>
+              <td colspan="4" class="resultado-vazio">Nenhum histórico carregado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ABA AUDITORIA -->
+      <div id="aba-auditoria" class="secao">
+        <h3>Auditoria</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Usuário</th>
+              <th>Campo</th>
+              <th>Valor Antigo</th>
+              <th>Valor Novo</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAuditoria">
+            <tr>
+              <td colspan="5" class="resultado-vazio">Nenhuma alteração registrada.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="acoes-form">
+        <button class="btn-verde" onclick="salvarRasp()">Salvar Alterações</button>
+        <button class="btn-amarelo" onclick="duplicarRasp()">Duplicar RASP</button>
+        <button onclick="converterRascunho()">Converter para Rascunho</button>
+        <button class="btn-vermelho" onclick="excluirRasp()">Excluir RASP</button>
+      </div>
+    </section>
+
+    <div class="rodape">
+      Sistema RASP • Módulo Administração de RASP
+      <br>
+      Desenvolvido por <strong>Josealdo Lyra</strong>
+    </div>
+  </main>
+
+  <script>
+    let raspAtual = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      validarSessaoAdmin();
+      carregarCombosMock();
+    });
+
+    function validarSessaoAdmin() {
+      const usuarioRaw =
+        sessionStorage.getItem("raspUsuarioLogado") ||
+        localStorage.getItem("usuarioLogado");
+
+      if (!usuarioRaw) {
+        alert("Sessão não encontrada. Faça login novamente.");
+        window.location.href = "../login.html";
+        return;
+      }
+
+      try {
+        const usuario = JSON.parse(usuarioRaw);
+
+        const nome =
+          usuario.nomeCompleto ||
+          usuario.nome ||
+          usuario.usuario?.nomeCompleto ||
+          usuario.usuario?.nome ||
+          "Administrador";
+
+        const perfil =
+          usuario.perfil ||
+          usuario.nomePerfil ||
+          usuario.tipoPerfil ||
+          usuario.usuario?.perfil ||
+          usuario.usuario?.nomePerfil ||
+          usuario.usuario?.tipoPerfil ||
+          "";
+
+        const perfilNormalizado = String(perfil).toUpperCase();
+
+        const isAdmin =
+          usuario.administrador === true ||
+          usuario.Administrador === true ||
+          usuario.usuario?.administrador === true ||
+          usuario.usuario?.Administrador === true ||
+          perfilNormalizado === "ADMIN" ||
+          perfilNormalizado === "ADMINISTRADOR" ||
+          perfilNormalizado === "ADM";
+
+        document.getElementById("usuarioLogado").textContent = `👤 ${nome}`;
+
+        if (!isAdmin) {
+          alert("Acesso restrito ao administrador do sistema.");
+          window.location.href = "../home.html";
+        }
+      } catch {
+        alert("Erro ao validar sessão. Faça login novamente.");
+        window.location.href = "../login.html";
+      }
+    }
+
+    function abrirAba(nome, elemento) {
+      document.querySelectorAll(".aba").forEach(a => a.classList.remove("ativa"));
+      document.querySelectorAll(".secao").forEach(s => s.classList.remove("ativa"));
+
+      elemento.classList.add("ativa");
+      document.getElementById(`aba-${nome}`).classList.add("ativa");
+    }
+
+    function carregarCombosMock() {
+      preencherSelect("setor", ["BNF", "Cockpit", "Chassis", "Dress Up", "Injetora GMB - SJC", "Manuseio", "SAC S10"]);
+      preencherSelect("origem", ["DR", "DRLoss", "GCA 5", "GCA 10", "GCA 20", "GCA 50", "Linha", "Seleção", "Outros"]);
+      preencherSelect("modelo", ["31UX", "GMI 700", "S10", "Todos"]);
+      preencherSelect("impactoCliente", ["Caso Único de Não Conformidade", "Iniciado - Fornecedor", "Múltiplas Não Conformidades", "Não Aplicável", "Program Management"]);
+      preencherSelect("impactoQualidade", ["Direct Run Loss", "Direct Run Rate", "E-FTQ", "Eng/Trans Pull", "Eng/Trans Repair", "GCA", "IPPM", "Part Not Received"]);
+      preencherSelect("maiorImpacto", ["DR", "DRLoss", "GCA", "Repair", "Pull", "Peça Não Recebida"]);
+    }
+
+    function preencherSelect(id, lista) {
+      const select = document.getElementById(id);
+      select.innerHTML = '<option value="">Selecione</option>';
+
+      lista.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.textContent = item;
+        select.appendChild(option);
+      });
+    }
+
+    async function buscarRasp() {
+  const tipo = document.getElementById("tipoPesquisa").value;
+  let valor = document.getElementById("txtPesquisa").value.trim();
+
+  if (!valor) {
+    mostrarAviso("Informe um valor para pesquisa.", "erro");
+    return;
+  }
+
+  if (tipo !== "rasp") {
+    mostrarAviso("Por enquanto teste usando Número RASP.", "erro");
+    return;
+  }
+
+  // Converte 0100/26 para 010026
+  if (valor.includes("/")) {
+    valor = valor.replace("/", "");
+  }
+
+  try {
+    const resp = await fetch(`http://localhost:5050/rasp/numero/${encodeURIComponent(valor)}`);
+
+    if (!resp.ok) {
+      mostrarAviso("RASP não encontrado.", "erro");
+      return;
+    }
+
+    const rasp = await resp.json();
+
+    document.getElementById("numeroRasp").value = rasp.numeroRasp ?? "";
+    document.getElementById("dataCriacao").value = (rasp.dataCriacao ?? "").substring(0, 10);
+    document.getElementById("sppsNumero").value = rasp.sppsNumero ?? "";
+    document.getElementById("descricaoProblema").value = rasp.descricaoProblema ?? "";
+    document.getElementById("conclusao").value = rasp.conclusao ?? "";
+
+    raspAtual = rasp;
+
+    mostrarAviso("RASP carregado com sucesso.", "sucesso");
+
+  } catch (erro) {
+    console.error(erro);
+    mostrarAviso("Erro ao conectar na API.", "erro");
+  }
+}
+
+
+
+    function carregarMock(valor) {
+      raspAtual = {
+        numeroRasp: valor,
+        dataCriacao: "2026-07-03",
+        sppsNumero: "245016"
+      };
+
+      document.getElementById("numeroRasp").value = valor;
+      document.getElementById("dataCriacao").value = "2026-07-03";
+      document.getElementById("sppsNumero").value = "245016";
+      document.getElementById("statusRasp").value = "Em análise";
+      document.getElementById("fornecedor").value = "Fornecedor exemplo";
+      document.getElementById("duns").value = "000000000";
+      document.getElementById("emissor").value = "Josealdo Lyra";
+      document.getElementById("analista").value = "FT exemplo";
+      document.getElementById("descricaoProblema").value = "Descrição carregada para teste.";
+      document.getElementById("conclusao").value = "Conclusão carregada para teste.";
+      document.getElementById("nomePeca").value = "Peça exemplo";
+
+      renderizarPns([
+        {
+          ordem: 1,
+          pn: "52202127",
+          suspeita: 1,
+          checada: 1,
+          rejeitada: 0,
+          dataLote: "2026-05-14"
+        }
+      ]);
+    }
+
+    function renderizarPns(lista) {
+      const tbody = document.getElementById("tbodyPns");
+      tbody.innerHTML = "";
+
+      lista.forEach(item => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td><input value="${item.ordem || ""}" /></td>
+          <td><input value="${item.pn || ""}" /></td>
+          <td><input type="number" value="${item.suspeita || 0}" /></td>
+          <td><input type="number" value="${item.checada || 0}" /></td>
+          <td><input type="number" value="${item.rejeitada || 0}" /></td>
+          <td><input type="date" value="${item.dataLote || ""}" /></td>
+          <td><button class="btn-vermelho" onclick="this.closest('tr').remove()">Excluir</button></td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function adicionarLinhaPn() {
+      const tbody = document.getElementById("tbodyPns");
+
+      if (tbody.querySelector(".resultado-vazio")) {
+        tbody.innerHTML = "";
+      }
+
+      const qtd = tbody.querySelectorAll("tr").length + 1;
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td><input value="${qtd}" /></td>
+        <td><input placeholder="PN" /></td>
+        <td><input type="number" value="0" /></td>
+        <td><input type="number" value="0" /></td>
+        <td><input type="number" value="0" /></td>
+        <td><input type="date" /></td>
+        <td><button class="btn-vermelho" onclick="this.closest('tr').remove()">Excluir</button></td>
+      `;
+
+      tbody.appendChild(tr);
+    }
+
+    function novoRasp() {
+      limparTela();
+      document.getElementById("statusRasp").value = "Rascunho";
+      alert("Tela liberada para criação de novo RASP.");
+    }
+
+    function limparTela() {
+      raspAtual = null;
+
+      document.querySelectorAll("input, textarea").forEach(campo => campo.value = "");
+      document.querySelectorAll("select").forEach(campo => campo.selectedIndex = 0);
+
+      document.getElementById("tbodyPns").innerHTML =
+        '<tr><td colspan="7" class="resultado-vazio">Nenhum PN carregado.</td></tr>';
+    }
+
+    function salvarRasp() {
+      alert("Salvar preparado. Próxima etapa: conectar com API PUT/POST.");
+    }
+
+    function duplicarRasp() {
+      alert("Duplicar preparado. Próxima etapa: conectar com API.");
+    }
+
+    function excluirRasp() {
+      if (confirm("Confirma excluir este RASP? Essa ação deverá ser registrada em auditoria.")) {
+        alert("Excluir preparado. Próxima etapa: conectar com API DELETE.");
+      }
+    }
+
+    function converterRascunho() {
+      document.getElementById("statusRasp").value = "Rascunho";
+      alert("RASP convertido para rascunho na tela. Salve para confirmar.");
+    }
+
+    function abrirOnePage() {
+      alert("Abrir One Page será ligado ao módulo existente.");
+    }
+
+    function imprimirOnePage() {
+      alert("Impressão será ligada ao módulo existente.");
+    }
+
+    function regenerarOnePage() {
+      alert("Regeneração será ligada ao backend.");
+    }
+
+    function marcarComoRevisar() {
+      alert("Marcado para revisão na tela. Salve para confirmar.");
+    }
+
+    function mostrarAviso(mensagem, tipo = "info") {
+  let aviso = document.getElementById("avisoSistema");
+
+  if (!aviso) {
+    aviso = document.createElement("div");
+    aviso.id = "avisoSistema";
+    aviso.style.position = "fixed";
+    aviso.style.top = "24px";
+    aviso.style.right = "24px";
+    aviso.style.zIndex = "9999";
+    aviso.style.padding = "16px 22px";
+    aviso.style.borderRadius = "14px";
+    aviso.style.fontWeight = "800";
+    aviso.style.boxShadow = "0 20px 50px rgba(0,0,0,.35)";
+    aviso.style.border = "1px solid rgba(255,255,255,.18)";
+    document.body.appendChild(aviso);
+  }
+
+  aviso.textContent = mensagem;
+
+  if (tipo === "sucesso") {
+    aviso.style.background = "rgba(34,197,94,.92)";
+    aviso.style.color = "#fff";
+  } else {
+    aviso.style.background = "rgba(239,68,68,.92)";
+    aviso.style.color = "#fff";
+  }
+
+  aviso.style.display = "block";
+
+  setTimeout(() => {
+    aviso.style.display = "none";
+  }, 2800);
+}
+
+  </script>
+
+</body>
+</html>

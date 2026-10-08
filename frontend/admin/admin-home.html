@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <!-- =========================================================
        01. CONFIGURAÇÕES BÁSICAS
@@ -32,7 +33,6 @@
       --card: rgba(255, 255, 255, 0.08);
       --card-hover: rgba(255, 255, 255, 0.13);
       --borda: rgba(255, 255, 255, 0.14);
-
       --sombra: 0 22px 60px rgba(0, 0, 0, 0.35);
       --radius: 22px;
     }
@@ -108,6 +108,9 @@
       font-size: 12px;
       font-weight: 700;
       color: var(--texto);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn-topo {
@@ -136,7 +139,7 @@
     }
 
     .hero {
-      margin-bottom: 28px;
+      margin-bottom: 22px;
       padding: 30px;
       border-radius: var(--radius);
       background: rgba(255, 255, 255, 0.07);
@@ -152,10 +155,34 @@
 
     .hero p {
       margin: 10px 0 0;
-      max-width: 780px;
+      max-width: 850px;
       color: var(--texto-suave);
       font-size: 15px;
       line-height: 1.55;
+    }
+
+    .hero-pills {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .alerta-admin {
+      margin-bottom: 26px;
+      padding: 18px 20px;
+      border-left: 5px solid var(--amarelo);
+      background: rgba(245, 158, 11, 0.10);
+      border-radius: 14px;
+      border-top: 1px solid rgba(245, 158, 11, 0.20);
+      border-right: 1px solid rgba(245, 158, 11, 0.20);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.20);
+      color: var(--texto);
+      line-height: 1.5;
+    }
+
+    .alerta-admin strong {
+      color: #fcd34d;
     }
 
     .grid-cards {
@@ -218,6 +245,7 @@
       color: var(--texto-suave);
       font-size: 13px;
       line-height: 1.45;
+      padding-bottom: 28px;
     }
 
     .status {
@@ -244,6 +272,7 @@
       color: var(--texto-suave);
       font-size: 12px;
       text-align: center;
+      line-height: 1.6;
     }
 
     @media (max-width: 1100px) {
@@ -277,12 +306,14 @@
 </head>
 
 <body>
+
   <!-- =========================================================
        03. TOPO
        ========================================================= -->
   <header class="topbar">
     <div class="marca">
       <div class="logo">R</div>
+
       <div>
         <h1>Administração RASP</h1>
         <p>Sistema de Qualidade • SAC - S10 SJC</p>
@@ -299,119 +330,240 @@
        04. CONTEÚDO PRINCIPAL
        ========================================================= -->
   <main class="container">
+
     <section class="hero">
-      <h2>Manutenção do Administrador</h2>
+      <h2>Painel Administrativo do Sistema RASP</h2>
+
       <p>
-        Área restrita para manutenção dos cadastros principais do sistema RASP.
-        O primeiro módulo operacional desta área será o cadastro de usuários GM
-        e usuários terceiros da seleção operacional.
+        Área exclusiva para administração do Sistema RASP. Permite o gerenciamento
+        dos usuários, manutenção completa dos RASPs, cadastros mestres, importação
+        de dados históricos, auditoria das alterações e futuras configurações
+        globais do sistema.
       </p>
+
+      <div class="hero-pills">
+        <span class="pill">10 módulos</span>
+        <span class="pill">2 disponíveis</span>
+        <span class="pill">8 planejados</span>
+      </div>
     </section>
 
+    <div class="alerta-admin">
+      <strong>⚠ Modo Administrador</strong>
+      <br><br>
+      Todas as alterações realizadas nesta área poderão impactar diretamente os
+      registros do sistema. Utilize somente para manutenção e correções autorizadas.
+    </div>
+
     <section class="grid-cards">
+
+      <!-- 01. USUÁRIOS -->
       <a href="admin-usuarios.html" class="card">
         <div class="icone">👥</div>
+
         <h3>Cadastro de Usuários</h3>
+
         <p>
           Manutenção de usuários GM, perfis, turnos, administradores e usuários
           terceiros vinculados às empresas de seleção.
         </p>
+
         <span class="status">Disponível</span>
       </a>
 
+      <!-- 02. MANUTENÇÃO DE RASP -->
+      <a href="admin-rasp.html" id="cardAdminRasp" class="card">
+        <div class="icone">📝</div>
+
+        <h3>Manutenção de RASP</h3>
+
+        <p>
+          Permite criar, editar, duplicar, excluir e corrigir qualquer RASP do sistema.
+          Também possibilita alterar emissor, SPPS, fornecedor, peças, impactos,
+          One Page e demais informações administrativas.
+        </p>
+
+        <span class="status">Disponível</span>
+      </a>
+
+      <!-- 03. IMPORTAÇÃO -->
+      <div class="card bloqueado">
+        <div class="icone">📥</div>
+
+        <h3>Importação de Dados</h3>
+
+        <p>
+          Importação de RASPs antigos, cargas históricas, arquivos CSV e bases
+          legadas do Access.
+        </p>
+
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <!-- 04. LOGS -->
+      <div class="card bloqueado">
+        <div class="icone">📜</div>
+
+        <h3>Logs do Sistema</h3>
+
+        <p>
+          Histórico completo das alterações realizadas pelos administradores.
+        </p>
+
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <!-- 05. BACKUP -->
+      <div class="card bloqueado">
+        <div class="icone">💾</div>
+
+        <h3>Backup</h3>
+
+        <p>
+          Gerenciamento de backups e restauração do banco de dados.
+        </p>
+
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <!-- 06. FORNECEDORES -->
       <div class="card bloqueado">
         <div class="icone">🏭</div>
+
         <h3>Fornecedores</h3>
+
         <p>
-          Manutenção futura do cadastro mestre de fornecedores e DUNS.
+          Manutenção futura do cadastro mestre de fornecedores, DUNS e contatos.
         </p>
+
         <span class="status futuro">Futuro</span>
       </div>
 
+      <!-- 07. PEÇAS -->
       <div class="card bloqueado">
         <div class="icone">🔩</div>
+
         <h3>Peças / PN</h3>
+
         <p>
-          Manutenção futura do cadastro mestre de peças e part numbers.
+          Manutenção futura do cadastro mestre de peças, part numbers e famílias.
         </p>
+
         <span class="status futuro">Futuro</span>
       </div>
 
+      <!-- 08. DOMÍNIOS -->
       <div class="card bloqueado">
         <div class="icone">⚙️</div>
+
         <h3>Domínios do Sistema</h3>
+
         <p>
           Manutenção futura de turnos, setores, impactos, classificações e listas auxiliares.
         </p>
+
         <span class="status futuro">Futuro</span>
       </div>
+
+      <!-- 09. AUDITORIA -->
+      <div class="card bloqueado">
+        <div class="icone">📊</div>
+
+        <h3>Auditoria</h3>
+
+        <p>
+          Consulta completa de todas as alterações realizadas no sistema,
+          identificando usuário, data, hora e valores alterados.
+        </p>
+
+        <span class="status futuro">Futuro</span>
+      </div>
+
+      <!-- 10. CONFIGURAÇÕES -->
+      <div class="card bloqueado">
+        <div class="icone">🛠️</div>
+
+        <h3>Configurações Gerais</h3>
+
+        <p>
+          Parâmetros do sistema, numeração automática, One Page, impressões
+          e preferências globais.
+        </p>
+
+        <span class="status futuro">Futuro</span>
+      </div>
+
     </section>
 
     <div class="rodape">
-      Desenvolvido por: <strong>Josealdo Lyra</strong> • Sistema RASP
+      Sistema RASP • Versão 1.0.0
+      <br>
+      Desenvolvido por <strong>Josealdo Lyra</strong>
     </div>
+
   </main>
 
   <!-- =========================================================
-       05. SCRIPT DE PROTEÇÃO SIMPLES
+       05. SCRIPT DE PROTEÇÃO ADMINISTRATIVA
        ========================================================= -->
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const usuarioRaw =
-      sessionStorage.getItem("raspUsuarioLogado") ||
-      localStorage.getItem("usuarioLogado");
+    document.addEventListener("DOMContentLoaded", () => {
+      const usuarioRaw =
+        sessionStorage.getItem("raspUsuarioLogado") ||
+        localStorage.getItem("usuarioLogado");
 
-    if (!usuarioRaw) {
-      alert("Sessão não encontrada. Faça login novamente.");
-      window.location.href = "../login.html";
-      return;
-    }
-
-    try {
-      const usuario = JSON.parse(usuarioRaw);
-
-      const nome =
-        usuario.nomeCompleto ||
-        usuario.nome ||
-        usuario.usuario?.nomeCompleto ||
-        usuario.usuario?.nome ||
-        "Administrador";
-
-      const perfil =
-        usuario.perfil ||
-        usuario.nomePerfil ||
-        usuario.tipoPerfil ||
-        usuario.usuario?.perfil ||
-        usuario.usuario?.nomePerfil ||
-        usuario.usuario?.tipoPerfil ||
-        "";
-
-      const perfilNormalizado = String(perfil).toUpperCase();
-
-      const isAdmin =
-        usuario.administrador === true ||
-        usuario.Administrador === true ||
-        usuario.usuario?.administrador === true ||
-        usuario.usuario?.Administrador === true ||
-        perfilNormalizado === "ADMIN" ||
-        perfilNormalizado === "ADMINISTRADOR" ||
-        perfilNormalizado === "ADM";
-
-      document.getElementById("usuarioLogado").textContent =
-        `👤 ${nome}`;
-
-      if (!isAdmin) {
-        alert("Acesso restrito ao administrador do sistema.");
-        window.location.href = "../home.html";
+      if (!usuarioRaw) {
+        alert("Sessão não encontrada. Faça login novamente.");
+        window.location.href = "../login.html";
         return;
       }
-    } catch (error) {
-      console.error("Erro ao validar sessão administrativa:", error);
-      alert("Erro ao validar sessão. Faça login novamente.");
-      window.location.href = "../login.html";
-    }
-  });
-</script>
+
+      try {
+        const usuario = JSON.parse(usuarioRaw);
+
+        const nome =
+          usuario.nomeCompleto ||
+          usuario.nome ||
+          usuario.usuario?.nomeCompleto ||
+          usuario.usuario?.nome ||
+          "Administrador";
+
+        const perfil =
+          usuario.perfil ||
+          usuario.nomePerfil ||
+          usuario.tipoPerfil ||
+          usuario.usuario?.perfil ||
+          usuario.usuario?.nomePerfil ||
+          usuario.usuario?.tipoPerfil ||
+          "";
+
+        const perfilNormalizado = String(perfil).toUpperCase();
+
+        const isAdmin =
+          usuario.administrador === true ||
+          usuario.Administrador === true ||
+          usuario.usuario?.administrador === true ||
+          usuario.usuario?.Administrador === true ||
+          perfilNormalizado === "ADMIN" ||
+          perfilNormalizado === "ADMINISTRADOR" ||
+          perfilNormalizado === "ADM";
+
+        document.getElementById("usuarioLogado").textContent =
+          `👤 ${nome}`;
+
+        if (!isAdmin) {
+          alert("Acesso restrito ao administrador do sistema.");
+          window.location.href = "../home.html";
+          return;
+        }
+
+      } catch (error) {
+        console.error("Erro ao validar sessão administrativa:", error);
+        alert("Erro ao validar sessão. Faça login novamente.");
+        window.location.href = "../login.html";
+      }
+    });
+  </script>
 
 </body>
 </html>

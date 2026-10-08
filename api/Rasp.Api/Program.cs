@@ -3454,43 +3454,103 @@ app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
 
 app.MapGet("/rasp/numero/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
 {
-    var numeroLimpo = System.Net.WebUtility.UrlDecode((numeroRasp ?? string.Empty).Trim());
+    var numeroLimpo = (numeroRasp ?? "")
+        .Replace("/", "")
+        .Replace("-", "")
+        .Replace(".", "")
+        .Replace(" ", "")
+        .Trim();
 
-    if (string.IsNullOrWhiteSpace(numeroLimpo))
-        return Results.BadRequest("NumeroRasp é obrigatório.");
+    var conn = db.Database.GetDbConnection();
 
-    // remove espaços
-    numeroLimpo = numeroLimpo.Replace(" ", "");
+    if (conn.State != System.Data.ConnectionState.Open)
+        await conn.OpenAsync();
 
-    // se vier no formato completo, busca exata
-    if (numeroLimpo.Contains("/"))
+    await using var cmd = conn.CreateCommand();
+
+    cmd.CommandText = @"
+        SELECT 
+            id_rasp,
+            numero_rasp,
+            data_criacao,
+            spps_numero,
+            descricao_problema
+        FROM rasp
+        WHERE REPLACE(TRIM(numero_rasp), '/','') = @numero
+        LIMIT 1;
+    ";
+
+    var p = cmd.CreateParameter();
+    p.ParameterName = "numero";
+    p.Value = numeroLimpo;
+    cmd.Parameters.Add(p);
+
+    await using var reader = await cmd.ExecuteReaderAsync();
+
+    if (!await reader.ReadAsync())
+        return Results.NotFound();
+
+    return Results.Ok(new
     {
-        var itemCompleto = await db.Rasp
-            .AsNoTracking()
-            .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+        idRasp = reader["id_rasp"],
+        numeroRasp = reader["numero_rasp"]?.ToString(),
+        dataCriacao = reader["data_criacao"],
+        sppsNumero = reader["spps_numero"]?.ToString(),
+        descricaoProblema = reader["descricao_problema"]?.ToString()
+    });
+});
 
-        return itemCompleto is null
-            ? Results.NotFound("RASP não encontrado para o número informado.")
-            : Results.Ok(itemCompleto);
-    }
 
-    // se vier só a parte inicial, ex: 0056
-    var candidatos = await db.Rasp
-        .AsNoTracking()
-        .Where(r => r.NumeroRasp.StartsWith(numeroLimpo + "/"))
-        .OrderByDescending(r => r.IdRasp)
-        .ToListAsync();
+app.MapGet("/admin/rasp/buscar/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
+{
+    var numeroLimpo = (numeroRasp ?? "")
+        .Replace("/", "")
+        .Replace("-", "")
+        .Replace(".", "")
+        .Replace(" ", "")
+        .Trim();
 
-    if (candidatos.Count == 0)
-        return Results.NotFound("RASP não encontrado para o número informado.");
+    var conn = db.Database.GetDbConnection();
 
-    if (candidatos.Count == 1)
-        return Results.Ok(candidatos[0]);
+    if (conn.State != System.Data.ConnectionState.Open)
+        await conn.OpenAsync();
 
-    // se houver mais de um com a mesma base, retorna o mais recente
-    return Results.Ok(candidatos[0]);
-})
-.WithName("ObterRaspPorNumero");
+    await using var cmd = conn.CreateCommand();
+
+    cmd.CommandText = @"
+        SELECT
+            id_rasp,
+            numero_rasp,
+            data_criacao,
+            spps_numero,
+            descricao_problema
+        FROM rasp
+        WHERE REPLACE(TRIM(numero_rasp),'/', '') =
+        LIMIT 1;
+    ";
+
+    var p = cmd.CreateParameter();
+    p.ParameterName = "numero";
+    p.Value = numeroLimpo;
+    cmd.Parameters.Add(p);
+
+    await using var reader = await cmd.ExecuteReaderAsync();
+
+    if (!await reader.ReadAsync())
+        return Results.NotFound(new { mensagem = "RASP não encontrado", numeroLimpo });
+
+    return Results.Ok(new
+    {
+        idRasp = reader["id_rasp"],
+        numeroRasp = reader["numero_rasp"]?.ToString(),
+        dataCriacao = reader["data_criacao"],
+        sppsNumero = reader["spps_numero"]?.ToString(),
+        descricaoProblema = reader["descricao_problema"]?.ToString()
+    });
+});
+
+
+
 
 
 app.MapGet("/rasp/resumo", async (RaspDbContext db) =>
@@ -3595,6 +3655,50 @@ app.MapGet("/rasp/rascunhos", async (RaspDbContext db) =>
     return Results.Ok(itens);
 })
 .WithName("ListarRascunhosRasp");
+
+app.MapGet("/debug/rasp/{numeroRasp}", async (string numeroRasp, RaspDbContext db) =>
+{
+    string Limpar(string v) => (v ?? "")
+        .Replace("/", "")
+        .Replace("-", "")
+        .Replace(".", "")
+        .Replace(" ", "")
+        .Trim();
+
+    var numeroLimpo = Limpar(numeroRasp);
+
+    var total = await db.Rasp.CountAsync();
+
+    var exemplos = await db.Rasp
+        .AsNoTracking()
+        .OrderBy(r => r.NumeroRasp)
+        .Select(r => r.NumeroRasp)
+        .Take(20)
+        .ToListAsync();
+
+    var encontrado = await db.Rasp
+        .AsNoTracking()
+        .Where(r => r.NumeroRasp != null)
+        .Select(r => new
+        {
+            r.IdRasp,
+            r.NumeroRasp,
+            r.DataCriacao,
+            r.SppsNumero,
+            r.DescricaoProblema
+        })
+        .FirstOrDefaultAsync(r => r.NumeroRasp == numeroLimpo);
+
+    return Results.Ok(new
+    {
+        numeroDigitado = numeroRasp,
+        numeroLimpo,
+        totalRasp = total,
+        exemplos,
+        encontrado
+    });
+});
+
 
 app.MapPut("/rasp/{id:int}/trocar-ft", async (int id, TrocarFtRaspRequest req, RaspDbContext db) =>
 {
@@ -5409,6 +5513,9 @@ if (req.VinVeiculoProblema is not null)
                 return Results.BadRequest("IdSetorRasp não existe.");
 
             rasp.IdSetorRasp = req.IdSetorRasp.Value;
+
+            rasp.IdSetorRasp = req.IdSetorRasp.Value;
+
         }
 
         alterou = true;
@@ -5992,6 +6099,42 @@ app.MapPost("/rasp/{id:int}/submeter-ft", async (
     if (rasp is null)
         return Results.NotFound("RASP não encontrado.");
 
+    // -------------------------------------------------------------------------
+// EXCEÇÃO RIM
+// Setor 28 encerra o fluxo sem passar por FT/LG
+// -------------------------------------------------------------------------
+if (rasp.IdSetorRasp == 28)
+{
+    var statusAnteriorRim = rasp.IdStatusRasp;
+
+    rasp.IsRascunho = false;
+    rasp.IdStatusRasp = StatusRaspConstantes.Rim;
+    rasp.PercentualCompletude = 100;
+    rasp.DataFechamento = DateOnly.FromDateTime(DateTime.UtcNow);
+
+    await db.SaveChangesAsync();
+
+    await RegistrarHistoricoFluxoAsync(
+        db,
+        rasp.IdRasp,
+        req.IdUsuarioExecutor,
+        "RIM",
+        statusAnteriorRim,
+        rasp.IdStatusRasp,
+        "RASP classificado como RIM. Fluxo FT/LG não aplicável.",
+        "MT"
+    );
+
+    return Results.Ok(new
+    {
+        mensagem = "RASP classificado como RIM. Fluxo encerrado sem análise FT/LG.",
+        idRasp = rasp.IdRasp,
+        numeroRasp = rasp.NumeroRasp,
+        status = "RIM"
+    });
+}
+
+
     if (rasp.IdStatusRasp != 1)
         return Results.BadRequest("Somente RASP em preenchimento e ainda não submetido pode ser enviado ao FT.");
 
@@ -6090,8 +6233,9 @@ if (!rasp.DataContato.HasValue)
 // ------------------------------------------------------
 
 
-if (!rasp.IdAprovadorFt.HasValue)
+if (rasp.IdSetorRasp != 28 && !rasp.IdAprovadorFt.HasValue)
     pendencias.Add("Aprovador FT");
+
 
 // ------------------------------------------------------
 // PN obrigatório
@@ -6116,13 +6260,19 @@ var possuiPn = await db.RaspPn
     // -------------------------------------------------------------------------
     // SUBMISSÃO AO FT
     // -------------------------------------------------------------------------
+    
     var statusAnterior = rasp.IdStatusRasp;
-    rasp.IsRascunho = false;
-    rasp.IdStatusRasp = StatusRaspConstantes.AguardandoFt;
-    rasp.DataEnvioFt = DateTime.UtcNow;
-    rasp.PercentualCompletude = 100;
 
-    await db.SaveChangesAsync();
+
+// -------------------------------------------------------------------------
+// FLUXO NORMAL - SUBMISSÃO AO FT
+// -------------------------------------------------------------------------
+rasp.IsRascunho = false;
+rasp.IdStatusRasp = StatusRaspConstantes.AguardandoFt;
+rasp.DataEnvioFt = DateTime.UtcNow;
+rasp.PercentualCompletude = 100;
+
+await db.SaveChangesAsync();
 
     
 
@@ -8452,10 +8602,17 @@ app.MapDelete("/rasp/anexos/{idAnexo:int}", async (
     RaspDbContext db) =>
 {
     var anexo = await db.RaspAnexos
-        .FirstOrDefaultAsync(a => a.IdAnexo == idAnexo && a.Ativo);
+        .FirstOrDefaultAsync(a => a.IdAnexo == idAnexo);
 
     if (anexo is null)
         return Results.NotFound("Anexo não encontrado.");
+
+    if (!anexo.Ativo)
+        return Results.Ok(new
+        {
+            mensagem = "Anexo já estava removido.",
+            idAnexo
+        });
 
     anexo.Ativo = false;
 
@@ -8468,6 +8625,8 @@ app.MapDelete("/rasp/anexos/{idAnexo:int}", async (
     });
 })
 .WithName("RaspRemoverAnexo");
+
+
 
 
 

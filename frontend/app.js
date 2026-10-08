@@ -374,17 +374,12 @@ function atualizarBotaoSubmeterFt() {
 // - Por isso tentamos primeiro o padrão antigo.
 // - Se falhar, tentamos com a barra protegida.
 // ======================================================
+const numeroParaApi = numeroNormalizado.replace(/\D/g, "");
+
 let responseBusca = await fetch(
-  `${API_BASE_URL}/rasp/numero/${encodeURIComponent(numeroNormalizado)}`
+  `${API_BASE_URL}/rasp/numero/${numeroParaApi}`
 );
 
-if (!responseBusca.ok && numeroNormalizado.includes("/")) {
-  const numeroProtegido = encodeURIComponent(numeroNormalizado).replace("%2F", "%252F");
-
-  responseBusca = await fetch(
-    `${API_BASE_URL}/rasp/numero/${numeroProtegido}`
-  );
-}
 
 
         if (!responseBusca.ok) {
@@ -2899,9 +2894,70 @@ if (modoEdicao && idRaspEmEdicao) {
 
   if (!responseEdicao.ok) {
     const mensagemErro = await responseEdicao.text();
+
+    if (mensagemErro.includes("Este RASP não está mais em rascunho")) {
+        const numero = document.querySelector(".rasp-numero")?.textContent?.trim()
+            || "Este RASP";
+
+        const aviso = document.createElement("div");
+        aviso.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 20px;
+        `;
+
+        aviso.innerHTML = `
+            <div style="
+                background: white;
+                border-radius: 16px;
+                padding: 30px;
+                max-width: 440px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0,0,0,.25);
+                font-family: Arial, sans-serif;
+            ">
+                <div style="font-size: 38px; margin-bottom: 12px;">🔒</div>
+                <h2 style="margin: 0 0 12px; color: #243247;">
+                    RASP FINALIZADO
+                </h2>
+                <p style="color: #475569; line-height: 1.6;">
+                    Este RASP já foi finalizado e está bloqueado para alterações.
+                    <br><br>
+                    Somente um administrador autorizado poderá reabri-lo.
+                </p>
+                <button id="fecharAvisoRasp" style="
+                    background: #2563eb;
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 12px 32px;
+                    font-size: 15px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    margin-top: 12px;
+                ">Entendi</button>
+            </div>
+        `;
+
+        document.body.appendChild(aviso);
+
+        document.getElementById("fecharAvisoRasp").onclick = () => {
+            aviso.remove();
+        };
+
+        return;
+    }
+
     console.error("Erro ao atualizar RASP em edição:", mensagemErro);
     throw new Error(`Erro ao atualizar RASP. Detalhe: ${mensagemErro}`);
-  }
+}
+
 
   await responseEdicao.json();
 

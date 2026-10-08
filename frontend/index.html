@@ -193,10 +193,11 @@
               </div>
 
               <div class="rasp-indicador-box">
-                <span class="rasp-indicador-titulo">SPPS</span>
-                <span class="rasp-indicador-separador">•</span>
-                <span id="sppsNumeroDisplay" class="rasp-indicador-valor">------</span>
-              </div>
+  <span class="rasp-indicador-titulo">RESULTADO</span>
+  <span class="rasp-indicador-separador">•</span>
+  <span id="sppsNumeroDisplay" class="rasp-indicador-valor">EM ANÁLISE</span>
+</div>
+
             </div>
 
             <div class="rasp-data-chip">
@@ -933,14 +934,22 @@ const API_BASE_INDEX = "http://localhost:5050";
     }
 
     async function atualizarCampoSpps(numeroRasp) {
-      const campoSpps = document.getElementById("sppsNumeroDisplay");
+    const campoSpps = document.getElementById("sppsNumeroDisplay");
+    if (!campoSpps) return;
 
-      if (!campoSpps) return;
+    // Setor RIM (28): resultado RIM, mesmo em rascunho.
+    const setor = document.getElementById("setor");
 
-      const numeroSpps = await buscarSppsDoRasp(numeroRasp);
-
-      campoSpps.innerText = numeroSpps;
+    if (setor && setor.options[setor.selectedIndex]?.text.trim().toUpperCase() === "RIM"){
+        campoSpps.innerText = "RIM";
+        return;
     }
+
+    const numeroSpps = await buscarSppsDoRasp(numeroRasp);
+    campoSpps.innerText =
+        numeroSpps !== "------" ? numeroSpps : "EM ANÁLISE";
+}
+
 
     /* =========================================================
    04. CARREGAR RASP POR URL
@@ -1603,32 +1612,52 @@ function habilitarBotoesAnexos() {
 setInterval(habilitarBotoesAnexos, 1000);
 
 async function removerAnexo(idAnexo) {
-  const confirmar = await confirmarRemocaoAnexo();
-
-  if (!confirmar) return;
-
-  const resposta = await fetch(
-    `${API_BASE_INDEX}/rasp/anexos/${idAnexo}`,
-    {
-      method: "DELETE"
-    }
-  );
-
-  if (!resposta.ok) {
+  if (!idAnexo) {
     mostrarAvisoImpressaoRasp(
       "Remover anexo",
-      "Não foi possível remover o anexo."
+      "ID do anexo não localizado."
     );
     return;
   }
 
-  await carregarAnexosRasp();
-  
+  const confirmar = await confirmarRemocaoAnexo();
 
-  mostrarAvisoImpressaoRasp(
-    "Remover anexo",
-    "Anexo removido com sucesso."
-  );
+  if (!confirmar) return;
+
+  try {
+    const resposta = await fetch(
+      `${API_BASE_INDEX}/rasp/anexos/${idAnexo}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+    if (!resposta.ok) {
+      const erro = await resposta.text();
+
+      mostrarAvisoImpressaoRasp(
+        "Remover anexo",
+        erro || "Não foi possível remover o anexo."
+      );
+
+      return;
+    }
+
+    await carregarAnexosRasp();
+
+    mostrarAvisoImpressaoRasp(
+      "Remover anexo",
+      "Anexo removido com sucesso."
+    );
+
+  } catch (erro) {
+    console.error("Erro ao remover anexo:", erro);
+
+    mostrarAvisoImpressaoRasp(
+      "Remover anexo",
+      "Erro inesperado ao remover o anexo."
+    );
+  }
 }
 
 [
