@@ -945,9 +945,59 @@ const API_BASE_INDEX = "http://localhost:5050";
         return;
     }
 
-    const numeroSpps = await buscarSppsDoRasp(numeroRasp);
-    campoSpps.innerText =
-        numeroSpps !== "------" ? numeroSpps : "EM ANÁLISE";
+      // Identificar o tipo de resultado do RASP
+        const numeroSpps = await buscarSppsDoRasp(numeroRasp);
+
+        let dadosRasp = null;
+
+        try {
+            const respostaBusca = await fetch(
+                `${API_BASE_INDEX}/rasp/numero/${encodeURIComponent(numeroRasp.trim())}`
+            );
+
+            if (respostaBusca.ok) {
+                const encontrado = await respostaBusca.json();
+
+                const idRasp =
+                    encontrado.idRasp ??
+                    encontrado.IdRasp ??
+                    encontrado.id;
+
+                if (idRasp) {
+                    const respostaRasp = await fetch(
+                        `${API_BASE_INDEX}/rasp/${idRasp}`
+                    );
+
+                    if (respostaRasp.ok) {
+                        dadosRasp = await respostaRasp.json();
+                    }
+                }
+            }
+        } catch (erro) {
+            console.error("Erro ao identificar resultado:", erro);
+        }
+
+        const possuiNumero =
+            numeroSpps &&
+            numeroSpps !== "------" &&
+            numeroSpps !== "EM ANÁLISE";
+
+        const supplierAlert =
+            dadosRasp?.supplierAlert === true ||
+            dadosRasp?.isSupplierAlert === true ||
+            dadosRasp?.SupplierAlert === true ||
+            dadosRasp?.IsSupplierAlert === true;
+
+        if (supplierAlert) {
+            campoSpps.innerText = possuiNumero
+                ? `SUPPLIER ALERT — ${numeroSpps}`
+                : "SUPPLIER ALERT";
+        } else if (possuiNumero) {
+            campoSpps.innerText = `SPPS — ${numeroSpps}`;
+        } else {
+            campoSpps.innerText = "EM ANÁLISE";
+        }
+
 }
 
 

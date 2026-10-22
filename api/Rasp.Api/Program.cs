@@ -3245,9 +3245,9 @@ app.MapGet("/rasp/{id:int}/detalhe", async (int id, RaspDbContext db) =>
         pn = rp.Pn,
         nomePeca = pnCadastro != null ? pnCadastro.NomePeca : null,
         dataLoteInicial = rp.DataLoteInicial,
-        quantidadeSuspeita = rp.QuantidadeSuspeita,
-        quantidadeChecada = rp.QuantidadeChecada,
-        quantidadeRejeitada = rp.QuantidadeRejeitada,
+        quantidadeSuspeita = (int?)rp.QuantidadeSuspeita,
+        quantidadeChecada = (int?)rp.QuantidadeChecada,
+        quantidadeRejeitada = (int?)rp.QuantidadeRejeitada,
         emContencao = rp.EmContencao,
         duns = rp.Duns,
         ordemExibicao = rp.OrdemExibicao,
@@ -3382,6 +3382,50 @@ app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
     if (dados is null)
         return Results.NotFound($"RASP com id {id} não encontrado.");
 
+    string? analistaMtHistorico = null;
+    string? aprovadorFtHistorico = null;
+
+    var conexaoHistorico = db.Database.GetDbConnection();
+
+    bool abriuConexao =
+        conexaoHistorico.State != System.Data.ConnectionState.Open;
+
+    if (abriuConexao)
+        await conexaoHistorico.OpenAsync();
+
+    await using (var comando = conexaoHistorico.CreateCommand())
+    {
+        comando.CommandText = @"
+            SELECT
+                analista_mt_historico,
+                aprovador_ft_historico
+            FROM public.rasp
+            WHERE id_rasp = @id
+            AND origem_registro = 'ACCESS_2026';
+        ";
+
+        var parametro = comando.CreateParameter();
+        parametro.ParameterName = "@id";
+        parametro.Value = id;
+        comando.Parameters.Add(parametro);
+
+        await using (var leitor = await comando.ExecuteReaderAsync())
+        {
+            if (await leitor.ReadAsync())
+            {
+                analistaMtHistorico = leitor.IsDBNull(0)
+                    ? null : leitor.GetString(0);
+
+                aprovadorFtHistorico = leitor.IsDBNull(1)
+                    ? null : leitor.GetString(1);
+            }
+        }
+    }
+
+    if (abriuConexao)
+        await conexaoHistorico.CloseAsync();
+
+
     var pns = await (
     from rp in db.RaspPn.AsNoTracking()
 
@@ -3442,8 +3486,17 @@ app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
         dados.majorDescricao,
         dados.indiceOperacionalDescricao,
         dados.gmAliadoDescricao,
-        dados.analistaMtNome,
-        dados.aprovadorFtNome,
+        
+        analistaMtNome =
+        !string.IsNullOrWhiteSpace(analistaMtHistorico)
+            ? analistaMtHistorico
+            : dados.analistaMtNome,
+
+        aprovadorFtNome =
+            !string.IsNullOrWhiteSpace(aprovadorFtHistorico)
+                ? aprovadorFtHistorico
+                : dados.aprovadorFtNome,
+
         pns,
         arquivos
     });

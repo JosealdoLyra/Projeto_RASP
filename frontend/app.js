@@ -446,7 +446,7 @@ if (typeof carregarAnexosRasp === "function") {
 
       if (mensagem) {
         mensagem.classList.remove("oculto");
-        mensagem.innerHTML = "✅ RASP carregado para consulta SPPS.";
+        mensagem.innerHTML = "✅ RASP carregado com sucesso.";
       }
 
       } catch (error) {

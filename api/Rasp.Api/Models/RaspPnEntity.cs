@@ -39,13 +39,13 @@ namespace Rasp.Api.Models
         public DateTime? DataLoteInicial { get; set; }
 
         [Column("quantidade_suspeita")]
-        public int QuantidadeSuspeita { get; set; }
+        public int? QuantidadeSuspeita { get; set; }
 
         [Column("quantidade_checada")]
-        public int QuantidadeChecada { get; set; }
+        public int? QuantidadeChecada { get; set; }
 
         [Column("quantidade_rejeitada")]
-        public int QuantidadeRejeitada { get; set; }
+        public int? QuantidadeRejeitada { get; set; }
 
         // Controle macro/legado de contenção
         [Column("em_contencao")]
