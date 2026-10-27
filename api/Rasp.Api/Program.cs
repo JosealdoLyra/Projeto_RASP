@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
     // Exemplo:
     // "http://192.168.0.120:5500"
     // =====================================================
-    "http://10.97.16.141:5500"
+    "http://10.97.114.73:5500"
 )
 
             .AllowAnyHeader()
@@ -1873,12 +1873,33 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     var horaCriacao = TimeOnly.FromDateTime(agora);
 
     var insertSql = """
-        INSERT INTO rasp
-            (numero_rasp, data_criacao, hora_criacao, id_fornecedor_rasp, descricao_problema, id_status_rasp, is_rascunho, percentual_completude, id_analista_mt)
-        VALUES
-            ('TEMP', @data_criacao, @hora_criacao, @id_fornecedor, @descricao, 1, true, 0, @id_usuario_criador)
-        RETURNING id_rasp;
-        """;
+    INSERT INTO rasp
+        (
+            numero_rasp,
+            data_criacao,
+            hora_criacao,
+            id_fornecedor_rasp,
+            descricao_problema,
+            id_status_rasp,
+            is_rascunho,
+            percentual_completude,
+            id_emissor
+        )
+    VALUES
+        (
+            'TEMP',
+            @data_criacao,
+            @hora_criacao,
+            @id_fornecedor,
+            @descricao,
+            1,
+            true,
+            0,
+            @id_usuario_criador
+        )
+    RETURNING id_rasp;
+    """;
+
 
     int idRasp;
 
@@ -3343,6 +3364,12 @@ app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
             on r.IdGmAliadoRasp equals gmAliado.IdGmAliadoRasp into gmAliadoJoin
         from gmAliado in gmAliadoJoin.DefaultIfEmpty()
 
+        // EMISSOR DO RASP
+        join emissor in db.Usuarios.AsNoTracking()
+        on r.IdEmissor equals emissor.IdUsuario into emissorJoin
+        from emissor in emissorJoin.DefaultIfEmpty()
+
+
         join analistaMt in db.Usuarios.AsNoTracking()
             on r.IdAnalistaMt equals analistaMt.IdUsuario into analistaMtJoin
         from analistaMt in analistaMtJoin.DefaultIfEmpty()
@@ -3374,7 +3401,12 @@ app.MapGet("/rasp/{id:int}/impressao", async (int id, RaspDbContext db) =>
             indiceOperacionalDescricao = indice != null ? indice.Descricao : null,
 
             gmAliadoDescricao = gmAliado != null ? gmAliado.Descricao : null,
+
+            idEmissor = r.IdEmissor,
+            emissorNome = emissor != null ? emissor.Nome : null,
+
             analistaMtNome = analistaMt != null ? analistaMt.Nome : null,
+
             aprovadorFtNome = aprovadorFt != null ? aprovadorFt.Nome : null
         }
     ).FirstOrDefaultAsync();
@@ -3527,7 +3559,8 @@ app.MapGet("/rasp/numero/{numeroRasp}", async (string numeroRasp, RaspDbContext 
             numero_rasp,
             data_criacao,
             spps_numero,
-            descricao_problema
+            descricao_problema,
+            id_emissor
         FROM rasp
         WHERE REPLACE(TRIM(numero_rasp), '/','') = @numero
         LIMIT 1;
@@ -3576,9 +3609,10 @@ app.MapGet("/admin/rasp/buscar/{numeroRasp}", async (string numeroRasp, RaspDbCo
             numero_rasp,
             data_criacao,
             spps_numero,
-            descricao_problema
+            descricao_problema,
+            id_emissor
         FROM rasp
-        WHERE REPLACE(TRIM(numero_rasp),'/', '') =
+        WHERE REPLACE(TRIM(numero_rasp),'/', '') = @numero
         LIMIT 1;
     ";
 
@@ -3598,8 +3632,12 @@ app.MapGet("/admin/rasp/buscar/{numeroRasp}", async (string numeroRasp, RaspDbCo
         numeroRasp = reader["numero_rasp"]?.ToString(),
         dataCriacao = reader["data_criacao"],
         sppsNumero = reader["spps_numero"]?.ToString(),
-        descricaoProblema = reader["descricao_problema"]?.ToString()
+        descricaoProblema = reader["descricao_problema"]?.ToString(),
+        idEmissor = reader.IsDBNull(reader.GetOrdinal("id_emissor"))
+            ? (int?)null
+            : Convert.ToInt32(reader["id_emissor"])
     });
+
 });
 
 
@@ -9144,6 +9182,7 @@ public record ScrapAprovarLgRequest(
     int IdUsuarioLg,
     string? ObservacaoLg
 );
+
 
 
 

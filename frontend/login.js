@@ -7,7 +7,8 @@
 // REDE INTERNA: trocar localhost pelo IP da máquina servidora
 // Exemplo rede: http://192.168.0.120:5050
 // =========================================================
-const API_BASE_URL = "http://localhost:5050";
+const API_BASE_URL = `http://${window.location.hostname}:5050`;
+
 
 
 

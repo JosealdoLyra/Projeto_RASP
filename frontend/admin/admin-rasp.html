@@ -678,10 +678,14 @@
   <script>
     let raspAtual = null;
 
-    document.addEventListener("DOMContentLoaded", () => {
+    const API_ADMIN =
+  `${window.location.protocol}//${window.location.hostname}:5050`;
+
+    document.addEventListener("DOMContentLoaded", async () => {
       validarSessaoAdmin();
-      carregarCombosMock();
+      await carregarCombosApi();
     });
+
 
     function validarSessaoAdmin() {
       const usuarioRaw =
@@ -744,14 +748,58 @@
       document.getElementById(`aba-${nome}`).classList.add("ativa");
     }
 
-    function carregarCombosMock() {
-      preencherSelect("setor", ["BNF", "Cockpit", "Chassis", "Dress Up", "Injetora GMB - SJC", "Manuseio", "SAC S10"]);
-      preencherSelect("origem", ["DR", "DRLoss", "GCA 5", "GCA 10", "GCA 20", "GCA 50", "Linha", "Seleção", "Outros"]);
-      preencherSelect("modelo", ["31UX", "GMI 700", "S10", "Todos"]);
-      preencherSelect("impactoCliente", ["Caso Único de Não Conformidade", "Iniciado - Fornecedor", "Múltiplas Não Conformidades", "Não Aplicável", "Program Management"]);
-      preencherSelect("impactoQualidade", ["Direct Run Loss", "Direct Run Rate", "E-FTQ", "Eng/Trans Pull", "Eng/Trans Repair", "GCA", "IPPM", "Part Not Received"]);
-      preencherSelect("maiorImpacto", ["DR", "DRLoss", "GCA", "Repair", "Pull", "Peça Não Recebida"]);
-    }
+    async function carregarCombosApi() {
+
+  const catalogos = [
+    ["setor", "/setor-rasp", "idSetorRasp", "descricao"],
+    ["origem", "/indice-operacional-rasp", "idIndiceOperacionalRasp", "descricao"],
+    ["modelo", "/modelo-veiculo-rasp", "idModeloVeiculoRasp", "nomeModelo"],
+    ["gmAliado", "/gm-aliado-rasp", "idGmAliadoRasp", "descricao"],
+    ["impactoCliente", "/impacto-cliente-rasp", "idImpactoCliente", "descricao"],
+    ["impactoQualidade", "/impacto-qualidade-rasp", "idImpactoQualidadeRasp", "descricao"],
+    ["maiorImpacto", "/maior-impacto-rasp", "idMaiorImpactoRasp", "descricao"],
+    ["statusRasp", "/status-rasp", "idStatusRasp", "descricao"]
+  ];
+
+  try {
+
+    await Promise.all(catalogos.map(async ([campo, rota, id, descricao]) => {
+
+      const resposta = await fetch(API_ADMIN + rota);
+
+      if (!resposta.ok) {
+        throw new Error(`Erro ao carregar ${rota}`);
+      }
+
+      const itens = await resposta.json();
+
+      const select = document.getElementById(campo);
+
+      if (!select) return;
+
+      select.replaceChildren(new Option("Selecione", ""));
+
+      itens.forEach(item => {
+        select.add(new Option(
+          item[descricao] ?? "",
+          String(item[id] ?? "")
+        ));
+      });
+
+    }));
+
+  } catch (erro) {
+
+    console.error("Erro nos cadastros administrativos:", erro);
+
+    mostrarAviso(
+      "Não foi possível carregar todos os cadastros.",
+      "erro"
+    );
+
+  }
+}
+
 
     function preencherSelect(id, lista) {
       const select = document.getElementById(id);
@@ -766,49 +814,164 @@
     }
 
     async function buscarRasp() {
+
   const tipo = document.getElementById("tipoPesquisa").value;
-  let valor = document.getElementById("txtPesquisa").value.trim();
+
+  let valor = document.getElementById("txtPesquisa")
+    .value.trim();
 
   if (!valor) {
-    mostrarAviso("Informe um valor para pesquisa.", "erro");
+    mostrarAviso("Informe um RASP.", "erro");
     return;
   }
 
   if (tipo !== "rasp") {
-    mostrarAviso("Por enquanto teste usando Número RASP.", "erro");
+    mostrarAviso(
+      "Nesta etapa, utilize Número RASP.",
+      "erro"
+    );
     return;
   }
 
-  // Converte 0100/26 para 010026
-  if (valor.includes("/")) {
-    valor = valor.replace("/", "");
-  }
+  valor = valor.replace(/[\/.\-\s]/g, "");
 
   try {
-    const resp = await fetch(`http://localhost:5050/rasp/numero/${encodeURIComponent(valor)}`);
 
-    if (!resp.ok) {
+    // 1. Localizar o ID do RASP
+    const respostaBusca = await fetch(
+      `${API_ADMIN}/rasp/numero/${encodeURIComponent(valor)}`
+    );
+
+    if (!respostaBusca.ok) {
       mostrarAviso("RASP não encontrado.", "erro");
       return;
     }
 
-    const rasp = await resp.json();
+    const resultadoBusca = await respostaBusca.json();
 
-    document.getElementById("numeroRasp").value = rasp.numeroRasp ?? "";
-    document.getElementById("dataCriacao").value = (rasp.dataCriacao ?? "").substring(0, 10);
-    document.getElementById("sppsNumero").value = rasp.sppsNumero ?? "";
-    document.getElementById("descricaoProblema").value = rasp.descricaoProblema ?? "";
-    document.getElementById("conclusao").value = rasp.conclusao ?? "";
+    const idRasp = resultadoBusca.idRasp;
 
+    // 2. Carregar dados gerais, classificações e PNs
+    const respostaDetalhe = await fetch(
+      `${API_ADMIN}/rasp/${idRasp}/impressao`
+    );
+
+    if (!respostaDetalhe.ok) {
+      throw new Error("Erro ao carregar detalhes do RASP.");
+    }
+
+    const dados = await respostaDetalhe.json();
+
+    const rasp = dados.rasp;
+    console.log("DIAGNOSTICO PECA JK:", {
+      rasp: rasp,
+      dados: dados
+    });
+
+    if (!rasp) {
+      throw new Error("Dados do RASP não recebidos.");
+    }
+
+    // 3. Manter registro completo em memória
     raspAtual = rasp;
 
-    mostrarAviso("RASP carregado com sucesso.", "sucesso");
+    // 4. Dados gerais
+    document.getElementById("numeroRasp").value =
+      rasp.numeroRasp ?? "";
+
+    document.getElementById("dataCriacao").value =
+      String(rasp.dataCriacao ?? "").substring(0, 10);
+
+    document.getElementById("sppsNumero").value =
+      rasp.sppsNumero ?? "";
+
+    document.getElementById("descricaoProblema").value =
+      rasp.descricaoProblema ?? "";
+
+    document.getElementById("fornecedor").value =
+      dados.fornecedorNome ?? "";
+
+    document.getElementById("duns").value =
+      dados.fornecedorDuns ?? "";
+
+    document.getElementById("emissor").value =
+      dados.analistaMtNome ?? "";
+
+
+    document.getElementById("analista").value =
+      [
+        dados.analistaMtNome
+          ? `MT: ${dados.analistaMtNome}`
+          : "",
+        dados.aprovadorFtNome
+          ? `FT: ${dados.aprovadorFtNome}`
+          : ""
+      ].filter(Boolean).join(" | ");
+
+    // 5. Seleções vinculadas ao banco
+    const selecionar = (campo, id) => {
+      const elemento = document.getElementById(campo);
+
+      if (elemento) {
+        elemento.value = id == null ? "" : String(id);
+      }
+    };
+
+    selecionar("statusRasp", rasp.idStatusRasp);
+    selecionar("setor", rasp.idSetorRasp);
+    selecionar("origem", rasp.idIndiceOperacionalRasp);
+    selecionar("modelo", rasp.idModeloVeiculoRasp);
+    selecionar("gmAliado", rasp.idGmAliadoRasp);
+    selecionar("impactoCliente", rasp.idImpactoClienteRasp);
+    selecionar("impactoQualidade", rasp.idImpactoQualidadeRasp);
+    selecionar("maiorImpacto", rasp.idMaiorImpactoRasp);
+    
+
+
+    // Preencher Peça J/K com o valor recebido da API
+    // Peça J/K: valor original do Access
+      const origemPeca = String(dados.origemDescricao ?? "")
+        .trim()
+        .toLowerCase();
+
+      document.getElementById("pecaJk").value =
+        origemPeca.startsWith("importad") ? "Importado" :
+        origemPeca.startsWith("nacional") ? "Nacional" : "";
+
+
+
+    // 6. Peças vinculadas ao RASP
+    renderizarPns((dados.pns ?? []).map(p => ({
+      ordem: p.ordemExibicao,
+      pn: p.pn?.trim(),
+      nomePeca: p.nomePeca ?? "",
+      suspeita: p.quantidadeSuspeita,
+      checada: p.quantidadeChecada,
+      rejeitada: p.quantidadeRejeitada,
+      dataLote: p.dataLoteInicial
+        ? String(p.dataLoteInicial).substring(0, 10)
+        : ""
+    })));
+
+    mostrarAviso(
+      "RASP completo carregado com sucesso.",
+      "sucesso"
+    );
 
   } catch (erro) {
+
     console.error(erro);
-    mostrarAviso("Erro ao conectar na API.", "erro");
+
+    raspAtual = null;
+
+    mostrarAviso(
+      "Erro ao carregar dados completos do RASP.",
+      "erro"
+    );
+
   }
 }
+
 
 
 
@@ -846,6 +1009,9 @@
     function renderizarPns(lista) {
       const tbody = document.getElementById("tbodyPns");
       tbody.innerHTML = "";
+            const campoNomePeca = document.getElementById("nomePeca");
+      if (campoNomePeca) campoNomePeca.value = lista[0]?.nomePeca ?? "";
+
 
       lista.forEach(item => {
         const tr = document.createElement("tr");
@@ -904,9 +1070,100 @@
         '<tr><td colspan="7" class="resultado-vazio">Nenhum PN carregado.</td></tr>';
     }
 
-    function salvarRasp() {
-      alert("Salvar preparado. Próxima etapa: conectar com API PUT/POST.");
+    async function salvarRasp() {
+  if (!raspAtual?.idRasp) {
+    mostrarAviso("Busque um RASP existente antes de salvar.", "erro");
+    return;
+  }
+
+  const usuarioRaw =
+    sessionStorage.getItem("raspUsuarioLogado") ||
+    localStorage.getItem("usuarioLogado");
+
+  let usuario;
+
+  try {
+    usuario = JSON.parse(usuarioRaw);
+  } catch {
+    mostrarAviso("Sessão inválida. Entre novamente.", "erro");
+    return;
+  }
+
+  const idUsuarioExecutor = Number(
+    usuario?.idUsuario ??
+    usuario?.usuario?.idUsuario
+  );
+
+  if (!Number.isInteger(idUsuarioExecutor) ||
+      idUsuarioExecutor <= 0) {
+    mostrarAviso(
+      "Não foi possível identificar o administrador.",
+      "erro"
+    );
+    return;
+  }
+
+  const valor = id =>
+    document.getElementById(id).value.trim();
+
+  const idOpcional = id =>
+    valor(id) === "" ? null : Number(valor(id));
+
+  const origemFabricacao =
+    valor("pecaJk") === "Importado" ? 2 :
+    valor("pecaJk") === "Nacional" ? 1 : null;
+
+  const dados = {
+    idUsuarioExecutor,
+    descricaoProblema: valor("descricaoProblema"),
+    sppsNumero: valor("sppsNumero") || null,
+    idSetorRasp: idOpcional("setor"),
+    idIndiceOperacionalRasp: idOpcional("origem"),
+    idModeloVeiculoRasp: idOpcional("modelo"),
+    idGmAliadoRasp: idOpcional("gmAliado"),
+    idImpactoClienteRasp: idOpcional("impactoCliente"),
+    idImpactoQualidadeRasp: idOpcional("impactoQualidade"),
+    idMaiorImpactoRasp: idOpcional("maiorImpacto"),
+    idOrigemFabricacaoRasp: origemFabricacao
+  };
+
+  if (!dados.descricaoProblema) {
+    mostrarAviso("A descrição do problema é obrigatória.", "erro");
+    return;
+  }
+
+  if (!confirm(
+    `Confirma salvar alterações no RASP ${raspAtual.numeroRasp}?`
+  )) return;
+
+  try {
+    const resposta = await fetch(
+      `${API_ADMIN}/admin/rasp/${raspAtual.idRasp}/dados`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dados)
+      }
+    );
+
+    if (!resposta.ok) {
+      const erro = await resposta.text();
+      throw new Error(erro || `HTTP ${resposta.status}`);
     }
+
+    mostrarAviso(
+      "Alterações gravadas no PostgreSQL.",
+      "sucesso"
+    );
+
+    console.log("RASP atualizado:", await resposta.json());
+
+  } catch (erro) {
+    console.error("Erro ao salvar RASP:", erro);
+    mostrarAviso("Erro ao salvar. Consulte o console.", "erro");
+  }
+}
+
 
     function duplicarRasp() {
       alert("Duplicar preparado. Próxima etapa: conectar com API.");

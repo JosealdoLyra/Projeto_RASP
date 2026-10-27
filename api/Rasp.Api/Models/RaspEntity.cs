@@ -103,6 +103,10 @@ namespace Rasp.Api.Models
         // RESPONSÁVEIS PELAS ETAPAS DO FLUXO
         // ==========================================================
         public int? IdAnalista { get; set; }
+        
+        [System.ComponentModel.DataAnnotations.Schema.Column("id_emissor")]
+        public int? IdEmissor { get; set; }
+
 
         public int? IdAprovadorFt { get; set; }
 
