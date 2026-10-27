@@ -1132,9 +1132,10 @@
     return;
   }
 
-  if (!confirm(
-    `Confirma salvar alterações no RASP ${raspAtual.numeroRasp}?`
-  )) return;
+  if (!(await confirmarGravacaoRasp(raspAtual.numeroRasp))) {
+  return;
+}
+
 
   try {
     const resposta = await fetch(
@@ -1163,6 +1164,96 @@
     mostrarAviso("Erro ao salvar. Consulte o console.", "erro");
   }
 }
+
+function confirmarGravacaoRasp(numeroRasp) {
+  return new Promise((resolve) => {
+    const fundo = document.createElement("div");
+
+    fundo.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    `;
+
+    const janela = document.createElement("div");
+
+    janela.style.cssText = `
+      background: #1e293b;
+      color: #ffffff;
+      padding: 32px;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+      border: 1px solid #475569;
+      font-family: Arial, sans-serif;
+    `;
+
+    const titulo = document.createElement("h2");
+    titulo.textContent = "Confirmar gravação";
+    titulo.style.margin = "0 0 18px";
+
+    const mensagem = document.createElement("p");
+    mensagem.textContent =
+      `Deseja salvar as alterações do RASP ${numeroRasp}?`;
+    mensagem.style.cssText = `
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    `;
+
+    const botoes = document.createElement("div");
+    botoes.style.cssText = `
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    `;
+
+    function finalizar(confirmado) {
+      fundo.remove();
+      resolve(confirmado);
+    }
+
+    const cancelar = document.createElement("button");
+    cancelar.textContent = "Cancelar";
+    cancelar.style.cssText = `
+      padding: 12px 22px;
+      border: 1px solid #64748b;
+      border-radius: 10px;
+      background: #334155;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    `;
+    cancelar.onclick = () => finalizar(false);
+
+    const confirmar = document.createElement("button");
+    confirmar.textContent = "Confirmar gravação";
+    confirmar.style.cssText = `
+      padding: 12px 22px;
+      border: none;
+      border-radius: 10px;
+      background: #d97706;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    `;
+    confirmar.onclick = () => finalizar(true);
+
+    botoes.append(cancelar, confirmar);
+    janela.append(titulo, mensagem, botoes);
+    fundo.appendChild(janela);
+    document.body.appendChild(fundo);
+  });
+}
+
 
 
     function duplicarRasp() {

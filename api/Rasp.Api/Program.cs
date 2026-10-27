@@ -8719,6 +8719,52 @@ app.MapDelete("/rasp/anexos/{idAnexo:int}", async (
 
 
 
+// -----------------------------------------------------------------------------
+// ADMIN - SALVAR ALTERAÇÕES DA MANUTENÇÃO AVANÇADA DE RASP
+// -----------------------------------------------------------------------------
+app.MapPut("/admin/rasp/{id:int}/dados", async (
+    int id,
+    SalvarDadosAdminRaspRequest dados,
+    RaspDbContext db) =>
+{
+    if (id <= 0)
+        return Results.BadRequest("Identificador do RASP inválido.");
+
+    if (dados.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("Administrador não identificado.");
+
+    if (string.IsNullOrWhiteSpace(dados.DescricaoProblema))
+        return Results.BadRequest("A descrição do problema é obrigatória.");
+
+    var rasp = await db.Rasp.FindAsync(id);
+
+    if (rasp is null)
+        return Results.NotFound("RASP não encontrado.");
+
+    rasp.DescricaoProblema = dados.DescricaoProblema.Trim();
+    rasp.SppsNumero = dados.SppsNumero;
+
+    rasp.IdSetorRasp = dados.IdSetorRasp;
+    rasp.IdIndiceOperacionalRasp = dados.IdIndiceOperacionalRasp;
+    rasp.IdModeloVeiculoRasp = dados.IdModeloVeiculoRasp;
+    rasp.IdGmAliadoRasp = dados.IdGmAliadoRasp;
+    rasp.IdImpactoClienteRasp = dados.IdImpactoClienteRasp;
+    rasp.IdImpactoQualidadeRasp = dados.IdImpactoQualidadeRasp;
+    rasp.IdMaiorImpactoRasp = dados.IdMaiorImpactoRasp;
+    rasp.IdOrigemFabricacaoRasp = dados.IdOrigemFabricacaoRasp;
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        mensagem = "Alterações gravadas com sucesso.",
+        idRasp = rasp.IdRasp,
+        numeroRasp = rasp.NumeroRasp
+    });
+})
+.WithName("AdminSalvarDadosRasp");
+
+
 
 
 
@@ -9184,6 +9230,20 @@ public record ScrapAprovarLgRequest(
 );
 
 
+
+public record SalvarDadosAdminRaspRequest(
+    int IdUsuarioExecutor,
+    string DescricaoProblema,
+    string? SppsNumero,
+    int? IdSetorRasp,
+    int? IdIndiceOperacionalRasp,
+    int? IdModeloVeiculoRasp,
+    int? IdGmAliadoRasp,
+    int? IdImpactoClienteRasp,
+    int? IdImpactoQualidadeRasp,
+    int? IdMaiorImpactoRasp,
+    int? IdOrigemFabricacaoRasp
+);
 
 
 
