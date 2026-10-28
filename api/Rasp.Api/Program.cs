@@ -1227,7 +1227,7 @@ app.MapPost("/admin/usuarios-gm", async (
             : null,
         PrimeiroAcesso = true,
         Administrador = req.Administrador,
-        DataCriacao = DateTime.Now,
+        DataCriacao = DateTime.UtcNow,
     };
 
     db.Usuarios.Add(usuario);
@@ -1419,6 +1419,101 @@ app.MapGet("/admin/usuarios-terceiros", async (RaspDbContext db) =>
 })
 .WithName("AdminListarUsuariosTerceiros")
 .WithTags("Admin - Usuários");
+
+
+// -----------------------------------------------------------------------------
+// ADMIN - CADASTRAR USUÁRIO TERCEIRO
+// -----------------------------------------------------------------------------
+
+app.MapPost("/admin/usuarios-terceiros", async (
+    CriarUsuarioTerceiroAdminRequest req,
+    RaspDbContext db) =>
+{
+    if (req.IdUsuarioExecutor <= 0)
+        return Results.BadRequest("IdUsuarioExecutor é obrigatório.");
+
+    var executor = await db.Usuarios
+        .FirstOrDefaultAsync(u =>
+            u.IdUsuario == req.IdUsuarioExecutor && u.Ativo);
+
+    if (executor is null)
+        return Results.BadRequest("Usuário executor não encontrado ou inativo.");
+
+    if (!executor.Administrador && executor.IdPerfil != 1)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+    var nome = (req.Nome ?? string.Empty).Trim();
+    var sobrenome = (req.Sobrenome ?? string.Empty).Trim();
+    var gmid = (req.Gmid ?? string.Empty).Trim().ToLowerInvariant();
+    var senhaInicial = (req.SenhaInicial ?? string.Empty).Trim();
+
+    if (string.IsNullOrWhiteSpace(nome))
+        return Results.BadRequest("Nome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(sobrenome))
+        return Results.BadRequest("Sobrenome é obrigatório.");
+
+    if (string.IsNullOrWhiteSpace(gmid))
+        return Results.BadRequest("GMID/Login é obrigatório.");
+
+    if (req.IdEmpresaSelecao <= 0)
+        return Results.BadRequest("Empresa de seleção é obrigatória.");
+
+    if (string.IsNullOrWhiteSpace(senhaInicial))
+        return Results.BadRequest("Senha inicial é obrigatória.");
+
+    if (senhaInicial.Length < 8)
+        return Results.BadRequest(
+            "A senha inicial deve ter no mínimo 8 caracteres.");
+
+    var empresaExiste = await db.EmpresaSelecaoRasp
+        .AnyAsync(e =>
+            e.IdEmpresaSelecao == req.IdEmpresaSelecao && e.Ativo);
+
+    if (!empresaExiste)
+        return Results.BadRequest(
+            "Empresa de seleção não encontrada ou inativa.");
+
+    var gmidExiste = await db.UsuariosTerceiros
+        .AnyAsync(u => u.Gmid.ToLower() == gmid);
+
+    if (gmidExiste)
+        return Results.BadRequest(
+            "Já existe usuário terceiro cadastrado com esse GMID.");
+
+    var usuario = new UsuarioTerceiro
+    {
+        Nome = nome,
+        Sobrenome = sobrenome,
+        Gmid = gmid,
+        IdEmpresaSelecao = req.IdEmpresaSelecao,
+        SenhaHash = SenhaService.GerarHash(senhaInicial),
+        Ativo = true,
+        PrimeiroAcesso = true,
+        DataCriacao = DateTime.UtcNow
+    };
+
+    db.UsuariosTerceiros.Add(usuario);
+    await db.SaveChangesAsync();
+
+    return Results.Created(
+        $"/admin/usuarios-terceiros/{usuario.IdUsuarioTerceiro}",
+        new
+        {
+            mensagem = "Usuário terceiro cadastrado com sucesso.",
+            usuario.IdUsuarioTerceiro,
+            usuario.Nome,
+            usuario.Sobrenome,
+            usuario.Gmid,
+            usuario.IdEmpresaSelecao,
+            usuario.Ativo,
+            usuario.PrimeiroAcesso
+        });
+})
+.WithName("AdminCriarUsuarioTerceiro")
+.WithTags("Admin - Usuários");
+
+
 
 
 app.MapPut("/admin/usuarios-terceiros/{id:int}", async (
