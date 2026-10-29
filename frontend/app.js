@@ -236,12 +236,31 @@ if (btnEmitirRejeitado) {
     return data.toLocaleDateString("pt-BR");
   }
 
-  function formatarDataParaExibicao(valor) {
+  
+function formatarDataParaExibicao(valor) {
     if (!valor) return "--/--/----";
+
+    const texto = String(valor).trim();
+
+    // Preserva a data civil sem conversão de fuso horário.
+    const iso = texto.match(
+        /^(\d{4})-(\d{2})-(\d{2})(?:$|T|\s)/
+    );
+
+    if (iso) {
+        return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    }
+
     const data = new Date(valor);
-    if (Number.isNaN(data.getTime())) return "--/--/----";
+
+    if (Number.isNaN(data.getTime())) {
+        return "--/--/----";
+    }
+
     return data.toLocaleDateString("pt-BR");
-  }
+}
+
+
 
   function normalizarVin(valor) {
     return String(valor || "")
