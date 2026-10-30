@@ -488,7 +488,10 @@
               <div class="campo"><label>Índice Operacional</label><span>${valor(dados.indiceOperacionalDescricao)}</span></div>
               <div class="campo"><label>Campanha Nº</label><span>${valor(r.campanhaNumero)}</span></div>
               <div class="campo"><label>RD Nº</label><span>${valor(r.rdNumero)}</span></div>
-              <div class="campo"><label>Aprovado LG</label><span>${simNao(r.aprovadoLg)}</span></div>
+              
+<div class="campo"><label>Resultado</label><span>${r.supplierAlert ? (r.sppsNumero ? "SUPPLIER ALERT — " + valor(r.sppsNumero) : "SUPPLIER ALERT") : (r.sppsNumero ? "SPPS — " + valor(r.sppsNumero) : "EM ANÁLISE")}</span></div>
+
+
             </div>
 
             <div class="flags">

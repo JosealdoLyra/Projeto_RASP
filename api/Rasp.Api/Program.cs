@@ -122,7 +122,28 @@ if (tempoFaseMinutos < 0)
 
 
 var app = builder.Build();
-app.UseStaticFiles();
+
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        if (string.Equals(
+            ctx.Context.Request.Path.Value,
+            "/imprimir_rasp.html",
+            StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.Context.Response.Headers["Cache-Control"] =
+                "no-store, no-cache, must-revalidate";
+
+            ctx.Context.Response.Headers["Pragma"] = "no-cache";
+            ctx.Context.Response.Headers["Expires"] = "0";
+        }
+    }
+});
+
+
+
 
 //Console.WriteLine(SenhaService.GerarHash("123456"));
 
