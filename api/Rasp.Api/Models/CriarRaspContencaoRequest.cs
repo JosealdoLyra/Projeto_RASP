@@ -12,6 +12,8 @@ public class CriarRaspContencaoRequest
 
     public int QuantidadeRejeitada { get; set; }
 
+    public int QuantidadeRetrabalhada { get; set; }
+
     public string? Observacao { get; set; }
 
     public int IdTurnoRasp { get; set; }

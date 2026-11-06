@@ -142,7 +142,7 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
-
+9p-
 
 
 //Console.WriteLine(SenhaService.GerarHash("123456"));
@@ -1949,48 +1949,55 @@ app.MapPost("/scrap/salvar-rascunho", async (ScrapSalvarRascunhoRequest request,
 app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfiguration config) =>
 {
     if (req.IdFornecedorRasp <= 0)
-        return Results.BadRequest("IdFornecedorRasp inválido.");
+        return Results.BadRequest("IdFornecedorRasp invalido.");
 
     if (req.IdUsuarioCriador <= 0)
-        return Results.BadRequest("IdUsuarioCriador inválido.");
+        return Results.BadRequest("IdUsuarioCriador invalido.");
 
     var descricaoProblema = (req.DescricaoProblema ?? string.Empty).Trim();
 
     if (string.IsNullOrWhiteSpace(descricaoProblema))
-        return Results.BadRequest("DescricaoProblema é obrigatória.");
+        return Results.BadRequest("DescricaoProblema obrigatoria.");
 
     var fornecedorExiste = await db.FornecedorRasp
         .AnyAsync(f => f.IdFornecedor == req.IdFornecedorRasp);
 
     if (!fornecedorExiste)
-        return Results.BadRequest("Fornecedor informado não existe.");
+        return Results.BadRequest("Fornecedor nao existe.");
 
     var usuarioCriador = await db.Usuarios
         .FirstOrDefaultAsync(u => u.IdUsuario == req.IdUsuarioCriador);
 
-    if (usuarioCriador is null)
-        return Results.BadRequest("Usuário criador não existe.");
-
-    if (!usuarioCriador.Ativo)
-        return Results.BadRequest("Usuário criador está inativo.");
+    if (usuarioCriador is null || !usuarioCriador.Ativo)
+        return Results.BadRequest("Usuario criador invalido ou inativo.");
 
     var connStr = config.GetConnectionString("DefaultConnection");
 
     if (string.IsNullOrWhiteSpace(connStr))
-        return Results.Problem("Connection string 'DefaultConnection' não encontrada.");
+        return Results.Problem("Connection string nao encontrada.");
 
     await using var conn = new NpgsqlConnection(connStr);
     await conn.OpenAsync();
 
     await using var tx = await conn.BeginTransactionAsync();
 
+    // Serializa emissões feitas pela nova rotina.
+    await using (var bloqueio = new NpgsqlCommand(
+        "SELECT pg_advisory_xact_lock(2026, 1105);", conn, tx))
+    {
+        await bloqueio.ExecuteScalarAsync();
+    }
+
     var agora = DateTime.UtcNow;
     var dataCriacao = DateOnly.FromDateTime(agora);
     var horaCriacao = TimeOnly.FromDateTime(agora);
+    var ano = DateTime.Today.ToString("yy");
 
-    var insertSql = """
-    INSERT INTO rasp
-        (
+    // Numero temporario exclusivo de cada solicitacao.
+    var numeroTemporario = "TMP" + Guid.NewGuid().ToString("N")[..16];
+
+    const string insertSql = """
+        INSERT INTO rasp (
             numero_rasp,
             data_criacao,
             hora_criacao,
@@ -1999,11 +2006,12 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
             id_status_rasp,
             is_rascunho,
             percentual_completude,
-            id_emissor
+            id_emissor,
+            id_analista,
+            id_analista_mt
         )
-    VALUES
-        (
-            'TEMP',
+        VALUES (
+            @numero_temporario,
             @data_criacao,
             @hora_criacao,
             @id_fornecedor,
@@ -2011,44 +2019,121 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
             1,
             true,
             0,
-            @id_usuario_criador
+            @id_usuario_criador,
+            @id_usuario_criador,
+            @id_analista_mt
         )
-    RETURNING id_rasp;
-    """;
-
+        RETURNING id_rasp;
+        """;
 
     int idRasp;
 
     await using (var cmd = new NpgsqlCommand(insertSql, conn, tx))
     {
+        cmd.Parameters.AddWithValue("numero_temporario", numeroTemporario);
         cmd.Parameters.AddWithValue("data_criacao", dataCriacao);
         cmd.Parameters.AddWithValue("hora_criacao", horaCriacao);
         cmd.Parameters.AddWithValue("id_fornecedor", req.IdFornecedorRasp);
         cmd.Parameters.AddWithValue("descricao", descricaoProblema);
         cmd.Parameters.AddWithValue("id_usuario_criador", req.IdUsuarioCriador);
 
-        idRasp = (int)(await cmd.ExecuteScalarAsync() ?? 0);
+        var parametroMt = cmd.Parameters.Add(
+            "id_analista_mt", NpgsqlTypes.NpgsqlDbType.Integer);
+
+        parametroMt.Value = usuarioCriador.IdPerfil == 2
+            ? (object)req.IdUsuarioCriador
+            : DBNull.Value;
+
+        idRasp = Convert.ToInt32(await cmd.ExecuteScalarAsync());
     }
 
-    if (idRasp <= 0)
-    {
-        await tx.RollbackAsync();
-        return Results.Problem("Falha ao gerar id_rasp.");
-    }
+    // Primeiro, procura numeros liberados pela correcao inicial.
+    string? numeroLivre;
 
-    var numeroRasp = idRasp.ToString("D4") + "/" + DateTime.Today.ToString("yy");
-
-    var updateSql = """
-        UPDATE rasp
-        SET numero_rasp = @numero_rasp
-        WHERE id_rasp = @id;
+    const string sqlLivre = """
+        SELECT n.numero_rasp
+        FROM public.rasp_numeracao_reaproveitar n
+        WHERE n.id_rasp_novo IS NULL
+          AND RIGHT(n.numero_rasp, 2) = @ano
+          AND NOT EXISTS (
+              SELECT 1 FROM public.rasp r
+              WHERE r.numero_rasp = n.numero_rasp
+          )
+        ORDER BY SPLIT_PART(n.numero_rasp, '/', 1)::integer
+        LIMIT 1
+        FOR UPDATE OF n;
         """;
 
-    await using (var cmd2 = new NpgsqlCommand(updateSql, conn, tx))
+    await using (var cmd = new NpgsqlCommand(sqlLivre, conn, tx))
     {
-        cmd2.Parameters.AddWithValue("id", idRasp);
-        cmd2.Parameters.AddWithValue("numero_rasp", numeroRasp);
-        await cmd2.ExecuteNonQueryAsync();
+        cmd.Parameters.AddWithValue("ano", ano);
+        numeroLivre = await cmd.ExecuteScalarAsync() as string;
+    }
+
+    string numeroRasp;
+
+    if (!string.IsNullOrWhiteSpace(numeroLivre))
+    {
+        numeroRasp = numeroLivre;
+    }
+    else
+    {
+        // Depois dos numeros reaproveitados, continua
+        // a partir do maior numero efetivamente emitido.
+        const string sqlProximo = """
+            SELECT COALESCE(
+                MAX(SPLIT_PART(numero_rasp, '/', 1)::integer),
+                0
+            ) + 1
+            FROM public.rasp
+            WHERE numero_rasp ~ '^[0-9]+/[0-9]{2}$'
+              AND RIGHT(numero_rasp, 2) = @ano;
+            """;
+
+        int proximo;
+
+        await using (var cmd = new NpgsqlCommand(sqlProximo, conn, tx))
+        {
+            cmd.Parameters.AddWithValue("ano", ano);
+            proximo = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+        }
+
+        numeroRasp = $"{proximo:D4}/{ano}";
+    }
+
+    const string updateSql = """
+        UPDATE rasp
+        SET numero_rasp = @numero_rasp
+        WHERE id_rasp = @id_rasp;
+        """;
+
+    await using (var cmd = new NpgsqlCommand(updateSql, conn, tx))
+    {
+        cmd.Parameters.AddWithValue("numero_rasp", numeroRasp);
+        cmd.Parameters.AddWithValue("id_rasp", idRasp);
+
+        if (await cmd.ExecuteNonQueryAsync() != 1)
+            throw new InvalidOperationException(
+                "Falha ao atribuir numero do RASP.");
+    }
+
+    if (numeroLivre is not null)
+    {
+        const string sqlMarcar = """
+            UPDATE public.rasp_numeracao_reaproveitar
+            SET id_rasp_novo = @id_rasp,
+                utilizado_em = NOW()
+            WHERE numero_rasp = @numero_rasp
+              AND id_rasp_novo IS NULL;
+            """;
+
+        await using var cmd = new NpgsqlCommand(sqlMarcar, conn, tx);
+        cmd.Parameters.AddWithValue("numero_rasp", numeroRasp);
+        cmd.Parameters.AddWithValue("id_rasp", idRasp);
+
+        if (await cmd.ExecuteNonQueryAsync() != 1)
+            throw new InvalidOperationException(
+                "Falha ao registrar reaproveitamento.");
     }
 
     await tx.CommitAsync();
@@ -4986,6 +5071,7 @@ app.MapGet("/rasp-pn/{idRaspPn:int}/contencoes", async (int idRaspPn, RaspDbCont
             x.DataLoteVerificada,
             x.QuantidadeVerificada,
             x.QuantidadeRejeitada,
+          x.QuantidadeRetrabalhada,
             x.QuantidadeOk,
             x.Observacao,
             x.DataAtualizacao,
@@ -5184,7 +5270,12 @@ app.MapPost("/rasp-contencao", async (
     if (req.QuantidadeRejeitada > req.QuantidadeVerificada)
         return Results.BadRequest("QuantidadeRejeitada não pode ser maior que QuantidadeVerificada.");
 
-    if (req.OrigemRegistro != 1 && req.OrigemRegistro != 2)
+    if (req.QuantidadeRetrabalhada < 0)
+    return Results.BadRequest("Quantidade retrabalhada nao pode ser negativa.");
+
+if (req.QuantidadeRetrabalhada > req.QuantidadeVerificada)
+    return Results.BadRequest("Retrabalhada nao pode superar verificada.");
+if (req.OrigemRegistro != 1 && req.OrigemRegistro != 2)
         return Results.BadRequest("OrigemRegistro deve ser 1 (terceiro) ou 2 (usuário interno).");
 
     // -------------------------------------------------------------------------
@@ -5357,6 +5448,7 @@ var item = new RaspContencao
     DataLoteVerificada = req.DataLoteVerificada,
     QuantidadeVerificada = req.QuantidadeVerificada,
     QuantidadeRejeitada = req.QuantidadeRejeitada,
+  QuantidadeRetrabalhada = req.QuantidadeRetrabalhada,
     QuantidadeOk = quantidadeOk,
     Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim(),
     IdTurnoRasp = req.IdTurnoRasp,
@@ -6042,45 +6134,66 @@ if (req.VinVeiculoProblema is not null)
     // 07. APROVADOR FT
     // -------------------------------------------------------------------------
     if (req.IdAprovadorFt.HasValue || req.IdTurnoRasp.HasValue)
+{
+    // O turno ja foi atualizado na secao anterior.
+    var turnoFt = rasp.IdTurnoRasp;
+    var ftInformado = req.IdAprovadorFt.GetValueOrDefault();
+
+    if (!turnoFt.HasValue || turnoFt.Value <= 0)
     {
-        int? idAprovadorFtFinal = null;
+        if (ftInformado > 0)
+            return Results.BadRequest(
+                "Selecione o turno antes de definir o aprovador FT.");
 
-        if (req.IdAprovadorFt.HasValue && req.IdAprovadorFt.Value > 0)
-        {
-            idAprovadorFtFinal = req.IdAprovadorFt.Value;
-        }
-        else if (req.IdTurnoRasp.HasValue && req.IdTurnoRasp.Value > 0)
-        {
-            idAprovadorFtFinal = await db.Usuarios
-                .Where(u =>
-                    u.Ativo &&
-                    u.IdPerfil == 3 &&
-                    u.IdTurnoRasp == req.IdTurnoRasp.Value)
-                .Select(u => (int?)u.IdUsuario)
-                .FirstOrDefaultAsync();
-        }
-
-        if (req.IdAprovadorFt.HasValue && req.IdAprovadorFt.Value == 0)
-        {
-            rasp.IdAprovadorFt = null;
-            alterou = true;
-        }
-        else if (idAprovadorFtFinal.HasValue)
-        {
-            var ftExiste = await db.Usuarios.AnyAsync(u =>
-                u.IdUsuario == idAprovadorFtFinal.Value &&
-                u.Ativo &&
-                u.IdPerfil == 3);
-
-            if (!ftExiste)
-                return Results.BadRequest("Aprovador FT inválido.");
-
-            rasp.IdAprovadorFt = idAprovadorFtFinal.Value;
-            alterou = true;
-        }
+        rasp.IdAprovadorFt = null;
+        alterou = true;
     }
+    else
+    {
+        var candidatos = await db.Usuarios
+            .AsNoTracking()
+            .Where(u =>
+                u.Ativo &&
+                u.IdPerfil == 3 &&
+                u.IdTurnoRasp == turnoFt.Value)
+            .Select(u => u.IdUsuario)
+            .ToListAsync();
 
-    // -------------------------------------------------------------------------
+        if (candidatos.Count == 0)
+            return Results.BadRequest(
+                "Nao existe FT ativo cadastrado para este turno.");
+
+        int idFtFinal;
+
+        if (candidatos.Count == 1)
+        {
+            // Um unico FT: atribuir conforme o cadastro atual.
+            idFtFinal = candidatos[0];
+        }
+        else if (ftInformado > 0 &&
+                 candidatos.Contains(ftInformado))
+        {
+            // Mais de um FT: aceitar somente FT valido do turno.
+            idFtFinal = ftInformado;
+        }
+        else if (!req.IdAprovadorFt.HasValue &&
+                 rasp.IdAprovadorFt.HasValue &&
+                 candidatos.Contains(rasp.IdAprovadorFt.Value))
+        {
+            // Preservar responsavel existente, se ainda valido.
+            idFtFinal = rasp.IdAprovadorFt.Value;
+        }
+        else
+        {
+            return Results.BadRequest(
+                "Existe mais de um FT ativo neste turno. Selecione o responsavel.");
+        }
+
+        rasp.IdAprovadorFt = idFtFinal;
+        alterou = true;
+    }
+}
+// -------------------------------------------------------------------------
     // 08. CAMPOS STRING OPCIONAIS
     // -------------------------------------------------------------------------
     if (req.SppsNumero is not null)
@@ -8573,7 +8686,7 @@ app.MapGet("/debug-model", (RaspDbContext db) =>
 // RASP - CONFIGURAÇÃO DOS ANEXOS
 // ---------------------------------------------------------------------
 const string PastaRaizAnexosRasp =
-    @"\\laam.corp.gm.com\gmb\gmbrasil\data\S10_QualitySystem\SAC-S10\RASP2026";
+    @"C:\RASP_Servidor\Anexos\RASP2026";
 
 
 
