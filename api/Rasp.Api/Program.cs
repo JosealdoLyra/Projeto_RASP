@@ -142,7 +142,6 @@ app.UseStaticFiles(new StaticFileOptions
     }
 });
 
-9p-
 
 
 //Console.WriteLine(SenhaService.GerarHash("123456"));
@@ -2040,9 +2039,8 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
         var parametroMt = cmd.Parameters.Add(
             "id_analista_mt", NpgsqlTypes.NpgsqlDbType.Integer);
 
-        parametroMt.Value = usuarioCriador.IdPerfil == 2
-            ? (object)req.IdUsuarioCriador
-            : DBNull.Value;
+        // O responsável pela emissão é o criador, independentemente do perfil.
+        parametroMt.Value = req.IdUsuarioCriador;
 
         idRasp = Convert.ToInt32(await cmd.ExecuteScalarAsync());
     }
@@ -2080,15 +2078,26 @@ app.MapPost("/rasp", async (CriarRaspRequest req, RaspDbContext db, IConfigurati
     {
         // Depois dos numeros reaproveitados, continua
         // a partir do maior numero efetivamente emitido.
-        const string sqlProximo = """
-            SELECT COALESCE(
-                MAX(SPLIT_PART(numero_rasp, '/', 1)::integer),
-                0
-            ) + 1
-            FROM public.rasp
-            WHERE numero_rasp ~ '^[0-9]+/[0-9]{2}$'
-              AND RIGHT(numero_rasp, 2) = @ano;
-            """;
+      const string sqlProximo = """
+    SELECT COALESCE(
+        MAX(
+            CASE
+                WHEN numero_rasp ~ '^[0-9]+/[0-9]{2}$'
+                    THEN SPLIT_PART(numero_rasp, '/', 1)::integer
+                WHEN numero_rasp ~ '^[0-9]{4}[0-9]{2}$'
+                    THEN LEFT(numero_rasp, 4)::integer
+            END
+        ),
+        0
+    ) + 1
+    FROM public.rasp
+    WHERE RIGHT(numero_rasp, 2) = @ano
+      AND (
+          numero_rasp ~ '^[0-9]+/[0-9]{2}$'
+          OR numero_rasp ~ '^[0-9]{4}[0-9]{2}$'
+      );
+    """;
+
 
         int proximo;
 
@@ -5076,6 +5085,7 @@ app.MapGet("/rasp-pn/{idRaspPn:int}/contencoes", async (int idRaspPn, RaspDbCont
             x.Observacao,
             x.DataAtualizacao,
             x.IdUsuarioExecucao,
+            x.IdUsuarioTerceiro,
             x.IdOperadorSelecaoTerceiro,
             x.OrigemRegistro,
             x.IdTurnoRasp,
@@ -5481,6 +5491,125 @@ var item = new RaspContencao
 })
 .WithName("CriarRaspContencao")
 .WithTags("RASP Seleção");
+// RASP-EDICAO-CONTENCAO-V1
+// Edicao somente pelo autor ate 60 minutos desde a gravacao, ou por ADMIN.
+// As credenciais sao revalidadas nesta requisicao; o ID informado pelo navegador nao autoriza nada.
+// DataAtualizacao e identidade do autor ORIGINAL sao preservadas.
+app.MapPut("/rasp-contencao/{id:int}", async (
+    int id,
+    EditarRaspContencaoRequest req,
+    RaspDbContext db) =>
+{
+    if (id <= 0) return Results.BadRequest("ID de apontamento invalido.");
+    if (string.IsNullOrWhiteSpace(req.TipoExecutor) ||
+        string.IsNullOrWhiteSpace(req.Login) ||
+        string.IsNullOrWhiteSpace(req.Senha))
+        return Results.Unauthorized();
+
+    var item = await db.Set<RaspContencao>()
+        .FirstOrDefaultAsync(c => c.IdRaspContencao == id);
+    if (item is null) return Results.NotFound("Apontamento nao encontrado.");
+
+    var tipo = req.TipoExecutor.Trim().ToUpperInvariant();
+    var login = req.Login.Trim().ToLowerInvariant();
+    bool admin = false;
+    bool autor = false;
+
+    if (tipo == "GM")
+    {
+        var usuario = await db.Usuarios.FirstOrDefaultAsync(u =>
+            u.Ativo && u.Gmin.ToLower() == login);
+        if (usuario is null || string.IsNullOrWhiteSpace(usuario.SenhaHash) ||
+            !SenhaService.ValidarSenha(req.Senha, usuario.SenhaHash))
+            return Results.Unauthorized();
+
+        admin = usuario.Administrador;
+        autor = item.OrigemRegistro == 2 &&
+                item.IdUsuarioExecucao == usuario.IdUsuario;
+    }
+    else if (tipo == "TERCEIRO")
+    {
+        var usuario = await db.UsuariosTerceiros.FirstOrDefaultAsync(u =>
+            u.Ativo && u.Gmid.ToLower() == login);
+        if (usuario is null ||
+            !SenhaService.ValidarSenha(req.Senha, usuario.SenhaHash))
+            return Results.Unauthorized();
+
+        autor = item.OrigemRegistro == 1 &&
+                item.IdUsuarioTerceiro == usuario.IdUsuarioTerceiro;
+    }
+    else return Results.BadRequest("TipoExecutor invalido.");
+
+    if (!admin)
+    {
+        if (!autor)
+            return Results.Json(new { erro = "Somente o autor ou um administrador pode editar." }, statusCode: 403);
+
+        DateTime? criadoEm = item.DataAtualizacao;
+        if (!criadoEm.HasValue)
+            return Results.Json(new { erro = "Registro sem data original: edicao somente por administrador." }, statusCode: 403);
+
+        var criadoUtc = criadoEm.Value.Kind switch
+        {
+            DateTimeKind.Utc => criadoEm.Value,
+            DateTimeKind.Local => criadoEm.Value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(criadoEm.Value, DateTimeKind.Utc)
+        };
+        var agora = DateTime.UtcNow;
+        if (criadoUtc > agora.AddMinutes(2) || agora > criadoUtc.AddMinutes(60))
+            return Results.Json(new { erro = "Prazo de 60 minutos encerrado." }, statusCode: 403);
+    }
+
+    if (req.IdTurnoRasp <= 0 ||
+        !await db.TurnoRasp.AnyAsync(t => t.IdTurnoRasp == req.IdTurnoRasp))
+        return Results.BadRequest("Turno invalido.");
+    if (req.QuantidadeVerificada < 0 || req.QuantidadeRejeitada < 0 ||
+        req.QuantidadeRetrabalhada < 0 ||
+        req.QuantidadeRejeitada > req.QuantidadeVerificada ||
+        req.QuantidadeRetrabalhada > req.QuantidadeVerificada)
+        return Results.BadRequest("Quantidades invalidas.");
+    if (!req.DataHoraInicioAtividade.HasValue || !req.DataHoraFimAtividade.HasValue)
+        return Results.BadRequest("Inicio e fim da atividade sao obrigatorios.");
+    if (req.DataHoraInicioAtividade.Value > req.DataHoraFimAtividade.Value)
+        return Results.BadRequest("O inicio nao pode ser posterior ao fim da atividade.");
+
+    static DateTime ParaUtc(DateTime valor) => valor.Kind switch
+    {
+        DateTimeKind.Utc => valor,
+        DateTimeKind.Local => valor.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(valor, DateTimeKind.Utc)
+    };
+    var inicioUtc = ParaUtc(req.DataHoraInicioAtividade.Value);
+    var fimUtc = ParaUtc(req.DataHoraFimAtividade.Value);
+    var dataSelecao = DateOnly.FromDateTime(inicioUtc);
+
+    var raspPn = await db.RaspPn.FirstOrDefaultAsync(r => r.IdRaspPn == item.IdRaspPn);
+    if (raspPn is null) return Results.BadRequest("RASP_PN nao encontrado.");
+    if (raspPn.DataHoraEntradaSelecao.HasValue &&
+        dataSelecao < DateOnly.FromDateTime(raspPn.DataHoraEntradaSelecao.Value))
+        return Results.BadRequest("Data anterior a entrada oficial em selecao.");
+
+    item.QuantidadeVerificada = req.QuantidadeVerificada;
+    item.QuantidadeRejeitada = req.QuantidadeRejeitada;
+    item.QuantidadeRetrabalhada = req.QuantidadeRetrabalhada;
+    item.QuantidadeOk = req.QuantidadeVerificada - req.QuantidadeRejeitada;
+    item.Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim();
+    item.IdTurnoRasp = req.IdTurnoRasp;
+    item.DataHoraInicioAtividade = inicioUtc;
+    item.DataHoraFimAtividade = fimUtc;
+    item.DataSelecao = dataSelecao;
+
+    // Intencional: NAO alterar DataAtualizacao, OrigemRegistro, IdUsuarioExecucao,
+    // IdUsuarioTerceiro, IdRaspPn ou o vinculo do autor.
+    await db.SaveChangesAsync();
+    return Results.Ok(new {
+        mensagem = "Apontamento atualizado com sucesso.",
+        idRaspContencao = item.IdRaspContencao,
+        prazoContadoDesde = item.DataAtualizacao
+    });
+})
+.WithName("EditarApontamentoContencao")
+.WithTags("RASP Selecao");
 
 
 
@@ -5653,7 +5782,7 @@ app.MapDelete("/rasp-arquivo/{id:int}", async (int id, RaspDbContext db) =>
 // - só atualiza se estiver no status 1 (Em análise)
 // - valida o usuário executor
 // - ADMIN pode atualizar
-// - não ADMIN só pode atualizar se for o autor MT do RASP
+// - não ADMIN só pode atualizar se for o emissor original do RASP
 // - campos enviados como null não são alterados
 // - campos string enviados como "" limpam o valor
 // - campos FK opcionais enviados como 0 limpam o valor
@@ -5699,14 +5828,9 @@ app.MapPut("/rasp/{id:int}/rascunho", async (
 
     var isAdminRascunho = usuarioExecutorRascunho.IdPerfil == 1;
 
-    if (!isAdminRascunho)
-    {
-        if (!rasp.IdAnalistaMt.HasValue)
-            return Results.BadRequest("Este RASP não possui autor MT vinculado.");
-
-        if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-    }
+    // A permissão acompanha o emissor original, não o perfil MT.
+    if (!isAdminRascunho && rasp.IdEmissor != req.IdUsuarioExecutor)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
 
     bool alterou = false;
 
@@ -6350,22 +6474,7 @@ if (req.VinVeiculoProblema is not null)
     // -------------------------------------------------------------------------
     // 11. REGRA AUTOMÁTICA DE APROVADOR FT PELO TURNO JÁ DEFINIDO NO RASP
     // -------------------------------------------------------------------------
-    if (!rasp.IdAprovadorFt.HasValue && rasp.IdTurnoRasp.HasValue)
-    {
-        var ftDoTurno = await db.Usuarios
-            .Where(u =>
-                u.Ativo &&
-                u.IdPerfil == 3 &&
-                u.IdTurnoRasp == rasp.IdTurnoRasp.Value)
-            .OrderBy(u => u.IdUsuario)
-            .FirstOrDefaultAsync();
-
-        if (ftDoTurno is not null)
-        {
-            rasp.IdAprovadorFt = ftDoTurno.IdUsuario;
-            alterou = true;
-        }
-    }
+    
 
     // -------------------------------------------------------------------------
     // 12. ENCERRAMENTO
@@ -6472,14 +6581,9 @@ if (rasp.IdSetorRasp == 28)
 
     var isAdmin = usuarioExecutor.IdPerfil == 1;
 
-    if (!isAdmin)
-    {
-        if (!rasp.IdAnalistaMt.HasValue)
-            return Results.BadRequest("Este RASP não possui MT responsável vinculado.");
-
-        if (rasp.IdAnalistaMt.Value != req.IdUsuarioExecutor)
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-    }
+    // A permissão acompanha o emissor original, não o perfil MT.
+    if (!isAdmin && rasp.IdEmissor != req.IdUsuarioExecutor)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
 
     // -------------------------------------------------------------------------
     // VALIDAÇÃO DOS CAMPOS MÍNIMOS PARA SUBMISSÃO AO FT
@@ -7394,14 +7498,9 @@ app.MapPost("/rasp/{id:int}/reenviar-complemento-ft", async (
 
     var isAdmin = usuarioExecutor.IdPerfil == 1;
 
-    if (!isAdmin)
-    {
-        if (!rasp.IdAnalistaMt.HasValue)
-            return Results.BadRequest("Este RASP não possui MT responsável vinculado.");
-
-        if (rasp.IdAnalistaMt.Value != request.IdUsuarioExecutor)
-            return Results.StatusCode(StatusCodes.Status403Forbidden);
-    }
+    // A permissão acompanha o emissor original, não o perfil MT.
+    if (!isAdmin && rasp.IdEmissor != request.IdUsuarioExecutor)
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
 
     var observacaoReenvio = string.IsNullOrWhiteSpace(request.ObservacaoReenvio)
         ? null
@@ -9415,6 +9514,19 @@ public record ValidarExecutorSelecaoRequest(
     string TipoExecutor,
     string Login,
     string Senha
+);
+// RASP-EDICAO-CONTENCAO-V1 - entrada de dados para o apontamento existente.
+public record EditarRaspContencaoRequest(
+    string TipoExecutor,
+    string Login,
+    string Senha,
+    int IdTurnoRasp,
+    int QuantidadeVerificada,
+    int QuantidadeRejeitada,
+    int QuantidadeRetrabalhada,
+    string? Observacao,
+    DateTime? DataHoraInicioAtividade,
+    DateTime? DataHoraFimAtividade
 );
 
 

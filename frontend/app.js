@@ -721,12 +721,14 @@ if (resumoInput) {
     // ==========================================================
     if (iniciativaFornecedorInput) {
       iniciativaFornecedorInput.checked = !!rasp.iniciativaFornecedor;
-
-      if (vinVeiculoProblemaInput) {
-        vinVeiculoProblemaInput.value = rasp.vinVeiculoProblema || "";
-      }
-
     }
+
+    if (vinVeiculoProblemaInput) {
+      vinVeiculoProblemaInput.value = rasp.vinVeiculoProblema || "";
+    }
+
+
+    
 
     // ==========================================================
     // 6) SEÇÕES 2 / 3 / 5 - CAMPOS QUE DEPENDEM DE DOMÍNIOS
@@ -2636,6 +2638,9 @@ async function salvarPnsDoRasp(idRasp, pns, dunsFornecedor) {
 
       iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
 
+      vinVeiculoProblema: vinVeiculoProblemaInput?.value?.trim() || null,
+
+
       bpTexto: comoIdentificadoBp?.value?.trim() || null,
       bpSerie: vinBp?.value?.trim() || null,
       bpDatahora: montarDataHoraUtc(dataBp?.value, horaBp?.value),
@@ -2894,6 +2899,8 @@ if (modoEdicao && idRaspEmEdicao) {
     nomeContato: nomeContatoInput?.value?.trim() || null,
     dataContato: dataContatoInput?.value || null,
     iniciativaFornecedor: iniciativaFornecedorInput?.checked ?? false,
+    vinVeiculoProblema: vinVeiculoProblemaInput?.value?.trim() || null,
+
 
     bpTexto: comoIdentificadoBp?.value?.trim() || null,
     bpSerie: vinBp?.value?.trim() || null,
