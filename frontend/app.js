@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+﻿document.addEventListener("DOMContentLoaded", () => {
   console.log("APP JS CARREGADO");
 
   // ==========================================================
@@ -402,7 +402,83 @@ let responseBusca = await fetch(
 
 
         if (!responseBusca.ok) {
-          alert("RASP não encontrado.");
+          const anterior = document.getElementById("avisoRaspNaoEncontrado");
+if (anterior) anterior.remove();
+
+const aviso = document.createElement("div");
+aviso.id = "avisoRaspNaoEncontrado";
+aviso.setAttribute("role", "alertdialog");
+aviso.setAttribute("aria-modal", "true");
+
+aviso.style.cssText = `
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15,23,42,.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
+aviso.innerHTML = `
+  <div style="
+    background: white;
+    border-radius: 18px;
+    padding: 32px;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    font-family: Arial,sans-serif;
+  ">
+    <div style="
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: #e8f0ff;
+      color: #1456b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: bold;
+    ">i</div>
+
+    <div style="
+      font-size: 22px;
+      font-weight: 700;
+      color: #173b73;
+      margin-bottom: 12px;
+    ">RASP não encontrado</div>
+
+    <div style="
+      font-size: 15px;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 26px;
+    ">Verifique o número informado e tente novamente.</div>
+
+    <button id="fecharAvisoRasp" style="
+      background: #1557bd;
+      color: white;
+      border: none;
+      border-radius: 9px;
+      padding: 12px 42px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    ">OK</button>
+  </div>
+`;
+
+document.body.appendChild(aviso);
+
+document.getElementById("fecharAvisoRasp").onclick = () => {
+  aviso.remove();
+  buscarRaspNumeroInput.focus();
+};
           return;
         }
 
@@ -4239,6 +4315,7 @@ function carregarMenuLateral(paginaAtiva) {
     </a>
   `;
 }
+
 
 
 

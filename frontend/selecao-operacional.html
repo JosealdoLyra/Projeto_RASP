@@ -1559,10 +1559,30 @@
             grupos[chave].itens.push(item);
           });
 
-          tabelaHistoricoModal.innerHTML = "";
+          
 
-          Object.values(grupos).forEach((grupo) => {
+
             const trHeader = document.createElement("tr");
+// =========================================================
+// HISTÓRICO DE APONTAMENTOS
+// Ordenação: data mais recente primeiro
+// Dentro de cada grupo: horário mais recente primeiro
+// =========================================================
+
+tabelaHistoricoModal.innerHTML = "";
+
+const gruposOrdenados = Object.values(grupos).sort((a, b) => {
+    return (b.data || "").localeCompare(a.data || "");
+});
+
+gruposOrdenados.forEach((grupo) => {
+
+    grupo.itens.sort((a, b) => {
+        const inicioA = String(a.dataHoraInicioAtividade ?? "");
+        const inicioB = String(b.dataHoraInicioAtividade ?? "");
+
+        return inicioB.localeCompare(inicioA);
+    });
 
             trHeader.innerHTML = `
               <td colspan="10" style="background:#eef5ff; font-weight:bold;">

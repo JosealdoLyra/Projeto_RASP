@@ -52,7 +52,8 @@ namespace Rasp.Api.Models
         public bool EmContencao { get; set; }
 
         [Column("duns")]
-        public string Duns { get; set; } = string.Empty;
+        public string? Duns { get; set; }
+
 
         [Column("ordem_exibicao")]
         public short OrdemExibicao { get; set; }

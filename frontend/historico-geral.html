@@ -1372,6 +1372,30 @@
 
             dadosDashboardSelecao = await response.json();
 
+            const respostaAtivos = await fetch(
+              "/selecao-operacional/itens-ativos"
+            );
+
+            if (!respostaAtivos.ok) {
+              throw new Error("Erro ao carregar apontamentos ativos.");
+            }
+
+            const itensAtivos = await respostaAtivos.json();
+
+            const mapaAtivos = new Map(
+              itensAtivos.map(item => [String(item.idRaspPn), item])
+            );
+
+            dadosDashboardSelecao.forEach(item => {
+              if (item.dataHoraSaidaSelecao) return;
+
+              const ativo = mapaAtivos.get(String(item.idRaspPn));
+
+              if (ativo) {
+                item.diasSemApontamento = ativo.diasSemApontamento;
+              }
+            });
+
             atualizarFiltros(dadosDashboardSelecao);
             atualizarFiltroAnos(dadosDashboardSelecao);
             aplicarFiltrosHistorico();
@@ -1454,26 +1478,16 @@
 
             let diasSemApontamentoAtual = "-";
 
-            const dataReferenciaSemApontamento =
-            item.dataHoraUltimoApontamento ||
-            item.dataApontamento ||
-            item.ultimoApontamento ||
-            item.dataHoraEntradaSelecao;
-
-            if (!item.dataHoraSaidaSelecao && dataReferenciaSemApontamento) {
-            const hoje = new Date();
-            const referencia = new Date(dataReferenciaSemApontamento);
-
-            hoje.setHours(0, 0, 0, 0);
-            referencia.setHours(0, 0, 0, 0);
-
-            diasSemApontamentoAtual =
-                Math.floor((hoje - referencia) / (1000 * 60 * 60 * 24));
+            if (!item.dataHoraSaidaSelecao) {
+              if (item.diasSemApontamento === null ||
+                  item.diasSemApontamento === undefined) {
+                diasSemApontamentoAtual = "Não iniciado";
+              } else {
+                diasSemApontamentoAtual = item.diasSemApontamento;
+              }
             }
 
-
-
-            somaDias += duracao;
+somaDias += duracao;
 
             if (duracao > 2) totalAtrasos++;
             if (item.travaAtiva) totalTravas++;

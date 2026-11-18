@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- =========================================================
+       01. CONFIGURAÇÕES BÁSICAS
+       ========================================================= -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Histórico Geral - Seleção / Contenção</title>
+
+  <!-- =========================================================
+       02. ESTILOS
+       ========================================================= -->
+  <style>
+    :root {
+      --azul-950: #040b18;
+      --azul-900: #081426;
+      --azul-800: #11233f;
+      --azul-600: #2563eb;
+      --verde: #22c55e;
+      --amarelo: #f59e0b;
+      --vermelho: #ef4444;
+      --texto: #e5eefc;
+      --texto-secundario: #93a4c3;
+      --borda: rgba(255,255,255,0.08);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #13294b 0%, #081426 38%, #040b18 100%);
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--texto);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       03. LAYOUT
+       ========================================================= */
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr 340px;
+      min-height: 100vh;
+    }
+
+    /* =========================================================
+       04. SIDEBAR
+       ========================================================= */
+    .sidebar {
+      background: linear-gradient(180deg, rgba(8,20,38,0.96), rgba(4,11,24,0.98));
+      border-right: 1px solid var(--borda);
+      padding: 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 26px;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .logo-title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo-subtitle {
+      font-size: 13px;
+      color: var(--texto-secundario);
+    }
+
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-item {
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: var(--texto);
+      font-size: 15px;
+      font-weight: 600;
+      transition: 0.22s ease;
+    }
+
+    .menu-item:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
+    .menu-item.active {
+      background: linear-gradient(90deg, #2563eb, #1d4f86);
+      box-shadow: 0 0 18px rgba(37,99,235,0.35);
+    }
+
+    .btn-sair-lateral {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.btn-sair-lateral:hover {
+  background: rgba(239,68,68,0.16);
+  color: #fecaca;
+}
+
+
+    /* =========================================================
+    MENU ADMINISTRATIVO
+    ========================================================= */
+    .menu-admin {
+    display: none;
+    }
+
+    body.usuario-admin .menu-admin {
+    display: block;
+    }
+
+    .filtros-box {
+    margin-top: auto;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--borda);
+    border-radius: var(--radius);
+    padding: 18px;
+    }
+
+    .filtros-box h3 {
+    margin-bottom: 16px;
+    font-size: 15px;
+    }
+
+    .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+    }
+
+    .campo label {
+    font-size: 12px;
+    color: var(--texto-secundario);
+    }
+
+    .campo select {
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.04);
+    background-color: rgba(255,255,255,0.04);
+    color: white;
+    padding: 0 12px;
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    }
+
+    .campo select option {
+    background: #0f172a;
+    color: white;
+    }
+
+    .btn-filtro {
+    width: 100%;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #2563eb, #1d4f86);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    }
+
+
+    /* =========================================================
+       05. CONTEÚDO CENTRAL
+       ========================================================= */
+    .content-area {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.topbar > div:first-child {
+  min-width: 0;
+}
+
+.usuario-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 210px;
+  justify-content: flex-end;
+}
+
+
+    .topbar h1 {
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .topbar p {
+      margin-top: 4px;
+      color: var(--texto-secundario);
+    }
+
+    .avatar {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #9333ea);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  overflow: hidden;
+}
+
+
+    /* =========================================================
+       06. KPIs
+       ========================================================= */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 18px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    }
+
+    .kpi-card h3 {
+      font-size: 13px;
+      color: var(--texto-secundario);
+      margin-bottom: 14px;
+    }
+
+    .kpi-value {
+      font-size: 44px;
+      font-weight: 900;
+    }
+
+    .kpi-footer {
+      margin-top: 10px;
+      color: var(--texto-secundario);
+      font-size: 13px;
+    }
+
+    /* =========================================================
+       07. TABELA
+       ========================================================= */
+    .painel-tabela {
+      background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .painel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .painel-header h2 {
+      font-size: 24px;
+    }
+
+    .painel-header p {
+      margin-top: 4px;
+      color: var(--texto-secundario);
+    }
+
+    .search-box input {
+      width: 320px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      color: white;
+      padding: 0 16px;
+    }
+
+    .tabela-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: rgba(255,255,255,0.03);
+      color: var(--texto-secundario);
+      padding: 16px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      text-align: left;
+      border-top: 1px solid var(--borda);
+      border-bottom: 1px solid var(--borda);
+    }
+
+    tbody td {
+      padding: 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 14px;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    tbody tr.linha-ativa {
+      background: rgba(37,99,235,0.32) !important;
+      box-shadow: inset 7px 0 0 #60a5fa, 0 0 22px rgba(37,99,235,0.50);
+      outline: 1px solid rgba(96,165,250,0.75);
+    }
+
+    tbody tr.linha-ativa td {
+      color: #ffffff !important;
+      border-bottom: 1px solid rgba(96,165,250,0.60) !important;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge-ok {
+      background: rgba(34,197,94,0.16);
+      color: #4ade80;
+    }
+
+    .badge-atencao {
+      background: rgba(245,158,11,0.16);
+      color: #fbbf24;
+    }
+
+    .badge-critico {
+      background: rgba(239,68,68,0.16);
+      color: #f87171;
+    }
+
+    .badge-neutro {
+      background: rgba(147,164,195,0.16);
+      color: #cbd5e1;
+    }
+
+    .badge-trava {
+    background: rgba(239,68,68,0.18);
+    color: #fca5a5;
+    }
+
+    .badge-qhd {
+    background: rgba(99,102,241,0.22);
+    color: #c4b5fd;
+    border: 1px solid rgba(196,181,253,0.35);
+    }
+
+    .badge-vazio {
+    background: rgba(147,164,195,0.12);
+    color: #94a3b8;
+    }
+
+
+    /* =========================================================
+       08. PAINEL DIREITO
+       ========================================================= */
+    .painel-direito {
+      background: linear-gradient(180deg, rgba(18,36,66,0.96), rgba(8,20,38,0.99));
+      border-left: 1px solid var(--borda);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .detalhe-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--borda);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .detalhe-card h2 {
+      margin-bottom: 16px;
+      font-size: 28px;
+    }
+
+    .detalhe-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .detalhe-item small {
+      display: block;
+      color: var(--texto-secundario);
+      margin-bottom: 4px;
+    }
+
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 0 0 18px 22px;
+      border-left: 2px solid rgba(96,165,250,0.35);
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -7px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: 0 0 12px rgba(96,165,250,0.65);
+    }
+
+    .timeline-item.critico::before {
+      background: #ef4444;
+      box-shadow: 0 0 14px rgba(239,68,68,0.75);
+    }
+
+    .timeline-item.atencao::before {
+      background: #f59e0b;
+      box-shadow: 0 0 14px rgba(245,158,11,0.75);
+    }
+
+    .timeline-item.ok::before {
+      background: #22c55e;
+      box-shadow: 0 0 14px rgba(34,197,94,0.75);
+    }
+
+    .timeline-item .data {
+      color: var(--texto-secundario);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .titulo {
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .timeline-item .autor {
+      margin-top: 5px;
+      color: #60a5fa;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+        /* =========================================================
+        FILTRO DE PERÍODO - ESTILO POWER BI
+        ========================================================= */
+        /* =========================================================
+        FILTRO DE PERÍODO - PADRÃO POWER BI
+        ========================================================= */
+        .periodo-card {
+        background: linear-gradient(180deg, rgba(18,36,66,0.95), rgba(8,20,38,0.98));
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+
+        padding: 18px 20px;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+
+        flex-wrap: wrap;
+        }
+
+        .periodo-esquerda {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+        }
+
+        .periodo-titulo {
+        font-size: 15px;
+        font-weight: 700;
+        margin-right: 8px;
+        }
+
+        .periodo-campo {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        }
+
+        .periodo-campo label {
+        font-size: 11px;
+        color: var(--texto-secundario);
+        }
+
+        .periodo-campo select,
+        .periodo-campo input {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.10);
+
+        background: rgba(255,255,255,0.04);
+        color: white;
+
+        padding: 0 12px;
+        }
+
+        .periodo-campo select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        background-color: rgba(255,255,255,0.04);
+        color: white;
+        }
+
+        .periodo-campo select option {
+        background: #0f172a;
+        color: white;
+        }
+
+
+        .periodo-campo
+        input::-webkit-calendar-picker-indicator{
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        .btn-periodo {
+        height: 42px;
+        padding: 0 22px;
+
+        border: none;
+        border-radius: 12px;
+
+        background: linear-gradient(90deg, #2563eb, #1d4f86);
+        color: white;
+
+        font-weight: 700;
+        cursor: pointer;
+        }
+
+        .periodo-atalhos {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        }
+
+        .atalho-btn {
+        height: 40px;
+        padding: 0 14px;
+
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.08);
+
+        background: rgba(255,255,255,0.04);
+        color: white;
+
+        cursor: pointer;
+        transition: 0.2s;
+        }
+
+        .atalho-btn:hover {
+        background: rgba(37,99,235,0.22);
+        border-color: rgba(96,165,250,0.35);
+        }
+
+
+        .periodo-info {
+        background: rgba(37,99,235,0.12);
+
+        border: 1px solid rgba(96,165,250,0.18);
+
+        border-radius: 14px;
+
+        padding: 12px 16px;
+
+        min-width: 240px;
+        }
+
+        .periodo-info small {
+        display: block;
+        color: var(--texto-secundario);
+        margin-bottom: 4px;
+        font-size: 11px;
+        }
+
+        .periodo-info strong {
+        display: block;
+        font-size: 14px;
+        line-height: 1.5;
+        }
+
+        .periodo-info span {
+        color: #60a5fa;
+        font-size: 13px;
+        }
+
+
+        .assinatura-sistema {
+        margin-top: auto;
+        padding-top: 14px;
+        text-align: right;
+        color: rgba(229,238,252,0.58);
+        font-size: 11px;
+        letter-spacing: 0.4px;
+        }
+
+        .print-cabecalho-historico {
+        display: none;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 3px solid #0f2747;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        color: #0f2747;
+        }
+
+        .print-cabecalho-historico h1 {
+        margin: 0;
+        font-size: 24px;
+        }
+
+        .print-cabecalho-historico p {
+        margin: 4px 0 0;
+        font-size: 11px;
+        }
+
+        .print-cabecalho-direita {
+        min-width: 230px;
+        text-align: left;
+        font-size: 11px;
+        line-height: 1.7;
+        color: #111827;
+        }
+
+        .print-cabecalho-direita div {
+        display: grid;
+        grid-template-columns: 95px 1fr;
+        column-gap: 6px;
+        white-space: nowrap;
+        }
+
+
+
+        .print-rodape-historico {
+        display: none;
+        }
+
+        .print-item-selecionado {
+            display: none;
+        }
+
+        .print-info-esquerda,
+        .print-info-direita {
+        font-size: 11px;
+        color: #111827;
+        }
+
+        @media print {
+
+        .print-rodape-historico {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+
+            margin-top: auto !important;
+
+            padding-top: 12px !important;
+
+            border-top: 3px solid #0f2747 !important;
+        }
+
+        }
+
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 8mm;
+            }
+
+            body {
+                background: white !important;
+                color: #111827 !important;
+            }
+
+            .sidebar,
+            .painel-direito,
+            .topbar:not(.print-cabecalho-historico),
+            .periodo-card,
+            .search-box,
+            #btnImprimirHistorico,
+            .assinatura-sistema {
+                display: none !important;
+            }
+
+            .layout {
+                display: block !important;
+            }
+
+            .content-area {
+                padding: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                min-height: 185mm !important;
+            }
+
+            .print-cabecalho-historico {
+                display: flex !important;
+            }
+
+            .kpi-grid {
+                display: grid !important;
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 6px !important;
+                margin: 8px 0 10px !important;
+            }
+
+            .kpi-card {
+                background: #f8fafc !important;
+                color: #111827 !important;
+                box-shadow: none !important;
+                border: 1px solid #d1d5db !important;
+                border-radius: 8px !important;
+                padding: 6px 8px !important;
+                min-height: 42px !important;
+            }
+
+            .kpi-card::after {
+                display: none !important;
+            }
+
+            .kpi-card h3 {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+                color: #374151 !important;
+            }
+
+            .kpi-value {
+                font-size: 18px !important;
+                line-height: 1.1 !important;
+                color: #0f2747 !important;
+            }
+
+            .kpi-footer {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+                color: #4b5563 !important;
+            }
+
+            .painel-tabela {
+                box-shadow: none !important;
+                border: none !important;
+                background: white !important;
+                flex: 1 !important;
+            }
+
+            .painel-header {
+                border-bottom: 3px solid #0f2747 !important;
+                padding: 0 0 8px 0 !important;
+                margin-bottom: 10px !important;
+            }
+
+            .painel-header h2 {
+                color: #0f2747 !important;
+                font-size: 20px !important;
+            }
+
+            .painel-header p {
+                color: #374151 !important;
+                font-size: 12px !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+
+            thead th {
+            background: #e5e7eb !important;
+            color: #000000 !important;
+            border: 1.5px solid #6b7280 !important;
+            padding: 6px 4px !important;
+            font-size: 8.8px !important;
+            font-weight: 900 !important;
+            text-align: center !important;
+            letter-spacing: 0.2px !important;
+
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            }
+
+
+            tbody td {
+                color: #111827 !important;
+                border: 1px solid #d1d5db !important;
+                padding: 6px 4px !important;
+                font-size: 9px !important;
+                text-align: center !important;
+            }
+
+            tbody tr.linha-ativa {
+            background: transparent !important;
+            box-shadow: none !important;
+            outline: none !important;
+            }
+
+            tbody tr.linha-ativa td {
+            color: #111827 !important;
+            border: 1px solid #d1d5db !important;
+            }
+
+
+            .badge {
+                background: transparent !important;
+                color: #111827 !important;
+                padding: 0 !important;
+                font-size: 9px !important;
+            }
+
+            .print-rodape-historico {
+                display: flex !important;
+                margin-top: auto !important;
+            }
+
+                body.imprimir-item-historico .kpi-grid,
+                body.imprimir-item-historico .painel-tabela {
+                display: none !important;
+                }
+
+                body.imprimir-item-historico .print-item-selecionado {
+                display: block !important;
+                color: #111827 !important;
+                }
+
+                body.imprimir-item-historico .print-item-selecionado h2 {
+                color: #0f2747 !important;
+                font-size: 20px !important;
+                margin: 10px 0 12px !important;
+                border-bottom: 2px solid #0f2747 !important;
+                padding-bottom: 6px !important;
+                }
+
+                body.imprimir-item-historico .print-item-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px 18px !important;
+                margin-bottom: 16px !important;
+                font-size: 11px !important;
+                }
+
+                body.imprimir-item-historico .print-item-timeline {
+                display: block !important;
+                border: none !important;
+                padding-left: 28px !important;
+                margin-left: 18px !important;
+                }
+
+                body.imprimir-item-historico .print-evento {
+                position: relative !important;
+                border-left: 3px solid #60a5fa !important;
+                padding: 6px 0 14px 22px !important;
+                margin-bottom: 0 !important;
+                page-break-inside: avoid !important;
+                background: transparent !important;
+                }
+
+                body.imprimir-item-historico .print-evento::before {
+                content: "" !important;
+                position: absolute !important;
+                left: -8px !important;
+                top: 16px !important;
+                width: 12px !important;
+                height: 12px !important;
+                border-radius: 50% !important;
+                background: #60a5fa !important;
+                border: 2px solid white !important;
+                z-index: 2 !important;
+                }
+
+                body.imprimir-item-historico .print-evento-data {
+                font-size: 10px !important;
+                color: #374151 !important;
+                margin-bottom: 3px !important;
+                }
+
+                body.imprimir-item-historico .print-evento-titulo {
+                font-size: 12px !important;
+                font-weight: 800 !important;
+                color: #0f2747 !important;
+                margin-bottom: 3px !important;
+                }
+
+                body.imprimir-item-historico .print-evento-detalhe {
+                font-size: 10.5px !important;
+                color: #111827 !important;
+                }
+
+
+
+            }
+
+
+
+
+    @media (max-width: 1500px) {
+      .layout {
+        grid-template-columns: 230px 1fr;
+      }
+
+      .painel-direito {
+        display: none;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body class="usuario-admin">
+  <!-- =========================================================
+       09. LAYOUT PRINCIPAL
+       ========================================================= -->
+  <div class="layout">
+
+    <!-- =========================================================
+         10. SIDEBAR
+         ========================================================= -->
+    <aside class="sidebar">
+      <div class="logo-area">
+        <div class="logo-icon">🛡️</div>
+
+        <div>
+          <div class="logo-title">RASP</div>
+          <div class="logo-subtitle">Sistema de Qualidade</div>
+        </div>
+      </div>
+
+      <!-- =====================================================
+     10.01 MENU DE NAVEGAÇÃO
+     ===================================================== -->
+<nav class="menu">
+
+  <a class="menu-item" href="home.html">
+    🏠 Página Inicial
+  </a>
+
+  <a class="menu-item" href="dashboard-selecao.html">
+    📊 Dashboard Seleção
+  </a>
+
+  <a class="menu-item" href="selecao-operacional.html">
+    🛠️ Seleção Operacional
+  </a>
+
+  <a class="menu-item active" href="historico-geral.html">
+    📚 Histórico Geral
+  </a>
+
+</nav>
+
+
+<button
+  type="button"
+  class="btn-sair-lateral"
+  onclick="sairDoSistema()">
+  ⇱ Sair
+</button>
+
+
+
+
+
+      <div class="filtros-box">
+        <h3>FILTROS RÁPIDOS</h3>
+
+        <div class="campo">
+          <label>Fornecedor</label>
+          <select id="filtroFornecedor">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Turno</label>
+          <select id="filtroTurno">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="campo">
+          <label>Status</label>
+          <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="Em seleção">Em seleção</option>
+            <option value="Encerrado">Encerrado</option>
+          </select>
+        </div>
+
+        <button class="btn-filtro" id="btnAplicarFiltros">
+          Aplicar Filtros
+        </button>
+      </div>
+    </aside>
+
+    <!-- =========================================================
+         11. CONTEÚDO CENTRAL
+         ========================================================= -->
+    <main class="content-area">
+
+        <section class="print-cabecalho-historico">
+        <div>
+            <h1>Histórico Geral de Seleção</h1>
+            <p>RASP • Sistema da Qualidade • Auditoria Operacional e Logística</p>
+<p id="printPeriodoRelatorio">Período filtrado: -</p>
+
+        </div>
+
+        <div class="print-cabecalho-direita">
+            <div id="printDataRelatorio">📅 Data: ${info.data}; </div>
+            <div id="printHoraRelatorio">⏰ Hora: ${info.hora};</div>
+            <div id="printUsuarioRelatorio">👤 Usuário: ${USUARIO_RELATORIO};</div>
+        </div>
+        </section>
+
+        
+
+
+
+      <!-- =====================================================
+           11.01 TOPO
+           ===================================================== -->
+      <section class="topbar">
+        <div>
+          <h1>Histórico Geral</h1>
+          <p>Histórico permanente para auditoria operacional e logística</p>
+        </div>
+
+        <div class="usuario-box">
+          <div class="avatar" id="avatarUsuario"></div>
+
+          <div>
+            <strong id="nomeUsuarioLogado">
+  -
+</strong>
+
+<div
+  id="perfilUsuarioLogado"
+  style="color:#93a4c3; font-size:13px;">
+  -
+</div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+            11.01A FILTRO DE PERÍODO
+            ===================================================== -->
+            <section class="periodo-card">
+
+            <div class="periodo-esquerda">
+
+                <div class="periodo-titulo">
+                Período do histórico
+                </div>
+
+                <div class="periodo-campo">
+                <label>Ano</label>
+
+                <select id="filtroAnoHistorico">
+                    <option value="corrente">Ano corrente</option>
+                    <option value="todos">Todos os anos</option>
+                </select>
+                </div>
+
+                <div class="periodo-campo">
+                <label>De</label>
+                <input id="filtroDataInicialHistorico" type="date" />
+                </div>
+
+                <div class="periodo-campo">
+                <label>Até</label>
+                <input id="filtroDataFinalHistorico" type="date" />
+                </div>
+
+                <button class="btn-periodo" id="btnAplicarPeriodoHistorico">
+                Aplicar
+                </button>
+
+            </div>
+
+            <!-- =====================================================
+                ATALHOS OPERACIONAIS
+                ===================================================== -->
+            <div class="periodo-atalhos">
+
+                <button class="atalho-btn" id="btn30Dias">
+                Últimos 30 dias
+                </button>
+
+                <button class="atalho-btn" id="btn60Dias">
+                Últimos 60 dias
+                </button>
+
+                <button class="atalho-btn" id="btn90Dias">
+                Últimos 90 dias
+                </button>
+
+                <button class="atalho-btn" id="btn180Dias">
+                Últimos 180 dias
+                </button>
+
+                <button class="atalho-btn" id="btnAnoAtual">
+                Ano atual
+                </button>
+
+                <button class="atalho-btn" id="btnTodos">
+                Todos
+                </button>
+
+            </div>
+
+            <!-- =====================================================
+                RESUMO DO PERÍODO
+                ===================================================== -->
+            <div class="periodo-info">
+
+                <small>Período aplicado</small>
+
+                <strong id="textoPeriodoAplicado">
+                01/01/2026 até 31/12/2026
+                </strong>
+
+                <span>(Ano corrente)</span>
+
+            </div>
+
+            </section>
+
+
+
+
+      <!-- =====================================================
+           11.02 KPI HISTÓRICO
+           ===================================================== -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <h3>Total Histórico</h3>
+          <div class="kpi-value" id="kpiHistoricoTotal">0</div>
+          <div class="kpi-footer">Itens que já entraram em seleção</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Com Atrasos</h3>
+          <div class="kpi-value" id="kpiHistoricoAtrasos">0</div>
+          <div class="kpi-footer">Histórico de pendências</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Travas Utilizadas</h3>
+          <div class="kpi-value" id="kpiHistoricoTravas">0</div>
+          <div class="kpi-footer">Itens com trava</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Tempo Médio</h3>
+          <div class="kpi-value" id="kpiHistoricoTempo">0 dias</div>
+          <div class="kpi-footer">Média histórica</div>
+        </div>
+
+        <div class="kpi-card">
+          <h3>Seleções Finalizadas</h3>
+          <div class="kpi-value" id="kpiHistoricoFinalizados">0</div>
+          <div class="kpi-footer">Encerradas no sistema</div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           11.03 TABELA HISTÓRICA
+           ===================================================== -->
+      <section class="painel-tabela">
+        <div class="painel-header">
+          <div>
+            <h2>Histórico Geral de Seleção</h2>
+            <p id="totalRegistrosTabela">0 registros encontrados</p>
+          </div>
+
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button class="btn-periodo" id="btnImprimirHistorico" type="button">
+                🖨️ Imprimir Histórico
+            </button>
+
+            <div class="search-box">
+                <input
+                type="text"
+                id="buscaDashboardSelecao"
+                placeholder="Buscar PN, RASP ou fornecedor..."
+                />
+            </div>
+            </div>
+
+        </div>
+
+        <div class="tabela-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>PN</th>
+                <th>RASP</th>
+                <th>Fornecedor</th>
+                <th>Entrada</th>
+                <th>Saída</th>
+                <th>Dias</th>
+                <th>Sem Apont.</th>
+                <th>Trava</th>
+                <th>QHD</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="tabelaSelecaoBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           11.04 SCRIPT DO HISTÓRICO GERAL
+           ===================================================== -->
+      <script>
+        /* =====================================================
+           01. VARIÁVEL GLOBAL
+           ===================================================== */
+        /* =====================================================
+            VARIÁVEIS GLOBAIS DO SISTEMA
+            ===================================================== */
+
+            const SISTEMA_NOME = "RASP";
+
+            const SISTEMA_SUBTITULO =
+            "Sistema da Qualidade";
+
+            const ASSINATURA_DESENVOLVEDOR =
+            "Developed by: Josealdo Lyra";
+
+            const USUARIO_RELATORIO =
+            "Terminal Operacional";
+
+            let dadosDashboardSelecao = [];
+            let itemHistoricoSelecionado = null;
+
+
+
+        /* =====================================================
+           02. CARREGAR HISTÓRICO GERAL
+           ===================================================== */
+        async function carregarDashboardSelecao() {
+          try {
+            const response = await fetch(
+              "http://localhost:5050/selecao-operacional/historico-geral"
+            );
+
+            if (!response.ok) {
+              throw new Error("Erro ao carregar API.");
+            }
+
+            dadosDashboardSelecao = await response.json();
+
+            atualizarFiltros(dadosDashboardSelecao);
+            atualizarFiltroAnos(dadosDashboardSelecao);
+            aplicarFiltrosHistorico();
+
+          }
+          catch (error) {
+            console.error(error);
+            alert("Erro ao carregar Histórico Geral.");
+          }
+        }
+
+        /* =====================================================
+           03. ATUALIZAR FILTROS
+           ===================================================== */
+        function atualizarFiltros(dados) {
+          preencherSelect("filtroFornecedor", [...new Set(dados.map(x => x.fornecedor).filter(Boolean))]);
+          preencherSelect("filtroTurno", [...new Set(dados.map(x => x.turno).filter(Boolean))]);
+        }
+
+        function preencherSelect(id, valores) {
+          const select = document.getElementById(id);
+
+          if (!select) return;
+
+          const valorAtual = select.value;
+
+          select.innerHTML = `<option value="">Todos</option>`;
+
+          valores
+            .sort((a, b) => a.localeCompare(b, "pt-BR"))
+            .forEach(valor => {
+              const option = document.createElement("option");
+              option.value = valor;
+              option.textContent = valor;
+              select.appendChild(option);
+            });
+
+          select.value = valorAtual;
+        }
+
+        /* =====================================================
+           04. RENDERIZAR TABELA E KPIs
+           ===================================================== */
+        function renderizarDashboardSelecao(dados) {
+          const tbody = document.getElementById("tabelaSelecaoBody");
+
+          tbody.innerHTML = "";
+
+          dados.sort((a, b) => {
+            const qhdA = a.qhdAtivo ? 1 : 0;
+            const qhdB = b.qhdAtivo ? 1 : 0;
+
+            if (qhdA !== qhdB) return qhdA - qhdB;
+
+            const statusA = a.statusSelecao === 1 ? 1 : 0;
+            const statusB = b.statusSelecao === 1 ? 1 : 0;
+
+            if (statusA !== statusB) return statusB - statusA;
+
+            return (b.duracaoTotalDias ?? 0) - (a.duracaoTotalDias ?? 0);
+            });
+
+
+          let totalHistorico = 0;
+          let totalAtrasos = 0;
+          let totalTravas = 0;
+          let totalFinalizados = 0;
+          let somaDias = 0;
+
+          dados.forEach(item => {
+            totalHistorico++;
+
+            const duracao = item.duracaoTotalDias ?? 0;
+            const status = item.statusDescricao ?? "-";
+            const travaTexto = item.travaAtiva ? "🔒 Trava" : "-";
+            const qhdTexto = item.qhdAtivo ? "⛔ QHD" : "-";
+
+            const classeTrava = item.travaAtiva ? "badge-trava" : "badge-vazio";
+            const classeQhd = item.qhdAtivo ? "badge-qhd" : "badge-vazio";
+
+            let diasSemApontamentoAtual = "-";
+
+            const dataReferenciaSemApontamento =
+            item.dataHoraUltimoApontamento ||
+            item.dataApontamento ||
+            item.ultimoApontamento ||
+            item.dataHoraEntradaSelecao;
+
+            if (!item.dataHoraSaidaSelecao && dataReferenciaSemApontamento) {
+            const hoje = new Date();
+            const referencia = new Date(dataReferenciaSemApontamento);
+
+            hoje.setHours(0, 0, 0, 0);
+            referencia.setHours(0, 0, 0, 0);
+
+            diasSemApontamentoAtual =
+                Math.floor((hoje - referencia) / (1000 * 60 * 60 * 24));
+            }
+
+
+
+            somaDias += duracao;
+
+            if (duracao > 2) totalAtrasos++;
+            if (item.travaAtiva) totalTravas++;
+            if (item.statusSelecao === 2) totalFinalizados++;
+
+            const classeStatus =
+              item.statusSelecao === 1
+                ? "badge-atencao"
+                : item.statusSelecao === 2
+                  ? "badge-ok"
+                  : "badge-neutro";
+
+            const tr = document.createElement("tr");
+
+            tr.dataset.idrasppn = item.idRaspPn;
+
+            tr.innerHTML = `
+              <td>${item.pn ?? "-"}</td>
+              <td>${item.numeroRasp ?? "-"}</td>
+              <td>${item.fornecedor ?? "-"}</td>
+              <td>${formatarDataHora(item.dataHoraEntradaSelecao)}</td>
+              <td>${formatarDataHora(item.dataHoraSaidaSelecao)}</td>
+              <td>${duracao}</td>
+             
+             <td>
+                ${
+                    diasSemApontamentoAtual === "-"
+                    ? "-"
+                    : diasSemApontamentoAtual >= 4
+                        ? `<span class="badge badge-critico">${diasSemApontamentoAtual} dias</span>`
+                        : diasSemApontamentoAtual === 3
+                        ? `<span class="badge badge-atencao">3 dias</span>`
+                        : `<span class="badge badge-ok">${diasSemApontamentoAtual} dias</span>`
+                }
+                </td>
+                <td>
+                <span class="badge ${classeTrava}">
+
+                    ${travaTexto}
+                </span>
+                </td>
+                <td>
+                <span class="badge ${classeQhd}">
+                    ${qhdTexto}
+                </span>
+                </td>
+
+              <td>
+              <span class="badge ${classeStatus}">
+                    ${status}
+              </span>
+              </td>
+
+            `;
+
+            tr.addEventListener("click", () => {
+              document
+                .querySelectorAll("#tabelaSelecaoBody tr")
+                .forEach(linha => linha.classList.remove("linha-ativa"));
+
+              tr.classList.add("linha-ativa");
+
+              atualizarPainelDireito(item);
+            });
+
+            tbody.appendChild(tr);
+          });
+
+          const tempoMedio =
+            totalHistorico > 0
+              ? Math.round(somaDias / totalHistorico)
+              : 0;
+
+          document.getElementById("kpiHistoricoTotal").textContent = totalHistorico;
+          document.getElementById("kpiHistoricoAtrasos").textContent = totalAtrasos;
+          document.getElementById("kpiHistoricoTravas").textContent = totalTravas;
+          document.getElementById("kpiHistoricoTempo").textContent = `${tempoMedio} dias`;
+          document.getElementById("kpiHistoricoFinalizados").textContent = totalFinalizados;
+
+          document.getElementById("totalRegistrosTabela").textContent =
+            `${totalHistorico} registros encontrados`;
+        }
+
+        /* =====================================================
+           05. PAINEL DIREITO
+           ===================================================== */
+        async function atualizarPainelDireito(item) {
+            itemHistoricoSelecionado = item;
+
+          document.getElementById("painelPn").textContent =
+            `PN ${item.pn ?? "-"}`;
+
+          document.getElementById("painelRasp").textContent =
+            item.numeroRasp ?? "-";
+
+          document.getElementById("painelFornecedor").textContent =
+            item.fornecedor ?? "-";
+
+          document.getElementById("painelDiasSelecao").textContent =
+            `${item.duracaoTotalDias ?? 0} dias`;
+
+          document.getElementById("painelSemApontamento").textContent =
+            item.statusDescricao ?? "-";
+
+          const timeline = document.getElementById("timelineHistorico");
+
+          timeline.innerHTML = `
+            <div class="timeline-item ok">
+              <div class="data">
+                ${formatarDataHora(item.dataHoraEntradaSelecao)}
+              </div>
+
+              <div class="titulo">
+                ${obterIconeEvento("entrada")}
+                Item entrou em seleção
+              </div>
+
+              <div class="autor">
+                ${item.mtResponsavel ?? "-"}
+              </div>
+            </div>
+          `;
+
+          try {
+            const response = await fetch(
+              `http://localhost:5050/rasp-pn/${item.idRaspPn}/contencoes`
+            );
+
+            if (!response.ok) {
+              throw new Error("Erro ao carregar histórico.");
+            }
+
+            const historico = await response.json();
+
+            historico.sort((a, b) => {
+              const dataA = new Date(a.dataHoraInicioAtividade);
+              const dataB = new Date(b.dataHoraInicioAtividade);
+
+              return dataA - dataB;
+            });
+
+            let dataReferenciaAtraso =
+              item.dataHoraEntradaSelecao
+                ? new Date(item.dataHoraEntradaSelecao)
+                : null;
+
+            historico.forEach(registro => {
+              const dataAtualRegistro =
+                registro.dataHoraInicioAtividade
+                  ? new Date(registro.dataHoraInicioAtividade)
+                  : null;
+
+              if (dataReferenciaAtraso && dataAtualRegistro) {
+                const ref = new Date(dataReferenciaAtraso);
+                const atual = new Date(dataAtualRegistro);
+
+                ref.setHours(0, 0, 0, 0);
+                atual.setHours(0, 0, 0, 0);
+
+                const diferencaDias =
+                  Math.floor((atual - ref) / (1000 * 60 * 60 * 24));
+
+                if (diferencaDias === 3) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item atencao">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#fbbf24;">
+                        ${obterIconeEvento("atencao")}
+                        Atenção: ${diferencaDias} dias sem apontamento
+                      </div>
+
+                      <div class="autor">
+                        Período detectado automaticamente pelo RASP
+                      </div>
+                    </div>
+                  `;
+                }
+
+                if (diferencaDias >= 4) {
+                  timeline.innerHTML += `
+                    <div class="timeline-item critico">
+                      <div class="data">
+                        ${formatarDataHora(dataReferenciaAtraso)}
+                      </div>
+
+                      <div class="titulo" style="color:#f87171;">
+                        ${obterIconeEvento("critico")}
+                        Crítico: ${diferencaDias} dias sem apontamento
+                      </div>
+
+                      <div class="autor">
+                        Evidência histórica para auditoria operacional/logística
+                      </div>
+                    </div>
+                  `;
+                }
+              }
+
+              timeline.innerHTML += `
+                <div class="timeline-item ok">
+                  <div class="data">
+                    ${formatarDataHora(registro.dataHoraInicioAtividade)}
+                  </div>
+
+                  <div class="titulo">
+                    ${obterIconeEvento("apontamento")}
+                    Apontamento realizado
+                  </div>
+
+                  <div class="autor">
+                    Verif.: ${registro.quantidadeVerificada ?? 0}
+                    | Rej.: ${registro.quantidadeRejeitada ?? 0}
+                    | OK: ${registro.quantidadeOk ?? 0}
+                  </div>
+                </div>
+              `;
+
+              if (dataAtualRegistro) {
+                dataReferenciaAtraso = new Date(dataAtualRegistro);
+              }
+            });
+
+            /* =====================================================
+            VERIFICAR ATRASO ATUAL (ITEM AINDA EM SELEÇÃO)
+            ===================================================== */
+            if (!item.dataHoraSaidaSelecao && dataReferenciaAtraso) {
+
+            const hoje = new Date();
+
+            const referencia = new Date(dataReferenciaAtraso);
+
+            referencia.setHours(0,0,0,0);
+            hoje.setHours(0,0,0,0);
+
+            const diasSemApontamento =
+                Math.floor((hoje - referencia) / (1000 * 60 * 60 * 24));
+
+            if (diasSemApontamento === 3) {
+
+                timeline.innerHTML += `
+                <div class="timeline-item atencao">
+                    <div class="data">
+                    ${formatarDataHora(dataReferenciaAtraso)}
+                    </div>
+
+                    <div class="titulo" style="color:#fbbf24;">
+                    ${obterIconeEvento("atencao")}
+                    Atenção: ${diasSemApontamento} dias sem apontamento
+                    </div>
+
+                    <div class="autor">
+                    Item continua em seleção sem novos apontamentos
+                    </div>
+                </div>
+                `;
+            }
+
+            if (diasSemApontamento >= 4) {
+
+                timeline.innerHTML += `
+                <div class="timeline-item critico">
+                    <div class="data">
+                    ${formatarDataHora(dataReferenciaAtraso)}
+                    </div>
+
+                    <div class="titulo" style="color:#f87171;">
+                    ${obterIconeEvento("critico")}
+                    Crítico: ${diasSemApontamento} dias sem apontamento
+                    </div>
+
+                    <div class="autor">
+                    Item permanece ativo sem atualização operacional
+                    </div>
+                </div>
+                `;
+            }
+            }
+
+
+            if (item.dataHoraSaidaSelecao) {
+              timeline.innerHTML += `
+                <div class="timeline-item ok">
+                  <div class="data">
+                    ${formatarDataHora(item.dataHoraSaidaSelecao)}
+                  </div>
+
+                  <div class="titulo">
+                    ✅ Seleção encerrada
+                  </div>
+
+                  <div class="autor">
+                    Registro oficial de saída da seleção
+                  </div>
+                </div>
+              `;
+            }
+
+            if (item.travaAtiva) {
+              timeline.innerHTML += `
+                <div class="timeline-item critico">
+                  <div class="data">
+                    Sistema RASP
+                  </div>
+
+                  <div class="titulo" style="color:#f87171;">
+                    ${obterIconeEvento("trava")}
+                    Trava ativa neste item
+                  </div>
+
+                  <div class="autor">
+                    Item bloqueado
+                  </div>
+                </div>
+              `;
+            }
+          }
+          catch (error) {
+            console.error(error);
+
+            timeline.innerHTML += `
+              <div class="timeline-item critico">
+                <div class="titulo">
+                  Erro ao carregar histórico.
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        /* =====================================================
+           06. ÍCONES
+           ===================================================== */
+        function obterIconeEvento(tipo) {
+          switch (tipo) {
+            case "entrada":
+              return "🟢";
+
+            case "apontamento":
+              return "📝";
+
+            case "atencao":
+              return "⚠️";
+
+            case "critico":
+              return "🚨";
+
+            case "trava":
+              return "🔒";
+
+            default:
+              return "📌";
+          }
+        }
+
+        /* =====================================================
+            DATA/HORA PADRÃO RELATÓRIO
+            ===================================================== */
+            function obterDataHoraRelatorio() {
+
+            const agora = new Date();
+
+            const data =
+                agora.toLocaleDateString("pt-BR");
+
+            const hora =
+                agora.toLocaleTimeString(
+                "pt-BR",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+                );
+
+            return {
+                data,
+                hora
+            };
+            }
+
+
+        /* =====================================================
+           07. FORMATAR DATA/HORA
+           ===================================================== */
+        function formatarDataHora(data) {
+          if (!data) return "-";
+
+          const d = new Date(data);
+
+          if (isNaN(d.getTime())) return "-";
+
+          return d.toLocaleString("pt-BR");
+        }
+
+        /* =====================================================
+           08. BUSCA E FILTROS
+           ===================================================== */
+        function aplicarFiltrosHistorico() {
+        const termo =
+            document.getElementById("buscaDashboardSelecao").value.toLowerCase().trim();
+
+        const fornecedor =
+            document.getElementById("filtroFornecedor").value;
+
+        const turno =
+            document.getElementById("filtroTurno").value;
+
+        const status =
+            document.getElementById("filtroStatus").value;
+
+        const anoFiltro =
+            document.getElementById("filtroAnoHistorico").value;
+
+        const dataInicialValor =
+            document.getElementById("filtroDataInicialHistorico").value;
+
+        const dataFinalValor =
+            document.getElementById("filtroDataFinalHistorico").value;
+
+        const dataInicial =
+            dataInicialValor ? new Date(dataInicialValor + "T00:00:00") : null;
+
+        const dataFinal =
+            dataFinalValor ? new Date(dataFinalValor + "T23:59:59") : null;
+
+        const anoAtual =
+            new Date().getFullYear();
+
+        const filtrados = dadosDashboardSelecao.filter(item => {
+            const atendeBusca =
+            (item.pn ?? "").toLowerCase().includes(termo) ||
+            (item.numeroRasp ?? "").toLowerCase().includes(termo) ||
+            (item.fornecedor ?? "").toLowerCase().includes(termo);
+
+            const atendeFornecedor =
+            !fornecedor || item.fornecedor === fornecedor;
+
+            const atendeTurno =
+            !turno || item.turno === turno;
+
+            const atendeStatus =
+            !status || item.statusDescricao === status;
+
+            const dataBase =
+            item.dataHoraEntradaSelecao
+                ? new Date(item.dataHoraEntradaSelecao.replace(" ", "T"))
+                : null;
+
+
+            let atendeAno = true;
+
+            if (dataBase && anoFiltro === "corrente") {
+            atendeAno = dataBase.getFullYear() === anoAtual;
+            }
+            else if (dataBase && anoFiltro !== "todos" && anoFiltro !== "corrente") {
+            atendeAno = dataBase.getFullYear() === Number(anoFiltro);
+            }
+
+            let atendePeriodo = true;
+
+            if (dataBase && dataInicial) {
+            atendePeriodo = atendePeriodo && dataBase >= dataInicial;
+            }
+
+            if (dataBase && dataFinal) {
+            atendePeriodo = atendePeriodo && dataBase <= dataFinal;
+            }
+
+            return (
+            atendeBusca &&
+            atendeFornecedor &&
+            atendeTurno &&
+            atendeStatus &&
+            atendeAno &&
+            atendePeriodo
+            );
+        });
+
+
+        const textoPeriodo =
+        document.getElementById("textoPeriodoAplicado");
+
+        if (textoPeriodo) {
+        textoPeriodo.textContent =
+            `${dataInicialValor || "-"} até ${dataFinalValor || "-"}`;
+        }
+
+        renderizarDashboardSelecao(filtrados);
+        }
+
+
+        document
+          .getElementById("buscaDashboardSelecao")
+          .addEventListener("input", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("btnAplicarFiltros")
+          .addEventListener("click", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroFornecedor")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroTurno")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        document
+          .getElementById("filtroStatus")
+          .addEventListener("change", aplicarFiltrosHistorico);
+
+        document
+  .getElementById("btnAplicarPeriodoHistorico")
+  .addEventListener("click", aplicarFiltrosHistorico);
+
+        document
+        .getElementById("filtroAnoHistorico")
+        .addEventListener("change", aplicarFiltrosHistorico);
+
+
+        /* =====================================================
+           09. INICIALIZAÇÃO
+           ===================================================== */
+            function configurarPeriodoPadrao() {
+            const anoAtual = new Date().getFullYear();
+
+            document.getElementById("filtroDataInicialHistorico").value =
+                `${anoAtual}-01-01`;
+
+            document.getElementById("filtroDataFinalHistorico").value =
+                `${anoAtual}-12-31`;
+            }
+
+            function atualizarFiltroAnos(dados) {
+            const selectAno = document.getElementById("filtroAnoHistorico");
+
+            if (!selectAno) return;
+
+            const anos = [...new Set(
+                dados
+                .map(item => item.dataHoraEntradaSelecao ? new Date(item.dataHoraEntradaSelecao).getFullYear() : null)
+                .filter(Boolean)
+            )].sort((a, b) => b - a);
+
+            anos.forEach(ano => {
+                if (![...selectAno.options].some(opt => opt.value === String(ano))) {
+                const option = document.createElement("option");
+                option.value = ano;
+                option.textContent = ano;
+                selectAno.appendChild(option);
+                }
+            });
+            }
+        
+
+        function aplicarAtalhoPeriodo(dias) {
+
+        const hoje = new Date();
+        const inicio = new Date();
+
+        inicio.setDate(hoje.getDate() - dias);
+
+        document.getElementById("filtroAnoHistorico").value =
+            "todos";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            inicio.toISOString().split("T")[0];
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            hoje.toISOString().split("T")[0];
+
+        aplicarFiltrosHistorico();
+        }
+
+        /* =====================================================
+        BOTÕES DE ATALHO
+        ===================================================== */
+
+        document.getElementById("btn30Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(30);
+        });
+
+        document.getElementById("btn60Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(60);
+        });
+
+        document.getElementById("btn90Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(90);
+        });
+
+        document.getElementById("btn180Dias")
+        .addEventListener("click", () => {
+        aplicarAtalhoPeriodo(180);
+        });
+
+        document.getElementById("btnAnoAtual")
+        .addEventListener("click", () => {
+
+        const ano = new Date().getFullYear();
+
+        document.getElementById("filtroAnoHistorico").value =
+            "corrente";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            `${ano}-01-01`;
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            `${ano}-12-31`;
+
+        aplicarFiltrosHistorico();
+        });
+
+        document.getElementById("btnTodos")
+        .addEventListener("click", () => {
+
+        document.getElementById("filtroAnoHistorico").value =
+            "todos";
+
+        document.getElementById("filtroDataInicialHistorico").value =
+            "";
+
+        document.getElementById("filtroDataFinalHistorico").value =
+            "";
+
+        aplicarFiltrosHistorico();
+        });
+
+        document
+        .getElementById("btnImprimirHistorico")
+        .addEventListener("click", () => {
+
+            const info =
+            obterDataHoraRelatorio();
+
+            document.getElementById(
+            "printDataRelatorio"
+            ).textContent =
+            `▣ Data do Relatório: ${info.data}`;
+
+            document.getElementById(
+            "printHoraRelatorio"
+            ).textContent =
+            `◷ Hora: ${info.hora}`;
+
+            document.getElementById(
+            "printUsuarioRelatorio"
+            ).textContent =
+            `● Usuário: ${USUARIO_RELATORIO}`;
+
+            document.getElementById(
+            "printAssinaturaSistema"
+            ).textContent =
+            ASSINATURA_DESENVOLVEDOR;
+
+            const dataInicialPrint =
+            document.getElementById("filtroDataInicialHistorico").value;
+
+            const dataFinalPrint =
+            document.getElementById("filtroDataFinalHistorico").value;
+
+            function formatarDataFiltroPrint(data) {
+            if (!data) return "-";
+
+            const partes = data.split("-");
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+            }
+
+            document.getElementById("printPeriodoRelatorio").textContent =
+            `Período filtrado: ${formatarDataFiltroPrint(dataInicialPrint)} até ${formatarDataFiltroPrint(dataFinalPrint)}`;
+
+
+
+            window.print();
+        });
+        
+        
+        document.addEventListener("click", function (event) {
+        if (event.target.id !== "btnImprimirItemHistorico") return;
+
+        const info = obterDataHoraRelatorio();
+
+        document.getElementById("printDataRelatorio").textContent =
+            `▣ Data do Relatório: ${info.data}`;
+
+        document.getElementById("printHoraRelatorio").textContent =
+            `◷ Hora: ${info.hora}`;
+
+        document.getElementById("printUsuarioRelatorio").textContent =
+            `● Usuário: ${USUARIO_RELATORIO}`;
+
+        document.getElementById("printItemPnHistorico").textContent =
+            (document.getElementById("painelPn").textContent || "-").replace("PN ", "");
+
+        document.getElementById("printItemRaspHistorico").textContent =
+            document.getElementById("painelRasp").textContent || "-";
+
+        document.getElementById("printItemFornecedorHistorico").textContent =
+            document.getElementById("painelFornecedor").textContent || "-";
+
+        document.getElementById("printItemDiasHistorico").textContent =
+            document.getElementById("painelDiasSelecao").textContent || "-";
+
+        document.getElementById("printItemStatusHistorico").textContent =
+            document.getElementById("painelSemApontamento").textContent || "-";
+
+        const eventos =
+        [...document.querySelectorAll("#timelineHistorico .timeline-item")];
+
+        let htmlEventosExtrasInicio = "";
+        let htmlEventosExtrasFim = "";
+
+        const item = itemHistoricoSelecionado;
+
+        /* =====================================================
+        EVENTOS INICIAIS - TRAVA / QHD
+        ===================================================== */
+        if (item?.travaAtiva) {
+        htmlEventosExtrasInicio += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(
+                item.dataHoraEntradaTrava ||
+                item.dataEntradaTrava ||
+                item.dataHoraEntradaSelecao
+                )}
+            </div>
+            <div class="print-evento-titulo">🔒 Trava entrou no item</div>
+            <div class="print-evento-detalhe">Registro de entrada da trava operacional</div>
+            </div>
+        `;
+        }
+
+        if (item?.qhdAtivo) {
+        htmlEventosExtrasInicio += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(
+                item.dataHoraEntradaQhd ||
+                item.dataEntradaQhd ||
+                item.dataHoraEntradaSelecao
+                )}
+            </div>
+            <div class="print-evento-titulo">⛔ QHD entrou no item</div>
+            <div class="print-evento-detalhe">Registro de entrada em QHD</div>
+            </div>
+        `;
+        }
+
+        /* =====================================================
+        HISTÓRICO NORMAL, REMOVENDO DUPLICADOS DE TRAVA/QHD
+        ===================================================== */
+        const htmlEventos = eventos
+        .filter(evento => {
+            const titulo = evento.querySelector(".titulo")?.innerText || "";
+
+            return (
+            !titulo.includes("Trava ativa neste item") &&
+            !titulo.includes("QHD ativo neste item")
+            );
+        })
+        .map(evento => {
+            const data = evento.querySelector(".data")?.innerText || "-";
+            const titulo = evento.querySelector(".titulo")?.innerText || "-";
+            const autor = evento.querySelector(".autor")?.innerText || "-";
+
+            return `
+            <div class="print-evento">
+                <div class="print-evento-data">${data}</div>
+                <div class="print-evento-titulo">${titulo}</div>
+                <div class="print-evento-detalhe">${autor}</div>
+            </div>
+            `;
+        })
+        .join("");
+
+        /* =====================================================
+        EVENTOS FINAIS - SAÍDA TRAVA / QHD
+        ===================================================== */
+        if (item?.dataHoraSaidaTrava || item?.dataSaidaTrava) {
+        htmlEventosExtrasFim += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(item.dataHoraSaidaTrava || item.dataSaidaTrava)}
+            </div>
+            <div class="print-evento-titulo">🔓 Trava saiu do item</div>
+            <div class="print-evento-detalhe">Registro de saída da trava operacional</div>
+            </div>
+        `;
+        }
+
+        if (item?.dataHoraSaidaQhd || item?.dataSaidaQhd) {
+        htmlEventosExtrasFim += `
+            <div class="print-evento">
+            <div class="print-evento-data">
+                ${formatarDataHora(item.dataHoraSaidaQhd || item.dataSaidaQhd)}
+            </div>
+            <div class="print-evento-titulo">✅ QHD saiu do item</div>
+            <div class="print-evento-detalhe">Registro de saída do QHD</div>
+            </div>
+        `;
+        }
+
+        document.getElementById("printItemTimelineHistorico").innerHTML =
+        htmlEventosExtrasInicio +
+        htmlEventos +
+        htmlEventosExtrasFim ||
+        "<div class='print-evento'>Nenhum histórico encontrado.</div>";
+
+
+
+        document.body.classList.add("imprimir-item-historico");
+
+        window.print();
+
+        setTimeout(() => {
+            document.body.classList.remove("imprimir-item-historico");
+        }, 500);
+        });
+
+        
+        configurarPeriodoPadrao();
+        carregarDashboardSelecao();
+
+        
+
+      </script>
+
+      <!-- =====================================================
+            ASSINATURA DO SISTEMA
+            ===================================================== -->
+        <div class="assinatura-sistema">
+        Developed by: Josealdo Lyra
+        </div>
+
+        <section class="print-item-selecionado">
+        <h2>Detalhe do Item Selecionado</h2>
+
+        <div class="print-item-grid">
+            <div><strong>PN:</strong> <span id="printItemPnHistorico">-</span></div>
+            <div><strong>RASP:</strong> <span id="printItemRaspHistorico">-</span></div>
+            <div><strong>Fornecedor:</strong> <span id="printItemFornecedorHistorico">-</span></div>
+            <div><strong>Dias no ciclo:</strong> <span id="printItemDiasHistorico">-</span></div>
+            <div><strong>Status:</strong> <span id="printItemStatusHistorico">-</span></div>
+        </div>
+
+        <h3>Histórico Operacional</h3>
+
+        <div id="printItemTimelineHistorico" class="print-item-timeline">
+            -
+        </div>
+        </section>
+
+        <!-- =====================================================
+            RODAPÉ IMPRESSÃO
+            ===================================================== -->
+        <div class="print-rodape-historico">
+
+        <div class="print-info-esquerda">
+            Relatório gerado automaticamente pelo sistema RASP
+        </div>
+
+        <div
+            class="print-info-direita"
+            id="printAssinaturaSistema"
+        >
+            Developed by: Josealdo Lyra
+        </div>
+
+        </div>
+
+
+
+    </main>
+
+    <!-- =========================================================
+         12. PAINEL DIREITO
+         ========================================================= -->
+    <aside class="painel-direito">
+      <section class="detalhe-card">
+        <h2 id="painelPn">PN -</h2>
+
+        <div class="detalhe-grid">
+          <div class="detalhe-item">
+            <small>RASP</small>
+            <strong id="painelRasp">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Fornecedor</small>
+            <strong id="painelFornecedor">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Dias no ciclo</small>
+            <strong id="painelDiasSelecao" style="color:#f87171;">-</strong>
+          </div>
+
+          <div class="detalhe-item">
+            <small>Status</small>
+            <strong id="painelSemApontamento" style="color:#f87171;">-</strong>
+          </div>
+        </div>
+      </section>
+
+      <div style="display:flex; justify-content:flex-end;">
+        <button
+            class="btn-periodo"
+            id="btnImprimirItemHistorico"
+            type="button">
+            🖨️ Imprimir Item
+        </button>
+      </div>
+
+      <section class="detalhe-card">
+        <h3 style="margin-bottom:20px;">
+          Histórico Operacional
+        </h3>
+
+        <div class="timeline" id="timelineHistorico">
+        </div>
+      </section>
+    </aside>
+  </div>
+  <script src="app.js"></script>
+    
+
+<script src="./sessao.js"></script>
+
+<script>
+  protegerPagina();
+
+  window.addEventListener("load", function () {
+    preencherUsuarioLogadoNaTela();
+  });
+</script>
+
+
+
+</body>
+</html>

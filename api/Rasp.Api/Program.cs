@@ -4357,17 +4357,22 @@ app.MapPost("/rasp-pn", async (CriarRaspPnRequest req, RaspDbContext db) =>
     if (!pnExiste)
         return Results.BadRequest("PN informado não existe no cadastro.");
 
-    var duns = (req.Duns ?? string.Empty).Trim();
-    if (string.IsNullOrWhiteSpace(duns))
-        return Results.BadRequest("Duns é obrigatório.");
-    if (duns.Length != 9)
-        return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
-    if (!duns.All(char.IsDigit))
-        return Results.BadRequest("Duns deve conter somente números.");
+    // var duns = (req.Duns ?? string.Empty).Trim();
+    // if (string.IsNullOrWhiteSpace(duns))
+    //     return Results.BadRequest("Duns é obrigatório.");
+    // if (duns.Length != 9)
+    //     return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
+    // if (!duns.All(char.IsDigit))
+    //     return Results.BadRequest("Duns deve conter somente números.");
 
-    var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
-    if (!dunsExiste)
-        return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+    // var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
+    // if (!dunsExiste)
+    //     return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+
+    // REGRA RASP: DUNS pertence ao RASP, não ao PN.
+    // Código anterior preservado para histórico.
+    string? duns = null;
+
 
     if (req.QuantidadeSuspeita < 0 || req.QuantidadeChecada < 0 || req.QuantidadeRejeitada < 0)
         return Results.BadRequest("Quantidades não podem ser negativas.");
@@ -4477,17 +4482,22 @@ app.MapPut("/rasp-pn/{id:int}", async (int id, AtualizarRaspPnRequest req, RaspD
     if (item is null)
         return Results.NotFound("RASP PN não encontrado.");
 
-    var duns = (req.Duns ?? string.Empty).Trim();
-    if (string.IsNullOrWhiteSpace(duns))
-        return Results.BadRequest("Duns é obrigatório.");
-    if (duns.Length != 9)
-        return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
-    if (!duns.All(char.IsDigit))
-        return Results.BadRequest("Duns deve conter somente números.");
+    // var duns = (req.Duns ?? string.Empty).Trim();
+    // if (string.IsNullOrWhiteSpace(duns))
+    //     return Results.BadRequest("Duns é obrigatório.");
+    // if (duns.Length != 9)
+    //     return Results.BadRequest("Duns deve ter exatamente 9 caracteres.");
+    // if (!duns.All(char.IsDigit))
+    //     return Results.BadRequest("Duns deve conter somente números.");
 
-    var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
-    if (!dunsExiste)
-        return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+    // var dunsExiste = await db.FornecedorRasp.AnyAsync(f => f.Duns == duns);
+    // if (!dunsExiste)
+    //     return Results.BadRequest("DUNS informado não existe no cadastro de fornecedor.");
+
+    // REGRA RASP: o DUNS pertence ao RASP, não ao PN.
+    // Preserva o valor anterior caso o PN seja editado.
+    string? duns = item.Duns;
+
 
     if (req.QuantidadeSuspeita < 0 || req.QuantidadeChecada < 0 || req.QuantidadeRejeitada < 0)
         return Results.BadRequest("Quantidades não podem ser negativas.");
@@ -4692,6 +4702,7 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             x.DataHoraInicioAtividade,
             x.DataHoraFimAtividade,
             x.IdOperadorSelecaoTerceiro,
+            x.IdUsuarioExecucao,
             x.OrigemRegistro,
             x.QuantidadeVerificada,
             x.QuantidadeRejeitada,
@@ -4757,6 +4768,32 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
     );
 
     // -------------------------------------------------------------------------
+// 08.1. BUSCA NOMES DOS EXECUTORES GM INTERNOS
+// -------------------------------------------------------------------------
+var idsUsuariosGm = ultimoApontamentoPorRaspPn.Values
+    .Where(x => x.OrigemRegistro == 2 && x.IdUsuarioExecucao.HasValue)
+    .Select(x => x.IdUsuarioExecucao!.Value)
+    .Distinct()
+    .ToList();
+
+var usuariosGm = await db.Usuarios
+    .AsNoTracking()
+    .Where(x => idsUsuariosGm.Contains(x.IdUsuario))
+    .Select(x => new
+    {
+        x.IdUsuario,
+        x.Nome,
+        x.Sobrenome
+    })
+    .ToListAsync();
+
+var usuarioGmPorId = usuariosGm.ToDictionary(
+    x => x.IdUsuario,
+    x => $"{x.Nome} {x.Sobrenome}".Trim()
+);
+
+
+    // -------------------------------------------------------------------------
     // 09. DATA BASE PARA CÁLCULOS
     // -------------------------------------------------------------------------
     var hoje = DateTime.UtcNow.Date;
@@ -4817,17 +4854,31 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
         }
 
         // ---------------------------------------------------------------------
-        // 10.5. Recupera dados do operador terceiro, se houver
-        // ---------------------------------------------------------------------
-        string? nomeOperador = null;
-        string? empresaOperador = null;
+// 10.5. IDENTIFICA O EXECUTOR DO ÚLTIMO APONTAMENTO
+// ---------------------------------------------------------------------
+string? nomeOperador = null;
+string? empresaOperador = null;
 
-        if (ultimo?.IdOperadorSelecaoTerceiro is int idOperador &&
-            operadorPorId.TryGetValue(idOperador, out var operador))
-        {
-            nomeOperador = operador.Nome;
-            empresaOperador = operador.Empresa;
-        }
+if (ultimo?.OrigemRegistro == 2)
+{
+    // Executor GM interno
+    if (ultimo.IdUsuarioExecucao is int idUsuarioGm &&
+        usuarioGmPorId.TryGetValue(idUsuarioGm, out var nomeGm))
+    {
+        nomeOperador = nomeGm;
+    }
+}
+else if (ultimo?.OrigemRegistro == 1)
+{
+    // Executor terceiro
+    if (ultimo.IdOperadorSelecaoTerceiro is int idOperador &&
+        operadorPorId.TryGetValue(idOperador, out var operador))
+    {
+        nomeOperador = operador.Nome;
+        empresaOperador = operador.Empresa;
+    }
+}
+
 
         // ---------------------------------------------------------------------
         // 10.6. Retorno final da linha operacional
@@ -4871,8 +4922,11 @@ app.MapGet("/selecao-operacional/itens-ativos", async (RaspDbContext db) =>
             // EXECUTOR TERCEIRO, QUANDO HOUVER
             // -----------------------------------------------------
             ultimo?.IdOperadorSelecaoTerceiro,
-            NomeOperadorSelecaoTerceiro = nomeOperador,
+            NomeExecutor = nomeOperador,
+            NomeOperadorSelecaoTerceiro =
+                ultimo?.OrigemRegistro == 1 ? nomeOperador : null,
             EmpresaOperadorSelecaoTerceiro = empresaOperador,
+
 
             // -----------------------------------------------------
             // STATUS FIXO DA VISÃO OPERACIONAL
@@ -5417,7 +5471,10 @@ else
     // -------------------------------------------------------------------------
     // 06. CÁLCULO DA QUANTIDADE OK
     // -------------------------------------------------------------------------
-    var quantidadeOk = req.QuantidadeVerificada - req.QuantidadeRejeitada;
+    var quantidadeOk = req.QuantidadeVerificada
+                 - req.QuantidadeRejeitada
+                 + req.QuantidadeRetrabalhada;
+
 
 // -------------------------------------------------------------------------
 // 07. MONTAGEM DO REGISTRO DE CONTENÇÃO
@@ -5592,7 +5649,9 @@ app.MapPut("/rasp-contencao/{id:int}", async (
     item.QuantidadeVerificada = req.QuantidadeVerificada;
     item.QuantidadeRejeitada = req.QuantidadeRejeitada;
     item.QuantidadeRetrabalhada = req.QuantidadeRetrabalhada;
-    item.QuantidadeOk = req.QuantidadeVerificada - req.QuantidadeRejeitada;
+    item.QuantidadeOk = req.QuantidadeVerificada - req.QuantidadeRejeitada + req.QuantidadeRetrabalhada;
+
+
     item.Observacao = string.IsNullOrWhiteSpace(req.Observacao) ? null : req.Observacao.Trim();
     item.IdTurnoRasp = req.IdTurnoRasp;
     item.DataHoraInicioAtividade = inicioUtc;
@@ -7186,8 +7245,10 @@ if (usuario is null)
     });
 }
 
+// Perfil 4 = LG
 var perfilLg =
-    usuario.IdPerfil == 3;
+    usuario.IdPerfil == 4;
+
 
 var administrador =
     usuario.Administrador == true;
@@ -7242,11 +7303,27 @@ if (!perfilLg && !administrador)
     if (!usuarioExecutor.Ativo)
         return Results.BadRequest("Usuário executor está inativo.");
 
-    var isAdmin = usuarioExecutor.IdPerfil == 1;
-    var isLg = usuarioExecutor.IdPerfil == 4;
+    // ============================================================
+// VALIDAÇÃO DE PERMISSÃO PARA APROVAÇÃO LG
+// ============================================================
 
-    if (!isAdmin && !isLg)
-        return Results.StatusCode(StatusCodes.Status403Forbidden);
+// Perfil 1 = ADMIN; também reconhece administrador habilitado
+var isAdmin =
+    usuarioExecutor.IdPerfil == 1 ||
+    usuarioExecutor.Administrador == true;
+
+// Perfil 4 = LG
+var isLg =
+    usuarioExecutor.IdPerfil == 4;
+
+// Somente LG ou ADMIN pode registrar a decisão.
+if (!isAdmin && !isLg)
+{
+    return Results.StatusCode(
+        StatusCodes.Status403Forbidden
+    );
+}
+
 
     var statusAnterior = rasp.IdStatusRasp;
     var agora = DateTime.UtcNow;
